@@ -1,0 +1,75 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8d0d99d643ef4114d8efc0f8788238b0, type: 3}
+  m_Name: MatchSettings
+  m_EditorClassIdentifier: Assembly-CSharp::BeetleArena.BeetleMatchSettings
+  arenaRadius: 5.2
+  spawnDistance: 2.3
+  visualScale: 0.7
+  supportFootOffsets:
+  - {x: -1.145, y: 0.11, z: 2.3249998}
+  - {x: -1.4100001, y: 0.075, z: -0.9100001}
+  - {x: -0.90999997, y: 0.54, z: -1.7350001}
+  - {x: 1.145, y: 0.11, z: 2.3249998}
+  - {x: 1.4100001, y: 0.075, z: -0.9100001}
+  - {x: 0.90999997, y: 0.54, z: -1.7350001}
+  fallDepth: 0.75
+  groundHeight: -3.4
+  gravity: 9.81
+  minimumSize: 0.96
+  maximumSize: 1.04
+  maximumSizeDifference: 0.08
+  referenceLengthMm: 55
+  referenceMassGrams: 8
+  walkSpeed: 0.95
+  turnSpeed: 145
+  shoveImpulse: 2.7
+  pryImpulse: 4.3
+  staminaRecovery: 7.5
+  fatiguePerSecond: 0.12
+  openingSeconds: 90
+  escalationSeconds: 90
+  openingDisplacement: 0.1
+  finalDisplacement: 2.4
+  probingSeconds: 7
+  clashSeconds: 9
+  exchangeRecoverySeconds: 3.5
+  probeForceMultiplier: 0.3
+  chargeForceMultiplier: 1.35
+  chargeWindupSeconds: 0.65
+  hornLockSeconds: 1.15
+  pryContactStart: 0.16
+  liftRaiseSeconds: 0.65
+  liftHoldSeconds: 0.9
+  liftedBodyPitch: 42
+  liftFollowSpeed: 2.8
+  liftStruggleDelay: 0.7
+  struggleStartHz: 0.65
+  struggleMaxHz: 3.2
+  struggleRampSeconds: 1.1
+  contactMotionSpeed: 4
+  liftBlockedReleaseSeconds: 0.16
+  chargeStaminaCost: 27
+  hornLockStaminaCost: 8
+  tossChance: 0.08
+  tossMinimumStamina: 0.35
+  tossStaminaCost: 12
+  tossCooldownSeconds: 12
+  tossHorizontalImpulse: 2.6
+  tossVerticalSpeed: 4.3
+  cheerCooldown: 6
+  cheerDuration: 3.5
+  cheerEffortBonus: 0.13
+  cheerStamina: 5
+  countdownSeconds: 3
+  doubleFallWindow: 1.2
+  initialSeed: 0
