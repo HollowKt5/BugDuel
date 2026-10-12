@@ -1,0 +1,21 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4c5209e28fcac4a4496e8d54a31da797, type: 3}
+  m_Name: ForelegGrappleMotion
+  m_EditorClassIdentifier: Assembly-CSharp::BeetleArena.ForelegGrappleMotion
+  enabledInMatch: 1
+  weight: 0.9
+  duration: 1.1
+  cooldown: 2.8
+  evidence: 'Cross-species adaptation: Eberhard, Golofa porteri, Psyche 84:292-298
+    (1977 volume, published 1978), figures 1a-c. Not established for Trypoxylus;
+    constrained to current leg reach. https://repository.si.edu/bitstreams/a06da26f-32ea-4bd7-b73a-b72a12d0d6f9/download'

@@ -31,6 +31,10 @@ namespace BeetleArena
         // 上一步真实脚端以及落地接续轨迹，均为世界坐标。
         [NonSerialized] public Vector3 lastFoot, landingFrom;
         [NonSerialized] public float landingBlend;
+        // 可插拔动作退出后统一把脚端平滑交还步态；模块删除也不会留下悬空脚点。
+        [NonSerialized] public bool moduleOwned;
+        [NonSerialized] public float moduleReturn = 1;
+        [NonSerialized] public Vector3 moduleReturnFrom;
     }
 
     // 程序动画总入口：战斗状态→身体/头角姿态→脚部目标轨迹→真实骨骼 IK。
@@ -60,13 +64,19 @@ namespace BeetleArena
         public float StruggleWeight { get; private set; }
         public float StruggleFrequency { get; private set; }
         float strugglePhase;
+        bool fallingPose, floorPose;
+        float fallPitchStart, fallRollStart, floorPitchStart, floorRollStart;
+        float FallRecovery(BeetleState b) => Ease(Mathf.Clamp01((b.Fall.GroundSeconds - .12f) / settings.fallRecoverySeconds));
 
         // 对 SmoothStep 频率曲线解析积分：相位连续，速度也连续。
         // 不能写成 time * Lerp(slow, fast, time)，那会额外加速并在切换处跳拍。
         void UpdateStruggle(BeetleState state)
         {
-            float t = !state.HasFallen && state.Airborne
-                ? Mathf.Max(0, state.Lift.UnsupportedTime - settings.liftStruggleDelay) : 0;
+            // 已落台继续寻触；地面恢复也保留连续摆腿相位，不能判负时突然归零。
+            float t = state.Fall.Active
+                ? Mathf.Max(0, Mathf.Max(state.Lift.UnsupportedTime, state.Fall.UnsupportedSeconds) - settings.liftStruggleDelay)
+                    + state.Fall.GroundSeconds
+                : state.Airborne ? Mathf.Max(0, state.Lift.UnsupportedTime - settings.liftStruggleDelay) : 0;
             float ramp = Mathf.Max(.1f, settings.struggleRampSeconds);
             float u = Mathf.Clamp01(t / ramp);
             float f0 = settings.struggleStartHz, df = settings.struggleMaxHz - f0;
@@ -76,12 +86,16 @@ namespace BeetleArena
             strugglePhase = cycles * (2 * Mathf.PI);
         }
 
+        float SoleHeight(BeetleLegRig leg) => importedRig
+            ? (leg.soleOffset + importedRig.soleClearance) * Mathf.Abs(model.lossyScale.x) : .05f * size;
+
         // 每局重新绑定时重置缩放、姿态、步态和落脚点。颜色通过 MaterialPropertyBlock 设置，
         // 避免为两只甲虫复制材质。调用前 Actor 已把根节点放到本局初始位置。
         public void Initialize(BeetleTraits traits, BeetleMatchSettings settings, Color shellColor, IBeetleGround surface = null)
         {
             this.settings = settings; previousAirborne = false; StruggleWeight = StruggleFrequency = strugglePhase = 0;
             previousAction = BeetleAction.Assess; liftingHeadStart = headYaw = liftingYaw = 0;
+            fallingPose = floorPose = false;
             ground = surface;
             size = traits.size; scale = settings.visualScale * size; arenaRadius = settings.arenaRadius;
             model.localScale = Vector3.one * scale;
@@ -104,6 +118,7 @@ namespace BeetleArena
             {
                 leg.planted = NominalFoot(leg);
                 leg.lastFoot = leg.planted; leg.landingBlend = 1;
+                leg.moduleOwned = false; leg.moduleReturn = 1;
                 leg.stepping = false;
             }
             previousPosition = transform.position;
@@ -118,7 +133,7 @@ namespace BeetleArena
             float speed = state.Velocity.magnitude;
             if (state.Action == BeetleAction.Lifting && previousAction != BeetleAction.Lifting)
             { liftingHeadStart = headPitch; liftingYaw = headYaw; }
-            if (state.Action == BeetleAction.ReleaseLift && previousAction != BeetleAction.ReleaseLift)
+            if ((state.Action == BeetleAction.ReleaseLift || state.Action == BeetleAction.Toss) && previousAction != state.Action)
             { releaseHeadStart = headPitch; releaseBodyStart = bodyPitch; }
             float phase = state.ActionProgress;
             float targetHead = 12f, pitch = 0, roll = state.RollVisual;
@@ -165,20 +180,52 @@ namespace BeetleArena
                 case BeetleAction.Brace: targetHead = 30; pitch = 5; strain = .65f; break;
                 case BeetleAction.Recover: targetHead = 18; break;
                 case BeetleAction.Stagger: pitch = -state.LiftVisual * 17; break;
-                case BeetleAction.Falling: pitch = -20; roll += Mathf.Sin(time * 5) * 20; break;
-                case BeetleAction.Defeated: pitch = 18; roll = state.Index == 0 ? -72 : 72; targetHead = 8; break;
+                // 失足/判负的身体运动在下方从实际进入姿态接续，不设置固定“死亡”侧躺角。
+                case BeetleAction.Falling:
+                case BeetleAction.Defeated: targetHead = 16; break;
                 case BeetleAction.Winner: targetHead = 6; break;
             }
             pitch -= state.LiftVisual * 8;
             pitch -= state.ImpactVisual * 5;
             if (state.Action != BeetleAction.Lifted) { pitch += state.Lift.Pitch; roll += state.Lift.Roll; }
             UpdateStruggle(state);
+            var modulePose = state.Motion.PoseSample();
+            if (state.Fall.Active)
+            {
+                // 使用独立固定步时钟：比赛 Finished 后 Elapsed 停止，跌落和翻正仍须继续。
+                if (!fallingPose) { fallPitchStart = bodyPitch; fallRollStart = bodyRoll; fallingPose = true; }
+                float ft = state.Fall.Time;
+                float turn = 1 - Mathf.Exp(-ft * 2.2f);
+                float side = Mathf.Abs(state.Fall.SideSpeed) > .1f ? Mathf.Sign(state.Fall.SideSpeed) : state.CircleDirection;
+                pitch = fallPitchStart + Mathf.Clamp(state.Fall.ForwardSpeed * 5, -28, 28) * turn;
+                roll = fallRollStart + side * (14 + Mathf.Min(20, Mathf.Abs(state.Fall.SideSpeed) * 6)) * turn;
+                roll += Mathf.Sin(ft * 6.5f) * 4 * turn;
+                if (state.Fall.OnFloor)
+                {
+                    if (!floorPose) { floorPitchStart = bodyPitch; floorRollStart = bodyRoll; floorPose = true; }
+                    float recover = FallRecovery(state), gt = state.Fall.GroundSeconds;
+                    float push = Mathf.Sin(gt * 9) * Mathf.Sin(Mathf.PI * recover) * 7;
+                    pitch = Mathf.Lerp(floorPitchStart, 0, recover);
+                    roll = Mathf.Lerp(floorRollStart, 0, recover) + side * push;
+                    targetHead = 16 + Mathf.Sin(gt * 3) * 3;
+                }
+                else floorPose = false;
+                // Finished 阶段不再衰减旧的 LiftVisual/ImpactVisual，已在上方覆盖这些旧目标。
+            }
+            else { fallingPose = floorPose = false; }
+            pitch += modulePose.BodyPitch; roll += modulePose.BodyRoll;
+            targetHead += modulePose.HeadPitch; strain += modulePose.Strain;
             // 指数平滑让姿态逐渐靠近目标，减少状态切换时跳变；dt=0 时保留原姿态。
             float blend = 1 - Mathf.Exp(-dt * 13);
             if (importedRig) targetHead = (targetHead - 12) * importedRig.headMotionScale;
             if (state.Action == BeetleAction.Lifting)
-                targetHead = Mathf.Lerp(liftingHeadStart, importedRig ? -46 : -85,
-                    Ease(Mathf.Clamp01(state.ActionTime / settings.liftRaiseSeconds)));
+                targetHead = liftingHeadStart - state.LiftSweepTarget * state.LiftStrokeProgress;
+            // 出手保留已接受的抬头姿态，再短促跟随；不能切到固定低头角度反向撞回受击者。
+            if (state.Action == BeetleAction.Toss)
+            {
+                targetHead = releaseHeadStart - 8 * Mathf.Sin(phase * Mathf.PI);
+                pitch = Mathf.Lerp(releaseBodyStart, -8, Ease(phase));
+            }
             // 提前松脱/未完全抬起时也从实际头角开始收角，不能假定已经扬到 -85 度。
             if (state.Action == BeetleAction.ReleaseLift)
                 targetHead = Mathf.Lerp(releaseHeadStart, importedRig ? (30 - 12) * importedRig.headMotionScale : 30, Ease(phase));
@@ -187,19 +234,23 @@ namespace BeetleArena
             bodyRoll = Mathf.Lerp(bodyRoll, roll, blend);
             // 步态频率随平面速度提升；相位仍需配合落脚误差，静止时不会单凭相位不断迈步。
             walkCycle += dt * Mathf.Lerp(.8f, 2.4f, Mathf.Clamp01(speed));
-            float breath = Mathf.Sin(time * 2.2f + state.Index) * .008f;
+            float poseTime = state.Fall.Active ? state.Fall.Time : time;
+            float breath = Mathf.Sin(poseTime * 2.2f + state.Index) * .008f;
             float bob = Mathf.Sin(walkCycle * Mathf.PI * 4) * Mathf.Min(speed, 1) * .018f;
-            bodyPivot.localPosition = bodyRest + Vector3.up * (breath + bob - strain * .055f);
+            float landingCompression = state.Fall.OnFloor
+                ? Mathf.Sin(Mathf.PI * Mathf.Clamp01(state.Fall.GroundSeconds / .24f)) * Mathf.Min(.1f, state.Fall.ImpactSpeed * .012f) : 0;
+            bodyPivot.localPosition = bodyRest + Vector3.up * (breath + bob - strain * .055f - landingCompression + modulePose.BodyHeight);
             bodyPivot.localRotation = Quaternion.Euler(bodyPitch, Mathf.Sin(time * 21) * strain * .35f, bodyRoll);
             // 低头时略偏角绕过对方叉角，避免两根长角在同一竖直平面上永远互顶。
             float yawTarget = state.Action == BeetleAction.Assess ? Mathf.Sin(time * 1.6f) * 8 :
                 state.Action == BeetleAction.PryWindup ? state.CircleDirection * 18 * Ease(phase) :
                 state.Action == BeetleAction.Pry ? state.CircleDirection * 18 :
-                state.Action == BeetleAction.Lifting || state.Action == BeetleAction.ReleaseLift ? liftingYaw : 0;
+                state.Action == BeetleAction.Lifting || state.Action == BeetleAction.ReleaseLift || state.Action == BeetleAction.Toss ? liftingYaw : 0;
+            yawTarget += modulePose.HeadYaw;
             headYaw = Mathf.LerpAngle(headYaw, yawTarget, blend);
             headPivot.localRotation = Quaternion.Euler(headPitch, headYaw, 0);
             for (int i = 0; i < antennae.Length; i++)
-                antennae[i].localRotation = antennaRest[i] * Quaternion.Euler(Mathf.Sin(time * 6 + i) * 5, Mathf.Sin(time * 3.2f + i * 2) * 10, 0);
+                antennae[i].localRotation = antennaRest[i] * Quaternion.Euler(Mathf.Sin(poseTime * 6 + i) * 5, Mathf.Sin(poseTime * 3.2f + i * 2) * 10, 0);
             if(importedRig && !state.Airborne && !state.HasFallen) importedRig.AvoidFeelerGround(ground, dt);
 
             // 统计已经在摆动的腿，供后面的抬腿预算使用。预算限制新增迈步，不会强行中断旧迈步。
@@ -214,6 +265,11 @@ namespace BeetleArena
                 // 名义落脚点随身体平移/转向；已落脚的 planted 尽量停留在世界原位，形成支撑期。
                 Vector3 nominal = NominalFoot(leg);
                 Vector3 ankle;
+                int slot = (leg.side < 0 ? 0 : 3) + leg.pair;
+                bool ownsLeg = state.Motion.SampleLeg(slot, out var moduleOffset);
+                if (leg.moduleOwned && !ownsLeg)
+                { leg.moduleReturnFrom = leg.lastFoot; leg.moduleReturn = 0; }
+                leg.moduleOwned = ownsLeg;
                 // 腾空时取消地面迈步，改为局部空间中的不同相位摆动，表现收腿和挣扎。
                 // 被挑飞时振幅较大，已落台时较小；该分支不产生推进身体的真实力。
                 if (state.Airborne || state.HasFallen)
@@ -227,6 +283,32 @@ namespace BeetleArena
                     Vector3 kick = new Vector3(leg.side * Mathf.Sin(cycle + .7f) * amplitude * .55f,
                         Mathf.Sin(cycle) * amplitude, Mathf.Cos(cycle * .86f + leg.pair) * amplitude);
                     ankle = bodyPivot.TransformPoint(leg.restAnkle - bodyRest + curl + kick);
+                    if (state.Fall.Active)
+                    {
+                        // 初始伸展寻触，继而左右错相的伸-屈动作。只有触及台外地面后才混向支撑足位。
+                        float ft = state.Fall.Time;
+                        float reach = 1 - Ease(Mathf.Clamp01(ft / settings.fallReachSeconds));
+                        float search = (1 - reach) * .16f;
+                        float legPhase = ft * 7 + leg.pair * 1.8f + leg.side * 1.2f;
+                        Vector3 seek = new Vector3(leg.side * (.16f * reach + search * Mathf.Sin(legPhase)),
+                            -.16f * reach + search * Mathf.Cos(legPhase), (1 - leg.pair) * .09f);
+                        ankle = bodyPivot.TransformPoint(leg.restAnkle - bodyRest + curl * (1 - reach) + kick + seek);
+                        if (state.Fall.OnFloor)
+                        {
+                            float recovery = FallRecovery(state);
+                            Vector3 support = model.TransformPoint(leg.restAnkle);
+                            support.y = settings.groundHeight + SoleHeight(leg);
+                            // 分侧/前中后错开寻触；恢复完成后稳定撑地，避免六足同步划水或永久蹬腿。
+                            float probe = Mathf.Max(0, Mathf.Sin(legPhase)) * .10f * (1 - recovery);
+                            support.y += probe;
+                            float settle = Ease(Mathf.Clamp01(state.Fall.GroundSeconds / .24f));
+                            ankle = Vector3.Lerp(ankle, support, settle);
+                            ankle.y = Mathf.Max(ankle.y, settings.groundHeight + SoleHeight(leg));
+                        }
+                        // 空中接续旧脚端，且限制 IK 目标速度；接触求解仍会检查所有腿和角。
+                        ankle = Vector3.MoveTowards(leg.lastFoot, ankle,
+                            (4 * size + speed + Mathf.Abs(state.VerticalVelocity)) * dt);
+                    }
                     if (state.Lift.Supported)
                     {
                         float start = leg.pair == 0 ? .05f : leg.pair == 1 ? .25f : .5f;
@@ -294,6 +376,26 @@ namespace BeetleArena
                         if (t >= 1) { leg.stepping = false; steppingCount--; }
                     }
                     ankle = leg.planted;
+                }
+                // 模块只交脚端意图，宿主统一做地面投影、速度约束和原有 IK/碰撞。
+                if (ownsLeg)
+                {
+                    Vector3 target = state.Fall.OnFloor ? model.TransformPoint(leg.restAnkle) : nominal;
+                    if (state.Fall.OnFloor) target.y = settings.groundHeight + SoleHeight(leg);
+                    target += model.TransformVector(moduleOffset);
+                    target.y = Mathf.Max(target.y, state.Fall.OnFloor ? settings.groundHeight + SoleHeight(leg) : FootHeight(target, leg));
+                    ankle = Vector3.MoveTowards(leg.lastFoot, target, (3 * size + speed) * dt);
+                    leg.moduleReturn = 1;
+                    leg.planted = ankle; leg.stepping = false;
+                }
+                else if (leg.moduleReturn < 1)
+                {
+                    // 从退出瞬间的实际脚位接续，避免插件取消时瞬间回到名义点。
+                    leg.moduleReturn = Mathf.Min(1, leg.moduleReturn + dt / .18f);
+                    Vector3 target = state.Fall.OnFloor ? model.TransformPoint(leg.restAnkle) : state.Airborne ? ankle : nominal;
+                    if (state.Fall.OnFloor) target.y = settings.groundHeight + SoleHeight(leg);
+                    ankle = Vector3.Lerp(leg.moduleReturnFrom, target, Ease(leg.moduleReturn));
+                    leg.planted = ankle; leg.stepping = false;
                 }
                 // 无论脚正在支撑、迈步还是腾空，都用同一个求解器连接腿根与脚踝目标。
                 SolveLeg(leg, ankle, state);

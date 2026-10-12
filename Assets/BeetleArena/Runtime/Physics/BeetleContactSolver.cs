@@ -9,7 +9,7 @@ namespace BeetleArena
     // mesh contacts; this solver owns movement so animation cannot override a rigidbody.
     // 细分凸网格的运动学接触求解器：PhysX 负责检测，代码负责位置和速度修正。
     // 不是让动态 Rigidbody 自由碰撞；也没有逐脚求解摩擦、肌肉或真实角尖杠杆力。
-    public sealed class BeetleContactSolver : IBeetleContactSolver, IBeetleLiftContacts
+    public sealed class BeetleContactSolver : IBeetleContactSolver, IBeetleLiftContacts, IBeetleMotionContacts
     {
         // Actor 提供姿态，ContactRig 保存部件碰撞体，arena 保存树桩和地面的接触体。
         readonly BeetleActor[] actors;
@@ -35,6 +35,8 @@ namespace BeetleArena
         readonly float[] motionBudget = new float[2];
         public int LimitedMotionSteps { get; private set; }
         public float AcceptedMotionFraction { get; private set; } = 1;
+        // 本次 Solve 真正使用的预算；落地后速度可能清零，诊断不能由事后速度重新猜测。
+        public float MotionBudget(int index) => motionBudget[index];
         public string LiftContact => hornSupport.ContactDescription;
         public float LiftAnchorError => hornSupport.Error;
         public bool TryBeginLift(BeetleSimulation sim, BeetleState attacker, BeetleState defender)
@@ -64,7 +66,7 @@ namespace BeetleArena
                 // 保留真实抛物运动的速度；普通关节碰撞修正只有统一的整步预算。
                 float physicalSpeed = new Vector3(b.Velocity.x, b.Airborne ? b.VerticalVelocity : 0, b.Velocity.y).magnitude;
                 motionBudget[i] = Mathf.Max(sim.Settings.contactMotionSpeed, physicalSpeed + .5f) * dt;
-                actors[i].PoseSimulation(sim.Elapsed, dt);
+                actors[i].PoseSimulation(sim.MotionTime, dt);
             }
             Physics.SyncTransforms();
             Cache();
@@ -105,6 +107,12 @@ namespace BeetleArena
                 var state = sim.Fighters[i];
                 Vector3 p = actors[i].transform.position;
                 state.Position = new Vector2(p.x, p.z); state.Height = p.y;
+                if (state.HasFallen)
+                {
+                    bool floor = HasForestFloorContact(rigs[i], sim.Settings.groundHeight);
+                    state.Fall.SetFloorContact(floor, -state.VerticalVelocity);
+                    if (floor && state.VerticalVelocity < 0) state.VerticalVelocity = 0;
+                }
                 // 双方共用本次是否相互接触的结果。当前不记录具体接触部位、法线或接触点。
                 state.TouchingOpponent = contact;
                 if (state.Lift.Supported)
@@ -113,9 +121,54 @@ namespace BeetleArena
                 actors[i].animator.AcceptSolvedPose(AcceptedMotionFraction < 1);
                 actors[i].CaptureSimulationPose();
             }
+            // 所有回退/环境修正均已结束，才将这一步实际抬头做功计入撬投。
+            if (hornSupport.Active(sim)) hornSupport.Measure(sim, actors[hornSupport.Attacker], dt);
             if (!viewInitialized || dt <= 0)
             { foreach (var m in viewMotion) m.Begin(); viewInitialized = true; }
             if (contact) ContactFrames++;
+        }
+        // 将当前接受姿态向下探 3.5cm，确认确实接触配置高度处的台外地面。
+        // 用接触法线而非“判负/根节点高度”猜落地；不把擂台侧壁当作地面。
+        bool HasForestFloorContact(BeetleContactRig rig, float floorHeight)
+        {
+            if (arena == null) return false;
+            foreach (var surface in arena)
+            {
+                if (!surface || !surface.enabled || !surface.gameObject.activeInHierarchy ||
+                    Mathf.Abs(surface.bounds.max.y - floorHeight) > .05f) continue;
+                foreach (var shape in rig.shapes)
+                {
+                    if (shape.bounds.min.y > floorHeight + .05f) continue;
+                    if (Physics.ComputePenetration(shape, shape.transform.position - Vector3.up * .035f,
+                        shape.transform.rotation, surface, surface.transform.position, surface.transform.rotation,
+                        out var normal, out _) && normal.y > .5f) return true;
+                }
+            }
+            return false;
+        }
+        public bool HasMotionContact(int attacker, BeetleMotionContact kind, int forelegSlot)
+        {
+            if (attacker < 0 || attacker > 1 || kind == BeetleMotionContact.None) return false;
+            Physics.SyncTransforms(); Cache();
+            var a = rigs[attacker]; var b = rigs[1 - attacker];
+            for (int i = 0; i < a.shapes.Length; i++)
+            {
+                if (kind == BeetleMotionContact.Horn && a.Role(i) != BeetleContactRole.HeadHorn) continue;
+                if (kind == BeetleMotionContact.Foreleg && a.LegIndex(i) != forelegSlot) continue;
+                for (int j = 0; j < b.shapes.Length; j++)
+                {
+                    // 前足必须触到对方足/身体，不能把两个角碰到当作前足打中。
+                    if (kind == BeetleMotionContact.Foreleg && b.Role(j) == BeetleContactRole.HeadHorn) continue;
+                    var bounds = a.bounds[i]; bounds.Expand(.05f);
+                    if (!bounds.Intersects(b.bounds[j])) continue;
+                    var ca = a.shapes[i]; var cb = b.shapes[j];
+                    Vector3 toward = (cb.ClosestPoint(a.bounds[i].center) - a.bounds[i].center).normalized;
+                    // 接触求解保留 skin 间隙，向对方探测 2cm；无碰撞的动作仍可完成但无命中。
+                    if (Physics.ComputePenetration(ca, ca.transform.position + toward * .02f, ca.transform.rotation,
+                        cb, cb.transform.position, cb.transform.rotation, out _, out _)) return true;
+                }
+            }
+            return false;
         }
         bool MotionAccepted()
         {

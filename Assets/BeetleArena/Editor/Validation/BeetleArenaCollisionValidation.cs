@@ -27,9 +27,9 @@ public static class BeetleArenaCollisionValidation
         {
             UnityEngine.SceneManagement.SceneManager.SetActiveScene(scene);
             BeetleArenaSceneBuilder.RefreshPresentation();
-            var match = Array.Find(scene.GetRootGameObjects(), root => root.GetComponent<BeetleMatchController>());
+            var match = BeetleSceneHierarchy.FindMatch(scene);
             if (!match) throw new InvalidOperationException("Validation scene has no match controller.");
-            RunChecks(match.GetComponent<BeetleMatchController>());
+            RunChecks(match);
         }
         finally
         {
@@ -171,6 +171,7 @@ public static class BeetleArenaCollisionValidation
             PreparePry(disabled, false); disabled.Step(.02f);
             FinishSupportedLift(disabled);
             Require(disabled.Fighters[0].Tosses == 0, "Zero probability still tossed");
+            Require(disabled.Fighters[0].Throws > 0, "Zero burst probability incorrectly disabled ordinary throws");
             settings.tossChance = 1;
             // 把概率设为 1 后逐项破坏条件，验证轻触、腾空、低体力、自身不稳、冷却、无接触均不能挑飞。
             foreach (string blocked in new[] { "probe", "airborne", "tired", "unstable", "cooldown", "no contact" })
@@ -189,7 +190,7 @@ public static class BeetleArenaCollisionValidation
                 FinishSupportedLift(sim);
                 Require(a.Tosses == 0, "Invalid toss: " + blocked);
             }
-            report.AppendLine("PASS: zero probability, probe, airborne victim, low stamina, unstable attacker, cooldown and missing contact all prevent tossing.");
+            report.AppendLine("PASS: burst gates remain valid; zero burst probability still allows ordinary lever throws.");
             match.settings = settings;
             // 在真实碰撞模型中分别设置台中央与台边的抬举，检验落回台面和飞出台边两条路径。
             foreach (bool edge in new[] { false, true })
@@ -223,8 +224,10 @@ public static class BeetleArenaCollisionValidation
                     if (!edge && tick == 18) Capture(match, "RareToss-Airborne.png");
                 }
                 Require(peak > .5f && depth < .003f, "Launch height or airborne collision failed");
-                Require(edge ? victim.HasFallen : !victim.HasFallen && !victim.Airborne, "Toss landing/ring-out rule failed");
-                report.AppendLine($"PASS: {(edge ? "edge ring-out" : "on-stage landing")}, peak={peak:F2}, overlap={depth:F6}.");
+                // 出手方向由杠杆接触决定，边缘也可能向台内反抛，中央也可能飞出台外。
+                Require(victim.HasFallen || !victim.Airborne, "Throw never completed flight");
+                if(victim.HasFallen) Require(victim.Height < victim.LastSupportHeight-settings.fallDepth, "Ring-out ignored height threshold");
+                report.AppendLine($"PASS: origin={(edge ? "edge" : "center")}, fallen={victim.HasFallen}, peak={peak:F2}, overlap={depth:F6}.");
             }
         }
         finally { match.settings = original; UnityEngine.Object.DestroyImmediate(settings); }

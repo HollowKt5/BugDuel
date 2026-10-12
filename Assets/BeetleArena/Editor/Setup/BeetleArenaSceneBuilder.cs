@@ -122,6 +122,7 @@ public static class BeetleArenaSceneBuilder
             RenderSettings.fogColor = new Color(.075f, .11f, .085f);
             RenderSettings.fogMode = FogMode.Exponential;
             RenderSettings.fogDensity = .012f;
+            BeetleSceneHierarchy.Organize(controller);
             EditorSceneManager.SaveScene(scene, ScenePath);
             // 保存第一只的关节化结构为可复用预制体；运行时外观差异由绑定状态/材质属性决定。
             PrefabUtility.SaveAsPrefabAsset(controller.actors[0].gameObject, AssetFolder + "/ArticulatedBeetle.prefab");

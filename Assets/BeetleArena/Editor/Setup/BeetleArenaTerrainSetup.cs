@@ -26,6 +26,7 @@ public static class BeetleArenaTerrainSetup
             SceneManager.SetActiveScene(scene);
             var match = scene.GetRootGameObjects().SelectMany(r => r.GetComponentsInChildren<BeetleMatchController>(true)).Single();
             Configure(match);
+            BeetleSceneHierarchy.Organize(match);
             EditorSceneManager.MarkSceneDirty(scene);
             EditorSceneManager.SaveScene(scene);
             AssetDatabase.SaveAssets();

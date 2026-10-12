@@ -81,6 +81,12 @@ namespace BeetleArena
         // 坐标映射：模拟二维 Position=(世界X, 世界Z)，独立 Height 对应世界Y。
         static Vector3 WorldPosition(BeetleState b) => new Vector3(b.Position.x, b.Height, b.Position.y);
         // 坡面倾斜与偏航组合，战斗时额外的俯仰/侧倾仍在 bodyPivot 上叠加。
-        static Quaternion GroundRotation(BeetleState b) => Quaternion.FromToRotation(Vector3.up, b.SurfaceNormal) * Quaternion.Euler(0, b.Heading, 0);
+        static Quaternion GroundRotation(BeetleState b)
+        {
+            // 离开起伏擂台后平滑释放旧坡面倾角，不能在森林平地上永久保留台面的斜法线。
+            Vector3 normal = b.Fall.Active
+                ? Vector3.Slerp(b.SurfaceNormal, Vector3.up, 1 - Mathf.Exp(-b.Fall.Time * 4)) : b.SurfaceNormal;
+            return Quaternion.FromToRotation(Vector3.up, normal) * Quaternion.Euler(0, b.Heading, 0);
+        }
     }
 }

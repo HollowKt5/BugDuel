@@ -7,7 +7,7 @@ namespace BeetleArena
     public enum MatchPhase { Countdown, Fighting, Resolving, Finished }
     // 单只甲虫的动作状态。Windup 是准备动作，Pry 是抬举，Toss 是成功猛挑，Launched 是被挑飞。
     // 后续新增枚举值追加到末尾，避免旧的序列化整数映射到错误动作。
-    public enum BeetleAction { Assess, Approach, Circle, ShoveWindup, Shove, PryWindup, Pry, Brace, Recover, Retreat, Stagger, Falling, Defeated, Winner, Probe, Disengage, ChargeWindup, Charge, HornLock, Toss, Launched, Lifting, Lifted, ReleaseLift }
+    public enum BeetleAction { Assess, Approach, Circle, ShoveWindup, Shove, PryWindup, Pry, Brace, Recover, Retreat, Stagger, Falling, Defeated, Winner, Probe, Disengage, ChargeWindup, Charge, HornLock, Toss, Launched, Lifting, Lifted, ReleaseLift, Module }
     // 短周期交锋节奏，与 MatchPhase 的整场流程、BeetleAction 的个体动作分层管理。
     public enum ExchangePhase { Probing, Clash, Recovery }
 
@@ -51,6 +51,8 @@ namespace BeetleArena
         // Heading 使用角度；Height 为根节点世界 Y，高低起伏台面不再共用 Y=0。
         public float Heading, Height, VerticalVelocity;
         public readonly BeetleLiftResponse Lift = new BeetleLiftResponse();
+        public readonly BeetleFallResponse Fall = new BeetleFallResponse();
+        public readonly BeetleMotionRuntime Motion = new BeetleMotionRuntime();
         // SurfaceHeight/Normal 为本步支撑面；LastSupportHeight 用于离开边缘后的相对落差判负。
         public float SurfaceHeight, LastSupportHeight, SurfaceGrip = 1;
         public Vector3 SurfaceNormal = Vector3.up;
@@ -62,6 +64,9 @@ namespace BeetleArena
         public float CheerRemaining, CheerCooldown;
         // 挑飞的双边冷却：成功后攻守双方都会获得，防止立即互相连续挑飞。
         public float TossCooldown;
+        // 攻击者抬头驱动，由 Simulation 从受击者的托举阶段生成，动画只消费。
+        public float LiftStrokeProgress, LiftSweepTarget;
+        public int Throws; // 所有撬投次数；Tosses 仍表示额外爆发的猛挑，兼容已有统计。
         public BeetleAction Action = BeetleAction.Assess;
         // ActionTime/ActionDuration 为当前动作的秒数进度；DecisionTime 限制提前重新决策频率。
         public float ActionTime, ActionDuration = 1, DecisionTime;
@@ -86,7 +91,7 @@ namespace BeetleArena
         // 将偏航角变为世界平面的正前方：0° 朝 +Z，90° 朝 +X。
         public Vector2 Forward => new Vector2(Mathf.Sin(Heading * Mathf.Deg2Rad), Mathf.Cos(Heading * Mathf.Deg2Rad));
         // 正在蓄力、发力或角力的动作集合，用于限制转向、控制迈步和累积疲劳。
-        public bool Committed => Action == BeetleAction.ShoveWindup || Action == BeetleAction.Shove || Action == BeetleAction.PryWindup || Action == BeetleAction.Pry ||
+        public bool Committed => Action == BeetleAction.Module || Action == BeetleAction.ShoveWindup || Action == BeetleAction.Shove || Action == BeetleAction.PryWindup || Action == BeetleAction.Pry ||
             Action == BeetleAction.ChargeWindup || Action == BeetleAction.Charge || Action == BeetleAction.HornLock || Action == BeetleAction.Toss || Action == BeetleAction.Lifting || Action == BeetleAction.ReleaseLift;
 
         // 初始化身份、站位和体力；其余字段使用声明处默认值，每局创建新状态。

@@ -1,0 +1,24 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b66cc1ee81872f2499d4fe75da1c0182, type: 3}
+  m_Name: HornFeintMotion
+  m_EditorClassIdentifier: Assembly-CSharp::BeetleArena.HornFeintMotion
+  enabledInMatch: 1
+  weight: 0.6
+  duration: 0.82
+  cooldown: 3.8
+  evidence: Visual feint built from documented Trypoxylus horn probing/assessment
+    (McCullough & Zinna 2013, https://doi.org/10.1603/AN12155). The dip-and-withdraw
+    timing is a game abstraction, not evidence of intentional deception.
+  headDip: 43
+  footLift: 0.19
+  footReach: 0.3

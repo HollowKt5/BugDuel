@@ -26,7 +26,7 @@ public static class BeetleLiftValidation
         try
         {
             UnityEngine.SceneManagement.SceneManager.SetActiveScene(scene);
-            var match = scene.GetRootGameObjects().Select(go => go.GetComponent<BeetleMatchController>()).First(m => m);
+            var match = BeetleSceneHierarchy.FindMatch(scene);
             settings = UnityEngine.Object.Instantiate(match.settings); settings.tossChance = 0;
             match.settings = settings; match.hud.Bind(match);
             for(int arena=0;arena<2;arena++)
@@ -43,7 +43,7 @@ public static class BeetleLiftValidation
                 Vector2 start=b.Position; Vector3 prev=match.actors[1].transform.position;
                 float peak=0,travel=0,step=0,depth=0,unsupported=0,struggle=0,anchorError=0;
                 int supportedTicks=0, firstSupport=-1;
-                float responseStep=0; float[] legMotion=new float[6];
+                float responseStep=0, budgetExcess=0; float[] legMotion=new float[6];
                 var bones=match.actors[1].animator.importedRig.bindings;
                 var lastKnees=bones.Select(leg=>leg.knee.localRotation).ToArray();
                 var csv=new StringBuilder("time,action,supported,rootY,groundY,pitch,travel,unsupported,struggle,anchorError,overlap\n");
@@ -63,6 +63,7 @@ public static class BeetleLiftValidation
                     struggle=Mathf.Max(struggle,match.actors[1].animator.StruggleWeight);
                     float delta=Vector3.Distance(prev,match.actors[1].transform.position);
                     step=Mathf.Max(step,delta); if(firstSupport>=0)responseStep=Mathf.Max(responseStep,delta);
+                    if(firstSupport>=0 && !b.HasFallen) budgetExcess=Mathf.Max(budgetExcess,delta-match.Contacts.MotionBudget(1));
                     prev=match.actors[1].transform.position;
                     if(b.Lift.UnsupportedTime<=.70001f && match.actors[1].animator.StruggleWeight>.00001f)
                         throw new Exception("Struggle started before 0.7s of lost support.");
@@ -84,8 +85,9 @@ public static class BeetleLiftValidation
                 File.WriteAllText($"Artifacts/LiftRework/Trajectory-{arena}.csv",csv.ToString());
                 // 岩台这个初始站位可能被高低差/对方头角挡住；不能为了测试成功而隔空托举。
                 // 岩台自然对局另行要求发生实际托举。平地受控场景必须完整展示托举与落地。
-                bool badLift = supportedTicks>0 && (supportedTicks<30 || peak<.3f || unsupported<.7f || struggle<.1f || responseStep>.12f || legMotion.Any(v=>v<2));
-                if(assertResults && (badLift || arena==0 && supportedTicks==0 || depth>.003f || b.HasFallen))
+                // 成功撬投可能飞出台面；允许由落台规则结算，不能再要求每次轻放回原位。
+                bool badLift = supportedTicks>0 && (peak<.3f || unsupported<.7f || struggle<.1f || budgetExcess>.0002f || legMotion.Any(v=>v<2) || a.Throws==0);
+                if(assertResults && (badLift || arena==0 && supportedTicks==0 || depth>.003f))
                     throw new Exception("Supported lift trajectory failed: "+report);
             }
             match.SelectArena(0);

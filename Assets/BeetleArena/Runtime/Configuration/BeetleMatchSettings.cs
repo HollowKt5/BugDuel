@@ -21,6 +21,10 @@ namespace BeetleArena
         [Min(.1f)] public float fallDepth = .75f;
         // 台外地面 Y 高度（台面为 0），用于已落台对象的沉降和地面生成。
         public float groundHeight = -3.4f;
+        [Header("Pluggable motion modules / order is stable selection order")]
+        // 资产列表即注册表：删掉引用或关闭模块后立即停止使用，空列表回到原有战斗。
+        public BeetleMotionModule[] motionModules = System.Array.Empty<BeetleMotionModule>();
+        [Range(0, 1)] public float moduleActionChance = .42f;
         // 竖直运动的游戏重力加速度；数值借用常见重力值，但整体世界比例不是毫米单位。
         [Min(1f)] public float gravity = 9.81f;
         [Header("Matched size variation")]
@@ -76,7 +80,7 @@ namespace BeetleArena
         // 正式模型长角抬起后很快离开接触点，发力窗口应在抬举起始段开启。
         public float pryContactStart = .16f;
         [Header("Horn-supported lift / seconds and degrees")]
-        // 托举先围绕接触点抬起前部，再持续承重。释放后才进入自由下落/稀有挑飞。
+        // 托举先围绕接触点抬起前部，再持续承重。随后加速扬角并撬投；失败入角可以撤退。
         [Range(.3f, 1f)] public float liftRaiseSeconds = .65f;
         [Range(.25f, 1.2f)] public float liftHoldSeconds = .9f;
         [Range(20, 55)] public float liftedBodyPitch = 42f;
@@ -92,15 +96,38 @@ namespace BeetleArena
         [Range(1, 6)] public float contactMotionSpeed = 4f;
         // 顶举持续受阻时主动收角，不让双方冻结到原托举计时结束。
         [Range(.1f, .4f)] public float liftBlockedReleaseSeconds = .16f;
+        [Header("Ring-out recovery / artistic timing, not measured species constants")]
+        // 失足后短暂伸腿寻触，随后错相摆腿；落地后先缓冲，再撑起。与 0.7s 托举挣扎门槛分开。
+        [Range(.08f, .5f)] public float fallReachSeconds = .18f;
+        [Range(.4f, 3f)] public float fallRecoverySeconds = 1.35f;
+        [Range(1, 12)] public float fallSlideDamping = 5.5f;
+        [Header("Lever throw / normalized game units")]
+        // 力矩来自肌肉输入力 × 输入力臂；实际输出力臂由角的接触几何测量。
+        [Min(1)] public float throwMuscleForce = 34f;
+        [Min(.05f)] public float throwInputArm = .42f;
+        [Range(.1f,1)] public float throwEfficiency = .68f;
+        [Min(1)] public float throwWorkLimit = 65f;
+        [Min(.1f)] public float throwMinimumSpeed = 2.2f;
+        [Min(1)] public float throwMaximumSpeed = 8f;
+        [Header("Six throw tiers / nonuniform speed thresholds")]
+        // 前四档按速度分段，后两档还必须通过扬角/做功门槛并实际向后出手。
+        [Min(.1f)] public float throwQuickSpeed = 3.15f;
+        [Min(.1f)] public float throwArcSpeed = 4.35f;
+        [Min(.1f)] public float throwHighArcSpeed = 5.65f;
+        [Min(.1f)] public float throwPowerOverheadSpeed = 7.1f;
+        [Range(50,130)] public float throwOverheadSweep = 82f;
+        [Min(1)] public float throwOverheadWork = 32f;
+        [Min(.1f)] public float throwOverheadAngularSpeed = 2.5f;
+        [Range(.1f,.5f)] public float throwSnapSeconds = .22f;
         [Header("Contest stamina")]
         // 重冲顶状态的体力消耗速率（点/秒），不是一次动作的固定扣除额。
         [Min(1)] public float chargeStaminaCost = 27f;
         // 持续角力期间的体力消耗速率（点/秒）。
         [Min(1)] public float hornLockStaminaCost = 8f;
-        [Header("Rare horn toss / game tuning, not measured biological odds")]
+        [Header("Extra burst effort / all successful lifts already throw")]
         [Range(0, 1), Tooltip("One roll per eligible, connected pry; not a per-frame or per-match probability.")]
         // 每次满足全部条件的有效抬举只抽一次概率；不是每帧概率，也不是每局发生率。
-        // 设为 0 可关闭随机挑飞，普通抬举仍然可能让目标小幅离地。
+        // 设为 0 仅关闭额外爆发概率，所有成功离地并完成做功的顶举仍然抛出。
         public float tossChance = .08f;
         // 挑飞要求的剩余体力/初始耐力最低比例；还需付得起固定挑飞消耗。
         [Range(0, 1)] public float tossMinimumStamina = .35f;
@@ -108,10 +135,6 @@ namespace BeetleArena
         [Min(0)] public float tossStaminaCost = 12f;
         // 成功挑飞后双方都获得的冷却秒数，防止紧接着连续挑飞。
         [Min(0)] public float tossCooldownSeconds = 12f;
-        // 挑飞附加水平冲量，叠加在普通抬举效果上；按受击者质量换算速度变化。
-        [Range(1, 5)] public float tossHorizontalImpulse = 2.6f;
-        // 挑飞向上速度基准，实际再除受击者归一化质量的平方根。
-        [Range(2, 6)] public float tossVerticalSpeed = 4.3f;
         [Header("Encouragement: intentionally a game mechanic")]
         // 一次鼓励后再次允许点击的间隔秒数。
         [Min(.1f)] public float cheerCooldown = 6f;
@@ -172,16 +195,34 @@ namespace BeetleArena
             struggleRampSeconds = Mathf.Max(.1f, struggleRampSeconds);
             contactMotionSpeed = Mathf.Clamp(contactMotionSpeed, 1, 6);
             liftBlockedReleaseSeconds = Mathf.Clamp(liftBlockedReleaseSeconds, .1f, .4f);
+            fallReachSeconds = Mathf.Clamp(fallReachSeconds, .08f, .5f);
+            fallRecoverySeconds = Mathf.Clamp(fallRecoverySeconds, .4f, 3);
+            fallSlideDamping = Mathf.Clamp(fallSlideDamping, 1, 12);
+            throwMuscleForce = Mathf.Max(1, throwMuscleForce);
+            throwInputArm = Mathf.Max(.05f, throwInputArm);
+            throwEfficiency = Mathf.Clamp(throwEfficiency, .1f, 1);
+            throwWorkLimit = Mathf.Max(1, throwWorkLimit);
+            throwMinimumSpeed = Mathf.Max(.1f, throwMinimumSpeed);
+            throwMaximumSpeed = Mathf.Max(throwMinimumSpeed, throwMaximumSpeed);
+            // 保留每段最小宽度；参数越界时修正阈值，不修改已产生的出手速度。
+            throwMaximumSpeed = Mathf.Max(throwMinimumSpeed + .4f, throwMaximumSpeed);
+            throwQuickSpeed = Mathf.Clamp(throwQuickSpeed, throwMinimumSpeed + .1f, throwMaximumSpeed - .3f);
+            throwArcSpeed = Mathf.Clamp(throwArcSpeed, throwQuickSpeed + .1f, throwMaximumSpeed - .2f);
+            throwHighArcSpeed = Mathf.Clamp(throwHighArcSpeed, throwArcSpeed + .1f, throwMaximumSpeed - .1f);
+            throwPowerOverheadSpeed = Mathf.Clamp(throwPowerOverheadSpeed, throwHighArcSpeed + .1f, throwMaximumSpeed);
+            throwOverheadSweep = Mathf.Clamp(throwOverheadSweep, 50, 130);
+            throwOverheadWork = Mathf.Max(1, throwOverheadWork);
+            throwOverheadAngularSpeed = Mathf.Max(.1f, throwOverheadAngularSpeed);
+            throwSnapSeconds = Mathf.Clamp(throwSnapSeconds, .1f, .5f);
             chargeStaminaCost = Mathf.Max(1, chargeStaminaCost);
             hornLockStaminaCost = Mathf.Max(1, hornLockStaminaCost);
             tossChance = Mathf.Clamp01(tossChance);
             tossMinimumStamina = Mathf.Clamp01(tossMinimumStamina);
             tossStaminaCost = Mathf.Max(0, tossStaminaCost);
             tossCooldownSeconds = Mathf.Max(0, tossCooldownSeconds);
-            tossHorizontalImpulse = Mathf.Clamp(tossHorizontalImpulse, 1, 5);
-            tossVerticalSpeed = Mathf.Clamp(tossVerticalSpeed, 2, 6);
             fallDepth = Mathf.Max(.1f, fallDepth);
             groundHeight = Mathf.Min(-1.5f, groundHeight);
+            moduleActionChance = Mathf.Clamp01(moduleActionChance);
             gravity = Mathf.Max(1, gravity);
             cheerCooldown = Mathf.Max(.1f, cheerCooldown);
             cheerDuration = Mathf.Max(.1f, cheerDuration);

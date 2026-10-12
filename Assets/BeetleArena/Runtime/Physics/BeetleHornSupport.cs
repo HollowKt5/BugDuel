@@ -10,6 +10,22 @@ namespace BeetleArena
         public int Defender => 1 - Attacker;
         Transform horn, receiver;
         Vector3 hornPoint, receiverPoint;
+        float previousPitch; bool measurementReady;
+        /// <summary>只采样最终接受的模拟姿态；不得在显示帧或被拒绝的试算中调用。</summary>
+        public void Measure(BeetleSimulation sim, BeetleActor attacker, float dt)
+        {
+            if (!Active(sim) || dt <= 0) return;
+            Transform pivot = attacker.animator.headPivot;
+            float pitch = Mathf.DeltaAngle(0, pivot.localEulerAngles.x);
+            float raised = measurementReady ? Mathf.Max(0, -Mathf.DeltaAngle(previousPitch, pitch)) * Mathf.Deg2Rad : 0;
+            previousPitch = pitch; measurementReady = true;
+            Vector3 radial = horn.TransformPoint(hornPoint) - pivot.position;
+            float arm = Vector3.ProjectOnPlane(radial, pivot.right).magnitude;
+            Vector3 tangent = Vector3.Cross(-pivot.right, radial);
+            float quality = 1 - Mathf.InverseLerp(.10f, .45f, Error);
+            BeetleThrowMechanics.Accumulate(sim.Settings, sim.Fighters[Attacker], sim.Fighters[Defender],
+                dt, raised, arm, tangent, quality);
+        }
         public string ContactDescription { get; private set; }
         public float Error => horn && receiver ? Vector3.Distance(horn.TransformPoint(hornPoint), receiver.TransformPoint(receiverPoint)) : 0;
 
@@ -42,6 +58,7 @@ namespace BeetleArena
             }
             if (!chosenHorn) return false;
             Attacker = index; horn = chosenHorn.transform; receiver = chosenTarget.transform;
+            measurementReady = false;
             hornPoint = horn.InverseTransformPoint(contact); receiverPoint = receiver.InverseTransformPoint(contact);
             ContactDescription = chosenHorn.name + " -> " + chosenTarget.name;
             return true;

@@ -24,6 +24,13 @@ MonoBehaviour:
   - {x: 0.90999997, y: 0.54, z: -1.7350001}
   fallDepth: 0.75
   groundHeight: -3.4
+  motionModules:
+  - {fileID: 11400000, guid: c11e557b813d12549a9391424851c9e4, type: 2}
+  - {fileID: 11400000, guid: 608152af3cbcf6349910cceba441cea7, type: 2}
+  - {fileID: 11400000, guid: 72aad944984b86b43b32e5c1c8061131, type: 2}
+  - {fileID: 11400000, guid: bb291c8d11d6b3e46819ae7d847b2728, type: 2}
+  - {fileID: 11400000, guid: 5a89660713b39de498b08095cbfb5957, type: 2}
+  moduleActionChance: 0.42
   gravity: 9.81
   minimumSize: 0.96
   maximumSize: 1.04
@@ -58,14 +65,29 @@ MonoBehaviour:
   struggleRampSeconds: 1.1
   contactMotionSpeed: 4
   liftBlockedReleaseSeconds: 0.16
+  fallReachSeconds: 0.18
+  fallRecoverySeconds: 1.35
+  fallSlideDamping: 5.5
+  throwMuscleForce: 34
+  throwInputArm: 0.42
+  throwEfficiency: 0.68
+  throwWorkLimit: 65
+  throwMinimumSpeed: 2.2
+  throwMaximumSpeed: 8
+  throwQuickSpeed: 3.15
+  throwArcSpeed: 4.35
+  throwHighArcSpeed: 5.65
+  throwPowerOverheadSpeed: 7.1
+  throwOverheadSweep: 82
+  throwOverheadWork: 32
+  throwOverheadAngularSpeed: 2.5
+  throwSnapSeconds: 0.22
   chargeStaminaCost: 27
   hornLockStaminaCost: 8
   tossChance: 0.08
   tossMinimumStamina: 0.35
   tossStaminaCost: 12
   tossCooldownSeconds: 12
-  tossHorizontalImpulse: 2.6
-  tossVerticalSpeed: 4.3
   cheerCooldown: 6
   cheerDuration: 3.5
   cheerEffortBonus: 0.13

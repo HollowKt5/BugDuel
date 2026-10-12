@@ -22,7 +22,7 @@ public static class BeetleLiftContinuityValidation
         try
         {
             UnityEngine.SceneManagement.SceneManager.SetActiveScene(scene);
-            var match = scene.GetRootGameObjects().Select(go => go.GetComponent<BeetleMatchController>()).First(m => m);
+            var match = BeetleSceneHierarchy.FindMatch(scene);
             match.hud.Bind(match);
             ValidateStruggle(match, report);
             ValidateRenderIsolation(match, report);
@@ -129,7 +129,7 @@ public static class BeetleLiftContinuityValidation
                 if (b.HasFallen) continue;
                 float step = Vector3.Distance(before[i], Position(b)); maxStep = Mathf.Max(maxStep, step);
                 // 自由落体允许按实际速度移动；这里拦截无速度来源的整虫突跳。
-                float allowed = Mathf.Max(.081f, new Vector3(b.Velocity.x, b.VerticalVelocity, b.Velocity.y).magnitude * .02f + .02f);
+                float allowed = match.Contacts.MotionBudget(i) + .0002f;
                 if (step > allowed) throw new Exception($"Root jump: arena={arena}, seed={seed}, time={sim.Elapsed:F2}, step={step:F4}.");
             }
             depth = Mathf.Max(depth, match.Contacts.MeasurePenetration());
