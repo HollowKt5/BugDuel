@@ -16,30 +16,42 @@ namespace BeetleArena
         [NonSerialized] public Bounds[] bounds;
         [NonSerialized] public Bounds worldBounds;
         BeetleContactRole[] roles;
+        int[] legIndices;
+        bool[] weapons;
+        Collider[] classifiedShapes;
         // 模型构建器已有明确命名。每局首次缓存分类一次，避免每个接触对做字符串判断。
         public BeetleContactRole Role(int index) => roles[index];
-        public int LegIndex(int index)
+        public int LegIndex(int index) => legIndices[index];
+        // 胸角在物理解算中仍属 Body，但表现采样可把它识别为角；不修改原枚举或序列化值。
+        public bool IsHorn(int index) => weapons[index];
+
+        /// <summary>改变代理数组/部件命名后显式失效；不会在热路径重新读 Unity 的 name 属性。</summary>
+        public void InvalidateShapeMetadata() => classifiedShapes = null;
+        void OnValidate() => InvalidateShapeMetadata();
+        void EnsureShapeMetadata()
         {
-            string n = shapes[index].name;
-            if (Role(index) != BeetleContactRole.Leg) return -1;
-            return (n.StartsWith("Left ") ? 0 : 3) + (n.Contains("front") ? 0 : n.Contains("middle") ? 1 : 2);
+            if (ReferenceEquals(classifiedShapes, shapes) && roles != null && roles.Length == shapes.Length) return;
+            roles = new BeetleContactRole[shapes.Length];
+            legIndices = new int[shapes.Length]; weapons = new bool[shapes.Length];
+            for (int i = 0; i < shapes.Length; i++)
+            {
+                if (!shapes[i]) throw new InvalidOperationException("Missing beetle collision shape at index " + i);
+                string n = shapes[i].name;
+                roles[i] = n.StartsWith("Cephalic horn", StringComparison.Ordinal) || n.StartsWith("Horn fork", StringComparison.Ordinal) || n.StartsWith("Horn tip", StringComparison.Ordinal)
+                    ? BeetleContactRole.HeadHorn : n == "Abdomen contact" || n == "Thorax contact" || n == "Head contact" || n == "Thoracic horn"
+                    ? BeetleContactRole.Body : BeetleContactRole.Leg;
+                legIndices[i] = roles[i] != BeetleContactRole.Leg ? -1 :
+                    (n.StartsWith("Left ", StringComparison.Ordinal) ? 0 : 3) + (n.Contains("front") ? 0 : n.Contains("middle") ? 1 : 2);
+                weapons[i] = roles[i] == BeetleContactRole.HeadHorn || n == "Thoracic horn";
+            }
+            classifiedShapes = shapes;
         }
         // 调用方先 Physics.SyncTransforms，再读取代理 Collider.bounds；不逐帧分配数组。
         public void CacheBounds()
         {
             if (shapes == null || shapes.Length == 0) throw new InvalidOperationException("No collision shapes bound.");
             if (bounds == null || bounds.Length != shapes.Length) bounds = new Bounds[shapes.Length];
-            if (roles == null || roles.Length != shapes.Length)
-            {
-                roles = new BeetleContactRole[shapes.Length];
-                for (int i = 0; i < shapes.Length; i++)
-                {
-                    string n = shapes[i].name;
-                    roles[i] = n.StartsWith("Cephalic horn") || n.StartsWith("Horn fork") || n.StartsWith("Horn tip")
-                        ? BeetleContactRole.HeadHorn : n == "Abdomen contact" || n == "Thorax contact" || n == "Head contact" || n == "Thoracic horn"
-                        ? BeetleContactRole.Body : BeetleContactRole.Leg;
-                }
-            }
+            EnsureShapeMetadata();
             for (int i = 0; i < shapes.Length; i++) bounds[i] = shapes[i].bounds;
             worldBounds = bounds[0];
             for (int i = 1; i < bounds.Length; i++) worldBounds.Encapsulate(bounds[i]);

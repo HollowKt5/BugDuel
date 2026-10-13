@@ -19,6 +19,6 @@ MonoBehaviour:
   evidence: Visual feint built from documented Trypoxylus horn probing/assessment
     (McCullough & Zinna 2013, https://doi.org/10.1603/AN12155). The dip-and-withdraw
     timing is a game abstraction, not evidence of intentional deception.
-  headDip: 43
-  footLift: 0.19
+  headDip: 49
+  footLift: 0.23
   footReach: 0.3

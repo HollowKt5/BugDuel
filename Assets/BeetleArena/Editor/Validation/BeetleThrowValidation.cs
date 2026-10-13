@@ -17,24 +17,19 @@ public static class BeetleThrowValidation
     public static void RunCases(bool assertResults)
     {
         if (EditorApplication.isPlaying) throw new InvalidOperationException("Stop Play before validation.");
-        const string temporary = "Assets/BeetleArena/Generated/LeverThrowValidation.unity";
-        var previous = UnityEngine.SceneManagement.SceneManager.GetActiveScene();
-        if (!AssetDatabase.CopyAsset(BeetleArenaSceneBuilder.ScenePath, temporary)) throw new Exception("Temporary scene exists");
-        var scene = EditorSceneManager.OpenScene(temporary, OpenSceneMode.Additive);
-        BeetleMatchSettings settings = null;
+        using var fixture = new BeetleValidationScene("LeverThrowValidation");
         var report = new StringBuilder("LEVER THROW VALIDATION\n");
         Directory.CreateDirectory("Artifacts/LeverThrows");
         try
         {
-            UnityEngine.SceneManagement.SceneManager.SetActiveScene(scene);
-            var match = BeetleSceneHierarchy.FindMatch(scene);
-            settings = UnityEngine.Object.Instantiate(match.settings);
-            match.settings = settings; match.hud.Bind(match);
+            var match = fixture.Match;
+            var settings = fixture.Settings;
             CheckMechanics(settings, report);
             float muscleForce = settings.throwMuscleForce;
             int throws = 0;
             var tiers = new System.Collections.Generic.HashSet<int>();
-            float[] forceScales = { .30f, .60f, 1f, 1.45f, .46f, 1f };
+            // 爆发储备加入后，重标定受控输入以覆盖六档；不改变游戏阈值或放松结果断言。
+            float[] forceScales = { .30f, .60f, 1f, 1.65f, .55f, 1f };
             for (int arena = 0; arena < 2; arena++)
                 for (int variant = 0; variant < 6; variant++)
                 {
@@ -106,9 +101,7 @@ public static class BeetleThrowValidation
         finally
         {
             File.WriteAllText("Artifacts/LeverThrows/Validation.txt", report.ToString());
-            EditorSceneManager.CloseScene(scene, true);
-            UnityEngine.SceneManagement.SceneManager.SetActiveScene(previous); AssetDatabase.DeleteAsset(temporary);
-            if (settings) UnityEngine.Object.DestroyImmediate(settings);
+
         }
     }
     static void CheckMechanics(BeetleMatchSettings settings, StringBuilder report)
@@ -124,10 +117,10 @@ public static class BeetleThrowValidation
         Require(BeetleThrowMechanics.TierNumber(BeetleThrowMechanics.Classify(settings, settings.throwPowerOverheadSpeed - .001f, true)) == 5, "Tier 5 boundary");
         Require(BeetleThrowMechanics.TierNumber(BeetleThrowMechanics.Classify(settings, settings.throwPowerOverheadSpeed, true)) == 6, "Tier 6 boundary");
         report.AppendLine("PASS: all six tier boundaries and direction gates.");
-        float Sample(float strength, float mass, float duration, bool moving)
+        float Sample(float strength, float mass, float duration, bool moving, float reserve = 1)
         {
             var sim = new BeetleSimulation(settings, 71); var a = sim.Fighters[0]; var b = sim.Fighters[1];
-            a.Traits.strength = strength; b.Traits.mass = mass; b.Lift.Supporter = 0;
+            a.Traits.strength = strength; a.BurstReserve = reserve; b.Traits.mass = mass; b.Lift.Supporter = 0;
             b.Lift.Effort = 1; b.Lift.GripReleased = true; b.Lift.Direction = Vector2.right;
             for (int i = 0; i < Mathf.RoundToInt(duration / .02f); i++)
                 BeetleThrowMechanics.Accumulate(settings, a, b, .02f, moving ? .04f : 0, 1,
@@ -138,6 +131,9 @@ public static class BeetleThrowValidation
         float normal = Sample(1, 1, .5f, true), strong = Sample(1.7f, 1, .5f, true);
         float heavy = Sample(1, 1.5f, .5f, true), shortContact = Sample(1, 1, .2f, true);
         Sample(1, 1, 2, false);
+        float depleted = Sample(1, 1, .5f, true, .15f);
+        Require(depleted < normal, "Depleted burst reserve did not reduce throw speed");
+        report.AppendLine($"PASS: burst reserve lowers throw speed, fresh={normal:F3}, depleted={depleted:F3}.");
         Require(strong > normal && heavy < normal && shortContact < normal, "Force/mass/contact monotonicity failed");
         report.AppendLine($"PASS mechanics: normal={normal:F3}, stronger={strong:F3}, heavier={heavy:F3}, shorter={shortContact:F3}; stationary contact adds no work/impulse.");
     }

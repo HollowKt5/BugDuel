@@ -8,8 +8,10 @@ namespace BeetleArena
     /// <summary>传给模块的值快照。没有 State、Transform、随机源或求解器引用，模块不能反写比赛。</summary>
     public readonly struct BeetleMotionContext
     {
-        public readonly float Time, Speed, Size, Stamina, Footing, Balance, Distance, Facing, Side, FloorTime;
+        public readonly float Time, Speed, Size, Stamina, Footing, Balance, Distance, Facing, Side, FloorTime, Impact;
         public readonly bool Fighting, Grounded, Fallen, OnFloor, Touching, OpponentAirborne, Committed;
+        public readonly BeetleIntent Intent;
+        public readonly float Burst;
         public readonly BeetleAction Action;
         public readonly ExchangePhase Exchange;
         public readonly Vector2 OpponentLocal;
@@ -21,11 +23,11 @@ namespace BeetleArena
             Time = sim.MotionTime + b.Index * .83f; Speed = b.Velocity.magnitude; Size = b.Traits.size;
             Stamina = b.Stamina01; Footing = b.Footing; Balance = b.Balance;
             Distance = delta.magnitude; Facing = Vector2.Dot(b.Forward, delta.normalized);
-            Side = b.CircleDirection; FloorTime = b.Fall.GroundSeconds;
+            Side = b.CircleDirection; FloorTime = b.Fall.GroundSeconds; Impact = Mathf.Clamp01(b.ImpactVisual);
             Fighting = sim.Phase == MatchPhase.Fighting; Grounded = !b.Airborne && !b.HasFallen;
             Fallen = b.HasFallen; OnFloor = b.Fall.OnFloor; Touching = b.TouchingOpponent;
             OpponentAirborne = other.Airborne || other.HasFallen; Committed = b.Committed;
-            Action = b.Action; Exchange = sim.Exchange;
+            Action = b.Action; Exchange = sim.Exchange; Intent = b.Intent; Burst = b.BurstReserve;
             OpponentLocal = new Vector2(Vector2.Dot(delta, right), Vector2.Dot(delta, b.Forward));
         }
     }
@@ -34,6 +36,8 @@ namespace BeetleArena
     public struct BeetleMotionSample
     {
         public float BodyPitch, BodyRoll, HeadPitch, HeadYaw, BodyHeight, Strain, StaminaPerSecond;
+        // 非零时只改变该动作的关节响应速度；默认保留旧动作/抬举的平滑参数。
+        public float PoseResponse;
         public Vector2 LocalVelocity;
         public BeetleMotionContact Contact;
         public Vector2 LocalImpulse;
@@ -60,6 +64,9 @@ namespace BeetleArena
         // offset 使用模型局部坐标、单位缩放。slot=左前/中/后、右前/中/后；最多覆盖自己的活动区域。
         public virtual bool SampleLeg(in BeetleMotionContext context, float phase, int slot, out Vector3 offset)
         { offset = Vector3.zero; return false; }
+        // 触角为独立可选通道：返回相对绑定姿态的局部欧拉角，由宿主平滑。
+        public virtual bool SampleAntenna(in BeetleMotionContext context, float phase, int slot, out Vector3 angles)
+        { angles = Vector3.zero; return false; }
         // 新资产的默认参数/证据由自己的类提供，装配器不认识具体动作类型。
         public virtual void SetDefaults() { }
         protected virtual void OnEnable() { if (string.IsNullOrWhiteSpace(evidence)) SetDefaults(); }

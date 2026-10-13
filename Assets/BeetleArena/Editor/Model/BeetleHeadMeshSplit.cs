@@ -1,0 +1,114 @@
+using System;
+using System.Collections.Generic;
+using UnityEngine;
+
+/// <summary>
+/// 当前模型的真实几何切分：按两个标定平面裁切三角形，生成互不共享 Mesh 的触角和口器。
+/// 穿过边界的面会补插值顶点，保留原表面和纹理；不把跨界整面简单删除。
+/// 两边复制相同的切口边缘，组装时接缝重合，不额外添加相互重叠的封口面。
+/// </summary>
+public static class BeetleHeadMeshSplit
+{
+    public const float LateralCut = .235f, ForwardCut = 1.60f;
+    struct Vertex
+    {
+        public Vector3 p, n;
+        public Vector2 uv, uv2;
+        public Vector4 tangent;
+        public Color color;
+        public static Vertex Lerp(Vertex a, Vertex b, float t) => new Vertex {
+            p = Vector3.LerpUnclamped(a.p,b.p,t), n = Vector3.LerpUnclamped(a.n,b.n,t).normalized,
+            uv = Vector2.LerpUnclamped(a.uv,b.uv,t), uv2 = Vector2.LerpUnclamped(a.uv2,b.uv2,t),
+            tangent = Vector4.LerpUnclamped(a.tangent,b.tangent,t), color = Color.LerpUnclamped(a.color,b.color,t)
+        };
+    }
+    sealed class Output
+    {
+        readonly List<Vertex> vertices = new List<Vertex>();
+        readonly Dictionary<Vertex,int> indices = new Dictionary<Vertex,int>();
+        readonly List<int> triangles = new List<int>();
+        int Add(Vertex vertex)
+        {
+            if (indices.TryGetValue(vertex,out int index)) return index;
+            index=vertices.Count; vertices.Add(vertex); indices.Add(vertex,index); return index;
+        }
+        public void Polygon(List<Vertex> polygon)
+        {
+            for(int i=1;i+1<polygon.Count;i++)
+            {
+                if(Vector3.Cross(polygon[i].p-polygon[0].p,polygon[i+1].p-polygon[0].p).sqrMagnitude<1e-18f) continue;
+                triangles.Add(Add(polygon[0])); triangles.Add(Add(polygon[i])); triangles.Add(Add(polygon[i+1]));
+            }
+        }
+        public Mesh Mesh(string name, bool uv2Present, bool colorsPresent, bool tangentsPresent)
+        {
+            var mesh=new Mesh { name=name, indexFormat=vertices.Count>65535 ? UnityEngine.Rendering.IndexFormat.UInt32 : UnityEngine.Rendering.IndexFormat.UInt16 };
+            var positions=new List<Vector3>();var normals=new List<Vector3>();var uv=new List<Vector2>();var uv2=new List<Vector2>();var colors=new List<Color>();var tangents=new List<Vector4>();
+            foreach(var v in vertices) {positions.Add(v.p);normals.Add(v.n);uv.Add(v.uv);uv2.Add(v.uv2);colors.Add(v.color);tangents.Add(v.tangent);}
+            mesh.SetVertices(positions);mesh.SetNormals(normals);mesh.SetUVs(0,uv);
+            if(uv2Present)mesh.SetUVs(1,uv2);if(colorsPresent)mesh.SetColors(colors);if(tangentsPresent)mesh.SetTangents(tangents);
+            mesh.SetTriangles(triangles,0);mesh.RecalculateBounds();return mesh;
+        }
+    }
+    // 同一个半空间的正/反裁切构成完整分区；交点显式落在平面上，避免接缝浮点偏移。
+    static List<Vertex> Clip(List<Vertex> polygon, int axis, float sign, float cut, bool inside)
+    {
+        var result=new List<Vertex>();
+        if(polygon.Count==0)return result;
+        Vertex a=polygon[polygon.Count-1];float da=sign*a.p[axis]-cut;
+        foreach(var b in polygon)
+        {
+            float db=sign*b.p[axis]-cut;
+            bool keepA=inside?da>=0:da<=0, keepB=inside?db>=0:db<=0;
+            if(keepA!=keepB)
+            {
+                var cross=Vertex.Lerp(a,b,da/(da-db));cross.p[axis]=cut/sign;result.Add(cross);
+            }
+            if(keepB)result.Add(b);a=b;da=db;
+        }
+        return result;
+    }
+    public static void Split(Mesh source, int side, out Mesh antenna, out Mesh mouth)
+    {
+        if(!source || (side!=-1 && side!=1) || source.subMeshCount!=1)throw new ArgumentException("Review this model's head split inputs/submeshes.");
+        var p=source.vertices;var n=source.normals;var uv=source.uv;var uv2=source.uv2;var tangent=source.tangents;var colors=source.colors;
+        if(n.Length!=p.Length || uv.Length!=p.Length)throw new ArgumentException("Head source must include normals and UV0.");
+        var data=new Vertex[p.Length];
+        for(int i=0;i<p.Length;i++)data[i]=new Vertex {p=p[i],n=n[i],uv=uv[i],uv2=uv2.Length==p.Length?uv2[i]:Vector2.zero,
+            tangent=tangent.Length==p.Length?tangent[i]:Vector4.zero,color=colors.Length==p.Length?colors[i]:Color.white};
+        var distal=new Output();var central=new Output();var triangles=source.triangles;
+        for(int i=0;i<triangles.Length;i+=3)
+        {
+            var face=new List<Vertex>{data[triangles[i]],data[triangles[i+1]],data[triangles[i+2]]};
+            var outside=Clip(face,0,side,LateralCut,true);
+            central.Polygon(Clip(face,0,side,LateralCut,false));
+            central.Polygon(Clip(outside,2,1,ForwardCut,false));
+            distal.Polygon(Clip(outside,2,1,ForwardCut,true));
+        }
+        antenna=distal.Mesh(source.name+" antenna",uv2.Length==p.Length,colors.Length==p.Length,tangent.Length==p.Length);
+        mouth=central.Mesh(source.name+" mouth",uv2.Length==p.Length,colors.Length==p.Length,tangent.Length==p.Length);
+    }
+    /// <summary>前部中央口器再分区；其余表面保留为固定基部，所有边界补插值顶点。</summary>
+    public static void SplitJaw(Mesh source, out Mesh fixedBase, out Mesh left, out Mesh right)
+    {
+        var p=source.vertices;var n=source.normals;var uv=source.uv;var uv2=source.uv2;var t=source.tangents;var c=source.colors;
+        var data=new Vertex[p.Length];
+        for(int i=0;i<p.Length;i++)data[i]=new Vertex{p=p[i],n=n[i],uv=uv[i],uv2=uv2.Length==p.Length?uv2[i]:Vector2.zero,
+            tangent=t.Length==p.Length?t[i]:Vector4.zero,color=c.Length==p.Length?c[i]:Color.white};
+        var baseOut=new Output();var leftOut=new Output();var rightOut=new Output();var triangles=source.triangles;
+        for(int i=0;i<triangles.Length;i+=3)
+        {
+            var face=new List<Vertex>{data[triangles[i]],data[triangles[i+1]],data[triangles[i+2]]};
+            baseOut.Polygon(Clip(face,2,1,BeetleJawBinding.RootZ,false));
+            var front=Clip(face,2,1,BeetleJawBinding.RootZ,true);
+            baseOut.Polygon(Clip(front,0,1,BeetleJawBinding.OuterX,true));
+            var withinRight=Clip(front,0,1,BeetleJawBinding.OuterX,false);
+            baseOut.Polygon(Clip(withinRight,0,-1,BeetleJawBinding.OuterX,true));
+            var center=Clip(withinRight,0,-1,BeetleJawBinding.OuterX,false);
+            leftOut.Polygon(Clip(center,0,1,0,false));rightOut.Polygon(Clip(center,0,1,0,true));
+        }
+        fixedBase=baseOut.Mesh(source.name+" fixed base",uv2.Length==p.Length,c.Length==p.Length,t.Length==p.Length);
+        left=leftOut.Mesh(source.name+" left jaw",uv2.Length==p.Length,c.Length==p.Length,t.Length==p.Length);
+        right=rightOut.Mesh(source.name+" right jaw",uv2.Length==p.Length,c.Length==p.Length,t.Length==p.Length);
+    }
+}

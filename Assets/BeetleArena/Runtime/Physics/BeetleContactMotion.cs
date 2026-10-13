@@ -8,35 +8,27 @@ namespace BeetleArena
     /// </summary>
     public sealed class BeetleContactMotion
     {
-        struct Pose
-        {
-            public Vector3 position, scale;
-            public Quaternion rotation;
-            public Pose(Transform t) { position=t.localPosition; rotation=t.localRotation; scale=t.localScale; }
-        }
         readonly Transform[] bones;
-        readonly Pose[] origin, proposed;
+        readonly BeetleLocalPose[] origin, proposed;
         public Vector3 Start { get; private set; }
         public BeetleContactMotion(BeetleActor actor)
         {
-            var modelBones=actor.animator.model.GetComponentsInChildren<Transform>(true);
+            var modelBones=actor.PoseBones;
             bones=new Transform[modelBones.Length+1]; bones[0]=actor.transform;
             modelBones.CopyTo(bones,1);
-            origin=new Pose[bones.Length]; proposed=new Pose[bones.Length];
+            origin=new BeetleLocalPose[bones.Length]; proposed=new BeetleLocalPose[bones.Length];
         }
         public void Begin()
         {
             Start=bones[0].position;
-            for(int i=0;i<bones.Length;i++)origin[i]=new Pose(bones[i]);
+            for(int i=0;i<bones.Length;i++)origin[i]=new BeetleLocalPose(bones[i]);
         }
-        public void Propose() { for(int i=0;i<bones.Length;i++)proposed[i]=new Pose(bones[i]); }
+        public void Propose() { for(int i=0;i<bones.Length;i++)proposed[i]=new BeetleLocalPose(bones[i]); }
         public void Apply(float fraction)
         {
             for(int i=0;i<bones.Length;i++)
             {
-                bones[i].localPosition=Vector3.Lerp(origin[i].position,proposed[i].position,fraction);
-                bones[i].localRotation=Quaternion.Slerp(origin[i].rotation,proposed[i].rotation,fraction);
-                bones[i].localScale=Vector3.Lerp(origin[i].scale,proposed[i].scale,fraction);
+                BeetleLocalPose.Blend(bones[i], origin[i], proposed[i], fraction);
             }
         }
     }

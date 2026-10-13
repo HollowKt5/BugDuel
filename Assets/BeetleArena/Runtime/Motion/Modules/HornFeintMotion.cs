@@ -5,8 +5,8 @@ namespace BeetleArena
     public sealed class HornFeintMotion : BeetleMotionModule
     {
         [Header("Feint pose / model-local foot offsets")]
-        [Range(20, 55)] public float headDip = 43;
-        [Range(.08f, .3f)] public float footLift = .19f;
+        [Range(20, 55)] public float headDip = 49;
+        [Range(.08f, .3f)] public float footLift = .23f;
         [Range(.1f, .4f)] public float footReach = .30f;
         public override string DisplayName => "探角虚晃 · 收角后撤";
         public override BeetleMotionChannel Channel => BeetleMotionChannel.Combat;
@@ -19,14 +19,14 @@ namespace BeetleArena
         public override bool CanStart(in BeetleMotionContext c) => c.Fighting && c.Grounded && !c.OpponentAirborne &&
             c.Distance > 2.8f && c.Distance < 4.4f && c.Facing > .7f && c.Stamina > .23f && c.Balance > .4f;
         // 短前探、短停顿、快速收角、较长复位；打破原先缓慢对称的正弦摆动。
-        static float Dip(float phase) => phase < .27f ? Mathf.SmoothStep(0, 1, phase / .27f) :
-            1 - Mathf.SmoothStep(0, 1, Mathf.InverseLerp(.37f, .76f, phase));
+        static float Dip(float phase) => phase < .30f ? Mathf.SmoothStep(0, 1, Mathf.InverseLerp(.13f, .30f, phase)) :
+            1 - Mathf.SmoothStep(0, 1, Mathf.InverseLerp(.43f, .62f, phase));
         public override BeetleMotionSample Sample(in BeetleMotionContext c, float phase)
         {
             float dip = Dip(phase);
             float recoil = Pulse(Mathf.InverseLerp(.52f, 1, phase));
             float forward = phase < .37f ? .65f * dip : c.Footing > .85f ? -.52f * dip : 0;
-            return new BeetleMotionSample { HeadPitch = headDip * dip - 6 * recoil,
+            return new BeetleMotionSample { PoseResponse = 21, HeadPitch = headDip * dip - 6 * recoil,
                 HeadYaw = c.Side * 8 * dip, BodyPitch = 7 * dip - 2 * recoil,
                 BodyRoll = -c.Side * 2.5f * dip, BodyHeight = -.025f * dip,
                 Strain = .55f * dip, LocalVelocity = new Vector2(0, forward),

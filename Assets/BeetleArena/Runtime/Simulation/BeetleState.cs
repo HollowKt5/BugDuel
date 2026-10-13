@@ -60,6 +60,13 @@ namespace BeetleArena
         // Stamina 为体力点数，Fatigue 累积后压低可恢复上限。
         // Balance 表示自身稳定程度，Footing 表示名义六足在台面上的支撑比例，均取 0～1。
         public float Stamina, Fatigue, Balance = 1, Footing = 1;
+        // BurstReserve 是 0～1 的短时爆发余量；和可恢复耐力不同，不是第二条生命值。
+        // 优势与接触记忆只影响选择，绝不作为额外伤害倍率。Simulation 是唯一写入者。
+        public float BurstReserve = 1, ExertionCooldown, ExposureRemaining, ContactConfidence;
+        public float TacticalAdvantage, IntentTime;
+        // 找不到撬举支点后的短暂重试限制；期间可短推或换角度，避免原地重复昂贵失败。
+        public float PryRetryRemaining;
+        public BeetleIntent Intent = BeetleIntent.Assess;
         // 加油效果剩余秒数和按钮冷却秒数分开维护，效果结束不代表可以立即再加油。
         public float CheerRemaining, CheerCooldown;
         // 挑飞的双边冷却：成功后攻守双方都会获得，防止立即互相连续挑飞。
@@ -70,6 +77,8 @@ namespace BeetleArena
         public BeetleAction Action = BeetleAction.Assess;
         // ActionTime/ActionDuration 为当前动作的秒数进度；DecisionTime 限制提前重新决策频率。
         public float ActionTime, ActionDuration = 1, DecisionTime;
+        // 恢复片段跨 Recover/Retreat 重选保留计时，防止短动作无限续杯；Simulation 唯一写入。
+        public float RecoveryTime, RecoveryCooldown;
         // 抬举、侧倾和冲击的表现权重/角度，随模拟时间衰减；不等于实际高度或受力。
         public float LiftVisual, RollVisual, ImpactVisual;
         // 统计已结算的命中、推顶、抬举、试探、冲顶、进入角力、挑飞成功和合格挑飞机会。
@@ -80,6 +89,8 @@ namespace BeetleArena
         public bool Airborne, HasFallen, AttackApplied;
         // 上次场景求解器是否检测并处理过双方重叠，供下一步命中条件使用。
         public bool TouchingOpponent;
+        // 接触求解器写入的持续受阻时长，模拟只据此放弃推不动的动作，不绕过碰撞。
+        public float ContactBlockedSeconds;
         // 固定的左右绕行偏好（-1 或 +1），也用于表现侧倾方向。
         public float CircleDirection;
         // 将当前动作秒数归一化为 0～1，并保护持续时间过小时的除法。
@@ -88,6 +99,8 @@ namespace BeetleArena
         public float StaminaLimit => Traits.endurance * (1 - .007f * Fatigue);
         // 体力比例使用初始耐力作为分母，因此高疲劳时恢复满也可能显示不足 100%。
         public float Stamina01 => Mathf.Clamp01(Stamina / Traits.endurance);
+        // 决策用当前可恢复上限；实际力量仍读 Stamina01，疲劳不会因此被消除。
+        public float Readiness01 => Mathf.Clamp01(Stamina / Mathf.Max(.001f, StaminaLimit));
         // 将偏航角变为世界平面的正前方：0° 朝 +Z，90° 朝 +X。
         public Vector2 Forward => new Vector2(Mathf.Sin(Heading * Mathf.Deg2Rad), Mathf.Cos(Heading * Mathf.Deg2Rad));
         // 正在蓄力、发力或角力的动作集合，用于限制转向、控制迈步和累积疲劳。
@@ -101,7 +114,7 @@ namespace BeetleArena
         }
     }
 
-    // 轻量事件快照：Message 给 HUD，Actor 为选手索引（-1 表示全局），Intensity 给音效。
+    // 轻量事件快照：Message 给 HUD，Actor 为选手索引（-1 表示全局），Intensity 为展示强度提示；碰撞音效已改由真实接触采样驱动。
     public readonly struct ContestEvent
     {
         public readonly string Message;

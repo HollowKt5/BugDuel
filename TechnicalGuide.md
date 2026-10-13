@@ -24,6 +24,10 @@
 16. [扩展约束与维护规则](#16-扩展约束与维护规则)
 17. [可插拔动作、接触响应与活体时钟](#17-可插拔动作接触响应与活体时钟)
 18. [场景分组与引用安全](#18-场景分组与引用安全)
+19. [木质接触声与可关闭的兵器火星](#19-木质接触声与可关闭的兵器火星)
+20. [打斗节奏与昆虫式活动](#20-打斗节奏与昆虫式活动2026-10-13)
+21. [全局代码审查与架构优化](#21-全局代码审查与架构优化2026-10-13)
+22. [短恢复与情境响应](#22-短恢复与情境响应2026-10-13)
 
 ## 1. 整体技术路线与坐标约定
 
@@ -426,7 +430,7 @@ SurfaceNormal = Normalize(中心法线 + Σ(足位法线 * reach))
 | 交锋节奏 | `Probing → Clash → Recovery` 循环 | 试探、强冲突、短暂恢复的行为倾向 |
 | 个体动作 | 观察、接近、绕行、试探、推顶、抬举、撑地、退让、受击、腾空等 | 当下运动意图、发力窗口和程序姿态 |
 
-交锋阶段默认时长为 7、9、3.5 秒。阶段改变行为条件与倾向，不会替代动作自身的准备、命中和收招过程。
+交锋阶段默认试探 7 秒、强交锋 9 秒、重整窗口基准 1.35 秒（进入时乘 0.8～1.15），接触中重新发力可在窗口 0.45 秒后提前结束。Recovery 只降低交锋倾向，健康个体可继续寻触，不再强制双方同步休息；个体恢复规则见第 22 节。阶段不抢占已承诺动作。
 
 `SetAction()` 统一设置动作与持续时间，清零 `ActionTime`，并重置 `AttackApplied`。添加动作时必须检查：AI 能否进入、何时离开、是否消耗体力、是否属于承诺动作、动画如何表现、接触模式是否需要改变。
 
@@ -1080,3 +1084,702 @@ Combat 模块对自己声明控制的腿优先；未被占用的腿可以由第�
 以前有六个验证入口只查根 GameObject 的控制器，已统一使用 `BeetleSceneHierarchy.FindMatch(scene)`，它递归搜索且限定在目标 Scene，包含禁用节点，要求恰好一个控制器。不能使用全局 FindFirstObject 代替，否则 Additive 验证可能找到用户正式场景的对象。
 
 构建器与地形安装器保存前调用统一整理逻辑。场景分组是编辑器维护功能，不参与 AI、物理或渲染更新；不要移动/缩放这些父节点来调整某一只虫子的大小。实际层级见项目地图，整理结果摘要位于 `Artifacts/SceneHierarchy/Hierarchy.txt`。
+
+## 19. 木质接触声与可关闭的兵器火星
+
+### 19.1 查证的资料与没有声称实现的内容
+
+1. Aramaki & Kronland-Martinet (2004), *Analysis-Synthesis of Impact Sounds*，[论文 PDF](https://www.eurasip.org/Proceedings/Eusipco/Eusipco2004/defevent/papers/cr1743.pdf)。论文讨论材质听感与频率相关阻尼、结构共振的关系，并以噪声和模态分量构造碰撞声。这里借鉴该思路，用较快衰减与短瞬态形成用户要求的偏木质听感；没有声称反演或测量了甲虫的振动模态。
+2. Zheng & James (2011), *Toward High-Quality Modal Contact Sound*，[作者项目页](https://www.cs.cornell.edu/projects/Sound/mc/)。研究指出刚体接触处理可能带来声音伪影，并讨论接触相关阻尼。当前项目采用接触去抖、运动门槛和播放间隔；没有实现论文的完整振动接触耦合求解。
+3. McCullough (2014), *Mechanical limits to maximum weapon size in a giant rhinoceros beetle*，[实验室提供 PDF](https://www.umt.edu/emlen-lab/documents/lab-publications/mccullough2014.pdf)。用于核对角属于昆虫表皮结构和其承载/弯曲特征，不是“声音像木头”的录音证据。
+4. Science Friday，*Beetle Royale*，[视频页面](https://www.sciencefriday.com/videos/beetle-royale/)。查找到的交锋影像参考。未取得可确认未配音、分离良好的碰撞录音，因此没有从视频提取声音，也没有宣称听过并复刻真实录音频谱。
+
+兵器火星是按用户要求加入的风格化视觉反馈；它不是昆虫角真实产生金属火星的生物学主张。声音仍采用偏木质的合成干敲/刮擦。真实感和视觉力度需要用户试听、观看后验收。
+
+### 19.2 触发入口与物理隔离
+
+旧版 `OnContestEvent` 只要 Intensity>0 就播放相同的低频短音，导致进入动作、虚晃或落台文案也可能发声。现在该事件只负责 HUD 文案。`BeetleMatchController` 在每个模拟固定步完成后调用独立 `BeetleContactFeedback.Tick`，并在新局调用 Bind 清空上局接触历史、声音和火星。
+
+采样器复用两套 `BeetleContactRig`：大包围盒排除远距离，部件 AABB 细筛；至少一个部件为头角/胸角，排除腿接触。最终姿态保留皮肤间隙时，采用与动作接触一致的 0.02 世界单位虚拟探进，通过 `ComputePenetration` 确认邻域接触。它不移动实际 Collider。火星进一步要求双方都为角；角碰身体可以发声但不迸兵器火星。
+
+发射点用双方代理 ClosestPoint 交替逼近后的中点估计，法线来自邻域查询。它是碰撞代理上的近似接触位置，不是可见网格每个三角形的精确撞击点。相对速度由前后接受姿态中双方代理中心位移差除以固定步长估计，不包含显示插值，不以被拒绝的姿态提案作为音效强度依据。
+
+新接触需要相对运动；持续接触只有明显闭合速度脉冲或滑动才补敲击/摩擦。分离超过 0.08s 后才清掉接触锁，减少贴边抖动。敲击、摩擦、火星最短间隔分别为 0.09/0.17/0.16s。只在 Fighting 采新的接触反馈，已发出的粒子继续自然消退。暂停固定步为零，粒子不推进，AudioSource 暂停。
+
+反馈只读比赛，自己的历史、冷却与变体序号均保存在表现组件；不修改位置、速度、平衡、状态机或 Unity/比赛随机源。关闭视觉不关闭查询与声音，不能因设置不同改变战斗结果。
+
+### 19.3 合成声音
+
+`ArenaAudio` 初始化时缓存六种 0.19s 敲击与三种 0.115s 刮擦，44.1kHz 单声道。四个空间音源轮换，避免所有重叠声音跟随同一个移动音源；禁用多普勒。
+
+```text
+knock(t) = Σ gain[k] × sin(2π × frequency[k] × tuning × t) × exp(-damping[k] × t)
+           + 短带通噪声瞬态 + 小幅衰减摩擦纹理
+frequency = [510, 930, 1570, 2490, 3680] Hz
+damping[k] = 48 + 31k
+```
+
+高频更快消失，弱化原先 170Hz 低频主导的闷“咚”，避免金属长鸣。摩擦用带通噪声、短包络和颗粒起伏另行生成。每段做 0.6ms 起音和尾端淡出；敲击样本峰值约 0.72，摩擦约 0.44，保留混音余量。音量/小幅音高变化取决于运动强度，变体使用独立固定种子与轮换序号。
+
+这些频率、阻尼与混音值是合成设计参数，不是昆虫模态测量。没有外部音频素材授权依赖；`WoodyContactPreview.wav` 为同一合成器生成的试听串。运行时合成一次并缓存，销毁时释放 AudioClip。
+
+### 19.4 火星与开关
+
+`HornClashSparks` 使用一个世界空间粒子系统、一个显式材质 `Generated/Materials/HornSpark.mat`、自定义 URP 加色 Shader `Shaders/HornSpark.shader`。每次 3–8 粒（Inspector 上限可调），寿命 0.11–0.24s，暖白/黄 → 橙 → 消失；沿接触切面散射并少量向上，重力造成轻微下落。Stretch billboard 形成短亮线，最多同时 48 粒，无实时灯光、粒子碰撞、爆炸团或持续发射器。
+
+粒子通过固定步手动 Simulate，默认发射模块禁用。首次 Stop/Clear 后发射前先用零时长 Simulate 建立暂停模拟状态，避免 Unity 6 首次 EmitParams 丢弃粒子的兼容问题；系统随机种子与方向随机源独立于比赛。
+
+设置入口在右侧暂停按钮下方。`BeetleFeedbackSettings` 只绑定自己的按钮/Toggle 回调，并在销毁时解绑；`HornClashSparks.SetEnabled` 修改表现偏好，关时立即 Clear。`PlayerPrefs` 键 `BugDuel.HornClashSparks.v1` 默认 1，切换后 Save；重开场景从同一个键恢复。不会改动 MatchSettings 或比赛种子。PlayerPrefs 仅本机偏好，不是云同步。
+
+### 19.5 验证与人工验收
+
+菜单 `Tools > Beetle Arena > Validate Contact Feedback` 在临时场景检查：设置打开/关闭、Toggle 监听、关闭立即清粒子、关闭禁止发射、偏好在新组件恢复、两擂台真实交锋出声/出火星、无接触时不触发、零 dt 不推进、粒子寿命、波形有限值和削波余量、表现不修改模拟/Unity.Random。测试在 finally 恢复用户原偏好。
+
+报告与设置/真实接触截图位于 `Artifacts/ContactFeedback/`。波形数值合格与可见粒子不等于主观满意：用户负责最终确认木质音色、响度、火星形状和克制程度。
+
+
+## 20. 打斗节奏与昆虫式活动（2026-10-13）
+
+本节更新第 17.7 节的动作调参。目标是让支撑、发力和恢复形成可读的先后关系；大幅度必须仍能接触真实对手，不能用远程命中或根节点跳位补救。
+
+### 20.1 资料、适用范围与设计推导
+
+| 来源 | 能支持的内容 | 本项目如何使用 |
+| --- | --- | --- |
+| [McCullough & Zinna 2013，Results: Fighting Behavior](https://wordpress.clarku.edu/mcculloughlab/wp-content/uploads/sites/739/2023/09/McCullough-and-Zinna-2013-sensilla-density.pdf) | Trypoxylus 的角尖撬举、沿枝干推顶、交角侧推；基于野外拍摄的交锋分析 | 推顶强调前后发力，侧顶强调偏头、躯干侧倾和中后足支撑，不把各种攻击统一成正弦点头 |
+| [Eberhard，Golofa porteri，Figure 1a–c 及说明](https://repository.si.edu/bitstreams/a06da26f-32ea-4bd7-b73a-b72a12d0d6f9/download) | 从影片逐帧绘制的战斗序列：中后足抓握、前足接近/牵扯，后下方扒动与快速头角动作相配合 | 前肢采用伸出、落低接触、短促扒回；保持当前模型的短前腿长度与单前足覆盖。**跨物种改编，不声称 Trypoxylus 有完全相同的前足招式** |
+| [Krause & Dürr 2012，Active tactile sampling](https://www.frontiersin.org/journals/behavioral-neuroscience/articles/10.3389/fnbeh.2012.00030/full) | 竹节虫接触前后触角幅度、频率、关节协同随任务改变 | 借鉴“触角运动依赖当前活动”的原则；左右扫探错时，发力/近接触时缩小范围。**不是独角仙触角运动捕捉**；停顿、折收角度、时间窗是表现设计 |
+| [Science Friday: Beetle Royale 视频页面](https://www.sciencefriday.com/videos/beetle-royale/) | 独角仙角斗的补充观看入口 | 本次找到视频页面，但未完成可核验的逐帧视频分析，不把网页标题当作运动参数证据 |
+
+论文图示的文字说明和行为结果提供动作方向与支撑关系。本次在线 PDF 截图服务部分失败；没有将未成功查看的视频或图片写成“已逐帧观看”。所有具体角度、幅度、停顿和受击补足曲线都是模型适配参数，不能当成生物测量值。虚晃继续指探角后收回的游戏动作，不推断昆虫有人的欺骗意图。
+
+### 20.2 可插拔通道和状态归属
+
+新增 `Motion/Modules/AntennalSamplingMotion.cs`、`ImpactRecoveryMotion.cs`，都属于 `SupportOverlay`，在 `MatchSettings.motionModules` 注册；Inspector 可禁用或移除。没有新增模拟状态枚举或依赖具体模块类型的核心 switch。
+
+`BeetleMotionContext.Impact` 是上一固定步真实命中/接地反馈强度的只读快照。模块无 State/Transform/随机源引用，只返回局部姿态和足端意图。新虚方法 `SampleAntenna(context, phase, slot, out angles)` 是可选通道，旧模块无需实现。运行宿主先询问主动作，再询问第一个拥有触角通道的有效覆盖模块；空引用、重复引用、禁用仍按原规则过滤。
+
+`BeetleMotionSample.PoseResponse` 为动作可选的姿态追随速率；当前只在 Module 动作生效，范围 13–26/s，默认 13/s。推顶/侧顶/前足用 23/s，虚晃 21/s。实际插值系数 `1-exp(-rate*dt)`，零 dt 不推进。抬举、抛出、跌落仍沿用原来的状态接续和 13/s 参数。
+
+`BeetleProceduralAnimator.antennaAngles[]` 保存每只虫自己的触角平滑缓存，Initialize 重置；共享 ScriptableObject 没有动态数据。角度相对绑定姿态应用，再走原有模型触角避地。删除模块后目标回到零，缓存平滑回到静息角，不立即跳回。
+
+调用链：`Simulation.Step → Motion.Refresh/Tick → ContactSolver.PoseSimulation → Motion.PoseSample/SampleLeg/SampleAntenna → Animator.Pose → IK → 碰撞限制 → 接受姿态缓存 → 渲染插值`。模块不会在 Render 或碰撞重试中推进时间。
+
+### 20.3 蓄力、发力与脚部轨迹
+
+- `InsectMotionTiming.Drive(p)`：0–24% 从零加载到 28%；24–36% 短促发力到峰值；36–46% 保压；46–100% 卸力。曲线分段 SmoothStep，衔接处连续且导数归零。
+- 推顶头部意图 33→38°、躯干前压 10→12°、后足蹬压 0.24→0.29 模型单位；侧顶头部 29→34°、偏头 11→17°、侧倾 8→11°、支撑足后撑 0.20→0.25。实际 FBX 头俯仰还乘现有 0.48 校准系数，并受碰撞约束，不等于模型最终头角值。
+- 虚晃头部意图 43→49°、前足峰值目标 0.19→0.23；保持原概率、无攻击冲量。
+- 前足 `Reach` 在 5–34% 伸出；足高在 25–48% 先回落，56–72% 才向后扒，76–100% 收回静息。可配置峰值足高 0.28、前伸 0.66。初版把足高一直保持到扒回，验证发现会越过对方腿；因此改成先下降接触，不扩大命中容差。
+- 原状态机的冲撞/推顶也加强低头蓄力和短促收角；持续 HornLock 的固定高频抖动改成有间隔的发力尝试。六档杠杆投掷公式、根运动预算、碰撞代理和胜负规则不变。
+
+足端是意图，不直接拉伸骨骼。模块足目标仍经世界地表高度投影、`MoveTowards` 速度限制、原有真实骨长 IK、碰撞退让；退出通道仍从实际脚尖用 0.18s 交还步态。更大目标会被可达范围截断，不承诺每个姿势都能实现配置峰值。
+
+### 20.4 去掉恒定的机械摆动
+
+`InsectMotionTiming.Bout` 用固定步绝对时钟和整数散列产生每个时间窗一次的动作包络；每窗的启动延迟、持续时间、幅度不同，边界回零。散列是纯函数，不调用 Unity.Random 或比赛 RNG，不制造逐帧白噪声。
+
+静置足序仍左右交错，每个 1.18s 窗最多指定一只活动足，窗内只有一段抬起再落回，其余时间安静支撑；目标幅度和时长不同。身体轻微向支撑侧转移，头部探测与足序不同步。跌落后的延迟恢复条件保持，恢复后仍有换足，不会冻结成尸体姿态。站立/行走的常规 IK 支撑预算继续单独控制。
+
+触角使用 1.17s 扫探和 0.57s 小幅探测两个包络，左右用不同延迟和散列。发力或触碰时目标范围收至 32%，地面落败恢复时 65%；不是在状态切换时突然改 `time*frequency`，避免相位跳变。宿主用 18/s 追随角度。当前触碰信号来自整虫接触上下文，**不是新增触角传感器碰撞检测**。
+
+删掉整胸持续“呼吸”起伏和发力期间恒定的高频偏航抖动；保留与迈步相关的小幅起伏、实际受力和支撑换足。没有更改 AI 警觉/交战概率，避免再次出现为了随机而停止交锋。
+
+### 20.5 受击者动作
+
+`ImpactRecoveryMotion` 只对 Fighting、站立且 `Impact > 0.025` 的虫工作，抬举/抛出/松脱过程中不介入。以真实命中强度驱动局部后仰、偏斜、头部退让和一只前足补步，中后足向外撑住；强度自然衰减后交还基础 IK。主战斗模块对同一腿仍有优先权，不能由两个模块同时改脚。
+
+该模块没有局部移动速度、攻击窗口或冲量，不能凭动画宣告命中、修改力或传送对手；空挥不会给对手补造这个受击反应。接地冲击也可能提供现有 ImpactVisual，因此称为“受力恢复”，不冒称每次都是对手击中。
+
+### 20.6 验证与人工验收
+
+回归使用真实 FBX、真实代理及临时场景。结果见 `Artifacts/ModularActions/Validation.txt`、`Artifacts/LeverThrows/Validation.txt`、`Artifacts/FallRecovery/Validation.txt`。自动检查能覆盖有限场景中的命中、残余重叠、根位移预算、动作插件生命周期、六档投掷与结束后活体运动，不能量化“像昆虫”或“足够有冲击力”。最终在正式场景 Play 中由用户验收：前足伸出/落低/扒回是否清晰，角力是否有顿挫，受击者是否能看出撑稳，触角和静置换足是否自然。
+
+
+本轮验证记录（2026-10-13 09:59–10:02，Asia/Shanghai）：
+
+- 模块启停/删除/中断/重复引用检查通过；受控真实接触累计：推顶 2、前足 1、侧顶 3、虚晃 0。
+- 两擂台 seed=71 自然对局：167.2/128.4s，均落台结束；四类主模块都出现。最大残余重叠 0.000500，最大根位移预算超差 0.000033；起伏台最长零接受段 0.66s，未达 3s 卡住阈值。
+- 结束后 8–15s 的赢家/输家均有脚部运动及头部探测，头部变化 5.90/5.79°。
+- 六档撬投回归通过；六档成功投掷来自平地受控案例，起伏台该固定站位只覆盖未获得支点时的退出，不能声称六档都在坡面成功测过。16 组跌落/渲染组合及双落台、数据模式后备、显示独立性通过。
+- 新增覆盖通道临时验证报告 `Artifacts/InsectMotion/Validation.txt`：真实模型触角缓存峰值 10.92°；左右幅值有差异；零 dt 不推进，移除模块后余量归零；受力恢复不提供游戏冲量，腾空时不覆盖挣扎。
+- 已查看真实模型的前足及侧顶截图。截图无法确认动作节奏，正式 Play 的主观效果留给用户验收。未打包。
+
+## 21. 全局代码审查与架构优化（2026-10-13）
+
+### 21.1 审查范围与结构判断
+
+检查了 `Assets/BeetleArena` 自有代码中的控制器、状态机与参数、托举/投掷/跌落、动作模块、真实模型 IK、姿态插值、接触求解、地形、HUD/镜头/音效/粒子、编辑器构建与验证入口，并核对包版本和着色器边界。没有修改第三方包或导入模型资产。
+
+现有主干是 Simulation 拥有规则，Actor/Animator/Rig 生成姿态，ContactSolver 提供几何约束，Presentation 只读反馈。这个边界适合目前两只甲虫的规模。保留逐步求解与重试算法，优化热路径和重复基础设施；本轮不改变动作概率、力度、IK 骨长或六档投掷阈值。
+
+### 21.2 碰撞热路径：将字符串工作移出循环
+
+原 `ContactFeedback.Horn()` 对每个候选碰撞对反复读取 Unity 对象的 `name`，再 StartsWith；`LegIndex()` 也读名字。现在 `ContactRig.CacheBounds()` 首次建立三组缓存：物理 Role、腿编号、是否角部。胸角仍在物理上属于 Body，在表现上是 Horn，分类语义保持一致。
+
+数组引用或长度变化自动重建；Inspector 的 OnValidate 以及显式 `InvalidateShapeMetadata()` 可使缓存失效。原地修改 shapes 元素或名称时必须显式失效。正在对局中替换整个模型还要重新 Bind Actor / ContactFeedback 并重建求解器，因为姿态缓存、代理候选数组及前步接触点也依赖旧模型。它不是可任意动态换骨架的接口。
+
+`LastSeparationPair` 改为保存 Collider 引用、诊断读取时才拼接名称。它是当前对象名称的诊断视图，不是不可变的历史日志；频繁读取仍会分配字符串。碰撞间隙、候选顺序、ComputePenetration、固定步/显示帧重试均保留。
+
+### 21.3 姿态与模块缓存
+
+- `BeetleLocalPose` 是 internal readonly struct，保存 localPosition/localRotation/localScale；统一 Capture/Apply/Lerp/Slerp 的数值逻辑。
+- `BeetlePoseBuffer` 保存固定步前后端点；`BeetleContactMotion` 保存试算起点/候选姿态以及显示连续性数据。两者只复用值类型和模型 Transform 引用，不能共享同一份可变快照。
+- Actor 在 Bind 时收集模型层级。每局创建模拟/显示两组接触缓存时复用这份引用列表，减少重复 GetComponentsInChildren 遍历。
+- MotionRuntime 在 Refresh 复用一个有序 List 去空/去重。保持原先注册顺序、Enabled 检查和逐虫冷却；不把所有动作写成类型 switch，不在共享 ScriptableObject 上保存状态。
+- 贴地环更新仍逐点采地形；只上传变化的顶点，三角索引/恒定法线仅首次上传。Dispose 可重复调用并恢复原网格、缩放和 Renderer 设置。
+
+### 21.4 调度入口与资源生命周期
+
+`MatchController.AdvanceFixedStep()`：BeforeStep → Step(0.02) → ContactFeedback.Tick。
+
+`MatchController.Present(alpha, time, dt)`：Render → ProjectView → Camera.Tick。它不推进权威模拟。暂停或 dt<=0 时不重新执行可见碰撞回退，保留上个接受姿态。HUD 刷新由外层处理。正式 Update、Editor Advance、StandaloneSmoke Advance 共用这条顺序，修复快进遗漏声音/火星更新的差异。隔离测试可以有意调用更低层入口。
+
+显式 Tick/PlayContact/Burst 调用不会被 Unity 自动依据 enabled 拦截，组件内部现在检查 isActiveAndEnabled。OnDisable 丢弃接触速度历史、停声或清空火星。OnDestroy 调用可重复执行的 ReleaseResources，释放自己创建的子 AudioSource/ParticleSystem 以及 AudioClip，支持单独删除组件。
+
+普通 MonoBehaviour 在 Edit Mode 中被手工 Initialize 后不能依赖 Play 生命周期回调。`BeetleValidationScene.Dispose()` 明确调用资源释放，随后关闭副本、销毁参数克隆、删除自己创建的唯一临时场景。构造中途失败也清理，写报告失败也会离开 using；不会直接打开后关闭用户已经加载的原场景。共享动作资产保持只读。旧版专用构建/材质/地形验证仍有独立流程，调用前参照其说明，不能将整个 Editor 目录都视为无副作用。
+
+### 21.5 实测数据及复现范围
+
+环境为本机 Unity 6000.3.16f1 Editor，seed=71，双地图各 3000 固定步，每步 0.02s；前 300 步预热，统计余下 2700 步。每步显示 alpha=.65。分别计量模拟、接触表现、插值/显示约束，计数范围外才写 CSV/格式化报告。
+
+| 地图 / 采样段 | 优化前分配事件/步 | 优化后分配事件/步 | 优化前 ms/步 | 优化后 ms/步 |
+| --- | ---: | ---: | ---: | ---: |
+| 平地 / 模拟 | 1.37 | 0.06 | 1.141 | 1.112 |
+| 平地 / 接触表现 | 801.04 | 0.00 | 0.613 | 0.070 |
+| 平地 / 插值与显示约束 | 0.01 | 0.00 | 0.565 | 0.538 |
+| 起伏 / 模拟 | 1.35 | 0.16 | 1.931 | 1.922 |
+| 起伏 / 接触表现 | 776.00 | 0.00 | 0.612 | 0.075 |
+| 起伏 / 插值与显示约束 | 0.00 | 0.00 | 0.859 | 0.860 |
+
+分配数字是 `ProfilerRecorder` 对本线程 `GC.Alloc` 标记的 **事件次数**，不是字节数。已用主动分配做探针确认：此 Editor 的 `GC.GetAllocatedBytesForCurrentThread()` 连已知分配都返回 0，不能用于本次分配字节统计。最初 `Before.txt` 中的 bytes=0 无效；以 `BeforeRecorder.txt / AfterRecorder.txt` 为准。
+
+这是同步 Editor 主线程局部基准，未测 GPU、Player 帧率、整帧 HUD、持续多局或所有种子。计时受系统负载影响。接触表现耗时约减少 88%，不意味着游戏整体提速 88%；零事件只适用于这段已预热采样。
+
+权威状态逐步按 float 位模式散列：双方 x/z/height/vx/vz/stamina/action。优化前后 3000 步结果逐位一致：平地 `C2290C5D1D1E2683`，起伏 `A9E4EE75A3CF473C`。这能检查所列状态轨迹，没有覆盖所有字段，也不是跨平台确定性保证。CSV 与计量脚本位于 `Artifacts/ArchitectureReview/`。
+
+Profiler 计数方式参见 [Unity ProfilerRecorderOptions.CollectOnlyOnCurrentThread 官方示例](https://docs.unity.com/en-us/engine/6000.5/script-reference/unity/profiling/profilerrecorderoptions/collectonlyoncurrentthread)；本项目在实际 6000.3 编辑器中编译并用分配探针验证。也可用 [Unity GC.Alloc 排查说明](https://docs.unity3d.com/jp/current/Manual/performance-track-garbage-collection.html) 进一步检查具体调用堆栈。
+
+### 21.6 回归入口及后续边界
+
+- `BeetleArchitectureValidation.Run()`：业务固定步的真实反馈、暂停全部模型姿态、暂停换场、组件禁用后的显式调用、幂等资源释放、同长度代理数组替换、异常场景清理、原场景及 dirty 状态保护。
+- `BeetleMotionValidation.Run()`：双地图各 900 步、160 个 Transform 的边界/重复采样，外加 1 vs 4 显示帧的权威位置隔离。
+- `BeetleModuleValidation.Run()`：注册/去重/禁用/删除、实际部件命中、虚晃无冲量、赛后活体活动、两张地图完整自然对局。
+- `BeetleThrowValidation / BeetleFallValidation / BeetleFeedbackValidation`：六档投掷、16 组跌落轨迹/显示隔离、真实声音与火星、设置/偏好、表现不改随机源。
+- `BeetleImportedValidation.Run()`：真实模型骨长与穿透采样。短片段检查不等同于完整对局或主观验收。
+
+后续扩展仍须遵守的边界：BeetleState 公开字段的写入职责主要靠约定；Simulation 仍集中管理相互依赖的战斗阶段；不同新增模块的接触响应按选手顺序应用；生成器依赖当前 FBX 部件标定。这些如要改成严格封装、同时响应或通用骨架，需要独立迁移与行为基准。本轮没有通过拆 partial 文件或引入通用消息总线来掩盖这些关系。
+
+
+本轮执行结果：上述架构检查、动作连续性、模块自然对局、六档投掷、16 组跌落、接触表现检查全部通过。平地/起伏自然对局分别 167.2s / 128.4s；逐步插值边界与重复采样位置误差 0，1 vs 4 显示帧模拟位置误差 0。六档投掷的成功覆盖在平地受控案例；同一套起伏地形摆位未捕获托举，验证其安全退出，不能写成两地形均成功触发六档。真实模型短片段骨长误差 0，平均 IK 目标误差 0.0146（不是所有脚端精确命中地表的保证）。
+
+实际 Play 中另外删除单个音频/火星组件，等待延迟 Destroy 完成，确认 OnDisable 停声/清粒子，OnDestroy 回收 4 个音源、使用的 AudioClip 与粒子子对象。临时允许后台推进两帧，完成后恢复原后台运行设置。报告为 `Artifacts/ArchitectureReview/PlayLifecycle.txt`，复查脚本为 `play-lifecycle.cs`。没有构建 Player。
+
+## 22. 短恢复与情境响应（2026-10-13）
+
+> 本节保留上一轮恢复节奏改造的依据与测量；当前能量、恢复阈值和动作曲线以第 23 节为准，中足可达与持续受阻处理见第 24 节。
+
+### 22.1 查证依据与适用范围
+
+- Hongo (2003), *Appraising Behaviour During Male-male Interaction...*, Behaviour 140:501–517，[DOI](https://doi.org/10.1163/156853903322127959)、[CiNii 收录的论文摘要](https://cir.nii.ac.jp/crid/1363107368423197824)：野外交锋描述包括接触后的推挤评估，进而升级撬举或退让/追赶。此次读到完整摘要；出版社全文请求返回 403。摘要没有给出双方每轮同步休息数秒的规则。
+- McCullough & Zinna (2013), *Sensilla Density Corresponds to the Regions of the Horn Most Frequently Used During Combat...*，[作者实验室全文](https://wordpress.clarku.edu/mcculloughlab/wp-content/uploads/sites/739/2023/09/McCullough-and-Zinna-2013-sensilla-density.pdf)，DOI 10.1603/AN12155：约 200 场自然交锋记录，分析推挤、撬举、横向角力与角部接触；角尖感受结构及交锋中的触碰为接触评估提供支持。将“静止等待计时”改为能对近距离发力作出防守响应，是基于这些行为的游戏推导。
+- Ebeling & Dürr (2006), [Perturbation of leg protraction causes context-dependent modulation of inter-leg coordination...](https://journals.biologists.com/jeb/article/209/11/2199/16193/Perturbation-of-leg-protraction-causes-context)，DOI 10.1242/jeb.02251：竹节虫实验显示受扰后的足端位置、落足时序与腿间协调会随行为情境变化。用于提醒程序动作考虑支撑和上下文；此次换足曲线仍是跨物种启发的动画近似，没有实现其神经回路或逐足负载反馈。
+
+这些文献没有提供本游戏 0.35/2.2 秒或 46% 体力的测量依据，相关数值明确归类为节奏调参。没有声称观察到精确对应的真实休息视频，也没有把“虚晃意图”当作研究证实的心理活动。
+
+### 22.2 原来的长空档从哪里来
+
+旧外层 Recovery 每 7+9 秒固定插入 3.5 秒，双方决策都优先退让/恢复；个体进入 Recover/Retreat 后，在试探期会持续等待恢复到当前上限的 84%，强交锋期等到 60%。每次 0.6～1.0 秒的短动作可以无限续接，因而界面看着是短动作，实际整段能达到十余秒。
+
+本机旧版四场实际模型对照（71/7319 × 两地图）：退让/恢复占选手时间约 40～50%；单只最长连续退让/恢复 10.08～11.76 秒，双方同时近静止最长 6.80～8.58 秒。这是游戏问题测量，不是物种数据。
+
+### 22.3 新规则、状态归属与参数
+
+新增 `Simulation/BeetleRecoveryPolicy.cs`，只提供 IsRest / Budget / Ready / WantsRest 规则，不操作状态、随机源、Transform。`BeetleSimulation` 仍拥有所有状态切换；`BeetleState.RecoveryTime / RecoveryCooldown` 是逐虫实例字段。
+
+1. 进入 Recover 或 Retreat 后累计 RecoveryTime，二者相互切换、同一动作续接都保留计时。
+2. 至少卸力 0.35 秒，并达到当前可用体力上限的 46%，即可重新决策；无需等到 84%。
+3. 单段预算至多 2.2 秒，个体攻击倾向把预算缩放至 75%～100%，形成小幅错峰；每固定步检查退出，允许一个 dt 的离散误差。
+4. 对手在近距离执行承诺动作时，恢复满 0.18 秒可提前转为 0.32 秒 Brace。先防守，之后才重新选择动作。
+5. 退出恢复启动 0.85 秒重入冷却，防止同一步或下个决策立即继续“续杯”。低体力也能撑地/接近；没有直接填满体力或强迫重攻击。
+6. 外层 Recovery 改为约 1.08～1.55 秒的重整机会；贴角再次发力可在 0.45 秒后提前退出。只有个体确实需要才休息，其他选手仍可寻触、调整距离。
+7. 恢复时身体转向系数 0.45，减弱站着高速追踪对手的感觉；保持原转向上限、速度积分和碰撞约束。
+
+首轮只缩短休息后，出现长期低体力小推挤、两场平地在测量上限仍未结束的问题。随之把已有 `staminaRecovery` 从 7.5 调至 12.5 点/秒，连同撑地/退让按原倍率提供的恢复一起调整；保留上限、疲劳、发力消耗和受击扣减。该变更压缩游戏里的补充时间，没有把模拟体力解释为生理测量。首轮失败对照保存在 `ShortRestLowEnergy.*`。
+
+新增参数均在 `MatchSettings` 的 Individual Recovery 组，可调最短恢复、单段上限、恢复目标和重入冷却；Validate 保护范围。现有 `exchangeRecoverySeconds` 改作重整窗口基准。此次是行为修改，会改变同种子旧版本的对局轨迹；同版本仍要求相同参数与输入时序复现。
+
+### 22.4 换足的动作衔接
+
+`SupportAdjustmentMotion` 保持可独立禁用/删除。每个 1.9 秒固定窗口内有一段 0.65～0.9 秒的调整，左右个体沿用错开的固定步时钟：先平滑偏移重心，窗口中段低幅提起一足并落回，随后回正身体。
+
+脚端最大局部抬升从 0.16 改为 0.07，水平位移从 0.075 改为 0.025；侧倾从 2.4° 改为 1.3°。站稳时进一步缩小，有接触时收敛；姿态和脚端仍通过原 IK、模块退出衔接和防穿透求解。时间窗不随逐帧平衡值伸缩，避免相位忽然跳转。触角模块继续独立寻触。以上幅度为美术参数，需要用户在 Play 中验收自然度。
+
+### 22.5 验证
+
+`BeetleRecoveryValidation.Run()` 检查在关闭体力恢复时，多次 Recover/Retreat 决策仍不能绕过时间上限；达到部分体力目标及时退出并启用冷却；近距离蓄力能打断恢复；低体力恢复策略不抢占已经开始的承诺动作。
+
+`Artifacts/PacingReview/Before.csv / After.csv`：相同两个种子、双地图、0.02 秒固定步，通过正式控制器入口推进并显示。restActorPercent 统计 Recover/Retreat/Disengage；stillActorPercent 统计速度 <0.12 且处于 Recover/Assess/Brace；maxBothStill 为双方同时满足后者的最长连续段。这些分类不等于“没有任何腿或触角动作”。测试上限为 250 秒模拟时间含 3 秒倒计时。
+
+实测对照（本机 Unity Editor，同种子不同规则；不保证其它种子时长）：
+
+| seed / 地图 | 旧最长双静止 | 新最长双静止 | 旧退让/恢复占比 | 新占比 | 新对局时长 |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| 71 / 平地 | 7.82s | 2.08s | 46.86% | 29.53% | 175.30s |
+| 71 / 起伏 | 8.58s | 2.26s | 47.20% | 29.37% | 167.78s |
+| 7319 / 平地 | 7.00s | 1.76s | 39.97% | 27.82% | 136.29s |
+| 7319 / 起伏 | 6.80s | 1.48s | 50.00% | 29.74% | 173.64s |
+
+回归结果：恢复出口/冷却/威胁响应、双地图插值边界与 1 vs 4 显示帧隔离、模块注册/命中/自然对局、平地六档撬飞及坡面未捕获退出、16 组跌落均通过。换足缩小后曾使赛后胜者足端活动低于原有活体门槛，随后仅对 Winner 的重心/脚端幅度补偿 1.3 倍；赛后胜者足端活动由 0.073 提升至 0.095，仍保持交锋中的低幅换足。最大采样残余重叠不超过 0.0005，四场对照中最大位移预算超差 0.000015。主观自然度仍需用户在 Play 中验收。
+
+## 23. 体力策略、攻防机会与肌肉招募启发动画（2026-10-13）
+
+### 23.1 本轮问题与目标
+
+此前动作选择受全局 Probing / Clash 阶段限制较大：对手正在收招，自己也可能仍按周期试探；试探固定接后撤，较难延续有效压力。体力只有一个主要可恢复资源，也不容易区分“仍能站住”和“还能连续强发力”。
+
+本轮借用格斗游戏中距离、攻击承诺、打空收招、反击窗口和资源管理的设计思想。它们是游戏决策抽象，不是关于独角仙具有高级战术意识的生物学结论。没有新增直接操控或玩家连招按钮。
+
+### 23.2 论文依据与适用边界
+
+| 资料 | 可支持的方向 | 本项目采用方式与限制 |
+| --- | --- | --- |
+| Azevedo et al. (2020), *A size principle for recruitment of Drosophila leg motor neurons*, [eLife 56754](https://elifesciences.org/articles/56754)，[作者论文 PDF](https://mannlab.zuckermaninstitute.columbia.edu/sites/default/files/content/elife-56754-v2.pdf) | 果蝇腿运动单位的力与速度不同；慢单位参与姿势维持，快单位产生较强、较快运动；招募还受反馈影响 | 借鉴“慢支撑 + 短促强发力”的动画分工。没有把果蝇的力、毫秒数或疲劳曲线直接当作独角仙参数 |
+| Gabriel et al. (2003), *Control of flexor motoneuron activity during single leg walking…*, [PubMed 摘要](https://pubmed.ncbi.nlm.nih.gov/12884263/)，DOI 10.1002/neu.10237 | 竹节虫单腿实验中，速度和负载与慢、快运动神经元的招募活动有关 | 支持把支撑和快速动作分开考虑。仅核对摘要，不宣称读取全文或取得物种完整肌肉数据 |
+| Tóth et al. (2013), *A Neuro-Mechanical Model Explaining… Stop and Start of Stepping…*, [PLOS ONE e78246](https://journals.plos.org/plosone/article?id=10.1371/journal.pone.0078246) | 竹节虫神经机械模型讨论启停、拮抗肌及慢肌残余刚度在稳定姿势中的作用 | 借鉴“停止后仍有支撑、启动前先卸载”的表现。本文是模型研究，不能等同独角仙角斗实测 |
+| McCullough & Zinna (2013), *Sensilla Density Corresponds…*, [作者实验室全文](https://wordpress.clarku.edu/mcculloughlab/wp-content/uploads/sites/739/2023/09/McCullough-and-Zinna-2013-sensilla-density.pdf)，DOI 10.1603/AN12155 | 独角仙自然交锋中的推、撬、交角侧推，以及角部接触与感觉结构的关联 | 保持探角、找位置、接触后升级等动作语言，不把所有接近都演成持续追踪重击 |
+
+本轮核对了论文网页、摘要和可访问全文。未将论文附带的慢放视频当成已经逐帧观看的素材。研究提供动作组织依据；战术窗口、恢复点数、快慢动画时间均为游戏调参。
+
+### 23.3 状态与模块职责
+
+- `BeetleState` 新增 `BurstReserve`、`ExertionCooldown`、`ExposureRemaining`、`ContactConfidence`、`TacticalAdvantage`、`IntentTime` 、`PryRetryRemaining` 和 `Intent`。状态按每只虫保存，不写入共享动作资产。
+- `BeetleEnergyPolicy` 负责连续消耗、恢复衰减、爆发余量和接触压力的规则；只由 `BeetleSimulation` 调用写状态。
+- `BeetleTacticalSnapshot` 是成对捕获的只读局势。先推进双方计时，再捕获双方视图，最后更新意图，避免后处理者看见前处理者刚选出的动作。
+- `BeetleTactics` 返回意图和动作建议，不能切换动作、移动角色、调用随机源或决定胜者。
+- `BeetleSimulation` 仍是动作切换、命中、冲量、体力和胜负的宿主。模块仍通过 `BeetleMotionContext` / `BeetleMotionSample` 交互。
+- `InsectMuscleAnimation` 只提供曲线。动画不积分肌肉力，不修改体力、不抽取比赛随机数，也不向位置添加瞬间位移。
+
+模块是可替换的策略边界，不新增互相回调的组件网络；状态所属与既有固定步、显示插值、碰撞预算保持一致。
+
+### 23.4 两种能量含义
+
+`Stamina` 仍是耐力点数，受疲劳上限限制。`BurstReserve` 范围为 0～1，表示短时连续强发力的余量。后者不是生命值，也不是一条独立的胜负条件。
+
+强发力持续消耗两种资源；小动作和稳定支撑可以逐步恢复爆发能力。攻击后有恢复延迟，贴身承压时恢复较少，真正卸力或脱离后恢复较有效。鼓励仍只补少量耐力、短暂增强努力，不会把爆发储备直接填满。
+
+| 参数 | 当前值 | 用途 |
+| --- | --- | --- |
+| `staminaRecovery` | 16 点/秒 | 未承压、未处于延迟时的完全恢复基准 |
+| `recoveryResumeFraction` | 0.58 | 恢复至当前疲劳上限的比例后允许退出；同时要求爆发余量至少 0.44 |
+| `exertionRecoveryDelay` | 0.42 秒 | 强发力后的短暂恢复抑制 |
+| `contactRecoveryMultiplier` | 0.55 | 接触中一般恢复倍率；受到攻击威胁另乘 0.55 |
+| `burstDrainPerSecond` | 0.34 | 按动作消耗强度缩放的爆发消耗基准 |
+| `burstRecoveryPerSecond` | 0.28 | 按是否承压及恢复延迟缩放的恢复基准 |
+| `tacticalResponseSeconds` | 0.30 秒 | 意图改变后的最短保持时间，降低攻守反复切换 |
+| `missedAttackExposure` | 0.62 秒 | 打空后的可观察收招窗口 |
+| `failedPryRetrySeconds` | 3.5 秒 | 未找到支点的入角失败后暂缓再次撬举 |
+
+完全恢复或退让且无威胁时，恢复倍率至少为 0.85，防止接触标记持续存在而令双方低体力僵持。原单段恢复预算与退出冷却仍有效，不重新引入长时间同步休息。
+
+普通攻击、模块攻击及托举做功使用同一个 `AttackEffort`：耐力提供基础发力，爆发余量再做有界调节。优势评分不额外加伤害。防守支撑仍保留低能量下限，让落后方有抵住、换位和恢复的可能。
+
+### 23.5 战术意图与动作衔接
+
+| 意图 | 主要条件 | 动作方向 |
+| --- | --- | --- |
+| Assess | 尚无明显优势或机会 | 试探、接近、短寻角 |
+| Pressure | 相对资源与支撑较好，且有足够余力 | 延续接触、短推、合适角度入角；可跨越全局试探阶段 |
+| Counter | 对手已暴露收招、恢复或失衡窗口 | 距离合适时短推反击，尚未够近则先接近 |
+| Defend | 面临近处承诺攻击，尤其自身资源或平衡较差 | 撑地，条件允许时短暂卸力脱离 |
+| Reposition | 支撑/位置危险或需要调整 | 侧向换位；平衡过低时先稳住 |
+| Recover | 耐力或爆发不足 | 争取卸力，不选择付不起成本的连续重攻 |
+
+疲劳压低上限后，意图的准备程度使用 `Readiness01 = Stamina / StaminaLimit`；实际力量与相对资源优势仍使用 `Stamina01 = Stamina / initialEndurance`。这样当前上限已恢复满的虫不会永远被判为待恢复，同时保留真实的疲劳劣势。昂贵动作的绝对资源门槛仍有效。
+
+相对优势综合耐力、爆发余量、平衡、支撑、边缘位置和衰减的接触记忆。它是读取游戏状态的局势估计，不是模拟甲虫真实感知精度。经过平滑与阈值滞回后才影响意图，交换选手得到相反优势，不按身份指定强弱。
+
+收招窗口只在已发生的动作上产生，AI 不读取未来随机结果。已开始的蓄力、攻击或托举不会因为意图变化而被任意取消；下一次合法决策点才采用新建议。若物理反馈显示连续 .6 秒姿态推不动，允许主动卸力撤步退出；这是受阻应对，不会跳过几何约束。接触判定仍决定能否真正命中，窗口本身不给远程攻击或额外冲量。
+
+有优势的有效试探可以衔接短推；中性或疲劳时才收步。强冲后的角力及顶举需要余力，不再无条件串起高消耗动作。失败入角结束时先绕行 .48 秒，并记录 3.5 秒撬举重试冷却；期间仍可短推、模块接触或换位，避免同一个无效角度耗完体力后又重试。模块抽选在战术约束之后进行，不能覆盖正在需要的防守或抢收招短推。
+
+### 23.6 肌肉启发动画：直接控制表现
+
+这里没有建立 Hill 肌肉、肌腱或神经网络仿真。用户要求的肌肉驱动参考被转译为以下直接动画曲线：
+
+1. **慢支撑与快招募**：`Recruit` 开始有保持与小幅加载，在归一化 0.27～0.35 段迅速增加动作幅度，随后保持并较长卸力。推顶、侧顶和探角不再都用对称正弦起落。
+2. **发力与接触窗口对齐**：模块强接触窗口在快速招募段之后开启，仍必须检测到相应角部接触。爆发余量影响关节响应和强动作幅度。
+3. **摆腿先解锁再快速前送**：`Swing` 分为小幅启动、快速位移和末段减速。已支撑脚继续保持世界位置，迈步时长有小幅确定性差异，不让六足一起加速。
+4. **行进中的短停顿**：接近、绕行和探角的主动速度带短暂启停；施压时保留更多持续前进量。外部受击速度不被此曲线削掉。
+5. **连续性约束保留**：头角仍平滑到目标，胸部高度也增加过渡；抬举、抛出和落败接续使用原有姿态来源。快速招募不能绕过 IK、地形投影或接触位移预算。
+
+曲线是有界、连续的采样函数。“突然动了”来自短启动与长停顿的对比，而不是跳帧、瞬移或位置噪声。
+
+### 23.7 验证与人工验收
+
+验证记录位于 `Artifacts/StrategyReview/`。新增菜单 `Tools/Beetle Arena/Validate Strategy And Energy`，检查真实 Step 下的反击选择、低体力防守、打空收招、资源消耗恢复和对称局势评估。再结合真实模型双地图对局、动作插值、模块接触与撬投回归。
+
+第一版实测四场都在 247 秒上限时仍未结束，不能作为完成结果。根据这一失败记录修订受压恢复与顶举进入条件，保留失败记录以免后续再次把“分出攻防”调成永久防守。
+
+最终验证：策略/能量、恢复退出、运动连续性/显示隔离、杠杆撬投、模块接触/赛后活动、中足可达范围、16 组落败恢复全部通过。模块自然局使用正式 AdvanceFixedStep / Present 入口，结果如下（种子 71）：
+
+```text
+natural arena=0: finished=Finished, seconds=31.0, winner=1, starts=ForelegGrappleMotion:2,HornFeintMotion:2, hits=0, blocked=0.00s, excess=0.000000, overlap=0.000430
+natural arena=1: finished=Finished, seconds=186.4, winner=0, starts=ForelegGrappleMotion:17,HornFeintMotion:7,DrivingPushMotion:4,HornBindMotion:6, hits=6, blocked=0.34s, excess=0.000000, overlap=0.000496
+```
+
+平地受控夹具覆盖六档实际撬投；起伏台该夹具未形成托举支点，验证的是失败退出，不代表岩台自然战斗已覆盖六档。为匹配双能量成本，第四/第五档受控施力输入由 1.45/.46 调至 1.65/.55；档位阈值和成功断言未放宽。
+
+中间版本有起伏台 277 秒未结束及一次连续受阻 3.02 秒的回归失败。保留中间记录，新增失败入角换位/重试冷却、按当前上限判断准备程度，以及基于接触反馈的撤步后再测；没有放宽原来的结束、穿透、位移或卡顿断言。先前 150～183 秒的四场测量属于中间版本，不能当作最终版本承诺。
+
+采样不保证任意种子都在固定秒数结束，也不能证明跨平台 PhysX 逐位确定。自然度需人工观看：特别检查短启动是否像主动发力、优势能否看懂、防守后能否接上脱离或反击，以及快速运动是否产生抖动。
+
+## 24. 中足伸展限位与坡面抬胸反馈修复（2026-10-13）
+
+### 24.1 问题证据
+
+用户反馈第二对侧肢像残疾。检查源模型绑定、左右索引与关节方向，未发现中足左右绑反；问题在足位可达余量。中足股节和胫节总长约 .98592 模型单位，扣除 reachMargin 后可达上限约 .97113。原落地名义足位对应髋踝距离 .95928，占上限约 98.8%；前后足约为 86%～87%。中足稍向后拖 .022 模型单位便触及硬限位，统一 .40×size 的补步误差阈值无法及时处理。
+
+在同种子 71、起伏台、1,800 固定步的诊断中，每侧中足合计采样两只虫共 3,600 次：左中足近限位占比 55.3%，右中足 62.0%；最大目标误差分别 .3213、.2661 世界单位。这里“近限位”用髋膝方向与膝踝方向夹角小于 21°定义，不能解释为真实昆虫关节的解剖损伤。
+
+### 24.2 修复方式与所有权
+
+1. 中足名义足点向前收 .18 模型单位，保留约一成伸展余量。Builder、现有场景、ArticulatedBeetle.prefab 和 supportFootOffsets 一起更新，原 FBX 顶点、骨长和弯曲方向保持不变。
+2. PlanSupport 仅规划名义脚点和新一步终点。先根据局部地表法线计算足节朝向，再用足尖减去足节偏移得到踝目标；以可达上限的 .94 为半径，根据垂直高度计算剩余水平半径，必要时收回 XZ。最多三轮重新采样坡面，最后再次对齐足底高度。
+3. SupportReach 使用同一足节偏移测量当前脚点相对髋的可达比例。超过 .96 且偏离名义点超过 .04×size 时请求紧急补步，仍受同时抬腿数量约束。
+4. 已支撑的 planted 继续世界锁定；不会每帧直接拖到新的可达点。摆腿时长在起步确定，足点沿连续曲线推进。最终 Solve 的硬限位仍保留作兜底，不能拉长骨段强行够地。
+5. 若竖直距离本身不可达，PlanSupport 不改根位置、不伪造落地，交回最终 IK/碰撞处理；陡峭边缘及被托举状态仍可能暂时够不到地面。
+
+另修复本轮发现的胸部高度平滑反馈：AvoidFeelerGround 在姿态之后叠加 postureLift，直接 Lerp(bodyPivot.localPosition, target) 会把上一步坡面抬胸带回下次动作。现改成独立 bodyHeightOffset 缓存，每步由 bodyRest + offset 绝对生成动作高度，最后才加坡面修正，Initialize 清零。
+
+### 24.3 验证与局限
+
+同一 36 秒诊断窗口中，中足近限位降至 0.31% / 1.03%，最大目标误差降至 .0067 / .0668 世界单位。自然对局路径会因姿态与接触修正变化，因此这不是逐帧相同位置的对照，也不能宣称所有动作都零误差。
+
+新增 Tools > Beetle Arena > Validate Middle Leg Reach：双擂台真实模型，统计两侧中足接近限位时间、超过 .12 世界单位的目标误差及骨长保持情况。报告在 Artifacts/StrategyReview/LegReach.txt。本轮最终专项：平地/岩台近限位比例 0.20% / 0.67%，超过 .12 单位误差的采样为 0，骨长误差显示为 0.000000。
+
+需要用户在 Play 中重点观看第二对侧足：向前行进时是否及时换脚、贴身顶角时是否仍有支撑弯曲、岩台上是否拖行，以及换脚是否过于频繁。数值回归不能替代这一观感验收。
+
+### 24.4 持续受阻后的行为反馈
+
+BeetleState.ContactBlockedSeconds 由 ContactSolver.Solve 保存：地面姿态本步只接受不足 5% 时累积 dt，恢复运动后以两倍速度衰减。AI 读取上一固定步结果，超过 .35 秒优先换位；超过 .6 秒仍在持续推顶/蓄力时请求 .34 秒撤步，再由合法决策点换角度。Circle / Disengage 不重复从零启动。托举中的攻击者和空中虫仍走原来的托举/弹道规则。
+
+这里只改变意图和目标速度，脚点、头角、根位移均继续通过原 IK、姿态回退和碰撞预算。随机模块不能覆盖 Defend / Recover / Reposition / Counter 意图。相关状态所有权和受阻撤步合约已进入项目地图与策略验证。
+
+## 25. 叉角切向互锁与接触法线备用求解（2026-10-13）
+
+### 25.1 用户现场与失败原因
+
+现场种子 1132085498，平地木桩，模拟时间约 127.33 秒。时钟继续运行，两只虫均处于 Circle / Reposition，但 AcceptedMotionFraction 长期为 0；累计已受限 901 步，ContactBlockedSeconds 约 15.66 秒。体力仍为 87.2 / 88.8，所以不能用增加体力、缩短休息或反复重启 AI 动作来解释此例。
+
+叉角与对方头角接触法线约为 (.323, -.195, .926)，几乎垂直于两虫中心连线。SeparateCentered 把重叠投影到中心轴，再叠加多轮分离/地形修正。即使仅尝试原提案的 1/128，约 .001617 世界单位的重叠仍导致两只虫分别移动 .12591 / .12811，超过本步 .08 预算；整步被拒绝，恢复上一步安全姿态，下一步又重复同一过程。
+
+原安全姿态残余为 .000479，处于容差内。问题发生在推进方向与接触几何不匹配时，仅减小推进比例没有提供另一条解开路径。第 24.4 节的受阻行为反馈仍有用途，但几何层完全拒绝移动时，换位意图本身无法解开叉角。
+
+### 25.2 求解顺序和边界
+
+1. 先生成完整动作/IK 提案，执行原分离方式；成功则立即接受，不增加正常无阻步骤的备用求解。
+2. 初次失败后，从同一份原始提案恢复完整姿态与原速度，普通接触改用 SeparateAlongContacts。每轮选择最深的真实代理接触，将法线投影至水平面，保留地面双方的水平退让。
+3. 深度按水平法线分量换算位移；极小水平分量退化为水平中心方向，中心重合则用固定水平轴。普通接触 A 的位移份额为 mB / (mA + mB)，避免未指定攻击方时固定偏向某只虫。
+4. 完整提案仍不合格则依次尝试 1/2、1/4，直到 1/128。每次恢复原速度，失败试算不得反复扣除接近速度。所有比例均失败才保留上一步安全姿态。
+5. 原角下托举的三维分离、脱角恢复、入角双方的非对称退让仍优先执行；新备用路径不能把普通叉角互碰当成托举。逐接触分离后残余仍过大时保留中心轴兜底。
+6. 最后检查双方及环境全部代理。接受门槛仍是残余不超过 .001，以及根位移不超过原运动预算 + .0001 浮点余量；contactMotionSpeed、代理尺寸及碰撞开关未为解困放宽。
+
+模拟与显示分别持有 motion / viewMotion。ProjectView 也必须有法线备用方向，否则权威位置前进后，可见模型可能仍锁在旧显示姿态。显示路径 changeVelocity=false，不调用 YieldHead / YieldLeg / AcceptSolvedPose，不写 BeetleState。物理修正只能通过正式固定步提交；显示帧数不能改变战斗轨迹。
+
+### 25.3 头角重试缓存
+
+独立审查发现：BeetleContactMotion.Apply 还原 Transform，YieldHead 却用缓存 headPitch 再减角，失败重试会累计退让。旧逻辑中同一 12° 提案第一次退至 8°、恢复 Transform 再试却退至 4°；这不是同一候选姿态应有的结果。
+
+YieldHead 改为从当前 headPivot.localEulerAngles 读取 pitch / yaw，再施加一次有界退让，并更新动画缓存。原本已经越过 -55° 退让限位的抬头姿态保持原值，不能被强拉回限位。此修正属于局部头角试算，不把渲染路径接入动画缓存。
+
+### 25.4 可重复现场与验证边界
+
+已保存 Fixtures/FlatHornDeadlock.json，通过独立临时场景恢复真实模型的动态状态、骨骼、腿部缓存。最初捕获没有保存根旋转，且 Heading 是尚未完全接受的朝向指令，不能直接当作实际根旋转；最终用六足已接受的世界位置及局部骨链反求平地 yaw，最大拟合误差 .00000024，恢复残余 .00047870，与现场吻合。原始记录、反求结果与最初无效夹具测试均保留，不能把未校准记录作为基线。
+
+夹具不是完整输入录像：比赛随机源从种子重新建立，没有恢复此前消耗位置；它用于稳定验证已知几何互锁能否正常退出。修改骨架或私有字段后，恢复工具会明确报错，需重新检查夹具，不能忽略字段继续声称同一现场。
+
+对同一现场连续运行 600 个固定步（12 秒），分别安排每步 0、1、4 次显示。修复前，三种模式都持续卡住整个 12 秒；修复后两只虫在 .06 秒内均离开原点超过 .15 世界单位。测试同时检查连续零推进、整步预算、可见残余和各显示次数的权威位置差，不以“时钟仍在走”代替恢复行动。
+
+八组头角候选（两只模型，各 12° / -30° / -53° / -62°）验证重试一致、偏航保持、超限抬头不被拉回。完整回归和原故障种子的双擂台自然对局结果见下列实测记录。
+
+**CapturedReplay.txt**
+
+```text
+CAPTURED CONTACT DEADLOCK
+2026-10-13T12:43:40.1307349+08:00
+PASS: 8 head retry cases are identical, preserve yaw and do not pull back a head raised beyond the yield limit.
+renders=0: progress=0.06s, longestBlocked=0.00s, overlap=0.000448, budgetExcess=0.000000, simulationDifference=0.0000000
+renders=1: progress=0.06s, longestBlocked=0.00s, overlap=0.000448, budgetExcess=0.000000, simulationDifference=0.0000000
+renders=4: progress=0.06s, longestBlocked=0.00s, overlap=0.000498, budgetExcess=0.000000, simulationDifference=0.0000000
+ALL CONTACT ESCAPE CHECKS PASSED
+```
+
+**Regressions.txt**
+
+```text
+CONTACT ESCAPE REGRESSIONS
+2026-10-13T12:39:47.0645595+08:00
+PASS: Captured deadlock / 0, 1, 4 render isolation
+PASS: Motion continuity
+PASS: Six lever throw tiers
+PASS: Modules / natural matches / alive motion
+PASS: Middle leg reach
+PASS: Fall recovery
+```
+
+**Natural.txt**
+
+```text
+NATURAL DEADLOCK REGRESSION
+2026-10-13T12:44:11.1488629+08:00
+seed=1132085498, arena=0, phase=Finished, seconds=186.723, winner=1, steps=9487, maxZeroAcceptedSeconds=0.0000, maxBudgetExcess=0.0000000, maxPenetration=0.0004994
+seed=1132085498, arena=1, phase=Finished, seconds=135.032, winner=1, steps=6903, maxZeroAcceptedSeconds=0.0400, maxBudgetExcess=0.0000576, maxPenetration=0.0005379
+PASS: both arenas finished; no continuous zero accepted motion above 1 second; penetration < .003; budget excess < .0003.
+```
+
+首次只有法线备用路径时，种子 71 的起伏台对局在 277 秒测试上限内未结束；FirstModuleValidation.txt 保留了该失败。最终结果以以上记录为准，没有放宽结束、穿透、位移或受阻断言。
+
+这些样本证明已捕获卡死能解开，并覆盖列出的回归场景；不能保证任意种子和任意模型都没有互锁，也不能替代 Play 中对侧移、撤角是否突兀的人工观看。此次未引入新的生物行为，因此沿用既有动作资料，修复依据来自可重复几何诊断。
+
+## 26. 触角与口器的首次绑定分离（2026-10-13）
+
+> 本节保留首次两骨绑定的历史。当前已真实切分为独立网格，资源结构与验证以第27节为准。
+
+### 26.1 原模型分组不等于解剖部位
+
+用户指出下巴似乎和触角连在一起。对原 FBX 的三角拓扑及分色腹面渲染检查后确认：tripo_part_2 与 tripo_part_14 分别包含一侧细触角，以及跨过头部中线的大块口器/下巴几何。两块各自连通，不能用“连通岛”直接自动拆为触角和口器。旧 Builder 将每一整块 RigidPart 挂到 Left / Right antenna 下，因此触角摆动和避地会带着口器转动。左右编号本身没有反。
+
+本次使用头部与触角两骨蒙皮表达活动边界，保留源顶点、三角形、UV、纹理及连接处，不通过删面制造缝隙。口器仍属于头部；没有加入新的咀嚼行为。
+
+### 26.2 当前模型的显式标定
+
+以下坐标在 BeetleImportedModelBuilder.Point 转换后的模型空间中，属于这个 FBX 的校准，不能直接推广到其他模型：
+
+```csharp
+// Part2: side=-1; Part14: side=+1.
+float antennaWeight = p.z >= 1.60f
+    ? Mathf.SmoothStep(0, 1, Mathf.InverseLerp(.235f, .285f, side * p.x))
+    : 0;
+// headWeight = 1 - antennaWeight.
+```
+
+中央口器及下巴权重为头部 1；触角远端为触角 1；仅基部 .05 模型单位窄带平滑过渡。该区域从实际颈部截面检查得到，保守排除口器，不以到触角节点的欧氏距离给整块最近邻分配。
+
+触角枢轴设为 `(side*.235, .477832, 1.64343)`，原枢轴约为 `(side*.25, .50, 1.45)`。新枢轴位于真实连接颈部，避免绕后方虚拟中心甩动。避地 surfacePoints 只从接近全触角权重的顶点取极值，口器不再进入触角的探地集合。
+
+### 26.3 架构与维护
+
+- `Editor/Model/BeetleAntennaBindingUpgrade.cs` 集中保存本模型的两骨权重、安装点、避地采样及增量更新规则；Builder 调用同一规则，避免生成器与现有资源分叉。
+- Part2 / Part14 的同名 GameObject 与层级路径保留，Renderer 改为 SkinnedMeshRenderer；新增骨骼只使用现有 headPivot 与 antennaPivot 引用，不引入独立更新循环。
+- 动画仍只驱动 headPivot、antennae；BeetleModelRig 仍拥有触角避地缓存。升级工具维护 ContactRig.surfaces 中的 Renderer 引用，避免留下被移除 MeshRenderer 的空引用。
+- 增量更新在非 Play 模式处理正式场景选手与 ArticulatedBeetle.prefab，通过 Unity 资产 API 更新 Part2/14 网格，保留已有资源 GUID。原 FBX 不写入。
+- 卡死夹具恢复动态旋转及原碰撞/步态状态；触角安装点和子网格的静态位置由当前标定资产提供，旧现场不能覆盖新的蒙皮安装点。
+
+### 26.4 验证和观感边界
+
+新增 `Tools > Beetle Arena > Validate Feeler Binding`：检查原顶点、三角形与 UV 保留；场景两只虫分别单独转动左右触角，测量实际蒙皮后的中央口器、另一侧触角、活动远端；随后抬头检查整块能跟随头部运动。
+
+测量通过 CPU 烘焙得到可见蒙皮网格，并按 Renderer 坐标变换回世界空间，不能只检查骨骼名字或权重数组。API 约定参考 [Unity SkinnedMeshRenderer.BakeMesh](https://docs.unity3d.com/6000.0/Documentation/ScriptReference/SkinnedMeshRenderer.BakeMesh.html)。
+
+```text
+FEELER / MOUTH BINDING
+2026-10-13T12:56:32.6985571+08:00
+actor=0, side=0: jawMotion=0.00000035, otherSideMotion=0.00000000, antennaTipMotion=0.201801
+actor=0, side=1: jawMotion=0.00000084, otherSideMotion=0.00000000, antennaTipMotion=0.148221
+actor=0: headFollowError=0.00000074
+actor=1, side=0: jawMotion=0.00000070, otherSideMotion=0.00000000, antennaTipMotion=0.199149
+actor=1, side=1: jawMotion=0.00000024, otherSideMotion=0.00000000, antennaTipMotion=0.146274
+actor=1: headFollowError=0.00000029
+PASS: source geometry and UVs preserved, mouth follows head only, each feeler moves independently.
+```
+
+以下是触角资源更新后的最终回归；第25节中的带时间戳记录保留为口器修正前的诊断历史。
+
+**CapturedReplay.txt**
+
+```text
+CAPTURED CONTACT DEADLOCK
+2026-10-13T12:57:16.4856835+08:00
+PASS: 8 head retry cases are identical, preserve yaw and do not pull back a head raised beyond the yield limit.
+renders=0: progress=0.06s, longestBlocked=0.00s, overlap=0.000467, budgetExcess=0.000000, simulationDifference=0.0000000
+renders=1: progress=0.06s, longestBlocked=0.00s, overlap=0.000467, budgetExcess=0.000000, simulationDifference=0.0000000
+renders=4: progress=0.06s, longestBlocked=0.00s, overlap=0.000498, budgetExcess=0.000000, simulationDifference=0.0000005
+ALL CONTACT ESCAPE CHECKS PASSED
+```
+
+**Regressions.txt**
+
+```text
+CONTACT ESCAPE REGRESSIONS
+2026-10-13T12:57:16.4846874+08:00
+PASS: Captured deadlock / 0, 1, 4 render isolation
+PASS: Motion continuity
+PASS: Six lever throw tiers
+PASS: Modules / natural matches / alive motion
+PASS: Middle leg reach
+PASS: Fall recovery
+```
+
+**Natural.txt**
+
+```text
+NATURAL DEADLOCK REGRESSION
+2026-10-13T12:59:53.3822114+08:00
+seed=1132085498, arena=0, phase=Finished, seconds=93.956, winner=1, steps=4849, maxZeroAcceptedSeconds=0.0000, maxBudgetExcess=0.0000000, maxPenetration=0.0004945
+seed=1132085498, arena=1, phase=Finished, seconds=43.921, winner=0, steps=2347, maxZeroAcceptedSeconds=0.3000, maxBudgetExcess=0.0000494, maxPenetration=0.0004997
+PASS: both arenas finished; no continuous zero accepted motion above 1 second; penetration < .003; budget excess < .0003.
+```
+
+原模型 SHA256 为 62205D24DB43744C3F7E8184FCA5D99D34E362CE208B0EDDA017ED9115913F7A，修改后复核保持一致。分色诊断和摆动特写位于 Artifacts/HeadSegmentation。自动验证确认绑定隔离；触角基部的大角度弯折及游戏距离下的自然度仍需在 Play 中人工验收。
+
+## 27. 触角和口器的真实网格拆分（2026-10-13）
+
+用户要求从动画控制分区进一步改为实际拆分。现在每只虫的左右触角和两块口器分别使用独立 Mesh、Renderer 和 GameObject。不是仅给同一个网格改权重，也不是只隐藏部分面。
+
+### 27.1 资源和对象
+
+生成资源位于 Assets/BeetleArena/Generated/ImportedModel：
+
+| 资源 | 对象 | 控制方式 |
+| --- | --- | --- |
+| Part2_Antenna.asset | Left antenna/tripo_part_2 | 两骨蒙皮：切口固定跟随头，远端跟随左触角 |
+| Part14_Antenna.asset | Right antenna/tripo_part_14 | 两骨蒙皮：切口固定跟随头，远端跟随右触角 |
+| Part2_Mouth.asset | Head horn lever/Mouth from part 2 | MeshRenderer，刚性跟随头部 |
+| Part14_Mouth.asset | Head horn lever/Mouth from part 14 | MeshRenderer，刚性跟随头部 |
+
+上表路径为头部以下的相对层级。旧触角对象名保留以兼容动画引用与已捕获接触夹具，口器对象新增在头节点下；每只虫由22个源分组对应的Renderer增加为24个。场景两只选手和 ArticulatedBeetle.prefab 已同步，生成器也走同一拆分流程。原 bug.fbx 保留为输入；这是实际用于游戏的 Unity 网格资源拆分，没有另行导出或覆盖原 FBX。
+
+### 27.2 切分算法和接缝
+
+Editor/Model/BeetleHeadMeshSplit.cs 是无场景依赖的裁切器。当前模型空间中，触角区域是 side*x >= .235 且 z >= 1.60。对每个源三角形先按横向平面裁切，再按前向平面裁切；口器由两个互补区域组成，触角取得交集。跨界三角形生成交点并扇形三角化，交点的UV、法线、切线和可选颜色/UV2由原边插值得到。
+
+两份 Mesh 各自拥有切口顶点，位置及UV保持一致。接缝不是一条跨对象共享的拓扑边，但装配后的表面重合，不删除跨界面留下洞，也不加入重叠封口面。触角切口顶点的触角骨权重严格为0，口器刚性绑定头部，因此摆动时双方切口都跟随同一个头部变换。根部窄带向远端的权重平滑增加；前向边界也添加1.60→1.62的过渡，防止该方向出现权重跳变。
+
+### 27.3 构建和状态归属
+
+BeetleAntennaBindingUpgrade 负责生成四个网格资产、安装Renderer、替换/补充ContactRig.surfaces及维护避地采样。重复执行复用原对象和资产GUID。菜单为 Tools > Beetle Arena > Split Antenna And Mouth Meshes。BeetleImportedModelBuilder 调用同一安装逻辑；原两块混合生成网格若已存在则保留作旧资源，不再被新口器/触角Renderer引用。
+
+运行时没有新增更新循环、物理刚体或独立战斗状态；头部与触角动画接口保持原样。碰撞代理不按可见网格数量增加。切分、权重及资源维护只发生在编辑器。
+
+### 27.4 验证
+
+新增 Validate Split Head Meshes；原 Validate Feeler Binding 菜单转发到新检查。验证独立资产与对象、所有Renderer引用、表面面积守恒、切口位置/UV对应、三组大角度姿态下的切口距离、口器不被牵动以及另一侧触角隔离。裁切会新增顶点并细分三角形，因此旧的“顶点数/索引数组与源完全相同”断言已被几何与运动检查取代，原贴图仍复用。
+
+**Validation.txt**
+
+```text
+SPLIT HEAD MESH VALIDATION
+2026-10-13T13:12:30.4048361+08:00
+actor=0, part=2: triangles=223+726, areaError=3.770E-010, seamVertices=28, uvError=0.000E+000, animatedSeamError=8.450E-007, mouthMotion=0.000E+000, otherMotion=0.000E+000, tipMotion=0.31289
+actor=0, part=14: triangles=224+480, areaError=1.390E-009, seamVertices=32, uvError=0.000E+000, animatedSeamError=1.316E-006, mouthMotion=0.000E+000, otherMotion=0.000E+000, tipMotion=0.18001
+actor=1, part=2: triangles=223+726, areaError=3.770E-010, seamVertices=28, uvError=0.000E+000, animatedSeamError=1.046E-006, mouthMotion=0.000E+000, otherMotion=0.000E+000, tipMotion=0.30878
+actor=1, part=14: triangles=224+480, areaError=1.390E-009, seamVertices=32, uvError=0.000E+000, animatedSeamError=9.763E-007, mouthMotion=0.000E+000, otherMotion=0.000E+000, tipMotion=0.17765
+PASS: independent mesh assets/objects, complete surface, matching UVs, fixed mouth and continuous animated seams.
+```
+
+**Regression.txt**
+
+```text
+2026-10-13T13:12:52.2120682+08:00
+PASS: repeat upgrade keeps GUIDs and unique mouth objects; split mesh/UV/seam validation; captured deadlock and render isolation; motion continuity.
+```
+
+特写位于 Artifacts/HeadSplit/After-0-1.png 和 After-1-1.png：绿色是独立口器，红/青分别是独立触角。诊断颜色仅用于临时场景，游戏保留原贴图。切口在已测摆动范围内连续；如需将触角从头上整体拔开单独展示，需要另做断面封口，当前以活体连接状态为目标。
+
+
+## 28. 下颚独立切分与进食动画接口（2026-10-13）
+
+### 28.1 范围与资料依据
+
+在第27节的真实网格拆分之上继续切分前部口器。`下颚/颚片`在代码中表示当前美术模型的可动区域，**不是通过解剖扫描确认的完整 maxilla 或 mandible**。源模型并未细分出可靠的真实口器结构，尤其 Part2 横跨两侧，Part14 还混有后部薄片。因此采用模型坐标区域裁切，而不将原零件整个当作一侧颚骨。
+
+参考：
+
+- [Adult rhinoceros beetles use a sweeping pattern to ingest high-viscosity fluid（2023）](https://pubmed.ncbi.nlm.nih.gov/37821056/)：独角仙摄取高黏度液体时可使用 maxillae 扫动，支持未来增加扫动控制，而不只做张合。
+- [Ichiishi 等，2019，Completely engaged three-dimensional mandibular gear-like structures…](https://pmc.ncbi.nlm.nih.gov/articles/PMC6331513/)：区分触角、下颚、下唇与大颚；大颚有耦合结构和同步运动。不能据此把所有口器一律设为独立随机运动。
+
+这次仅准备切分、绑定、接口与预览，没有实现进食行为。角度、切线和枢轴为美术适配参数，不是上述论文中的实测值；后续真实进食需结合目标镜头验收，并可能需要补充内口腔/刷状结构的模型。
+
+### 28.2 几何与纹理
+
+所有坐标为 `BeetleImportedModelBuilder.Point` 转换后的模型坐标，不含 Actor 尺寸/visualScale。
+
+1. 先保持原来的触角分区（外侧 x 与前方 z 两平面）。
+2. 在剩余口器中取 `z >= 1.50` 且 `abs(x) <= 0.20` 的前部中央区域作为可动颚片，再按 `x = 0` 分左右。
+3. 其余原表面保留在 `Part2_Mouth` / `Part14_Mouth` 固定基部；逐级半空间互补裁切，不简单删除跨界整面。
+4. 裁切插值位置、UV0、UV2、法线、切线、顶点色。所有输出仍保留原来的材质/纹理。原始 FBX 完全保留。
+5. Part2 产生左右两块；Part14 只有右侧区域非空，故不生成空的左侧网格。可动 Mesh 共3个，配合2触角+2固定基部共7个当前分割资源。
+
+### 28.3 骨骼与切口
+
+`Head horn lever` 下有 `Left jaw pivot` 和 `Right jaw pivot`。枢轴模型位置分别为 `(-0.16,0.43,1.50)` 和 `(0.16,0.43,1.50)`。三个独立 SkinnedMeshRenderer 只绑定两根骨：头部与所属侧颚枢轴。右侧来自两个源零件的区域共用同一个枢轴。
+
+可动权重：
+
+```text
+SmoothStep(InverseLerp(1.50,1.58,z))
+* SmoothStep(InverseLerp(0.20,0.13,abs(x)))
+```
+
+后缘 z=1.50 和外缘 abs(x)=0.20 权重严格为0，跟随头部；前部、内侧逐渐跟随颚枢轴。这样与固定基部相接的切线不被拉开。左右中央接触边可随开合分离，是开口的预期效果。没有新增遮掩原表面的重复封口面。
+
+Renderer 静止矩阵保持为 model 矩阵；bindposes 用实际 head/pivot 与 Renderer 的静止矩阵构建。不能把当前预览姿态当作新的绑定姿态。升级入口会先恢复身体/头部绑定姿态，完成后恢复场景姿态。
+
+### 28.4 接口、状态归属与接入时机
+
+```csharp
+BeetleJawRig jaws = actor.animator.importedRig.jaws;
+jaws.SetPose(opening: 0.6f, sweep: 0.2f);
+jaws.ResetPose();
+```
+
+- opening 限定0..1，0为原始静止形态；左右绕本地Y轴反向张开，默认最大12°。
+- sweep 限定-1..1，绕本地X轴共同小幅扫动，默认最大6°。
+- 输入 NaN/Infinity 回到0。角度配置也有范围限制；禁止通过负开合将两片强行压穿。
+- 组件保存引用、静止旋转和运动幅度。未来的进食模块拥有食物目标、节律、状态与开合采样值；JawRig 不拥有随机时钟、战斗状态或根运动。
+- 只由 SetPose 写颚枢轴；不写头部、触角、碰撞根节点。组件没有 Update/LateUpdate，避免与既有显示插值争写。
+- 将来应在固定步动画姿态生成之后、CaptureSimulationPose 之前施加颚姿态。不能在任意显示帧直接写入后指望自动进入模拟快照。
+- 现有 BeetlePoseBuffer 根据模型树自动收集 Transform，因此新增颚枢轴会随其他骨骼一起捕获/插值。ResetRig 调用 ResetPose，重开局还原原形态。
+- 新增Renderer登记到 ContactRig.surfaces；不为小颚片新增会影响战斗受力的碰撞体。
+
+### 28.5 编辑器验收与验证范围
+
+选中甲虫根节点，在 BeetleJawRig 组件菜单使用 `Preview Open Jaw`，再用 `Restore Closed Jaw` 还原（支持 Undo）。预览只用于观察，保存正式场景前应还原。
+
+已验证：两只场景甲虫的3个颚片均可动；默认最大开合和正/零/负扫动下固定接缝误差约1.1e-6 Unity单位，触角位移0，复位误差0；总表面积与源网格一致，UV接缝匹配。重复升级复用GUID，不重复创建对象。原触角大角度测试继续通过。
+
+输出：`Artifacts/JawSplit/Validation.txt`、`Artifacts/JawSplit/After-0-1.png`（静止分色）、`After-1-1.png`（开合分色）。橙/紫分别表示两侧可动颚片，绿色是固定基部，红/青是触角。分色材料仅用于临时验收，不保存进正式游戏。
+
+数值验证证明切分完整及控制隔离，不证明当前美术网格等同真实解剖结构，也不代表已经完成自然进食动画。近景的切分范围与未来动作幅度需由用户亲自视觉验收。
+
+
+## 29. 人与AI共用的编辑器调试工具（2026-10-13）
+
+完整操作、接口及限制见 [DebugWorkbench.md](DebugWorkbench.md)。本节描述代码接入边界。
+
+### 29.1 固定步与观察
+
+MatchController.AdvanceFixedStep保持原有顺序，在模拟及接触反馈完成后发出Editor专用Stepped事件。EditorStep临时解除控制器暂停，调用同一固定步，显示最终接受姿态，再恢复暂停；不修改全局Time.timeScale。调试慢放仍使用0.02秒固定步，通过编辑器墙钟累计调度，不缩小物理dt。
+
+SetAction使用CallerMemberName/CallerLineNumber给出真实切换来源；Decide记录已经抽取的choice和实际分支门槛，不另外调用Random。接触钩子记录原有ComputePenetration结果与候选修正，不为记录改变分离轴、预算或接受条件。自定义模块CanStart=false只报告复合条件未通过，不猜测未知模块内部子条件。
+
+### 29.2 完整现场与姿态录像
+
+BeetleDebugGraph使用显式节点ID保存共享引用，白名单涵盖项目数据类型、Unity数学值类型、Random、数组/List/Dictionary。字段枚举包含私有及readonly实例字段，排除静态字段和委托；Unity组件只存场景/资产引用。恢复时先分配数据对象、恢复字段/集合，再解析全部组件写入计划，最后才应用到现有场景。对类型、字段、资产和骨架引用变化显式报错。
+
+快照根包括控制器、Actor、程序动画器、模型Rig、接触Rig和JawRig，因此捕获Simulation随机源、Motion冷却/命中锁、插值两帧、腿部缓存、接触安全/提议姿态、托举锚点等。Actor的临时地面标记资源不序列化，恢复后按已恢复ground重建。模拟事件重新连接，表现侧接触反馈重绑。
+
+指纹结合格式版本、Unity/CLR版本、配置内容、场景资产依赖和Runtime源码。跨平台/不同PhysX版本不保证逐位一致；声效、粒子、相机内部时钟没有录制。现场文件读取有64MB与JSON深度限制，节点数有上限；没有TypeNameHandling任意类型实例化入口。
+
+姿态录像是独立格式，只保留模型Transform的局部TRS和图表指标；最多300固定步。查看旧帧前缓存当前显示姿态，返回当前现场后还原，不改Simulation。实际可续算必须载入完整现场。动作时间定位采用恢复初始快照再顺序固定步计算，不直接倒拨状态机。
+
+### 29.3 工具隔离与性能
+
+工作台预览使用BeetleValidationScene的场景/配置副本，只读共享动作资产。原场景的Scene可见状态保存后临时隐藏，退出时恢复。拖脚测试只允许暂停的隔离预览，临时IK改动会被完整还原。退出、域重载、切换Play时释放场景和资源。
+
+编辑器记录最多1200条诊断；单次接触尝试的部件采样有96条上限。记录需要分配JSON及姿态数组，不应在开启记录时评价正式游戏性能。UI、序列化和文件桥都位于Editor目录，运行时观察钩子及专用控制方法仅UNITY_EDITOR编译。
+
+### 29.4 已验证
+
+两地图从非整数显示插值现场恢复后，连续60固定步的完整Simulation/Random/Contact对象图相同；开启观察与Inspect未改变结果。载入另一套场景实例后10步相同。验证了指纹拒绝、姿态录像不反写、动作预览重复定位、UXML导入、退出时场景数一致、拖脚还原及相机PNG导出。真实Play模式单步增加0.02秒，快照恢复后10步位置一致。报告在Artifacts/DebugWorkbench。

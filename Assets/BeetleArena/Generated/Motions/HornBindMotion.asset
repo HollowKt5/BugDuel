@@ -19,6 +19,6 @@ MonoBehaviour:
   evidence: 'Trypoxylus dichotomus pushing/binding: McCullough & Zinna 2013, Results
     Fighting Behavior. https://doi.org/10.1603/AN12155 . Timing/amplitudes are game
     approximations.'
-  headDrive: 29
+  headDrive: 34
   contactImpulse: 1.1
-  braceTravel: 0.2
+  braceTravel: 0.25

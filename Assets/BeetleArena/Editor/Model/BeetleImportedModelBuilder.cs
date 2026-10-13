@@ -44,17 +44,22 @@ public static class BeetleImportedModelBuilder
         for (int i = 0; i < 2; i++)
         {
             int id = i == 0 ? 2 : 14;
-            var pivot = Node(i == 0 ? "Left antenna" : "Right antenna", anim.headPivot, Point(new Vector3(.07f, .72f, i == 0 ? .05f : -.05f)));
-            anim.antennae[i] = pivot; renderers.Add(RigidPart(id, anim.model, pivot));
-            var vertices = parts[id].sharedMesh.vertices.Select(Point).ToArray();
-            var extremities = new List<Vector3>();
-            for(int x=-1;x<=1;x++)for(int y=-1;y<=1;y++)for(int z=-1;z<=1;z++) {
-                var axis=new Vector3(x,y,z);if(axis.sqrMagnitude==0)continue;
-                extremities.Add(vertices.OrderByDescending(v=>Vector3.Dot(v,axis)).First());
-            }
-            var lowest=vertices.OrderBy(v=>v.y).First();
-            rig.feelers[i]=new BeetleModelRig.FeelerBinding {pivot=pivot,surfacePoints=extremities.Distinct().Select(pivot.InverseTransformPoint).ToArray(),
-                bendAxis=pivot.InverseTransformDirection(Vector3.Cross(lowest-pivot.position,Vector3.up).normalized)};
+            int side = i == 0 ? -1 : 1;
+            var pivot = Node(i == 0 ? "Left antenna" : "Right antenna", anim.headPivot,
+                BeetleAntennaBindingUpgrade.PivotInModel(side));
+            anim.antennae[i] = pivot;
+            // 从源三角面裁切出独立触角和口器资源；切口同位、触角根部固定，摆动不裂开。
+            var mesh = MeshFor(id);
+            var go = new GameObject("tripo_part_" + id);
+            var renderer = BeetleAntennaBindingUpgrade.BindPart(go, anim.model, anim.headPivot, pivot, mesh, side);
+            UnityEngine.Object.DestroyImmediate(mesh);
+            renderer.sharedMaterial = MaterialFor(id);
+            renderers.Add(renderer);
+            var mouth=anim.headPivot.Find(BeetleAntennaBindingUpgrade.MouthName(side)).GetComponent<MeshRenderer>();
+            mouth.sharedMaterial=renderer.sharedMaterial;renderers.Add(mouth);
+            foreach(var jaw in anim.headPivot.GetComponentsInChildren<SkinnedMeshRenderer>().Where(r=>r.name.EndsWith("jaw from part "+id)))
+            {jaw.sharedMaterial=renderer.sharedMaterial;renderers.Add(jaw);}
+            rig.feelers[i] = BeetleAntennaBindingUpgrade.CreateFeeler(anim.model, pivot, renderer.sharedMesh.vertices, side);
         }
         for (int sideIndex = 0; sideIndex < 2; sideIndex++)
         for (int pair = 0; pair < 3; pair++)
@@ -96,7 +101,8 @@ public static class BeetleImportedModelBuilder
             anim.legs[n] = new BeetleLegRig {
                 hip = hip, knee = knee, ankle = ankle, upper = hip, lower = knee, foot = ankle,
                 claws = Array.Empty<Transform>(), teeth = Array.Empty<Transform>(),
-                hipInBody = anim.bodyPivot.InverseTransformPoint(h), restAnkle = t + (pair == 2 ? Vector3.forward * .32f : Vector3.zero),
+                // 中足源站位在落地后已接近完全伸直，向前收 .18 留出支撑与补步余量。
+                hipInBody = anim.bodyPivot.InverseTransformPoint(h), restAnkle = t + Vector3.forward * (pair == 2 ? .32f : pair == 1 ? .18f : 0),
                 upperLength = binding.upperLength, lowerLength = binding.lowerLength, side = side, pair = pair
             };
             int[] ids = side < 0 ? (pair == 0 ? new[] { 1 } : pair == 1 ? new[] { 16, 10 } : new[] { 6, 18 })
@@ -136,8 +142,13 @@ public static class BeetleImportedModelBuilder
     }
 
     static Mesh MeshFor(int id)
+        => ConvertSourceMesh(parts[id].sharedMesh, id);
+
+    // 场景完整构建与增量触角升级共用同一坐标转换，避免旧场景与新建场景方向不一致。
+    // 返回独立副本，调用者负责保存或销毁；绝不修改源 FBX Mesh。
+    public static Mesh ConvertSourceMesh(Mesh source, int id)
     {
-        var mesh = UnityEngine.Object.Instantiate(parts[id].sharedMesh); mesh.name = "FBX part " + id;
+        var mesh = UnityEngine.Object.Instantiate(source); mesh.name = "FBX part " + id;
         mesh.vertices = mesh.vertices.Select(Point).ToArray();
         mesh.normals = mesh.normals.Select(Direction).ToArray();
         var tangents = mesh.tangents;

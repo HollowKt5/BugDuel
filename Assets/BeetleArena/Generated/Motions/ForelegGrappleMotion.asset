@@ -19,3 +19,5 @@ MonoBehaviour:
   evidence: 'Cross-species adaptation: Eberhard, Golofa porteri, Psyche 84:292-298
     (1977 volume, published 1978), figures 1a-c. Not established for Trypoxylus;
     constrained to current leg reach. https://repository.si.edu/bitstreams/a06da26f-32ea-4bd7-b73a-b72a12d0d6f9/download'
+  footLift: 0.28
+  footReach: 0.66

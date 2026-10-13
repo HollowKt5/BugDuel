@@ -82,11 +82,8 @@ namespace BeetleArena
             int settling = 0;
             for (int i = 0; i < Mathf.CeilToInt(seconds / .02f); i++)
             {
-                foreach (var actor in match.actors) actor.BeforeStep();
-                match.Simulation.Step(.02f);
-                foreach (var actor in match.actors) actor.Render(1, match.Simulation.Elapsed, .02f);
-                match.Contacts.ProjectView(match.Simulation);
-                match.spectatorCamera.Tick(match.Simulation, .02f);
+                match.AdvanceFixedStep();
+                match.Present(1, match.Simulation.MotionTime, BeetleSimulation.FixedStep);
                 if (match.Simulation.Phase == MatchPhase.Finished && ++settling > 80) break;
             }
             match.hud.Refresh();

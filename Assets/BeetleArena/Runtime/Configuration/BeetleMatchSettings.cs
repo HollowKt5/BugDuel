@@ -49,7 +49,7 @@ namespace BeetleArena
         // 托举力量基准，4.3 为标准力量；按比例影响是否能克服抓地，不直接产生后推冲量。
         [Min(.1f)] public float pryImpulse = 4.3f;
         // 完全恢复动作每秒恢复的体力点数，撑地或退让使用它的部分比例。
-        [Min(.1f)] public float staminaRecovery = 7.5f;
+        [Min(.1f)] public float staminaRecovery = 16f;
         // 发力/受威胁期间每秒积累的疲劳基准，比赛升级后可放大。
         [Range(0, 2)] public float fatiguePerSecond = .12f;
         [Header("Bout pacing / seconds, not a forced result timer")]
@@ -66,8 +66,16 @@ namespace BeetleArena
         [Min(2)] public float probingSeconds = 7f;
         // 短周期里的激烈交锋持续秒数，允许冲顶、角力和抬举。
         [Min(2)] public float clashSeconds = 9f;
-        // 每轮交锋后拉开/恢复的阶段时长。
-        [Min(1)] public float exchangeRecoverySeconds = 3.5f;
+        // 降级重整窗口的时长基准（不强制双方同时休息）；再次接触发力可提前结束。
+        [Min(.4f)] public float exchangeRecoverySeconds = 1.35f;
+        [Header("Individual recovery / game tuning, not measured biology")]
+        // 个体恢复达到当前可用上限的这个比例即可退出，不再等到 84%。
+        [Range(.25f, .7f)] public float recoveryResumeFraction = .58f;
+        // 短暂卸力的最小时长与单次连续恢复的硬上限；受逼近可更早转为撑地。
+        [Range(.2f, .8f)] public float recoveryMinimumSeconds = .35f;
+        [Range(.8f, 4f)] public float recoveryMaximumSeconds = 2.2f;
+        // 退出后先观察/撑地/接近，防止同帧重新进入恢复而绕过上限。
+        [Range(.3f, 2f)] public float recoveryRetrySeconds = .85f;
         // 轻触试探相对普通推顶的发力倍率，试探不进入挑飞判定。
         [Range(.1f, .6f)] public float probeForceMultiplier = .3f;
         // 重冲顶的额外发力倍率；仍需对准、进入有效窗口且实际接触才结算。
@@ -119,6 +127,14 @@ namespace BeetleArena
         [Min(1)] public float throwOverheadWork = 32f;
         [Min(.1f)] public float throwOverheadAngularSpeed = 2.5f;
         [Range(.1f,.5f)] public float throwSnapSeconds = .22f;
+        [Header("Tactical energy / game approximation")]
+        [Range(.1f, 1)] public float exertionRecoveryDelay = .42f;
+        [Range(.1f, 1)] public float contactRecoveryMultiplier = .55f;
+        [Range(.1f, .8f)] public float burstDrainPerSecond = .34f;
+        [Range(.1f, .8f)] public float burstRecoveryPerSecond = .28f;
+        [Range(.15f, 1)] public float tacticalResponseSeconds = .30f;
+        [Range(.2f, 1)] public float missedAttackExposure = .62f;
+        [Range(.5f, 8)] public float failedPryRetrySeconds = 3.5f;
         [Header("Contest stamina")]
         // 重冲顶状态的体力消耗速率（点/秒），不是一次动作的固定扣除额。
         [Min(1)] public float chargeStaminaCost = 27f;
@@ -179,7 +195,11 @@ namespace BeetleArena
             finalDisplacement = Mathf.Clamp(finalDisplacement, 1f, 3f);
             probingSeconds = Mathf.Max(2, probingSeconds);
             clashSeconds = Mathf.Max(2, clashSeconds);
-            exchangeRecoverySeconds = Mathf.Max(1, exchangeRecoverySeconds);
+            exchangeRecoverySeconds = Mathf.Clamp(exchangeRecoverySeconds, .4f, 4f);
+            recoveryResumeFraction = Mathf.Clamp(recoveryResumeFraction, .25f, .7f);
+            recoveryMinimumSeconds = Mathf.Clamp(recoveryMinimumSeconds, .2f, .8f);
+            recoveryMaximumSeconds = Mathf.Clamp(recoveryMaximumSeconds, recoveryMinimumSeconds + .4f, 4f);
+            recoveryRetrySeconds = Mathf.Clamp(recoveryRetrySeconds, .3f, 2f);
             probeForceMultiplier = Mathf.Clamp(probeForceMultiplier, .1f, .6f);
             chargeForceMultiplier = Mathf.Clamp(chargeForceMultiplier, 1, 2);
             chargeWindupSeconds = Mathf.Max(.2f, chargeWindupSeconds);
@@ -214,6 +234,13 @@ namespace BeetleArena
             throwOverheadWork = Mathf.Max(1, throwOverheadWork);
             throwOverheadAngularSpeed = Mathf.Max(.1f, throwOverheadAngularSpeed);
             throwSnapSeconds = Mathf.Clamp(throwSnapSeconds, .1f, .5f);
+            exertionRecoveryDelay = Mathf.Clamp(exertionRecoveryDelay, .1f, 1);
+            contactRecoveryMultiplier = Mathf.Clamp(contactRecoveryMultiplier, .1f, 1);
+            burstDrainPerSecond = Mathf.Clamp(burstDrainPerSecond, .1f, .8f);
+            burstRecoveryPerSecond = Mathf.Clamp(burstRecoveryPerSecond, .1f, .8f);
+            tacticalResponseSeconds = Mathf.Clamp(tacticalResponseSeconds, .15f, 1);
+            missedAttackExposure = Mathf.Clamp(missedAttackExposure, .2f, 1);
+            failedPryRetrySeconds = Mathf.Clamp(failedPryRetrySeconds, .5f, 8);
             chargeStaminaCost = Mathf.Max(1, chargeStaminaCost);
             hornLockStaminaCost = Mathf.Max(1, hornLockStaminaCost);
             tossChance = Mathf.Clamp01(tossChance);

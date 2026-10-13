@@ -15,6 +15,7 @@ namespace BeetleArena
         [SerializeField] public BeetleArenaHud hud;
         [SerializeField] public ArenaCamera spectatorCamera;
         [SerializeField] public ArenaAudio audioFeedback;
+        public BeetleContactFeedback contactFeedback;
         [SerializeField] public Collider[] arenaContacts;
         [Header("Switchable arenas")]
         public BeetleArenaSurface[] arenas;
@@ -81,6 +82,7 @@ namespace BeetleArena
             Contacts = new BeetleContactSolver(actors, arenaContacts, .006f);
             Simulation.ContactSolver = Contacts;
             Contacts.Solve(Simulation, 0);
+            if (contactFeedback) contactFeedback.Bind(actors);
             spectatorCamera.ResetView();
             MatchChanged?.Invoke();
             hud.Refresh();
@@ -109,7 +111,7 @@ namespace BeetleArena
         public void TogglePause()
         {
             if (Simulation == null || Simulation.Phase == MatchPhase.Finished) return;
-            IsPaused = !IsPaused; hud.Refresh();
+            IsPaused = !IsPaused; if (audioFeedback) audioFeedback.SetPaused(IsPaused); hud.Refresh();
         }
 
         // 每个显示帧读取键盘，再通过累积器执行零次或多次固定模拟步，最后插值显示与刷新镜头。
@@ -133,27 +135,58 @@ namespace BeetleArena
             // 每一步先缓存旧根节点位置，Step 内更新 AI、接触和状态，再扣掉已消费的 0.02 秒。
             while (accumulator >= BeetleSimulation.FixedStep)
             {
-                foreach (var actor in actors) actor.BeforeStep();
-                Simulation.Step(BeetleSimulation.FixedStep);
+                AdvanceFixedStep();
                 accumulator -= BeetleSimulation.FixedStep;
             }
             // 剩余时间/固定步长得到插值系数；显示在旧状态和新状态之间平滑过渡。
             float alpha = accumulator / BeetleSimulation.FixedStep;
-            foreach (var actor in actors) actor.Render(alpha, animationTime, dt);
-            // 插值可能重新引入重叠，因此显示前另做位置约束；该修正不回写模拟状态。
-            Contacts.ProjectView(Simulation, dt);
-            spectatorCamera.Tick(Simulation, dt);
+            Present(alpha, animationTime, dt);
             // HUD 使用真实帧时间每 0.1 秒刷新，暂停时按钮文案仍可更新。
             hudClock += Time.unscaledDeltaTime;
             if (hudClock >= .1f) { hudClock = 0; hud.Refresh(); }
         }
-        // 把最近一条比赛事件交给 HUD，并按强度触发接触音效；不从音效反向驱动战斗。
+        /// <summary>正式游戏与自动化快进共用固定步入口；低层测试可直接调用 Simulation.Step 以隔离表现。</summary>
+        public void AdvanceFixedStep()
+        {
+            if (Simulation == null || IsPaused) return;
+            foreach (var actor in actors) actor.BeforeStep();
+            Simulation.Step(BeetleSimulation.FixedStep);
+            if (contactFeedback) contactFeedback.Tick(Simulation, BeetleSimulation.FixedStep);
+#if UNITY_EDITOR
+            BeetleDebugHooks.Step(this);
+#endif
+        }
+
+        /// <summary>共用显示顺序：插值 → 防穿透显示约束 → 标记（约束内部）→ 相机；不推进模拟。</summary>
+        public void Present(float alpha, float time, float dt)
+        {
+            // 暂停保留上个已接受画面，也省掉重复的碰撞重试。HUD 由外层独立刷新。
+            if (Simulation == null || IsPaused || dt <= 0) return;
+            foreach (var actor in actors) actor.Render(alpha, time, dt);
+            Contacts.ProjectView(Simulation, dt);
+            spectatorCamera.Tick(Simulation, dt);
+        }
+
+        // 文案只更新 HUD。碰撞声音与火星由最终接触采样驱动，避免虚晃/落台文案误触发。
         void OnContestEvent(ContestEvent e)
         {
             LatestEvent = e.Message;
-            if (audioFeedback && e.Intensity > 0) audioFeedback.Contact(e.Actor, e.Intensity, actors);
         }
         // 销毁时解除模拟事件订阅，防止场景切换后残留回调引用。
+        #if UNITY_EDITOR
+        // 调试器用本入口暂停/单步，保持正式固定步顺序；不修改全局 timeScale。
+        public void EditorSetPaused(bool paused)
+        { IsPaused=paused; if(audioFeedback)audioFeedback.SetPaused(paused); if(hud)hud.Refresh(); }
+        public void EditorStep()
+        {
+            if(Simulation==null)throw new InvalidOperationException("Start a match before stepping.");
+            bool paused=IsPaused; IsPaused=false;
+            try { AdvanceFixedStep(); animationTime=Simulation.MotionTime; accumulator=0; Present(1,animationTime,BeetleSimulation.FixedStep); }
+            finally { EditorSetPaused(paused); }
+        }
+        public void EditorReconnectEvents()
+        { if(Simulation!=null){Simulation.EventRaised-=OnContestEvent;Simulation.EventRaised+=OnContestEvent;} }
+#endif
         void OnDestroy() { if (Simulation != null) Simulation.EventRaised -= OnContestEvent; }
     }
 }

@@ -19,13 +19,17 @@ namespace BeetleArena
         readonly IBeetleGround ground;
         readonly int[] triangles = new int[Segments * 6];
         Vector2 lastCenter;
-        bool hasSample;
+        bool hasSample, topologyUploaded, disposed;
+        readonly bool originalEnabled, originalReceiveShadows;
+        readonly ShadowCastingMode originalShadowCasting;
 
         public BeetleGroundMarker(Transform target, IBeetleGround ground, float size)
         {
             this.target = target; this.ground = ground;
             filter = target.GetComponent<MeshFilter>(); renderer = target.GetComponent<Renderer>();
             original = filter.sharedMesh; originalScale = target.localScale;
+            originalEnabled = renderer.enabled; originalReceiveShadows = renderer.receiveShadows;
+            originalShadowCasting = renderer.shadowCastingMode;
             mesh = new Mesh { name = "Runtime conforming team ring", hideFlags = HideFlags.DontSave };
             mesh.MarkDynamic(); filter.sharedMesh = mesh;
             renderer.shadowCastingMode = ShadowCastingMode.Off; renderer.receiveShadows = false;
@@ -64,15 +68,21 @@ namespace BeetleArena
             // 边缘处宁可隐藏标记，也不让缺支撑的环悬在台外或刺入悬崖。
             renderer.enabled = supported;
             if (!supported) { hasSample = false; return; }
-            mesh.vertices = vertices; mesh.normals = normals; mesh.triangles = triangles; mesh.RecalculateBounds();
+            mesh.vertices = vertices;
+            // 拓扑和法线不会随中心位置变化，每个运行时网格仅上传一次。
+            if (!topologyUploaded) { mesh.normals = normals; mesh.triangles = triangles; topologyUploaded = true; }
+            mesh.RecalculateBounds();
             lastCenter = center; hasSample = true;
         }
 
         public void Dispose()
         {
+            if (disposed) return;
+            disposed = true;
             if (filter) filter.sharedMesh = original;
             if (target) target.localScale = originalScale;
-            if (renderer) renderer.enabled = true;
+            if (renderer) { renderer.enabled = originalEnabled; renderer.receiveShadows = originalReceiveShadows;
+                renderer.shadowCastingMode = originalShadowCasting; }
             if (mesh) { if (Application.isPlaying) UnityEngine.Object.Destroy(mesh); else UnityEngine.Object.DestroyImmediate(mesh); }
         }
     }

@@ -16,12 +16,10 @@ public static class BeetleImportedValidation
     public static string Run(int seed = 7319, int arena = 0, float seconds = 240)
     {
         if (EditorApplication.isPlaying) throw new InvalidOperationException("Stop Play before validation.");
-        var old = SceneManager.GetActiveScene();
-        var scene = EditorSceneManager.OpenScene(BeetleArenaSceneBuilder.ScenePath, OpenSceneMode.Additive);
-        SceneManager.SetActiveScene(scene);
-        try {
+        using var fixture = new BeetleValidationScene("ImportedValidation");
+        {
             worstDepth=0;worstPart="none";
-            var match = scene.GetRootGameObjects().SelectMany(r => r.GetComponentsInChildren<BeetleMatchController>(true)).Single();
+            var match = fixture.Match;
             match.SelectArena(arena);
             var sim = new BeetleSimulation(match.settings, seed); sim.SetGround(match.ActiveSurface);
             foreach(var actor in match.actors) actor.Bind(sim.Fighters[Array.IndexOf(match.actors,actor)],match.settings,match.ActiveSurface);
@@ -59,7 +57,7 @@ public static class BeetleImportedValidation
             Directory.CreateDirectory("Artifacts/Migration");File.WriteAllText(prefix+"-validation.txt",result);
             if(maxBoneError>.002f)throw new Exception("Bone lengths changed: "+result);
             return result;
-        } finally { if(old.IsValid())SceneManager.SetActiveScene(old);EditorSceneManager.CloseScene(scene,true); }
+        }
     }
 
     // 检查最终蒙皮后的顶点，不把碰撞代理没有重叠等同于可见模型绝对没有穿透。

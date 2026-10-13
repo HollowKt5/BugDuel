@@ -126,11 +126,8 @@ public static class BeetleArenaEditorCommands
         int settling = 0;
         for (int i = 0; i < Mathf.CeilToInt(seconds / .02f); i++)
         {
-            foreach (var actor in c.actors) actor.BeforeStep();
-            c.Simulation.Step(.02f);
-            foreach (var actor in c.actors) actor.Render(1, c.Simulation.Elapsed, .02f);
-            c.Contacts.ProjectView(c.Simulation);
-            c.spectatorCamera.Tick(c.Simulation, .02f);
+            c.AdvanceFixedStep();
+            c.Present(1, c.Simulation.MotionTime, BeetleSimulation.FixedStep);
             if (c.Simulation.Phase == MatchPhase.Finished && ++settling > 80) break;
         }
         c.hud.Refresh();

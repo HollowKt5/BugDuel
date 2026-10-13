@@ -15,19 +15,14 @@ public static class BeetleFallValidation
     public static void Run()
     {
         if (EditorApplication.isPlaying) throw new InvalidOperationException("Stop Play before validation.");
-        const string temp = "Assets/BeetleArena/Generated/FallValidation.unity";
-        var previous = UnityEngine.SceneManagement.SceneManager.GetActiveScene();
-        if (!AssetDatabase.CopyAsset(BeetleArenaSceneBuilder.ScenePath, temp)) throw new Exception("Temporary scene exists");
-        var scene = EditorSceneManager.OpenScene(temp, OpenSceneMode.Additive);
+        using var fixture = new BeetleValidationScene("FallValidation");
         var report = new StringBuilder("FALL RECOVERY VALIDATION\n" + DateTimeOffset.Now.ToString("o") + "\n");
         Directory.CreateDirectory("Artifacts/FallRecovery");
-        BeetleMatchSettings settings = null;
         try
         {
-            UnityEngine.SceneManagement.SceneManager.SetActiveScene(scene);
-            var match = BeetleSceneHierarchy.FindMatch(scene);
-            settings = UnityEngine.Object.Instantiate(match.settings); settings.Validate();
-            match.settings = settings; match.hud.Bind(match);
+            var match = fixture.Match;
+            var settings = fixture.Settings;
+            settings.Validate();
             for (int arena = 0; arena < 2; arena++)
                 for (int variant = 0; variant < 4; variant++)
                 {
@@ -49,9 +44,7 @@ public static class BeetleFallValidation
         finally
         {
             File.WriteAllText("Artifacts/FallRecovery/Validation.txt", report.ToString());
-            EditorSceneManager.CloseScene(scene, true);
-            UnityEngine.SceneManagement.SceneManager.SetActiveScene(previous); AssetDatabase.DeleteAsset(temp);
-            if (settings) UnityEngine.Object.DestroyImmediate(settings);
+
         }
     }
     static Vector3[] RunCase(BeetleMatchController match, int arena, int variant, bool render, StringBuilder report)

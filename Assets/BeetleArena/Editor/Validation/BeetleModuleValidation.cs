@@ -16,18 +16,13 @@ public static class BeetleModuleValidation
     public static void Run()
     {
         if (EditorApplication.isPlaying) throw new Exception("Stop Play first");
-        string path = "Assets/BeetleArena/Generated/ModuleValidation.unity";
-        var previous = UnityEngine.SceneManagement.SceneManager.GetActiveScene();
-        if (!AssetDatabase.CopyAsset(BeetleArenaSceneBuilder.ScenePath, path)) throw new Exception("Temporary scene exists");
-        var scene = EditorSceneManager.OpenScene(path, OpenSceneMode.Additive);
+        using var fixture = new BeetleValidationScene("ModuleValidation");
         var report = new StringBuilder("MODULE VALIDATION\n" + DateTimeOffset.Now.ToString("o") + "\n");
         Directory.CreateDirectory("Artifacts/ModularActions");
-        BeetleMatchSettings settings = null;
+        var settings = fixture.Settings;
         try
         {
-            UnityEngine.SceneManagement.SceneManager.SetActiveScene(scene);
-            var match = BeetleSceneHierarchy.FindMatch(scene);
-            settings = UnityEngine.Object.Instantiate(match.settings); match.settings = settings; match.hud.Bind(match);
+            var match = fixture.Match;
             var configured = settings.motionModules;
             Contracts(settings, report);
             foreach (var module in configured.Where(m => m && m.Channel == BeetleMotionChannel.Combat))
@@ -46,9 +41,6 @@ public static class BeetleModuleValidation
         finally
         {
             File.WriteAllText("Artifacts/ModularActions/Validation.txt", report.ToString());
-            EditorSceneManager.CloseScene(scene, true);
-            UnityEngine.SceneManagement.SceneManager.SetActiveScene(previous); AssetDatabase.DeleteAsset(path);
-            if (settings) UnityEngine.Object.DestroyImmediate(settings);
         }
     }
     static void Contracts(BeetleMatchSettings s, StringBuilder report)
@@ -164,7 +156,8 @@ public static class BeetleModuleValidation
         {
             var counts = sim.Fighters.Select(b => b.Motion.Starts).ToArray();
             var old = sim.Fighters.Select(b => new Vector3(b.Position.x, b.Height, b.Position.y)).ToArray();
-            foreach (var actor in match.actors) actor.BeforeStep(); sim.Step(.02f);
+            // 自然对局走正式固定步/显示入口；插值隔离另有低层专门测试。
+            match.AdvanceFixedStep(); match.Present(1, sim.MotionTime, .02f);
             for (int i = 0; i < 2; i++)
             {
                 var b = sim.Fighters[i];

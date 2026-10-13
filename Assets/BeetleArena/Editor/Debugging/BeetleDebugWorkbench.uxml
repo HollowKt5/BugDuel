@@ -1,0 +1,50 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements">
+  <ui:Style src="BeetleDebugWorkbench.uss" />
+  <ui:ScrollView class="workbench">
+    <ui:Label text="BugDuel · 调试工作台" class="title" />
+    <ui:Label text="现场恢复 / 动作试演 / IK 与接触诊断 · 所有命令与 AI 共用" class="hint" />
+    <ui:Label name="status" class="status" />
+    <uie:ObjectField name="target" label="运行中的控制器" />
+    <ui:IntegerField name="seed" label="预览种子" value="71" />
+    <ui:DropdownField name="arena" label="预览擂台" />
+    <ui:VisualElement class="row">
+      <ui:Button name="sandbox" text="创建隔离预览" /><ui:Button name="attach" text="连接选中对局" /><ui:Button name="close" text="关闭 / 释放预览" />
+    </ui:VisualElement>
+    <ui:VisualElement class="section">
+      <ui:Label text="1 · 现场捕获与回放" class="section-title" />
+      <ui:Slider name="speed" label="慢放倍率" low-value="0.05" high-value="1" value="0.25" show-input-field="true" />
+      <ui:VisualElement class="row">
+        <ui:Button name="pause" text="暂停" /><ui:Button name="resume" text="继续实时" /><ui:Button name="step" text="单步 0.02s" /><ui:Button name="steps" text="推进 0.2s" /><ui:Button name="slow" text="慢放" />
+      </ui:VisualElement>
+      <ui:Toggle name="record" label="记录最近 300 个固定步（6 秒）与诊断" value="true" />
+      <ui:VisualElement class="row">
+        <ui:Button name="capture" text="保存问题现场" /><ui:Button name="screenshot" text="保存当前画面" /><ui:Button name="restore" text="载入现场并暂停" /><ui:Button name="folder" text="打开输出目录" />
+      </ui:VisualElement>
+      <ui:SliderInt name="frame" label="姿态录像帧" low-value="0" high-value="0" show-input-field="true" />
+      <ui:VisualElement class="row">
+        <ui:Button name="live" text="返回当前现场" /><ui:Button name="export-clip" text="导出姿态录像" /><ui:Button name="load-clip" text="载入姿态录像" />
+      </ui:VisualElement>
+      <ui:Label text="现场可继续模拟；姿态录像只供逐帧观看。两者都有版本检查。" class="hint" />
+    </ui:VisualElement>
+    <ui:VisualElement class="section">
+      <ui:Label text="2 · 动作与 IK 调试" class="section-title" />
+      <ui:DropdownField name="actor" label="选手" /><ui:DropdownField name="leg" label="关注的腿" />
+      <ui:DropdownField name="motion" label="试演动作" />
+      <ui:Button name="preview" text="安排动作（仅隔离预览）" /><ui:Button name="restore-foot" text="还原拖脚测试" />
+      <ui:Slider name="preview-time" label="试演时间 / 秒" low-value="0" high-value="3" show-input-field="true" />
+      <ui:Button name="seek-preview" text="从试演起点重算到指定时间" />
+      <ui:VisualElement class="row">
+        <ui:Toggle name="draw-ik" label="IK 标记" value="true" /><ui:Toggle name="draw-contact" label="修正前后位置" value="true" /><ui:Toggle name="move-foot" label="拖脚测试" />
+      </ui:VisualElement>
+      <ui:Label text="Scene 视图：青色目标、绿色实际脚端、黄色关节链、红色误差。拖脚只在暂停的预览里生效；下一步恢复正常模拟。" class="hint" />
+      <ui:DropdownField name="metric" label="最近六秒曲线" /><uie:CurveField name="curve" class="curve" />
+    </ui:VisualElement>
+    <ui:VisualElement class="section">
+      <ui:Label text="3 · 状态与接触诊断" class="section-title" />
+      <ui:VisualElement class="row"><ui:Button name="copy-inspect" text="复制状态 JSON" /><ui:Button name="export-trace" text="导出诊断 JSON" /></ui:VisualElement>
+      <ui:TextField name="inspect" multiline="true" readonly="true" class="readout" />
+      <ui:TextField name="trace" multiline="true" readonly="true" class="readout" />
+      <ui:Label text="动作资格反映采样时的条件；决策记录反映当时实际分支。候选碰撞修正可能被回退，以 step.acceptedFraction 为准。" class="warning" />
+    </ui:VisualElement>
+  </ui:ScrollView>
+</ui:UXML>

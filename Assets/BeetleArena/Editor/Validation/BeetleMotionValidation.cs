@@ -15,16 +15,11 @@ public static class BeetleMotionValidation
     public static void Run()
     {
         if (EditorApplication.isPlaying) throw new InvalidOperationException("Stop play first.");
-        const string path = "Assets/BeetleArena/Generated/MotionValidationScene.unity";
-        var previous = SceneManager.GetActiveScene();
-        if (!AssetDatabase.CopyAsset(BeetleArenaSceneBuilder.ScenePath, path)) throw new Exception("Copy failed");
-        var scene = EditorSceneManager.OpenScene(path, OpenSceneMode.Additive);
+        using var fixture = new BeetleValidationScene("MotionValidationScene");
+        Directory.CreateDirectory("Artifacts/BeetleArena");
         var report = new StringBuilder("MOTION CONTINUITY VALIDATION\n");
-        try
         {
-            SceneManager.SetActiveScene(scene);
-            var match = scene.GetRootGameObjects().SelectMany(r => r.GetComponentsInChildren<BeetleMatchController>()).Single();
-            match.hud.Bind(match);
+            var match = fixture.Match;
             for (int mode = 0; mode < 2; mode++)
             {
                 match.SelectArena(mode); match.StartMatch(7319);
@@ -86,10 +81,6 @@ public static class BeetleMotionValidation
             }
             report.AppendLine("ALL MOTION CHECKS PASSED");
             File.WriteAllText("Artifacts/BeetleArena/MotionValidation.txt", report.ToString());
-        }
-        finally
-        {
-            EditorSceneManager.CloseScene(scene, true); SceneManager.SetActiveScene(previous); AssetDatabase.DeleteAsset(path);
         }
     }
 }

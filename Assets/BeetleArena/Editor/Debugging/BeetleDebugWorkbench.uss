@@ -1,0 +1,12 @@
+.workbench { flex-grow: 1; padding: 10px; }
+.title { font-size: 18px; -unity-font-style: bold; margin-bottom: 5px; }
+.hint { white-space: normal; color: rgb(180, 194, 205); margin-bottom: 8px; }
+.section { margin-top: 12px; padding-top: 7px; border-top-width: 1px; border-top-color: rgb(75, 81, 90); }
+.section-title { -unity-font-style: bold; margin-bottom: 5px; }
+.row { flex-direction: row; flex-wrap: wrap; }
+.row > Button { margin-right: 5px; margin-bottom: 5px; min-height: 25px; }
+.row > Toggle { margin-right: 12px; }
+.status { white-space: normal; padding: 7px; background-color: rgb(39, 49, 58); margin-bottom: 7px; }
+.readout { min-height: 135px; margin-top: 5px; }
+.curve { height: 110px; margin-top: 5px; }
+.warning { color: rgb(231, 190, 109); white-space: normal; margin-top: 5px; }

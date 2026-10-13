@@ -1,7 +1,9 @@
 # BugDuel 项目地图
 
-> 根据当前代码核对：2026-10-12。本文描述现有实现；修改模块职责、调用顺序或状态写入者时，同步更新本文。
+> 根据当前代码核对：2026-10-13。本文描述现有实现；修改模块职责、调用顺序或状态写入者时，同步更新本文。
 > 下文目录均相对于 BugDuel 项目根目录，核心游戏代码位于 `Assets/BeetleArena/`。
+
+游戏设计：[Design Intro.md](Design%20Intro.md)，说明玩家体验、玩法循环、激励、交锋节奏、六档撬飞、擂台与视听方向；不涉及技术实现。
 
 配套阅读：[TechnicalGuide.md：关键技术说明](TechnicalGuide.md)，详细介绍真实模型绑定、六足 IK、程序步态、接触求解、托举挣扎与运动连续性。
 
@@ -39,7 +41,7 @@ Assets/BeetleArena/
 │   ├── Rig/             真实模型的骨骼绑定与 IK
 │   ├── Physics/         碰撞查询、接触约束、托举锚点、连续性限制
 │   ├── Environment/     擂台支撑查询、贴地标记
-│   ├── Presentation/    HUD、镜头、音效
+│   ├── Presentation/    HUD、镜头、接触音效、可关闭火星及设置
 │   └── Diagnostics/     独立运行检查
 ├── Editor/
 │   ├── Model/           按当前 FBX 生成骨架、蒙皮和碰撞代理
@@ -76,9 +78,11 @@ Assets/BeetleArena/
 
 | 模块 | 主要文件 | 职责与边界 |
 | --- | --- | --- |
-| 场景协调 | `Actors/BeetleMatchController.cs` | 检查引用、开局、切换擂台、转发输入；在 `Update()` 中累计时间并运行固定步；安排显示、镜头和 HUD 更新。 |
+| 场景协调 | `Actors/BeetleMatchController.cs` | 检查引用、开局、切换擂台、转发输入；在 `Update()` 中累计时间并运行固定步；通过 `AdvanceFixedStep()` 和 `Present()` 统一正式游戏与自动化顺序；安排 HUD 刷新。 |
 | 选手适配 | `Actors/BeetleActor.cs` | 将一份 `BeetleState` 绑定到一只模型；恢复固定步根节点和骨骼、调用程序动画、捕获结果、插值显示。自身不决定攻击或胜负。 |
 | 战斗模拟 | `Simulation/BeetleSimulation.cs` | 保存两位选手和本局随机源；负责 AI、动作转换、体力、鼓励、命中、速度积分、托举时序、掉台标记与结果。通过接口调用场景接触求解。 |
+| 能量与局势 | `Simulation/BeetleEnergyPolicy.cs`、`BeetleTactics.cs` | 耐力/爆发余量、恢复抑制与接触压力；只读局势快照产生施压/反击/防守/换位/恢复建议，模拟保留切换和写状态权。 |
+| 招募动画曲线 | `Motion/Core/InsectMuscleAnimation.cs` | 提供加载、短促启动、摆腿与行进启停曲线；无随机源和状态写入，不求解真实肌肉力。 |
 | 状态定义 | `Simulation/BeetleState.cs`、`BeetleLiftResponse.cs` | 定义个体属性、动态状态、三层状态枚举、托举数据和比赛事件。数据对象本身不运行更新循环。 |
 | 杠杆撬投 | `Simulation/BeetleThrowMechanics.cs` | 根据有效接触与实际抬头运动累计功、冲量，按质量和切向方向计算连续出手速度与仰角，再划分六档反馈；只提供计算，由模拟决定何时释放。 |
 | 参数 | `Configuration/BeetleMatchSettings.cs` | `ScriptableObject` 参数定义及 `Validate()`；包括体型、节奏、移动、地形支撑足位、托举、挣扎、挑飞和接触位移预算。 |
@@ -86,12 +90,13 @@ Assets/BeetleArena/
 | 动作扩展 | `Motion/Core/BeetleMotionModule.cs`、`BeetleMotionRuntime.cs`、`Motion/Modules/` | 只读上下文输入，输出身体/脚端/移动/接触意图。每只甲虫保存自己的活动模块、计时、冷却与命中锁；具体动作仅由配置列表注册。 |
 | 姿态插值 | `Animation/BeetlePoseBuffer.cs` | 保存前后两个固定步的模型局部姿态，供显示帧插值；开始下一固定步前恢复最新模拟姿态。 |
 | 模型 IK | `Rig/BeetleModelRig.cs` | 使用模型标定的骨长、静止旋转、弯曲方向和足底偏移求解髋/膝/踝旋转；处理可达范围、足节朝向与触角避地。 |
-| 接触求解 | `Physics/BeetleContactSolver.cs` | 组织双方姿态、角下托举跟随、甲虫互碰和环境碰撞；限制整步位移，必要时缩小姿态提案并重试；写回模拟位置与接触反馈。另有独立的显示约束入口。 |
+| 接触求解 | `Physics/BeetleContactSolver.cs` | 组织双方姿态、角下托举跟随、甲虫互碰和环境碰撞；限制整步位移；中心轴分离失败时，沿接触法线的水平分量重试完整及缩小的姿态提案；写回模拟位置与接触反馈。另有独立的显示约束入口。 |
 | 碰撞代理 | `Physics/BeetleContactRig.cs` | 保存部件 Collider、角色分类及 AABB 缓存，提供整体平移；不负责战斗决策。 |
 | 托举几何 | `Physics/BeetleHornSupport.cs` | 捕获并跟随真实角部局部锚点；在最终接受姿态上测量抬头、力臂与切向运动，交给撬投计算层。托举是否继续由模拟状态决定。 |
 | 姿态试算 | `Physics/BeetleContactMotion.cs` | 保存安全起点和候选姿态，按比例恢复/推进；求解器分别持有模拟用和显示用实例。与用于固定步插值的 `BeetlePoseBuffer` 分工不同。 |
 | 擂台支撑 | `Environment/BeetleArenaSurface.cs` | 实现地表高度、法线、抓地系数查询；区分可站立的 `supportColliders` 与完整环境 `contactColliders`。 |
 | 展示 | `Presentation/BeetleArenaHud.cs`、`ArenaCamera.cs`、`ArenaAudio.cs`；`Environment/BeetleGroundMarker.cs` | 读取结果并展示；HUD 将按钮请求转交控制器；镜头、声音和贴地标记不参与胜负计算。 |
+| 接触表现 | `Presentation/BeetleContactFeedback.cs`、`ArenaAudio.cs`、`HornClashSparks.cs`、`BeetleFeedbackSettings.cs` | 固定步后只读角部接触；分别输出高阻尼木质合成敲击/刮擦、可关闭的兵器火星；设置开关保存到 PlayerPrefs，不修改比赛参数。 |
 | 卡通渲染 | `Shaders/BeetleToon.shader`、`Editor/Setup/BeetleArenaToonSetup.cs` | 描边、高光、颜色和阴影的渲染及材质配置，不参与碰撞。 |
 | 资源构建 | `Editor/Model/BeetleImportedModelBuilder.cs`、`Editor/Setup/` | 从模型生成关节、蒙皮副本、碰撞代理和材质，装配游戏场景及擂台。仅在编辑器执行。 |
 | 验证与自动化 | `Editor/Validation/`、`Editor/Automation/`、`Runtime/Diagnostics/ArenaStandaloneSmoke.cs` | 驱动受控场景/对局，检查规则、接触、动作连续性和资源；输出报告，不承担正常对局逻辑。 |
@@ -124,6 +129,9 @@ BeetleMatchController.Start()
 
 固定步长为 **0.02 秒**。调度发生在控制器的 `Update()` 累积时间循环中，并非 Unity 的 `FixedUpdate()` 自动驱动本模拟。
 
+**唯一业务调度入口：** `AdvanceFixedStep()` 执行 `Actor.BeforeStep → Simulation.Step → ContactFeedback.Tick`；`Present(alpha, time, dt)` 执行 `Actor.Render → Contacts.ProjectView → Camera.Tick`。Editor 快进和独立运行检查也调用这两个方法。暂停或零显示 dt 时保留最后接受姿态；HUD 独立刷新。低层验证仍可拆开调用，以检查模拟与表现是否隔离。
+
+
 ```mermaid
 flowchart TD
     A[Controller.Update：输入、累计时间] --> B{累计时间达到 0.02 秒?}
@@ -135,7 +143,8 @@ flowchart TD
     G --> H[回写模拟位置及接触反馈，捕获姿态]
     H --> M[Simulation：确认模块部件接触并施加一次响应]
     M --> I[Simulation：落台检测与 CheckResult]
-    I --> B
+    I --> N[ContactFeedback：只读最终角部接触 → 音效与可选火星]
+    N --> B
     B -->|否| J[Actor.Render：根节点和骨骼插值]
     J --> K[ContactSolver.ProjectView：连续显示约束]
     K --> L[标记、镜头、HUD]
@@ -152,7 +161,7 @@ flowchart TD
 1. 键盘由 `BeetleMatchController.Update()` 读取；按钮由 `BeetleArenaHud.Bind()` 注册回调，两者都进入 `Cheer(index)`。
 2. 控制器拒绝暂停状态下的请求，再调用 `Simulation.Encourage(index)`。
 3. 模拟检查比赛阶段、索引、冷却、落台和腾空状态。接受后修改鼓励持续时间、冷却和体力，返回 `true`。
-4. 模拟同步发出 `EventRaised(ContestEvent)`；控制器更新 `LatestEvent`，按事件强度触发音效。
+4. 模拟同步发出 `EventRaised(ContestEvent)`；控制器更新 `LatestEvent`，更新展示文案。碰撞音效改由固定步后的实际角部接触驱动。
 5. 控制器刷新 HUD；后续固定步的战斗规则读取鼓励效果。鼓励不会直接指定移动方向或招式。
 
 ### 3.4 自动顶举 → 承重 / 挣扎 → 加速扬角撬投 → 结果
@@ -165,7 +174,7 @@ flowchart TD
 6. 接触层在最终接受姿态上调用 `HornSupport.Measure()`，测量真实抬头角增量、接触力臂、切向方向和贴合程度；`BeetleThrowMechanics.Accumulate()` 累计有效接触时长、冲量和做功，显示帧及被拒绝的试算不会累计。
 7. 模拟按慢抬—短暂承重—加速扬角的节奏推进，满足出手、滑脱、受阻或中断条件时释放。已有效离地并有足够做功者调用 `ThrowOpponent()`：根据功、冲量、质量及接触切线计算连续出手速度；达到转角/能量/角速度门槛才允许身后反抛。未建立有效托举的失败入角会退出，不能隔空发射。
 8. 成功出手使用 `Toss` 跟随姿态，失败撤角使用 `ReleaseLift`；二者均从实际头角/身体姿态接续，求解器继续防穿透。释放只写速度，不直接改根坐标。
-9. 接触修正完成后，模拟按台面支撑和相对落差设置 `HasFallen`。`CheckResult()` 进入双落台等待，再设置胜者或平局；HUD/音效消费结果。
+9. 接触修正完成后，模拟按台面支撑和相对落差设置 `HasFallen`。`CheckResult()` 进入双落台等待，再设置胜者或平局；HUD 消费结果；落台文案不触发角部碰撞声。
 
 `Airborne` 也用于托举阶段，不等于六足已经全部离地；挣扎计时不能直接使用进入 `Lifted` 的动作时间。普通空中挣扎不向战斗模拟施加推进力。
 
@@ -189,8 +198,10 @@ flowchart TD
 | 模块实例状态 | 每份 `BeetleState.Motion` | `BeetleMotionRuntime`；模拟请求启动/取消/确认命中 | 共享 ScriptableObject 只保存配置与无状态曲线，不能保存双方共用的动作计时。 |
 | 种子、选手身份与个体属性 | `Simulation.Seed`、`BeetleState.Index/Traits` | 创建本局时由模拟生成 | 本局按不变数据使用；`Traits` 的字段实际上仍公开可写。 |
 | 动作、动作计时、体力、疲劳、平衡、鼓励/挑飞冷却、统计 | `BeetleState` | `BeetleSimulation` | 动画与展示读取；动作转换统一经模拟的 `SetAction()` 重置时间和命中标记。 |
+| 爆发余量、恢复延迟、收招暴露、接触记忆、优势和意图 | `BeetleState.BurstReserve/ExertionCooldown/ExposureRemaining/ContactConfidence/TacticalAdvantage/Intent/IntentTime/PryRetryRemaining` | Simulation 调用 EnergyPolicy / Tactics；只在固定步结算 | 动作模块通过只读快照取值，Animator 只能读取。优势改变选择，不直接增加伤害。 |
 | 平面位置、高度、平面速度 | `BeetleState.Position/Height/Velocity` | 模拟先积分；`ContactSolver.Solve()` 修正位置/高度及闭合平面速度 | 两者按固定先后顺序协作；显示路径不得回写。 |
 | 朝向、竖直速度、腾空、落台标记、地表采样与名义支撑 | `Heading/VerticalVelocity/Airborne/HasFallen/Surface*/Footing` 等 | `BeetleSimulation` | Actor、动画、接触、HUD 读取；`Footing` 是名义足位支撑估算，不是六足接触力测量。 |
+| 持续受阻时长 | `BeetleState.ContactBlockedSeconds` | ContactSolver.Solve 按本步接受比例累积/衰减 | Tactics/Simulation 读取并选择撤步换位；不直接修改位置或跳过碰撞。 |
 | 双方接触标记 | `BeetleState.TouchingOpponent` | 正常场景由 `ContactSolver.Solve()` 写入 | 下一步命中判断读取；无场景求解器时，纯数据备用接触逻辑写入。 |
 | 托举支撑者、时长、俯仰/侧倾目标、方向、额外爆发意图 | `BeetleState.Lift` | `BeetleSimulation` | 动画与 `BeetleHornSupport` 读取。 |
 | 实际离地计时、抓地释放、受阻累计 | `Lift.UnsupportedTime/GripReleased/BlockedTime` | 场景求解器根据接受的姿态和实际脚尖更新；模拟在开始/落地等转换时重置 | 模拟用来决定撤角，动画用来决定挣扎；无场景模式的离地时间由模拟近似维护。 |
@@ -239,10 +250,11 @@ flowchart TD
 | `IBeetleMotionContacts.HasMotionContact` | `Motion/Core` 定义；接触求解器实现 | 模拟在接受本步姿态后确认角/指定前足接触；没有接口则模块不产生攻击响应。 |
 | `BeetleActor.Bind / BeforeStep / PoseSimulation / CaptureSimulationPose / Render` | Actor | 控制器负责绑定、步前恢复和显示；接触求解器负责调用模拟姿态生成与最终捕获。调用顺序决定模拟与显示能否隔离。 |
 | `BeetleProceduralAnimator.Pose / YieldHead / YieldLeg / AcceptSolvedPose` | 程序动画 | Actor 请求动作姿态；接触求解器请求局部退让，并让动画缓存与实际接受的姿态对齐。 |
+| `BeetleModelRig.PlanSupport / SupportReach` | 真实模型 Rig | 动画规划名义/新一步足点，保留可达余量并提前补步；已经锁定的支撑脚不会逐帧滑向新目标。 |
 | `BeetleModelRig.Solve(leg, target, state, ground)` | 真实模型 Rig | 动画把脚端目标交给模型专用 IK；Rig 输出骨骼旋转。 |
 | `BeetleContactSolver.ProjectView(sim, dt)` | 场景求解器的具体类型 | 控制器在 `Render()` 后调用，只处理显示姿态及其缓存；不属于纯数据模拟接口。 |
 | `BeetleContactMotion.Begin / Propose / Apply` | 姿态试算缓存 | 求解器保存安全起点、捕获候选姿态、按接受比例恢复模型；不推进 AI 或计时。 |
-| `Simulation.EventRaised : Action<ContestEvent>` | 模拟 | 控制器订阅，更新最近事件和声音。事件是消息/选手索引/强度快照，不是命令；当前鼓励事件强度为默认 0。 |
+| `Simulation.EventRaised : Action<ContestEvent>` | 模拟 | 控制器订阅，更新最近事件文案。声音改由真实接触采样驱动。事件是消息/选手索引/强度快照，不是命令；当前鼓励事件强度为默认 0。 |
 | `Controller.MatchChanged : Action` | 控制器 | 新局完成绑定、初始求解后通知观察者；它不表示获胜或攻击命中。 |
 | `Controller.Cheer / SwitchArena / Rematch / NextMatch / TogglePause` | 控制器 | HUD 和键盘入口的统一操作边界；UI 不直接写选手动态字段。 |
 
@@ -259,12 +271,12 @@ flowchart TD
 | 战斗节奏、动作选择、鼓励或胜负 | `Simulation/BeetleSimulation.cs`、`BeetleState.cs`、配置 | `BeetleArenaValidation`；涉及真实命中时加 `BeetleArenaCollisionValidation` |
 | 新增、禁用或移除扩展动作 | `Motion/Modules/`、`MatchSettings.motionModules` | `BeetleModuleValidation`；说明见 [MotionModules.md](MotionModules.md) |
 | 步态、落脚、身体/头角姿态、挣扎 | `Animation/BeetleProceduralAnimator.cs`；必要时 `Rig/BeetleModelRig.cs` | `BeetleMotionValidation`、`BeetleLiftValidation` |
-| 突跳、穿模、托举接触或脱角 | `Physics/BeetleContactSolver.cs`、`BeetleHornSupport.cs`、`BeetleContactMotion.cs`，以及 Actor/姿态缓冲时序 | `BeetleLiftContinuityValidation`、`BeetleArenaCollisionValidation` |
+| 突跳、穿模、托举接触或脱角 | `Physics/BeetleContactSolver.cs`、`BeetleHornSupport.cs`、`BeetleContactMotion.cs`，以及 Actor/姿态缓冲时序 | `BeetleLiftContinuityValidation`、`BeetleArenaCollisionValidation`、`BeetleContactEscapeValidation` |
 | 更换模型、调整骨架与碰撞代理 | `Editor/Model/BeetleImportedModelBuilder.cs`、`Runtime/Rig/` | `BeetleImportedValidation`、实际托举及地形验证 |
 | 起伏地图或支撑规则 | `Environment/BeetleArenaSurface.cs`、`Editor/Setup/BeetleArenaTerrainSetup.cs` | `BeetleArenaTerrainValidation`，并检查 IK 与接触 |
 | 卡通外观 | `Shaders/BeetleToon.shader`、`Editor/Setup/BeetleArenaToonSetup.cs` | `BeetleArenaToonSetup.Validate()` |
 
-常用编辑器菜单位于 `Tools > Beetle Arena`，包括 `Validate Simulation`、`Validate Clash Actions`、`Validate Horn Supported Lift`、`Validate Lift Continuity`、`Validate Motion Continuity` 和 `Validate Switchable Arenas`。`BeetleImportedValidation.Run()` 是代码入口。
+常用编辑器菜单位于 `Tools > Beetle Arena`，包括 `Validate Simulation`、`Validate Clash Actions`、`Validate Horn Supported Lift`、`Validate Lift Continuity`、`Validate Motion Continuity` 、`Validate Contact Escape` 和 `Validate Switchable Arenas`。`BeetleImportedValidation.Run()` 是代码入口。
 
 `Build Game Scene` 会重建生成场景/预制体，并设置构建场景列表与 Play 启动场景；它不是只读检查。模型结构变更应改构建器，再生成和验证，避免只改生成结果后被下次构建覆盖。
 
@@ -285,3 +297,100 @@ flowchart TD
 - `Actor.GroundRotation()` 平滑释放旧坡面倾角；`PoseBuffer` 仍只为显示做插值。
 - 状态写入者：模拟拥有 `Time/UnsupportedSeconds`；最终接触拥有 `OnFloor/ImpactSpeed`，模拟据此推进 `GroundSeconds`；动画读这些值，不修改胜负。纯数据测试由模拟补充平地落地判定。
 - `Editor/Validation/BeetleFallValidation.cs`：受控落败姿态、碰撞、接地恢复、双落台及显示隔离；详见技术说明第 12 节和 `Artifacts/FallRecovery/Validation.txt`。
+
+## 碰撞声音、火星和设置（2026-10-13）
+
+- 游戏右侧「设置」→「角斗碰撞火星」；默认开启，关闭立即清除，偏好跨重赛/重启保存。声音继续保持甲壳/木质干敲设计，不随火星开关静音。
+- `Controller.Update`：每个 `Simulation.Step` 之后、显示插值之前调用 `contactFeedback.Tick`；仅查询最终代理，不能由任意强度文案事件触发。
+- `Contact Audio` 对象继续归 `00 Systems`，其上新增反馈采样器和火星组件；运行时声音池与粒子对象归该对象的子层级。设置组件位于现有 HUD，未新建 Canvas/EventSystem。
+- `Editor/Setup/BeetleFeedbackSetup.cs`：显式增量安装，场景重新构建时也装配；`Editor/Validation/BeetleFeedbackValidation.cs`：开关、持久化、真实交锋、粒子与声音验证。
+- 资料依据、合成边界与参数见技术说明第 19 节；测试图、报告及试听 WAV 位于 `Artifacts/ContactFeedback/`。
+
+
+## 昆虫活动与受力表现通道（2026-10-13）
+
+- `Runtime/Motion/Core/InsectMotionTiming.cs`：纯函数的短动作包络与蓄力/发力曲线；不保存状态、不调用比赛随机源。
+- `Runtime/Motion/Modules/AntennalSamplingMotion.cs`：上下文驱动的触角扫探，独立可删覆盖模块；通过新增可选接口 `SampleAntenna` 交付局部旋转意图。
+- `Runtime/Motion/Modules/ImpactRecoveryMotion.cs`：读取 Context.Impact，交付受力退让与补足目标；不写根位置或攻击结算。
+- `MotionRuntime` 仲裁主动作/覆盖模块；`ProceduralAnimator` 独占每虫触角平滑缓存，固定步消费目标，之后继续模型避地、IK 和接触限制。资产只保存配置，不存动态缓存。
+- 前足、推顶、侧顶、虚晃文件仍独立。模块在 MatchSettings 引用数组注册，移除时自然交还动画；更新参数、依据与适用边界见技术说明第 20 节。
+
+## 架构优化后的维护约定（2026-10-13）
+
+| 所属模块 | 新的归属 / 接口约束 |
+| --- | --- |
+| `Animation/BeetleLocalPose` | 共用局部 TRS 数值与插值公式；不持有时钟。PoseBuffer、ContactMotion 的快照数组分别拥有，不能合并缓存。 |
+| `BeetleActor.PoseBones` | 内部只读使用的 Transform 列表，由 Bind 初始化；接触缓存复用该列表中的引用。更换骨架后需重新 Bind 并重建求解器。 |
+| `Physics/BeetleContactRig` | 缓存 Role、LegIndex、IsHorn。更换数组自动失效；原地替换元素/改部件名后调用 InvalidateShapeMetadata，再 CacheBounds。热路径不读 name。 |
+| `Motion/BeetleMotionRuntime` | 每固定步建立去空/去重的有序注册表，逐虫保存活动状态，采样仍无副作用。 |
+| `ArenaAudio / HornClashSparks` | 拥有动态音源、AudioClip、ParticleSystem；OnDisable 停止/清空，OnDestroy 调 ReleaseResources。Editor 手动初始化后必须显式释放。 |
+| `Editor/Validation/BeetleValidationScene` | IDisposable 作用域拥有唯一临时场景资产与 MatchSettings 副本；关闭前释放表现资源、恢复活动场景；异常也清理。Imported/Motion/Module/Throw/Fall/Feedback/Architecture 验证已使用。 |
+
+性能数据、检查范围、已知边界及验证方法见 [TechnicalGuide.md 第 21 节](TechnicalGuide.md#21-全局代码审查与架构优化2026-10-13)。共享动作资产依然只读；验证若要改模块字段，需单独克隆。
+
+## 个体短恢复与再交锋（2026-10-13）
+
+- `BeetleRecoveryPolicy` 是无状态规则模块；输入个体状态、比赛配置及压力条件，返回恢复资格、单段预算和退出判断。
+- `BeetleSimulation.Step/Think/SetAction` 是 RecoveryTime / RecoveryCooldown 的唯一正常写入者；计时跨 Recover↔Retreat 续接保持，退出时启用冷却。
+- 外层 Exchange.Recovery 是短重整机会，个体可分别休息或寻触；不再按外层状态同步锁住双方。
+- `SupportAdjustmentMotion` 只输出重心/足端意图；不负责体力恢复，不控制比赛阶段。先重心转移再低提足、最后回正。
+- 恢复改造依据见 TechnicalGuide 第 22 节，当前能量/恢复参数以第 23 节为准；验证入口为 `Tools > Beetle Arena > Validate Recovery Pacing`。
+
+## 体力策略与中足校准补充（2026-10-13）
+
+固定步新增顺序：双方能量/暴露时钟 → 同时捕获双方局势 → 平滑优势和更新意图 → 原状态机合法决策 → 接触结算与资源消耗。一般在已有承诺动作完成后采用新意图，持续几何受阻时可卸力退出；动作模块不能绕过疲劳、防守和反击优先级。具体参数、研究依据和验证见 TechnicalGuide 第 23 节。
+
+中足源站位落地后使用约 98.8% 的可达上限；模型构建器、既有场景、预制体和 settings.supportFootOffsets 同步向前收足 .18 模型单位。运行时按每腿髋踝距离规划支撑点，超过可达比例 .96 提前补步；新落点以 .94 保留余量。两段 IK 继续保持骨长，细节见第 24 节。
+
+胸部动作高度由 Animator.bodyHeightOffset 独立缓存；ModelRig 的坡面姿势抬升在后面叠加，下一步不能把叠加后的 Transform 高度作为动画缓存读回。初始化清零，避免累积抬胸和拖脚。
+
+## 接触互锁的备用求解与回归现场（2026-10-13）
+
+- `ContactSolver.Solve` 首先使用原分离方式；整步位移或残余重叠不合格时，从同一提案与原速度开始，尝试水平接触法线分离，再依次缩小推进比例。普通接触按质量分配位移；原托举、脱角与入角分支保持各自语义。
+- `ProjectView` 使用独立姿态缓存执行相同的方向备用策略，仅修改可见 Transform。它不调用动画退让/缓存提交，也不回写模拟位置、速度或 AI。
+- `ProceduralAnimator.YieldHead` 从本次候选 Transform 读取头角和偏航；失败试算不能让相同姿态的头部退让越积越大。
+- `Editor/Validation/BeetleContactEscapeValidation.cs` 拥有现场恢复及测试流程；`Validation/Fixtures/FlatHornDeadlock.json` 保存已知互锁姿态、模型局部变换、动态状态与步态缓存，仅供编辑器验证。骨架或字段变更时必须明确更新夹具，不能静默跳过缺失字段。
+- `Tools > Beetle Arena > Validate Contact Escape` 覆盖恢复移动、穿透/位移上限、0/1/4 显示次数隔离和头角重试；报告在 `Artifacts/DeadlockFix`。原因与复现边界见 TechnicalGuide 第 25 节。
+
+## 触角与口器的独立网格（2026-10-13）
+
+`Editor/Model/BeetleHeadMeshSplit.cs` 对源Part2/14做三角形裁切；`BeetleAntennaBindingUpgrade.cs` 负责四个独立Mesh资产、Renderer安装、切口权重与避地采样，生成器调用同一规则。左右触角分别使用Part2_Antenna/Part14_Antenna；两个刚性口器对象挂在头节点下，使用Part2_Mouth/Part14_Mouth。生成资源位于 Generated/ImportedModel，原FBX仍是输入资源。
+
+运行时状态归属不变：Animator驱动头和触角，ModelRig负责避地。新增的两个口器Renderer登记至ContactRig.surfaces，未新增碰撞代理或模拟循环。菜单 Split Antenna And Mouth Meshes 增量同步正式场景/预制体，重复运行复用资源。
+
+`BeetleHeadSplitValidation.cs` / `Validate Split Head Meshes` 检查真正拆分的资源、表面守恒、UV和动画切口连续性；原Feeler验证菜单兼容转发。报告与分色特写在Artifacts/HeadSplit，详细技术见TechnicalGuide第27节。
+
+
+## 独立下颚与未来进食接入（2026-10-13）
+
+当前状态以本节和 TechnicalGuide 第28节为准：上一节的 Mouth 网格进一步拆为固定基部与左右可动颚片。
+
+- Editor/Model/BeetleHeadMeshSplit：执行三角面裁切，保留完整表面、UV和法线。
+- Editor/Model/BeetleJawBinding：针对当前 FBX 标定区域，建立两个颚枢轴和三个独立 Mesh 资源。源 Part2 同时包含左右口器，因此不能按原零件编号判断左右。
+- Runtime/Rig/BeetleJawRig：只写左右颚枢轴，SetPose(opening, sweep) 提供开合和扫动接口，不自行启动进食或增加行为状态。
+- Runtime/Rig/BeetleModelRig.jaws：保存绑定引用；ResetRig 时统一复位。
+- Editor/Model/BeetleJawPreview：在 BeetleJawRig 组件右键菜单用 Preview Open Jaw / Restore Closed Jaw 验收，支持 Undo。预览后请还原再保存。
+- Editor/Validation/BeetleJawValidation：验证切口和UV、独立运动、复位、异常输入与Renderer登记；HeadSplitValidation 检查拆分总表面积。
+
+数据流：FBX → 模型坐标转换 → 触角/口器裁切 → 固定基部/左右颚片裁切 → 蒙皮资产与枢轴 → 场景及预制体。将来的进食模块应在固定步姿态捕获前调用 SetPose；BeetlePoseBuffer 已自动收录模型树中的新枢轴，显示插值继续读取快照。
+
+可动资源：Generated/ImportedModel/Part2_LeftJaw.asset、Part2_RightJaw.asset、Part14_RightJaw.asset；右侧两块共同跟随 Right jaw pivot，左侧跟随 Left jaw pivot。剩余 Part2_Mouth / Part14_Mouth 为固定口器。原 FBX 未修改。
+
+
+## 调试工作台（2026-10-13）
+
+入口：Tools → Beetle Arena → Debug Workbench。使用方法与AI命令见 [DebugWorkbench.md](DebugWorkbench.md)。
+
+| 模块 | 职责与状态所有权 |
+| --- | --- |
+| Editor/Debugging/BeetleDebugWorkbenchWindow + UXML/USS | 人的操作入口；按钮调用Service，不独立修改模拟 |
+| BeetleDebugWorkbenchService | 管理目标对局、隔离预览、记录开关、300帧姿态缓存与1200条诊断；统一人/AI操作 |
+| BeetleDebugSnapshot / BeetleDebugGraph | 保存并恢复同版本现场；包含随机源及模拟/动画/接触私有缓存；引用映射与类型/版本校验 |
+| BeetleDebugSceneOverlay | Scene中只读显示IK、脚目标/实际点、弯曲方向和候选根修正；拖脚只允许暂停的隔离预览 |
+| BeetleDebugCapture | 实际相机PNG导出；临时隔离渲染对象，finally恢复 |
+| BeetleDebugCommandBridge | Temp/BugDuelDebug.request.json → Service.ExecuteJson → 匹配id的response.json |
+| Runtime/Diagnostics/BeetleDebugHooks | UNITY_EDITOR下提供状态、决策、接触及固定步观察事件；不拥有或改写玩法状态 |
+| Editor/Validation/BeetleDebugWorkbenchValidation | 续算一致性、观察隔离、跨场景引用恢复、UI和生命周期验证 |
+
+操作链：窗口按钮/AI命令 → Service → 正式固定步或快照服务 → 模拟/IK/接触 → 观察钩子 → 有界记录/曲线/JSON。
+现场恢复后由模拟继续拥有战斗状态；窗口不能在录像拖动时写回模拟。音频、粒子和相机时钟不属于现场恢复范围。

@@ -17,10 +17,10 @@ MonoBehaviour:
   visualScale: 0.7
   supportFootOffsets:
   - {x: -1.145, y: 0.11, z: 2.3249998}
-  - {x: -1.4100001, y: 0.075, z: -0.9100001}
+  - {x: -1.4100001, y: 0.075, z: -0.73}
   - {x: -0.90999997, y: 0.54, z: -1.7350001}
   - {x: 1.145, y: 0.11, z: 2.3249998}
-  - {x: 1.4100001, y: 0.075, z: -0.9100001}
+  - {x: 1.4100001, y: 0.075, z: -0.73}
   - {x: 0.90999997, y: 0.54, z: -1.7350001}
   fallDepth: 0.75
   groundHeight: -3.4
@@ -30,6 +30,8 @@ MonoBehaviour:
   - {fileID: 11400000, guid: 72aad944984b86b43b32e5c1c8061131, type: 2}
   - {fileID: 11400000, guid: bb291c8d11d6b3e46819ae7d847b2728, type: 2}
   - {fileID: 11400000, guid: 5a89660713b39de498b08095cbfb5957, type: 2}
+  - {fileID: 11400000, guid: c708a472719272f429fd99aeeac1b3a4, type: 2}
+  - {fileID: 11400000, guid: bebea0c5a90bf9b4f95c5736af99002a, type: 2}
   moduleActionChance: 0.42
   gravity: 9.81
   minimumSize: 0.96
@@ -41,7 +43,7 @@ MonoBehaviour:
   turnSpeed: 145
   shoveImpulse: 2.7
   pryImpulse: 4.3
-  staminaRecovery: 7.5
+  staminaRecovery: 16
   fatiguePerSecond: 0.12
   openingSeconds: 90
   escalationSeconds: 90
@@ -49,7 +51,11 @@ MonoBehaviour:
   finalDisplacement: 2.4
   probingSeconds: 7
   clashSeconds: 9
-  exchangeRecoverySeconds: 3.5
+  exchangeRecoverySeconds: 1.35
+  recoveryResumeFraction: 0.58
+  recoveryMinimumSeconds: 0.35
+  recoveryMaximumSeconds: 2.2
+  recoveryRetrySeconds: 0.85
   probeForceMultiplier: 0.3
   chargeForceMultiplier: 1.35
   chargeWindupSeconds: 0.65
@@ -82,6 +88,13 @@ MonoBehaviour:
   throwOverheadWork: 32
   throwOverheadAngularSpeed: 2.5
   throwSnapSeconds: 0.22
+  exertionRecoveryDelay: 0.42
+  contactRecoveryMultiplier: 0.55
+  burstDrainPerSecond: 0.34
+  burstRecoveryPerSecond: 0.28
+  tacticalResponseSeconds: 0.3
+  missedAttackExposure: 0.62
+  failedPryRetrySeconds: 3.5
   chargeStaminaCost: 27
   hornLockStaminaCost: 8
   tossChance: 0.08

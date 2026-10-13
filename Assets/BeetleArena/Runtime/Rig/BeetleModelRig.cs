@@ -32,6 +32,7 @@ namespace BeetleArena
             [NonSerialized] public float avoidanceAngle;
         }
         public FeelerBinding[] feelers;
+        public BeetleJawRig jaws;
         float postureLift;
         [Min(0)] public float soleClearance = .025f;
         [Range(.1f, 1)] public float headMotionScale = .48f;
@@ -49,6 +50,7 @@ namespace BeetleArena
             }
             if(feelers != null) foreach(var f in feelers) f.avoidanceAngle=0;
             postureLift=0;
+            if(jaws) jaws.ResetPose();
         }
 
         /// <summary>触角靠近坡面时主动收起，避免用细触角的碰撞反过来顶起整只甲虫。</summary>
@@ -84,6 +86,49 @@ namespace BeetleArena
             float response=neededLift>postureLift?35:7;
             postureLift=Mathf.Lerp(postureLift,Mathf.Clamp(neededLift,0,.25f),1-Mathf.Exp(-dt*response));
             body.position+=Vector3.up*(postureLift*Mathf.Abs(model.lossyScale.x));
+        }
+
+        /// <summary>当前脚点占用的髋踝可达比例；由步态提前补步，不能等 IK 硬限位才拖脚。</summary>
+        public float SupportReach(BeetleLegRig leg, Vector3 target, BeetleState state, IBeetleGround ground)
+        {
+            var b = bindings[(leg.side < 0 ? 0 : 3) + leg.pair];
+            float scale = Mathf.Abs(model.lossyScale.x);
+            Vector3 normal = state.SurfaceNormal;
+            if (ground != null && ground.Sample(new Vector2(target.x, target.z), out var hit)) normal = hit.normal;
+            var frame = Quaternion.FromToRotation(Vector3.up, normal) * Quaternion.Euler(0, state.Heading, 0);
+            return Vector3.Distance(target - frame * (b.footOffsetInModel * scale), b.hip.position) /
+                Mathf.Max(.001f, (b.upperLength + b.lowerLength) * scale * (1 - reachMargin));
+        }
+
+        /// <summary>
+        /// 只在规划名义落点/新一步终点时收回不可达的水平距离，已锁定的支撑脚不逐帧滑动。
+        /// 足节很长的中足尤其需要此余量；保留地表高度，不用抬高悬空脚伪装落地。
+        /// </summary>
+        public Vector3 PlanSupport(BeetleLegRig leg, Vector3 target, BeetleState state, IBeetleGround ground)
+        {
+            var b = bindings[(leg.side < 0 ? 0 : 3) + leg.pair];
+            float scale = Mathf.Abs(model.lossyScale.x);
+            float reach = (b.upperLength + b.lowerLength) * scale * (1 - reachMargin) * .94f;
+            for (int pass = 0; pass < 3; pass++)
+            {
+                Vector3 normal = state.SurfaceNormal;
+                if (ground != null && ground.Sample(new Vector2(target.x, target.z), out var hit))
+                { target.y = hit.height + (soleClearance + leg.soleOffset) * scale; normal = hit.normal; }
+                var frame = Quaternion.FromToRotation(Vector3.up, normal) * Quaternion.Euler(0, state.Heading, 0);
+                Vector3 offset = frame * (b.footOffsetInModel * scale);
+                Vector3 delta = target - offset - b.hip.position;
+                // 竖直本身已超出长度时交回最终 IK/碰撞约束，不让根位置在此被动画改写。
+                if (Mathf.Abs(delta.y) >= reach) break;
+                float horizontal = Mathf.Sqrt(Mathf.Max(0, reach * reach - delta.y * delta.y));
+                Vector2 flat = new Vector2(delta.x, delta.z);
+                if (flat.sqrMagnitude <= horizontal * horizontal) break;
+                flat = flat.normalized * horizontal;
+                target.x = b.hip.position.x + offset.x + flat.x;
+                target.z = b.hip.position.z + offset.z + flat.y;
+            }
+            if (ground != null && ground.Sample(new Vector2(target.x, target.z), out var finalHit))
+                target.y = finalHit.height + (soleClearance + leg.soleOffset) * scale;
+            return target;
         }
 
         public void Solve(BeetleLegRig leg, Vector3 target, BeetleState state, IBeetleGround ground)

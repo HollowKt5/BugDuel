@@ -30,7 +30,8 @@ namespace BeetleArena
             lift.PeakAngularSpeed = Mathf.Max(lift.PeakAngularSpeed, lift.AngularSpeed);
             if (quality <= 0 || delta <= .00001f) return;
 
-            float effort = (.4f + .6f * attacker.Stamina01) * lift.Effort;
+            // 持续顶举也消耗爆发储备，与入角/推顶使用同一发力规则，不能绕过体力策略。
+            float effort = BeetleEnergyPolicy.AttackEffort(attacker) * lift.Effort;
             if (attacker.CheerRemaining > 0) effort *= 1 + settings.cheerEffortBonus;
             float inputArm = settings.throwInputArm * attacker.Traits.size;
             float torque = settings.throwMuscleForce * attacker.Traits.strength * effort * inputArm

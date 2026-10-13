@@ -50,7 +50,10 @@ namespace BeetleArena
         public Renderer[] shellRenderers;
         // 身体静止局部位置和触角初始局部旋转；叠加动画时从基准姿态出发，避免累计漂移。
         Vector3 bodyRest;
+        // 仅缓存动作产生的胸部高度；坡面避障随后叠加，不能从 Transform 读回并累积。
+        float bodyHeightOffset;
         Quaternion[] antennaRest;
+        Vector3[] antennaAngles;
         // size 是个体大小，scale 是最终视觉缩放；三个 Pitch/Roll 为平滑后的角度（度）。
         // walkCycle 是连续步态相位。ground 与模拟共用，只采样当前有效擂台。
         float size = 1, scale = .7f, arenaRadius = 5.2f, bodyPitch, bodyRoll, headPitch, walkCycle;
@@ -105,7 +108,8 @@ namespace BeetleArena
             bodyPivot.localPosition = bodyRest;
             bodyPivot.localRotation = Quaternion.identity;
             headPivot.localRotation = Quaternion.identity;
-            bodyPitch = bodyRoll = headPitch = walkCycle = 0;
+            bodyPitch = bodyRoll = headPitch = walkCycle = bodyHeightOffset = 0;
+            antennaAngles = new Vector3[antennae.Length];
             if (antennaRest == null || antennaRest.Length != antennae.Length)
             {
                 antennaRest = new Quaternion[antennae.Length];
@@ -143,17 +147,19 @@ namespace BeetleArena
             // 角度正负依赖当前模型坐标轴；换 FBX 必须重新校准枢轴和骨骼初始方向。
             switch (state.Action)
             {
-                case BeetleAction.Assess: targetHead = 15 + Mathf.Sin(time * 2.1f) * 6; break;
-                case BeetleAction.Probe: targetHead = 18 + Mathf.Sin(phase * Mathf.PI) * 9; pitch = 1.5f * Mathf.Sin(phase * Mathf.PI); break;
+                case BeetleAction.Assess: targetHead = 15 + InsectMotionTiming.Bout(time + state.Index * .83f, 1.43f, 203) * 9; break;
+                case BeetleAction.Probe: targetHead = 18 + InsectMuscleAnimation.Recruit(phase) * 14; pitch = 2.5f * InsectMuscleAnimation.Recruit(phase); break;
                 case BeetleAction.Disengage: targetHead = 17; pitch = -2; break;
-                case BeetleAction.ChargeWindup: targetHead = Mathf.Lerp(18, 48, Ease(phase)); pitch = 7 * Ease(phase); strain = .8f; break;
-                case BeetleAction.Charge: targetHead = Mathf.Lerp(48, 23, Ease(phase)); pitch = -9 * Mathf.Sin(phase * Mathf.PI); strain = 1.4f; break;
+                case BeetleAction.ChargeWindup: targetHead = Mathf.Lerp(18, 56, Ease(phase)); pitch = 9 * Ease(phase); strain = .8f; break;
+                case BeetleAction.Charge: targetHead = Mathf.Lerp(56, 20, InsectMuscleAnimation.Strike(phase)); pitch = -13 * Mathf.Sin(phase * Mathf.PI); strain = 1.4f; break;
                 case BeetleAction.HornLock:
-                    targetHead = 34 + Mathf.Sin(time * 15 + state.Index) * 3;
-                    pitch = 5; roll += Mathf.Sin(time * 11 + state.Index * Mathf.PI) * 2;
+                    // 交角时短促尝试发力，中间保持支撑；不再持续高频机械颤动。
+                    float effort = InsectMotionTiming.Bout(time + state.Index * .83f, .93f, 227);
+                    targetHead = 30 + effort * 14;
+                    pitch = 4 + effort * 4; roll += state.CircleDirection * effort * 4;
                     strain = 1.25f; break;
-                case BeetleAction.ShoveWindup: targetHead = Mathf.Lerp(14, 38, Ease(phase)); pitch = 4; break;
-                case BeetleAction.Shove: targetHead = Mathf.Lerp(38, 20, Ease(phase)); pitch = -4 * Mathf.Sin(phase * Mathf.PI); strain = 1; break;
+                case BeetleAction.ShoveWindup: targetHead = Mathf.Lerp(14, 45, Ease(phase)); pitch = 6; break;
+                case BeetleAction.Shove: targetHead = Mathf.Lerp(45, 16, InsectMuscleAnimation.Strike(phase)); pitch = -7 * Mathf.Sin(phase * Mathf.PI); strain = 1; break;
                 case BeetleAction.PryWindup: targetHead = Mathf.Lerp(20, 82, Ease(phase)); strain = .5f; break;
                 // 入角阶段保持头角低位，只有真正触及对方身体下缘才切换到 Lifting 扬角。
                 case BeetleAction.Pry: targetHead = 82; strain = .7f; break;
@@ -216,7 +222,10 @@ namespace BeetleArena
             pitch += modulePose.BodyPitch; roll += modulePose.BodyRoll;
             targetHead += modulePose.HeadPitch; strain += modulePose.Strain;
             // 指数平滑让姿态逐渐靠近目标，减少状态切换时跳变；dt=0 时保留原姿态。
-            float blend = 1 - Mathf.Exp(-dt * 13);
+            // 模块可选择较快关节响应，但抬举/抛出/跌落保留原参数和接触接续。
+            float response = state.Action == BeetleAction.Module && modulePose.PoseResponse > 0
+                ? Mathf.Clamp(modulePose.PoseResponse, 13, 29) : InsectMuscleAnimation.Response(state, 13);
+            float blend = 1 - Mathf.Exp(-dt * response);
             if (importedRig) targetHead = (targetHead - 12) * importedRig.headMotionScale;
             if (state.Action == BeetleAction.Lifting)
                 targetHead = liftingHeadStart - state.LiftSweepTarget * state.LiftStrokeProgress;
@@ -234,15 +243,17 @@ namespace BeetleArena
             bodyRoll = Mathf.Lerp(bodyRoll, roll, blend);
             // 步态频率随平面速度提升；相位仍需配合落脚误差，静止时不会单凭相位不断迈步。
             walkCycle += dt * Mathf.Lerp(.8f, 2.4f, Mathf.Clamp01(speed));
-            float poseTime = state.Fall.Active ? state.Fall.Time : time;
-            float breath = Mathf.Sin(poseTime * 2.2f + state.Index) * .008f;
+            // 外骨骼不做持续整胸呼吸起伏；静置重心变化由支撑模块负责。
             float bob = Mathf.Sin(walkCycle * Mathf.PI * 4) * Mathf.Min(speed, 1) * .018f;
             float landingCompression = state.Fall.OnFloor
                 ? Mathf.Sin(Mathf.PI * Mathf.Clamp01(state.Fall.GroundSeconds / .24f)) * Mathf.Min(.1f, state.Fall.ImpactSpeed * .012f) : 0;
-            bodyPivot.localPosition = bodyRest + Vector3.up * (breath + bob - strain * .055f - landingCompression + modulePose.BodyHeight);
-            bodyPivot.localRotation = Quaternion.Euler(bodyPitch, Mathf.Sin(time * 21) * strain * .35f, bodyRoll);
+            // 蓄力开始/退出时胸部高度也渐变，避免快速招募表现变成整虫一帧上下跳。
+            bodyHeightOffset = Mathf.Lerp(bodyHeightOffset,
+                bob - strain * .055f - landingCompression + modulePose.BodyHeight, 1 - Mathf.Exp(-dt * 22));
+            bodyPivot.localPosition = bodyRest + Vector3.up * bodyHeightOffset;
+            bodyPivot.localRotation = Quaternion.Euler(bodyPitch, 0, bodyRoll);
             // 低头时略偏角绕过对方叉角，避免两根长角在同一竖直平面上永远互顶。
-            float yawTarget = state.Action == BeetleAction.Assess ? Mathf.Sin(time * 1.6f) * 8 :
+            float yawTarget = state.Action == BeetleAction.Assess ? (InsectMotionTiming.Bout(time + state.Index * .83f, 1.61f, 239) - .5f * InsectMotionTiming.Bout(time + .4f, 2.17f, 241)) * 9 :
                 state.Action == BeetleAction.PryWindup ? state.CircleDirection * 18 * Ease(phase) :
                 state.Action == BeetleAction.Pry ? state.CircleDirection * 18 :
                 state.Action == BeetleAction.Lifting || state.Action == BeetleAction.ReleaseLift || state.Action == BeetleAction.Toss ? liftingYaw : 0;
@@ -250,7 +261,11 @@ namespace BeetleArena
             headYaw = Mathf.LerpAngle(headYaw, yawTarget, blend);
             headPivot.localRotation = Quaternion.Euler(headPitch, headYaw, 0);
             for (int i = 0; i < antennae.Length; i++)
-                antennae[i].localRotation = antennaRest[i] * Quaternion.Euler(Mathf.Sin(poseTime * 6 + i) * 5, Mathf.Sin(poseTime * 3.2f + i * 2) * 10, 0);
+            {
+                state.Motion.SampleAntenna(i, out var targetAngles);
+                antennaAngles[i] = Vector3.Lerp(antennaAngles[i], targetAngles, 1 - Mathf.Exp(-dt * 18));
+                antennae[i].localRotation = antennaRest[i] * Quaternion.Euler(antennaAngles[i]);
+            }
             if(importedRig && !state.Airborne && !state.HasFallen) importedRig.AvoidFeelerGround(ground, dt);
 
             // 统计已经在摆动的腿，供后面的抬腿预算使用。预算限制新增迈步，不会强行中断旧迈步。
@@ -264,6 +279,8 @@ namespace BeetleArena
             {
                 // 名义落脚点随身体平移/转向；已落脚的 planted 尽量停留在世界原位，形成支撑期。
                 Vector3 nominal = NominalFoot(leg);
+                if (importedRig && !state.Airborne && !state.HasFallen)
+                    nominal = importedRig.PlanSupport(leg, nominal, state, ground);
                 Vector3 ankle;
                 int slot = (leg.side < 0 ? 0 : 3) + leg.pair;
                 bool ownsLeg = state.Motion.SampleLeg(slot, out var moduleOffset);
@@ -340,6 +357,9 @@ namespace BeetleArena
                     Vector3 localPlant = model.InverseTransformPoint(leg.planted);
                     float plantError = Vector3.Distance(leg.planted, nominal);
                     bool urgent = localPlant.x * leg.side < (importedRig ? Mathf.Abs(leg.restAnkle.x) * .55f : 1.10f) || plantError > .40f * size;
+                    // 长足节中足的剩余可达空间比统一位置阈值小得多，提前补步恢复弯曲余量。
+                    urgent |= importedRig && plantError > .04f * size &&
+                        importedRig.SupportReach(leg, leg.planted, state, ground) > .96f;
                     if (localPlant.x * leg.side < 0 || plantError > 1.5f * size)
                     {
                         if (leg.stepping) steppingCount--;
@@ -360,17 +380,21 @@ namespace BeetleArena
                         // 按当前速度预判 0.17 秒后的前方位置，让脚落在行进方向前方；开始一步后终点固定。
                         leg.stepTo = nominal + new Vector3(state.Velocity.x, 0, state.Velocity.y) * .17f;
                         leg.stepTo.y = FootHeight(leg.stepTo, leg);
-                        leg.stepDuration = urgent ? .12f : fast ? .17f : .25f;
+                        if (importedRig) leg.stepTo = importedRig.PlanSupport(leg, leg.stepTo, state, ground);
+                        // 快慢招募只影响本次摆腿；支撑脚继续世界锁定，非六腿一起加速。
+                        float vigor = Mathf.Lerp(.82f, 1, state.BurstReserve);
+                        leg.stepDuration = (urgent ? .12f : fast ? .16f : .22f) / vigor;
+                        leg.stepDuration *= Mathf.Lerp(.93f, 1.07f, InsectMotionTiming.Value(Mathf.FloorToInt(walkCycle), slot + 331));
                         leg.stepTime = 0; leg.stepping = true; steppingCount++;
                     }
                     if (leg.stepping)
                     {
-                        // 快走约 0.17 秒一步，慢走约 0.25 秒；除以时长得到归一化进度。
+                        // 每一步使用启动时确定的时长；除以该时长得到归一化进度。
                         leg.stepTime += dt / Mathf.Max(.08f, leg.stepDuration);
                         float t = Mathf.Clamp01(leg.stepTime);
-                        // 水平路径用 Ease 平滑插值；竖直额外偏移 sin(πt)×0.13×体型。
+                        // 水平路径用分段 Swing 曲线；竖直额外偏移 sin(πt)×0.13×体型。
                         // t=0/1 时额外高度为零，t=0.5 最高；这条弧线生成 IK 的输入目标。
-                        leg.planted = Vector3.Lerp(leg.stepFrom, leg.stepTo, Ease(t)) + Vector3.up * (Mathf.Sin(t * Mathf.PI) * .13f * size);
+                        leg.planted = Vector3.Lerp(leg.stepFrom, leg.stepTo, InsectMuscleAnimation.Swing(t)) + Vector3.up * (Mathf.Sin(t * Mathf.PI) * .13f * size);
                         // 跨越凸起时沿整条摆腿路径查地表，足尖留出抬脚余量，不仅检查起终点。
                         leg.planted.y = Mathf.Max(leg.planted.y, FootHeight(leg.planted, leg) + Mathf.Sin(t * Mathf.PI) * .08f * size);
                         if (t >= 1) { leg.stepping = false; steppingCount--; }
@@ -427,6 +451,10 @@ namespace BeetleArena
         // 接触约束的局部反馈：角下受力先让头关节退让，不能把一根角的接触全换算为根部后退。
         public void YieldHead(float degrees)
         {
+            // 接触重试先恢复候选 Transform，却不会回滚动画平滑缓存。
+            // 从本次实际试算姿态取角，避免失败的重试累计退让或覆盖插值后的偏航。
+            headPitch = Mathf.DeltaAngle(0, headPivot.localEulerAngles.x);
+            headYaw = Mathf.DeltaAngle(0, headPivot.localEulerAngles.y);
             // 已经高于退让范围时保持原角度。直接 Max(-32, ...) 会把已扬到 -46 度
             // 的头强行拉回 -32 度，瞬间重新顶入对手并引发整虫位置修正。
             headPitch = Mathf.Min(headPitch, Mathf.Max(-55, headPitch - degrees));

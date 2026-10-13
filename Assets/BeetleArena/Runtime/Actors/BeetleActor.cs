@@ -15,6 +15,7 @@ namespace BeetleArena
         Quaternion previousRotation, currentRotation;
         IBeetleGround ground;
         BeetlePoseBuffer poses;
+        internal Transform[] PoseBones => poses.Bones;
         BeetleGroundMarker marker;
 
         // 每局将新状态绑定到场景模型，设置初始根节点位置、方向、体型和阵营外壳颜色。
@@ -71,6 +72,14 @@ namespace BeetleArena
         }
         public void CaptureSimulationPose()
         { currentRotation = transform.rotation; poses?.Capture(); }
+#if UNITY_EDITOR
+        public void EditorRefreshMarker()
+        {
+            marker?.Dispose();marker=null;
+            if(Application.isPlaying && teamMarker && State!=null)marker=new BeetleGroundMarker(teamMarker,ground,State.Traits.size);
+            UpdateMarker();
+        }
+#endif
         void OnDestroy() { marker?.Dispose(); marker = null; }
         // 将根节点恢复到权威模拟状态，再生成本步关节姿态，供接触检测使用。
         public void PoseSimulation(float time, float dt)

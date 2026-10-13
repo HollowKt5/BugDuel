@@ -26,7 +26,9 @@ namespace BeetleArena
         // 记录 Solve 调用中出现甲虫相互接触的次数；不包含仅接触台面的情况。
         public int ContactFrames { get; private set; }
         public string LastWorstContact { get; private set; }
-        public string LastSeparationPair { get; private set; }
+        Collider separationA, separationB;
+        // 诊断按需格式化。深接触重试只记录引用，不在每个候选更新时分配名称字符串。
+        public string LastSeparationPair => separationA && separationB ? separationA.name + " / " + separationB.name : null;
         public Vector3 LastSeparationNormal { get; private set; }
         readonly BeetleHornSupport hornSupport = new BeetleHornSupport();
         readonly BeetleContactMotion[] motion, viewMotion;
@@ -48,7 +50,7 @@ namespace BeetleArena
         // 每局创建求解器，收集两套碰撞体并启用 ContactDriven，使姿态随固定模拟推进。
         public BeetleContactSolver(BeetleActor[] actors, Collider[] arena, float skin)
         {
-            this.actors = actors; this.arena = arena; this.skin = skin;
+            this.actors = actors; this.arena = arena ?? System.Array.Empty<Collider>(); this.skin = skin;
             motion = new[] { new BeetleContactMotion(actors[0]), new BeetleContactMotion(actors[1]) };
             viewMotion = new[] { new BeetleContactMotion(actors[0]), new BeetleContactMotion(actors[1]) };
             rigs = new[] { actors[0].GetComponent<BeetleContactRig>(), actors[1].GetComponent<BeetleContactRig>() };
@@ -73,7 +75,13 @@ namespace BeetleArena
             if (dt > 0 && (ArticulatedContact(sim.Fighters[0]) || ArticulatedContact(sim.Fighters[1]))) YieldArticulatedContacts(sim);
             if (hornSupport.Active(sim)) hornSupport.Follow(sim, rigs[hornSupport.Defender], dt);
             foreach (var m in motion) m.Propose();
+#if UNITY_EDITOR
+            Vector3 debugProposalA=actors[0].transform.position, debugProposalB=actors[1].transform.position;
+#endif
             bool contact = Constrain(sim, true);
+#if UNITY_EDITOR
+            BeetleDebugHooks.Contact(sim,this,1,separationRemaining,debugProposalA,debugProposalB,actors[0].transform.position,actors[1].transform.position);
+#endif
             AcceptedMotionFraction = 1;
             if (dt > 0 && !MotionAccepted())
             {
@@ -81,7 +89,9 @@ namespace BeetleArena
                 // 动画先试完整步；若多次分离累计成瞬移，则逐次缩小姿态推进量。
                 // 所有重试共用原始速度，拒绝的试算不能消耗或产生动量。
                 bool accepted = false;
-                for (int attempt = 1; attempt <= 7; attempt++)
+                // 中心轴可能几乎垂直接触法线：微小角叉重叠会被投影成大幅后退，
+                // 此时仅缩小步长仍无解。先用真实接触法线重试完整提案，再逐步缩小。
+                for (int attempt = 0; attempt <= 7; attempt++)
                 {
                     float fraction = Mathf.Pow(.5f, attempt);
                     for (int i = 0; i < 2; i++)
@@ -90,8 +100,11 @@ namespace BeetleArena
                     // 缩小整体姿态后重新求局部避让。不能把必要的头角退让也缩到几乎为零，
                     // 否则互锁的叉角永远无法解开；每次重试都从同一姿态提案重建，不累计转角。
                     if (ArticulatedContact(sim.Fighters[0]) || ArticulatedContact(sim.Fighters[1])) YieldArticulatedContacts(sim);
-                    contact = Constrain(sim, true);
+                    contact = Constrain(sim, true, true);
                     AcceptedMotionFraction = fraction;
+#if UNITY_EDITOR
+                    BeetleDebugHooks.Contact(sim,this,fraction,separationRemaining,debugProposalA,debugProposalB,actors[0].transform.position,actors[1].transform.position);
+#endif
                     if (MotionAccepted()) { accepted = true; break; }
                 }
                 if (!accepted)
@@ -115,6 +128,8 @@ namespace BeetleArena
                 }
                 // 双方共用本次是否相互接触的结果。当前不记录具体接触部位、法线或接触点。
                 state.TouchingOpponent = contact;
+                state.ContactBlockedSeconds = !state.Airborne && !state.HasFallen && AcceptedMotionFraction < .05f
+                    ? state.ContactBlockedSeconds + dt : Mathf.Max(0, state.ContactBlockedSeconds - dt * 2);
                 if (state.Lift.Supported)
                     state.Lift.BlockedTime = AcceptedMotionFraction < .05f ? state.Lift.BlockedTime + dt : Mathf.Max(0, state.Lift.BlockedTime - 2 * dt);
                 UpdateFootSupport(actors[i], sim, dt);
@@ -203,11 +218,12 @@ namespace BeetleArena
             // 实际显示姿态连续前进，时间步决定可移动距离。显示缓存不参与权威模拟。
             foreach (var m in viewMotion) m.Propose();
             bool accepted = false;
-            for (int attempt = 0; attempt <= 7; attempt++)
+            for (int attempt = 0; attempt <= 8; attempt++)
             {
                 if (attempt > 0)
-                    foreach (var m in viewMotion) m.Apply(Mathf.Pow(.5f, attempt));
-                Physics.SyncTransforms(); Cache(); Constrain(sim, false);
+                    foreach (var m in viewMotion) m.Apply(Mathf.Pow(.5f, attempt - 1));
+                // 显示层也要有沿接触面解开的路径，否则模拟已恢复而画面仍停在旧姿态。
+                Physics.SyncTransforms(); Cache(); Constrain(sim, false, attempt > 0);
                 bool safe = separationRemaining <= .001f;
                 for (int i = 0; i < 2; i++)
                 {
@@ -225,12 +241,12 @@ namespace BeetleArena
         }
         // 最多八轮交替处理甲虫互碰和环境碰撞；环境修正可能把甲虫重新挤向对方。
         // 当环境不再移动模型时提前停止，避免每帧总是跑满迭代预算。
-        bool Constrain(BeetleSimulation sim, bool changeVelocity)
+        bool Constrain(BeetleSimulation sim, bool changeVelocity, bool useContactNormals = false)
         {
             bool contact = false;
             for (int pass = 0; pass < 8; pass++)
             {
-                contact |= Separate(sim, changeVelocity);
+                contact |= Separate(sim, changeVelocity, useContactNormals);
                 bool arenaMoved = false;
                 foreach (var rig in rigs) arenaMoved |= ResolveArena(rig);
                 if (!arenaMoved && separationRemaining <= .0005f) break;
@@ -244,7 +260,7 @@ namespace BeetleArena
         void Cache() { foreach (var rig in rigs) rig.CacheBounds(); }
         // 双方沿中心连线的水平轴分离，最多 24 次。限制为水平修正，避免角的碰撞法线
         // 把双方都无意推到空中；真正抬举由战斗规则显式给竖直速度。
-        bool Separate(BeetleSimulation sim, bool changeVelocity)
+        bool Separate(BeetleSimulation sim, bool changeVelocity, bool useContactNormals)
         {
             // 托举时沿真实三维接触法线解开重叠。旧算法强制水平分离，会把扬角的竖向接触
             // 放大成后退，甚至在有向上速度时仍先把双方横向弹开。
@@ -253,15 +269,16 @@ namespace BeetleArena
             if (hornSupport.Attacker >= 0 && Mathf.Abs(sim.Fighters[hornSupport.Defender].Lift.Pitch) > .01f)
             {
                 if (sim.Fighters[hornSupport.Defender].Airborne) return SeparateSupported(sim);
-                bool recoveryContact = SeparateInsertion(sim, changeVelocity, hornSupport.Attacker);
+                bool recoveryContact = SeparateAlongContacts(sim, changeVelocity, hornSupport.Attacker);
                 if (separationRemaining > .001f) recoveryContact |= SeparateCentered(sim, changeVelocity);
                 return recoveryContact;
             }
             bool insertingA = Inserting(sim.Fighters[0]);
             bool insertingB = Inserting(sim.Fighters[1]);
-            if (insertingA || insertingB)
+            if (insertingA || insertingB || useContactNormals)
             {
-                bool insertionContact = SeparateInsertion(sim, changeVelocity, insertingA ? 0 : 1);
+                bool insertionContact = SeparateAlongContacts(sim, changeVelocity,
+                    insertingA || insertingB ? (insertingA ? 0 : 1) : -1);
                 // 交错的多条腿可能让逐接触投影互相抵消。只有剩余穿透超出容差才退回保守分离。
                 if (separationRemaining > .001f) insertionContact |= SeparateCentered(sim, changeVelocity);
                 return insertionContact;
@@ -340,10 +357,12 @@ namespace BeetleArena
 
         // 入角阶段还在地面上：沿真实法线的水平投影侧向滑开，让叉角可以从旁边通过。
         // 旧的中心轴投影丢失了侧向滑动，近乎竖直的接触反而被放大成整虫倒退。
-        bool SeparateInsertion(BeetleSimulation sim, bool changeVelocity, int attacker)
+        // attacker=-1 表示普通动作的受阻重试，按双方质量分摊，不给固定编号让路特权。
+        bool SeparateAlongContacts(BeetleSimulation sim, bool changeVelocity, int attacker)
         {
             bool contact = false; var a = rigs[0]; var b = rigs[1];
-            float weight = attacker == 0 ? .75f : .25f;
+            float weight = attacker < 0 ? sim.Fighters[1].Traits.mass /
+                (sim.Fighters[0].Traits.mass + sim.Fighters[1].Traits.mass) : attacker == 0 ? .75f : .25f;
             for (int pass = 0; pass < 32; pass++)
             {
                 float deepest = 0; Vector3 n = Vector3.zero;
@@ -352,13 +371,21 @@ namespace BeetleArena
                     if(!a.bounds[i].Intersects(b.bounds[j]))continue;
                     var ca=a.shapes[i];var cb=b.shapes[j];
                     if(Physics.ComputePenetration(ca,ca.transform.position,ca.transform.rotation,cb,cb.transform.position,cb.transform.rotation,out var normal,out float depth) && depth>deepest)
-                    { deepest=depth;n=normal;LastSeparationPair=ca.name+" / "+cb.name;LastSeparationNormal=normal; }
+                    { deepest=depth;n=normal;separationA=ca;separationB=cb;LastSeparationNormal=normal;
+#if UNITY_EDITOR
+                        BeetleDebugHooks.Pair(this,ca,cb,normal,depth,"normal-separation");
+#endif
+                    }
                 }
                 if(deepest<.0005f)break;
                 contact=true;
                 Vector3 horizontal=new Vector3(n.x,0,n.z);
                 float projection=horizontal.magnitude;
-                if(projection<.001f)horizontal=(a.transform.position-b.transform.position).normalized;
+                if(projection<.001f)
+                {
+                    horizontal = Vector3.ProjectOnPlane(a.transform.position - b.transform.position, Vector3.up);
+                    horizontal = horizontal.sqrMagnitude > 1e-8f ? horizontal.normalized : Vector3.right;
+                }
                 else horizontal/=projection;
                 Vector3 shift=horizontal*Mathf.Min(.08f,(deepest+skin)/Mathf.Max(.2f,projection));
                 a.Translate(shift*weight);b.Translate(-shift*(1-weight));
@@ -387,7 +414,11 @@ namespace BeetleArena
                     var ca = a.shapes[i]; var cb = b.shapes[j];
                     if (Physics.ComputePenetration(cb, cb.transform.position, cb.transform.rotation,
                         ca, ca.transform.position, ca.transform.rotation, out var normal, out float depth) && depth > deepest)
-                    { deepest = depth; correction = normal * (depth + skin); }
+                    { deepest = depth; correction = normal * (depth + skin);
+#if UNITY_EDITOR
+                        BeetleDebugHooks.Pair(this,cb,ca,normal,depth,"supported-separation");
+#endif
+                    }
                 }
                 if (deepest < .0005f) break;
                 contact = true;
@@ -431,7 +462,10 @@ namespace BeetleArena
                 // ComputePenetration 只返回分离法线与深度，不会自动移动碰撞体。
                 if (!Physics.ComputePenetration(ca, ca.transform.position, ca.transform.rotation,
                     cb, cb.transform.position, cb.transform.rotation, out Vector3 normal, out float depth)) continue;
-                if(describe && depth > maximumDepth) { LastSeparationPair = ca.name + " / " + cb.name; LastSeparationNormal = normal; }
+#if UNITY_EDITOR
+                BeetleDebugHooks.Pair(this,ca,cb,normal,depth,"beetle-pair");
+#endif
+                if(describe && depth > maximumDepth) { separationA = ca; separationB = cb; LastSeparationNormal = normal; }
                 maximumDepth = Mathf.Max(maximumDepth, depth);
                 // 检测深度沿法线给出，而本求解器沿水平中心轴移动，因此除以法线与轴的夹角余弦。
                 // 分母下限 0.15 避免接近垂直时数值爆炸；后续迭代逐步消除余下重叠。
@@ -456,6 +490,9 @@ namespace BeetleArena
                     if (Physics.ComputePenetration(c, c.transform.position, c.transform.rotation,
                         surface, surface.transform.position, surface.transform.rotation, out Vector3 normal, out float depth) && depth > deepest)
                     {
+#if UNITY_EDITOR
+                        BeetleDebugHooks.Pair(this,c,surface,normal,depth,"arena");
+#endif
                         deepest = depth;
                         correction = normal * (depth + skin);
                         // 凹凸地表顶部采用竖直脱离：侧向分离会把细触角推入邻接三角形，反复抵消修正。
@@ -492,4 +529,3 @@ namespace BeetleArena
         }
     }
 }
-
