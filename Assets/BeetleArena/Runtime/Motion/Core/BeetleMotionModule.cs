@@ -4,31 +4,51 @@ namespace BeetleArena
 {
     public enum BeetleMotionChannel { Combat, SupportOverlay }
     public enum BeetleMotionContact { None, Horn, Foreleg }
+    public enum BeetleMotionFamily { General, RaisedDrive, Foreleg }
 
     /// <summary>传给模块的值快照。没有 State、Transform、随机源或求解器引用，模块不能反写比赛。</summary>
     public readonly struct BeetleMotionContext
     {
-        public readonly float Time, Speed, Size, Stamina, Footing, Balance, Distance, Facing, Side, FloorTime, Impact;
-        public readonly bool Fighting, Grounded, Fallen, OnFloor, Touching, OpponentAirborne, Committed;
+        public readonly float Time, SimulationTime, Speed, Size, Stamina, Footing, Balance, Distance, Facing, Side, FloorTime, Impact;
+        public readonly bool Fighting, Grounded, Fallen, OnFloor, Touching, OpponentAirborne, Committed, ForebodyRaised, CatchingBalance;
         public readonly BeetleIntent Intent;
         public readonly float Burst;
+        public readonly float Tempo, Drive, LiftStyle, Lateral, ForelegSide, RearSupport, ForelegTargetDistance;
         public readonly BeetleAction Action;
         public readonly ExchangePhase Exchange;
         public readonly Vector2 OpponentLocal;
+        public readonly Vector3 ForelegAimCorrection;
         public BeetleMotionContext(BeetleSimulation sim, BeetleState b)
         {
             var other = sim.Fighters[1 - b.Index];
             Vector2 delta = other.Position - b.Position;
             var right = new Vector2(b.Forward.y, -b.Forward.x);
-            Time = sim.MotionTime + b.Index * .83f; Speed = b.Velocity.magnitude; Size = b.Traits.size;
+            Tempo = b.Traits.tempo; Drive = b.Traits.drivePreference; LiftStyle = b.Traits.liftPreference; Lateral = b.Traits.lateralPreference;
+            Time = sim.MotionTime * Tempo + b.Index * .83f; Speed = b.Velocity.magnitude; Size = b.Traits.size;
+            SimulationTime = sim.MotionTime;
             Stamina = b.Stamina01; Footing = b.Footing; Balance = b.Balance;
             Distance = delta.magnitude; Facing = Vector2.Dot(b.Forward, delta.normalized);
             Side = b.CircleDirection; FloorTime = b.Fall.GroundSeconds; Impact = Mathf.Clamp01(b.ImpactVisual);
             Fighting = sim.Phase == MatchPhase.Fighting; Grounded = !b.Airborne && !b.HasFallen;
             Fallen = b.HasFallen; OnFloor = b.Fall.OnFloor; Touching = b.TouchingOpponent;
             OpponentAirborne = other.Airborne || other.HasFallen; Committed = b.Committed;
-            Action = b.Action; Exchange = sim.Exchange; Intent = b.Intent; Burst = b.BurstReserve;
+            Action = b.Action; Exchange = b.CombatPhase; Intent = b.Intent; Burst = b.BurstReserve;
             OpponentLocal = new Vector2(Vector2.Dot(delta, right), Vector2.Dot(delta, b.Forward));
+            // Choose the nearer foreleg, alternate frontal attempts, then lock it for the action.
+            ForelegSide = b.Motion.HasActive ? b.Motion.ForelegSide : Mathf.Abs(OpponentLocal.x) > .25f
+                ? Mathf.Sign(OpponentLocal.x) : b.CircleDirection * (b.Motion.Starts % 2 == 0 ? 1 : -1);
+            float reach = float.PositiveInfinity;
+            ForelegAimCorrection = sim.ContactSolver is IBeetleForelegTargets targets
+                ? targets.ForelegAimCorrection(b.Index, ForelegSide < 0 ? 0 : 3, out reach) : Vector3.zero;
+            if (!b.Motion.HasActive && sim.ContactSolver is IBeetleForelegTargets both)
+            {
+                var alternative = both.ForelegAimCorrection(b.Index, ForelegSide < 0 ? 3 : 0, out float otherReach);
+                if (otherReach + .08f < reach) { ForelegSide = -ForelegSide; ForelegAimCorrection = alternative; reach = otherReach; }
+            }
+            ForelegTargetDistance = reach;
+            RearSupport = sim.ContactSolver is IBeetleDriveSupport support ? support.RearSupport(b.Index, sim) : b.Footing;
+            ForebodyRaised = sim.ContactSolver is IBeetleForebodySupport posture && posture.ForebodyRaised(b.Index);
+            CatchingBalance = Grounded && Speed > .12f && (Impact > .08f || Balance < .45f);
         }
     }
 
@@ -42,6 +62,9 @@ namespace BeetleArena
         public BeetleMotionContact Contact;
         public Vector2 LocalImpulse;
         public float Impulse, BalanceCost;
+        // 0 retains legacy selection; 1/4 explicitly identify left/right front leg.
+        public int ContactLegPlusOne;
+        public bool PlantRearFeet, RequiresRearSupport;
     }
 
     /// <summary>
@@ -58,12 +81,16 @@ namespace BeetleArena
         public abstract string DisplayName { get; }
         public abstract BeetleMotionChannel Channel { get; }
         public virtual bool AppliesContactResponse => true;
+        // Shared recovery belongs to the fighter runtime, never the shared asset.
+        public virtual BeetleMotionFamily Family => BeetleMotionFamily.General;
+        public virtual float SelectionWeight(in BeetleMotionContext c) => weight;
         public abstract bool CanStart(in BeetleMotionContext context);
         public virtual bool CanContinue(in BeetleMotionContext c) => c.Fighting && c.Grounded && !c.OpponentAirborne && c.Distance < 4.8f;
         public abstract BeetleMotionSample Sample(in BeetleMotionContext context, float phase);
         // offset 使用模型局部坐标、单位缩放。slot=左前/中/后、右前/中/后；最多覆盖自己的活动区域。
         public virtual bool SampleLeg(in BeetleMotionContext context, float phase, int slot, out Vector3 offset)
         { offset = Vector3.zero; return false; }
+        public virtual float LegSpeed(in BeetleMotionContext context, float phase, int slot) => 3;
         // 触角为独立可选通道：返回相对绑定姿态的局部欧拉角，由宿主平滑。
         public virtual bool SampleAntenna(in BeetleMotionContext context, float phase, int slot, out Vector3 angles)
         { angles = Vector3.zero; return false; }
@@ -79,5 +106,14 @@ namespace BeetleArena
     public interface IBeetleMotionContacts
     {
         bool HasMotionContact(int attacker, BeetleMotionContact kind, int forelegSlot);
+    }
+    public interface IBeetleForelegTargets
+    {
+        Vector3 ForelegAimCorrection(int attacker, int slot, out float distance);
+    }
+    public interface IBeetleForebodySupport { bool ForebodyRaised(int attacker); }
+    public interface IBeetleDriveSupport
+    {
+        float RearSupport(int attacker, BeetleSimulation sim);
     }
 }

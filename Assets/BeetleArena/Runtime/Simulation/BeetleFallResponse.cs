@@ -17,6 +17,18 @@ namespace BeetleArena
         public float ImpactSpeed { get; private set; }
         public float ForwardSpeed { get; private set; }
         public float SideSpeed { get; private set; }
+        public bool EdgeDrop { get; private set; }
+        public Vector2 EdgeDirection { get; private set; }
+        public float EdgeSpeed { get; private set; }
+
+        public void BeginEdgeDrop(BeetleState state)
+        {
+            Begin(state);
+            if (EdgeDrop) return;
+            EdgeDrop = true;
+            EdgeSpeed = state.Velocity.magnitude;
+            EdgeDirection = EdgeSpeed > .05f ? state.Velocity.normalized : state.Position.normalized;
+        }
 
         public void Begin(BeetleState state)
         {
@@ -47,6 +59,7 @@ namespace BeetleArena
         public void Reset()
         {
             Active = OnFloor = false;
+            EdgeDrop = false; EdgeDirection = Vector2.zero; EdgeSpeed = 0;
             Time = UnsupportedSeconds = GroundSeconds = ImpactSpeed = ForwardSpeed = SideSpeed = 0;
         }
     }

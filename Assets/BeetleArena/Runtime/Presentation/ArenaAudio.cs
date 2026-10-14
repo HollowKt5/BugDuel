@@ -2,7 +2,7 @@ using UnityEngine;
 
 namespace BeetleArena
 {
-    /// <summary>接触声表现：高阻尼模态敲击 + 独立短摩擦。合成参数为听感设计，不是甲虫录音测量。</summary>
+    /// <summary>接触声表现：宽频干枝碰撞瞬态 + 独立短摩擦。合成参数为听感设计，不是甲虫录音测量。</summary>
     public sealed class ArenaAudio : MonoBehaviour
     {
         [Range(0, 1)] public float volume = .48f;
@@ -48,15 +48,15 @@ namespace BeetleArena
             clip.SetData(data, 0); return clip;
         }
         // 参考 Aramaki/Kronland-Martinet 2004 的模态与阻尼思路：高频比低频更快消退。
-        // 约 0.19s 敲击，不保留原先占主导的 170Hz 低音，也不加金属长尾。
+        // 约 0.105s 敲击，减弱窄带共鸣，以短瞬态和纤维二次碰触构成干枝质感。
         public static float[] Synthesize(int variant, bool scrape)
         {
-            const int rate = 44100; float length = scrape ? .115f : .19f;
+            const int rate = 44100; float length = scrape ? .115f : .105f;
             var data = new float[Mathf.RoundToInt(rate * length)];
             var random = new System.Random(913 + variant * 107 + (scrape ? 701 : 0));
             float low = 0, lowSlow = 0, peak = 0;
-            float[] modes = { 510, 930, 1570, 2490, 3680 };
-            float[] gains = { .37f, .27f, .17f, .10f, .05f };
+            float[] modes = { 1130, 1877, 2933, 4211, 6173 };
+            float[] gains = { .055f, .043f, .030f, .022f, .014f };
             float tuning = .94f + .023f * variant;
             for (int i = 0; i < data.Length; i++)
             {
@@ -71,8 +71,11 @@ namespace BeetleArena
                 else
                 {
                     for (int m = 0; m < modes.Length; m++)
-                        sample += gains[m] * Mathf.Sin(2 * Mathf.PI * modes[m] * tuning * t) * Mathf.Exp(-t * (48 + 31 * m));
-                    sample += band * .75f * Mathf.Exp(-t * 230); // 头 5ms 的硬接触瞬态。
+                        sample += gains[m] * Mathf.Sin(2 * Mathf.PI * modes[m] * tuning * t) * Mathf.Exp(-t * (135 + 47 * m));
+                    sample += band * 1.15f * Mathf.Exp(-t * 155);
+                    // Irregular secondary fibre contacts: dry branch clicks, no hollow pitched body.
+                    float delay = .009f + variant * .0013f;
+                    if (t > delay) sample += band * .30f * Mathf.Exp(-(t - delay) * 240);
                     // 少量不规则微擦，只作为干脆敲击后的纹理，不连续喷噪声。
                     sample += band * .10f * Mathf.Exp(-t * 55) * Mathf.Pow(Mathf.Sin(t * 270), 2);
                 }

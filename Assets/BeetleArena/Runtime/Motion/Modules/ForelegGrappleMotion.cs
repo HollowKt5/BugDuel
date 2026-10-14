@@ -18,25 +18,30 @@ namespace BeetleArena
         // 当前 Trypoxylus 外形仅作跨物种保守移植；资产 evidence 明确标注，可独立移除。
         public override string DisplayName => "前足探抵 · 扒拉解围";
         public override BeetleMotionChannel Channel => BeetleMotionChannel.Combat;
+        public override BeetleMotionFamily Family => BeetleMotionFamily.Foreleg;
+        public override float SelectionWeight(in BeetleMotionContext c) => weight * Mathf.Lerp(.3f, 1.2f, c.Lateral);
         public override bool CanStart(in BeetleMotionContext c) => c.Fighting && c.Grounded && !c.OpponentAirborne &&
             c.Distance < 4.3f && c.Facing > .55f && c.Stamina > .25f && c.Footing > .6f;
         public override BeetleMotionSample Sample(in BeetleMotionContext c, float phase)
         {
             float p = Pulse(phase);
-            return new BeetleMotionSample { PoseResponse = 23, HeadPitch = 24 * p, BodyRoll = -c.Side * 4 * p, BodyPitch = -2 * p,
+            return new BeetleMotionSample { PoseResponse = 23, HeadPitch = 12 * p, BodyRoll = -c.ForelegSide * 10 * p, BodyPitch = 3 * p,
                 Strain = .55f * p, StaminaPerSecond = 7, LocalVelocity = new Vector2(c.Side * .08f, .22f) * p,
                 Contact = phase > .30f && phase < .80f ? BeetleMotionContact.Foreleg : BeetleMotionContact.None,
-                LocalImpulse = new Vector2(c.Side * .4f, -.3f), Impulse = .28f, BalanceCost = .08f };
+                ContactLegPlusOne = c.ForelegSide < 0 ? 1 : 4,
+                LocalImpulse = new Vector2(c.ForelegSide * .4f, -.3f), Impulse = .28f, BalanceCost = .08f };
         }
         public override bool SampleLeg(in BeetleMotionContext c, float phase, int slot, out Vector3 offset)
         {
-            int active = c.Side < 0 ? 0 : 3;
+            int active = c.ForelegSide < 0 ? 0 : 3;
             float reach = Reach(phase), rake = Rake(phase);
             float recover = 1 - Mathf.SmoothStep(0, 1, Mathf.InverseLerp(.76f, 1, phase));
             // 只举一条前足，避免把短前腿模型套成长臂 Golofa 或人类拳击。
-            offset = new Vector3(c.Side * .09f * reach * recover,
-                footLift * reach * (1 - Mathf.SmoothStep(0, 1, Mathf.InverseLerp(.25f, .48f, phase))), (footReach * reach - (footReach + .12f) * rake) * recover);
+            offset = new Vector3(c.ForelegSide * (.40f * reach - .62f * rake) * recover,
+                footLift * 1.6f * reach * (1 - .75f * rake) * recover,
+                (footReach * reach - (footReach + .38f) * rake) * recover);
             return slot == active;
         }
+        public override float LegSpeed(in BeetleMotionContext c, float phase, int slot) => phase >= .56f && phase <= .76f ? 7 : 4;
     }
 }

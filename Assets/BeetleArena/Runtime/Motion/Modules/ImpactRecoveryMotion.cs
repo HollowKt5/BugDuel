@@ -17,12 +17,11 @@ namespace BeetleArena
             HeadPitch = -9 * c.Impact, BodyHeight = -.025f * c.Impact };
         public override bool SampleLeg(in BeetleMotionContext c, float phase, int slot, out Vector3 offset)
         {
-            // 一只前足短暂补步；中后足贴地展撑。零强度自动交还通用 IK，空挥没有此反应。
-            bool front = slot == (c.Side < 0 ? 0 : 3);
-            float i = c.Impact;
-            offset = front ? new Vector3(0, catchLift * 4 * i * (1 - i), -.20f * i) :
-                new Vector3((slot < 3 ? -1 : 1) * .04f * i, 0, -.12f * i);
-            return front || slot % 3 != 0;
+            // Recovery must not own foot targets: following the body every frame
+            // cancelled catch steps and dragged the planted feet across the ground.
+            // The animator now replants one foot at a time using world-space anchors.
+            offset = Vector3.zero;
+            return false;
         }
     }
 }

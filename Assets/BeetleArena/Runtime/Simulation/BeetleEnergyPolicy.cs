@@ -18,6 +18,9 @@ namespace BeetleArena
             b.PryRetryRemaining = Mathf.Max(0, b.PryRetryRemaining - dt);
             b.ContactConfidence = Mathf.MoveTowards(b.ContactConfidence, 0, dt * .23f);
             b.IntentTime += dt;
+            b.TimeSinceAttack += dt;
+            b.ContactReleaseRemaining = Mathf.Max(0, b.ContactReleaseRemaining - dt);
+            b.ContactReleaseCooldown = Mathf.Max(0, b.ContactReleaseCooldown - dt);
         }
 
         public static void Apply(BeetleState b, BeetleMatchSettings s, float cost, bool threatened, float dt)

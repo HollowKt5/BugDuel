@@ -25,6 +25,8 @@ namespace BeetleArena
         // 资产列表即注册表：删掉引用或关闭模块后立即停止使用，空列表回到原有战斗。
         public BeetleMotionModule[] motionModules = System.Array.Empty<BeetleMotionModule>();
         [Range(0, 1)] public float moduleActionChance = .42f;
+        [Header("Round finish / normalized game rules")]
+        [Range(0, 1)] public float forelegActionChance = .48f;
         // 竖直运动的游戏重力加速度；数值借用常见重力值，但整体世界比例不是毫米单位。
         [Min(1f)] public float gravity = 9.81f;
         [Header("Matched size variation")]
@@ -45,7 +47,7 @@ namespace BeetleArena
         // 基础转向速度，单位度/秒；承诺动作期间会进一步降低。
         [Min(1)] public float turnSpeed = 145f;
         // 推顶冲量基准，最终乘发力、退让程度与比赛升级系数。
-        [Min(.1f)] public float shoveImpulse = 2.7f;
+        [Min(.1f)] public float shoveImpulse = 3.6f;
         // 托举力量基准，4.3 为标准力量；按比例影响是否能克服抓地，不直接产生后推冲量。
         [Min(.1f)] public float pryImpulse = 4.3f;
         // 完全恢复动作每秒恢复的体力点数，撑地或退让使用它的部分比例。
@@ -54,13 +56,13 @@ namespace BeetleArena
         [Range(0, 2)] public float fatiguePerSecond = .12f;
         [Header("Bout pacing / seconds, not a forced result timer")]
         // 长局升级开始前的秒数；与每轮 probingSeconds 的短试探阶段不同。
-        [Min(0)] public float openingSeconds = 90f;
+        [Min(0)] public float openingSeconds = 12f;
         // 从开局推力系数平滑过渡到最终系数所需的秒数，不是结束比赛的倒计时。
-        [Min(10)] public float escalationSeconds = 90f;
+        [Min(10)] public float escalationSeconds = 55f;
         // 开局攻击位移倍率，让早期推挤较克制；有效落台仍会立即进入结算。
-        [Range(.05f, 1f)] public float openingDisplacement = .10f;
+        [Range(.05f, 1f)] public float openingDisplacement = .75f;
         // 长局后期攻击位移倍率，增加推出台面的机会，不能保证固定时长结束。
-        [Range(1f, 3f)] public float finalDisplacement = 2.4f;
+        [Range(1f, 3f)] public float finalDisplacement = 2.25f;
         [Header("Exchange rhythm / seconds")]
         // 短周期里的轻触试探持续秒数。
         [Min(2)] public float probingSeconds = 7f;
@@ -108,6 +110,7 @@ namespace BeetleArena
         // 失足后短暂伸腿寻触，随后错相摆腿；落地后先缓冲，再撑起。与 0.7s 托举挣扎门槛分开。
         [Range(.08f, .5f)] public float fallReachSeconds = .18f;
         [Range(.4f, 3f)] public float fallRecoverySeconds = 1.35f;
+        // Used only with actual surface contact during post-landing sliding (table or forest).
         [Range(1, 12)] public float fallSlideDamping = 5.5f;
         [Header("Lever throw / normalized game units")]
         // 力矩来自肌肉输入力 × 输入力臂；实际输出力臂由角的接触几何测量。
@@ -117,6 +120,11 @@ namespace BeetleArena
         [Min(1)] public float throwWorkLimit = 65f;
         [Min(.1f)] public float throwMinimumSpeed = 2.2f;
         [Min(1)] public float throwMaximumSpeed = 8f;
+        [Tooltip("High-energy throw launch speed gain; stylized game scale, smoothly applied above Arc tier.")]
+        [Range(1f, 3f)] public float throwHeavySpeedMultiplier = 2.2f;
+        [Header("Throw inspection / temporary elevated selection frequency")]
+        [Tooltip("Inspect throws more often: eligible pry selection 35-85%, extra burst 85%. Contact, support and energy gates remain active.")]
+        public bool throwInspectionMode;
         [Header("Six throw tiers / nonuniform speed thresholds")]
         // 前四档按速度分段，后两档还必须通过扬角/做功门槛并实际向后出手。
         [Min(.1f)] public float throwQuickSpeed = 3.15f;
@@ -175,6 +183,7 @@ namespace BeetleArena
         // 调用方在正式启动比赛时也会执行一次；本函数不重新生成已经存在的场景几何体。
         public void Validate()
         {
+            forelegActionChance = Mathf.Clamp01(forelegActionChance);
             arenaRadius = Mathf.Max(3.5f, arenaRadius);
             spawnDistance = Mathf.Clamp(spawnDistance, 1.7f, arenaRadius - 1.2f);
             visualScale = Mathf.Clamp(visualScale, .4f, .9f);
@@ -218,6 +227,7 @@ namespace BeetleArena
             fallReachSeconds = Mathf.Clamp(fallReachSeconds, .08f, .5f);
             fallRecoverySeconds = Mathf.Clamp(fallRecoverySeconds, .4f, 3);
             fallSlideDamping = Mathf.Clamp(fallSlideDamping, 1, 12);
+            throwHeavySpeedMultiplier = Mathf.Clamp(throwHeavySpeedMultiplier, 1, 3);
             throwMuscleForce = Mathf.Max(1, throwMuscleForce);
             throwInputArm = Mathf.Max(.05f, throwInputArm);
             throwEfficiency = Mathf.Clamp(throwEfficiency, .1f, 1);

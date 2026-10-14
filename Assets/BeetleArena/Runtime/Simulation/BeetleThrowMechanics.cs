@@ -102,14 +102,20 @@ namespace BeetleArena
             // 限制过平的反抛，给真实身体越过攻击者的高度余量，碰撞仍完整开启。
             float ordinaryLimit = Mathf.Lerp(38, 82, Mathf.Clamp01(lift.Work / mass / 32));
             // 后扬到强反抛之间连续增加允许仰角，跨档不突然切换轨迹。
-            float overheadLimit = Mathf.Lerp(100, 118, Mathf.InverseLerp(settings.throwHighArcSpeed, settings.throwMaximumSpeed, speed));
+            float overheadLimit = Mathf.Lerp(100, 128, Mathf.InverseLerp(settings.throwHighArcSpeed, settings.throwMaximumSpeed, speed));
+            // Strong releases travel outward instead of spending almost all speed vertically.
+            // This explicit game gain is continuous and applies only after a real supported lift.
+            float heavy = Mathf.SmoothStep(0, 1, Mathf.InverseLerp(settings.throwArcSpeed, settings.throwMaximumSpeed, speed));
+            ordinaryLimit = Mathf.Lerp(ordinaryLimit, Mathf.Min(ordinaryLimit, 65), heavy);
             elevation = Mathf.Clamp(elevation, 32, overhead ? overheadLimit : ordinaryLimit);
             float angle = elevation * Mathf.Deg2Rad;
             Vector3 side = Vector3.Cross(Vector3.up, forward);
             float lateral = Mathf.Clamp(Vector3.Dot(tangent, side), -.22f, .22f);
             Vector3 direction = (forward * Mathf.Cos(angle) + Vector3.up * Mathf.Sin(angle) + side * lateral).normalized;
-            lift.LaunchVelocity = direction * speed;
+            float launchSpeed = speed * Mathf.Lerp(1, settings.throwHeavySpeedMultiplier, heavy);
+            lift.LaunchVelocity = direction * launchSpeed;
             lift.LaunchElevation = Mathf.Atan2(lift.LaunchVelocity.y, Vector3.Dot(lift.LaunchVelocity, forward)) * Mathf.Rad2Deg;
+            // Tier remains based on measured work/impulse speed, before the explicit game gain.
             lift.ThrowKind = Classify(settings, speed, Vector3.Dot(lift.LaunchVelocity, forward) < 0);
             return lift.LaunchVelocity;
         }

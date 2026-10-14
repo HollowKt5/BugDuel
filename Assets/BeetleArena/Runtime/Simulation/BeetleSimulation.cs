@@ -23,6 +23,12 @@ namespace BeetleArena
         public float MotionTime { get; private set; }
         public float Countdown { get; private set; }
         public int Winner { get; private set; } = -1; // -1: undecided or double-fall draw
+        public BeetleResultReason ResultReason { get; private set; }
+        public const float MaximumRoundSeconds = 180, FinishPresentationSeconds = 3;
+        public float FightTimeLimit { get; }
+        public const float RightingTimeLimit = 5;
+        public string ResultDescription => ResultReason == BeetleResultReason.TimeLimit ? "时间到 · 双方平局" :
+            ResultReason == BeetleResultReason.UnableToRight ? "倒地 5 秒未能翻正" : "落台判定";
         public int EventCount { get; private set; }
         public event Action<ContestEvent> EventRaised;
         // 实际游戏注入细分网格碰撞求解器；未注入时使用简化身体分离，便于纯数据测试。
@@ -72,6 +78,18 @@ namespace BeetleArena
                     support += reach; normal += hit.normal * reach;
                 }
             b.SurfaceNormal = normal.normalized;
+            // A single centre ray misses the lip of a trough under the thorax/abdomen.
+            // Lift the support plane only by terrain protruding above its fitted tangent.
+            float clearance = 0;
+            for (int x = -1; x <= 1; x++)
+                for (int z = -1; z <= 1; z++)
+                {
+                    Vector2 offset = (right * (x * .46f) + b.Forward * (z * .85f)) * Settings.visualScale * b.Traits.size;
+                    if (!SampleGround(b.Position + offset, out var bodyHit)) continue;
+                    float plane = center.height - (b.SurfaceNormal.x * offset.x + b.SurfaceNormal.z * offset.y) / Mathf.Max(.25f, b.SurfaceNormal.y);
+                    clearance = Mathf.Max(clearance, bodyHit.height - plane);
+                }
+            b.SurfaceHeight += clearance;
             b.Footing = Ground == null ? ComputeFooting(b) : support / 6;
             if (!b.Airborne) b.LastSupportHeight = b.SurfaceHeight;
         }
@@ -84,12 +102,12 @@ namespace BeetleArena
         // 效果仍按索引顺序写入状态，因此不能视为所有受力计算都完全同步。
         readonly Hit[] hits = new Hit[2];
         readonly BeetleTacticalSnapshot[] tactics = new BeetleTacticalSnapshot[2];
-        // 首次落台后等待另一方是否也落台的计时；exchangeTime 则负责短周期交锋节奏。
+        // 首次落台后等待另一方是否也落台的计时；交锋节奏由每只虫的 BoutTime 拥有。
         float resolutionTime;
-        float exchangeTime, recoveryWindow;
         public ExchangePhase Exchange { get; private set; } = ExchangePhase.Probing;
         // 模型长角会先于身体接触，所以网格求解与简化数据模拟采用不同的交战距离。
-        float EngagementDistance => ContactSolver != null ? 4.15f : 2.85f;
+        float EngagementDistance => ContactSolver != null
+            ? 4.45f * (Fighters[0].Traits.hornReach + Fighters[1].Traits.hornReach) / 3.3f : 2.85f;
         // Early contests consist of restrained pushing. Sustained engagement escalates
         // displacement and fatigue; this never blocks a fall or chooses a winner.
         // 随比赛时间平滑增加位移和疲劳强度，取值 0～1；它不指定胜者，也不阻止提前落台。
@@ -111,8 +129,20 @@ namespace BeetleArena
                 Mathf.Min(settings.maximumSize, sizeA * (1 + settings.maximumSizeDifference)));
             Fighters[0] = new BeetleState(0, BeetleTraits.Create(sizeA, random, settings), new Vector2(-settings.spawnDistance, 0), 90);
             Fighters[1] = new BeetleState(1, BeetleTraits.Create(sizeB, random, settings), new Vector2(settings.spawnDistance, 0), -90);
-            for (int i = 0; i < 2; i++) { Fighters[i].ActionDuration = Range(.7f, 1.2f); Fighters[i].CircleDirection = random.Next(2) == 0 ? -1 : 1; }
-            Countdown = settings.countdownSeconds;
+            for (int i = 0; i < 2; i++)
+            {
+                var b = Fighters[i];
+                b.DecisionRandom = new System.Random(random.Next());
+                b.Traits.tempo = Mathf.Lerp(.90f, 1.25f, b.Traits.agilityScore / 100) * DecisionRange(b, .88f, 1.12f);
+                b.Traits.drivePreference = Mathf.Clamp01(b.Traits.aggressionScore / 100 + DecisionRange(b, -.30f, .30f));
+                b.Traits.liftPreference = Mathf.Clamp01(b.Traits.hornScore / 100 + DecisionRange(b, -.35f, .35f));
+                b.Traits.lateralPreference = DecisionRange(b, .15f, .85f);
+                b.BoutDuration = settings.probingSeconds * DecisionRange(b, .25f, .55f) / b.Traits.tempo;
+                b.ActionDuration = DecisionRange(b, .25f, .65f);
+                b.CircleDirection = b.DecisionRandom.Next(2) == 0 ? -1 : 1;
+            }
+            Countdown = Mathf.Clamp(settings.countdownSeconds, 0, 10);
+            FightTimeLimit = MaximumRoundSeconds - Countdown - FinishPresentationSeconds;
             foreach (var b in Fighters) b.Motion.Refresh(this, b);
         }
 
@@ -130,8 +160,8 @@ namespace BeetleArena
             return true;
         }
 
-        // 单步流程：倒计时 → 更新计时/AI → 缓存双方命中 → 应用命中 → 积分移动
-        // → 碰撞修正 → 落台标记 → 胜负结算。dt 必须有效且不超过 0.05 秒。
+        // 单步流程：倒计时 → 更新计时/AI → 积分移动 → 当前姿态碰撞修正
+        // → 缓存并应用双方命中 → 落台标记 → 胜负结算。dt 必须有效且不超过 0.05 秒。
         public void Step(float dt)
         {
             if (dt <= 0 || dt > .05f || float.IsNaN(dt) || float.IsInfinity(dt))
@@ -153,7 +183,7 @@ namespace BeetleArena
                 var b = Fighters[i];
                 if (Phase != MatchPhase.Fighting || b.Airborne || b.HasFallen) continue;
                 b.TacticalAdvantage = Mathf.Lerp(b.TacticalAdvantage, tactics[i].Advantage, 1 - Mathf.Exp(-dt * 4));
-                if (b.IntentTime < Settings.tacticalResponseSeconds) continue;
+                if (b.IntentTime < Settings.tacticalResponseSeconds / b.Traits.tempo) continue;
                 var intent = BeetleTactics.Evaluate(b, tactics[i]);
                 if (intent != b.Intent) { b.Intent = intent; b.IntentTime = 0; }
             }
@@ -168,7 +198,17 @@ namespace BeetleArena
             if (Phase == MatchPhase.Finished)
             {
                 foreach (var fighter in Fighters)
-                    if (fighter.HasFallen) Integrate(fighter, Vector2.zero, dt);
+                {
+                    fighter.ActionTime += dt;
+                    fighter.ImpactVisual = Mathf.MoveTowards(fighter.ImpactVisual, 0, dt * 3);
+                    fighter.LiftVisual = Mathf.MoveTowards(fighter.LiftVisual, 0, dt * 1.5f);
+                    fighter.RollVisual = Mathf.MoveTowards(fighter.RollVisual, 0, dt * 35);
+                    fighter.Lift.Pitch = Mathf.MoveTowards(fighter.Lift.Pitch, 0, dt * 45);
+                    fighter.Lift.Roll = Mathf.MoveTowards(fighter.Lift.Roll, 0, dt * 45);
+                    if (fighter.HasFallen || fighter.Airborne) Integrate(fighter, Vector2.zero, dt);
+                    if (!fighter.HasFallen && !fighter.Airborne && fighter.Action != BeetleAction.Winner && fighter.Action != BeetleAction.Subdued)
+                        SetAction(fighter, fighter.Index == Winner ? BeetleAction.Winner : BeetleAction.Subdued, 10);
+                }
                 ContactSolver?.Solve(this, dt);
                 return;
             }
@@ -178,7 +218,7 @@ namespace BeetleArena
                 if (Countdown == 0) { Phase = MatchPhase.Fighting; Raise("比赛开始 · 双方正在试探"); }
                 return;
             }
-            Elapsed += dt;
+            Elapsed = Mathf.Min(FightTimeLimit, Elapsed + dt);
             if (Phase == MatchPhase.Fighting) UpdateExchange(dt);
             UpdateLiftResponses(dt);
             for (int i = 0; i < 2; i++)
@@ -196,16 +236,23 @@ namespace BeetleArena
                 b.DecisionTime -= dt;
                 hits[i] = default;
                 desiredVelocity[i] = Vector2.zero;
-                if (!b.HasFallen && !b.Airborne && b.Action != BeetleAction.Lifting && Phase == MatchPhase.Fighting)
+                // A table landing can outlast the one-second stagger. Resume decisions only
+                // when the accepted articulated pose has finished righting; gravity/contact
+                // and incoming attacks continue throughout recovery.
+                bool righting = b.IsOverturned || ContactSolver is IBeetleRightingPose recoveryPose && recoveryPose.IsRighting(i);
+                if (righting && !b.Airborne && !b.HasFallen && b.Action != BeetleAction.Stagger)
+                    SetAction(b, BeetleAction.Stagger, RightingTimeLimit);
+                if (!righting && !b.HasFallen && !b.Airborne && b.Action != BeetleAction.Lifting && Phase == MatchPhase.Fighting)
                     Think(b, Fighters[1 - i], dt);
             }
-            // Both attacks are calculated before either is applied: index order cannot cancel an attack.
-            for (int i = 0; i < 2; i++) hits[i] = ComputeHit(Fighters[i], Fighters[1 - i]);
-            for (int i = 0; i < 2; i++) if (hits[i].valid) ApplyHit(Fighters[i], Fighters[1 - i], hits[i]);
             for (int i = 0; i < 2; i++) Integrate(Fighters[i], desiredVelocity[i], dt);
             // 先处理真实接触再判断高度；防止使用尚未修正的穿透位置错误判负。
             if (ContactSolver != null) ContactSolver.Solve(this, dt);
             else ResolveBodyContact();
+            // Test the current accepted horn pose, not last tick's pre-strike pose.
+            // Cache both hits before applying either, so processing order cannot cancel a hit.
+            for (int i = 0; i < 2; i++) hits[i] = ComputeHit(Fighters[i], Fighters[1 - i]);
+            for (int i = 0; i < 2; i++) if (hits[i].valid) ApplyHit(Fighters[i], Fighters[1 - i], hits[i]);
             ApplyModuleContacts();
             foreach (var fighter in Fighters)
             {
@@ -218,31 +265,33 @@ namespace BeetleArena
                     Raise(Name(fighter.Index) + "掉下擂台", fighter.Index, 1);
                 }
             }
+            foreach (var fighter in Fighters)
+            {
+                if (fighter.HasFallen) continue;
+                if (fighter.RightingStable) { fighter.IsOverturned = false; fighter.OverturnedSeconds = 0; }
+                else if (fighter.IsOverturned) fighter.OverturnedSeconds += dt;
+            }
             CheckResult(dt);
         }
 
-        // 外层状态机：试探、激烈交锋、恢复循环。它决定可选动作，不直接产生攻击效果。
+        // 各自的交锋时钟；汇总 Exchange 只供 HUD 使用，不再同步重置双方动作。
         void UpdateExchange(float dt)
         {
-            exchangeTime += dt;
-            float duration = Exchange == ExchangePhase.Probing ? Settings.probingSeconds :
-                Exchange == ExchangePhase.Clash ? Settings.clashSeconds : recoveryWindow;
-            // 恢复只是降低交锋强度的机会，不是同步休息哨。接触中再次发力可提前结束窗口。
-            bool renewedContact = Exchange == ExchangePhase.Recovery && exchangeTime >= .45f &&
-                (Fighters[0].TouchingOpponent || Fighters[1].TouchingOpponent) &&
-                (Fighters[0].Committed || Fighters[1].Committed);
-            if (exchangeTime < duration && !renewedContact) return;
-            exchangeTime = 0;
-            Exchange = Exchange == ExchangePhase.Probing ? ExchangePhase.Clash :
-                Exchange == ExchangePhase.Clash ? ExchangePhase.Recovery : ExchangePhase.Probing;
-            if (Exchange == ExchangePhase.Recovery)
-                recoveryWindow = Settings.exchangeRecoverySeconds * Range(.8f, 1.15f);
-            Raise(Exchange == ExchangePhase.Clash ? "交锋升级 · 蓄力争夺支点" :
-                Exchange == ExchangePhase.Recovery ? "短暂重整 · 寻触后再交锋" : "重新试探 · 寻找入角机会");
-            // Let committed moves finish, but release idle decisions promptly.
             foreach (var b in Fighters)
-                if (!b.Committed && !b.Airborne && !b.HasFallen && b.Action != BeetleAction.Stagger)
-                    b.ActionTime = b.ActionDuration;
+            {
+                if (b.Airborne || b.HasFallen) continue;
+                b.BoutTime += dt;
+                if (b.BoutTime < b.BoutDuration || b.Committed) continue;
+                b.BoutTime = 0;
+                b.CombatPhase = b.CombatPhase == ExchangePhase.Clash ? ExchangePhase.Recovery : ExchangePhase.Clash;
+                b.BoutDuration = b.CombatPhase == ExchangePhase.Clash
+                    ? Settings.clashSeconds * DecisionRange(b, .70f, 1.30f) * Mathf.Lerp(.8f, 1.3f, b.Traits.aggression)
+                    : Settings.exchangeRecoverySeconds * DecisionRange(b, .35f, .85f) / b.Traits.tempo;
+                // A phase never cancels an action or instructs the opponent to rest.
+            }
+            // Aggregate only for presentation; each brain and motion reads its own phase.
+            Exchange = Fighters[0].CombatPhase == ExchangePhase.Clash || Fighters[1].CombatPhase == ExchangePhase.Clash
+                ? ExchangePhase.Clash : Fighters[0].CombatPhase;
         }
 
         // 内层动作执行器：对准对手，处理动作结束后的衔接，产生本步期望速度和体力消耗。
@@ -258,19 +307,22 @@ namespace BeetleArena
             bool finishedAction = b.ActionTime >= b.ActionDuration;
             // 几何反馈表明动作持续推不动时先卸力，不能等长蓄力/模块一直顶在原地。
             // 这里只改动作意图；脚端、身体与撤步仍完整经过接触预算，不直接移动根节点。
-            if (b.ContactBlockedSeconds > .6f && b.Action != BeetleAction.Disengage && b.Action != BeetleAction.Circle)
+            if (ShouldReleaseContact(b, opponent))
             {
-                SetAction(b, BeetleAction.Disengage, .34f);
+                b.ContactReleaseRemaining = DecisionRange(b, .40f, .58f);
+                b.ContactReleaseCooldown = 2.2f;
+                SetAction(b, BeetleAction.Disengage, b.ContactReleaseRemaining);
                 finishedAction = false;
             }
             float targetHeading = Mathf.Atan2(toward.x, toward.y) * Mathf.Rad2Deg;
             // 蓄力和发力时降低转向速度，让攻击有承诺时间，避免冲顶过程中瞬间追踪侧方目标。
             float turn = b.Committed ? .32f : BeetleRecoveryPolicy.IsRest(b.Action) ? .45f : 1f;
+            if (b.ContactReleaseRemaining > 0) turn = 0;
             b.Heading = Mathf.MoveTowardsAngle(b.Heading, targetHeading, Settings.turnSpeed * b.Traits.agility * turn * dt);
 
             // 恢复有明确出口：到达体力目标/单段上限，或对手正在近距离发力。
             // 先经 SetAction 记录退出冷却，避免 Decide 在同一步再次选择 Recover。
-            if (BeetleRecoveryPolicy.Ready(b, Settings, threatened))
+            if (BeetleRecoveryPolicy.Ready(b, Settings, threatened || tactics[b.Index].CanPressRecovery))
             {
                 SetAction(b, threatened ? BeetleAction.Brace : BeetleAction.Assess, threatened ? .32f : 0);
                 finishedAction = !threatened;
@@ -284,9 +336,9 @@ namespace BeetleArena
                 {
                     case BeetleAction.Probe:
                         // 有接触优势可接短推，疲劳/中性试探才收步；不再每次探角都强制后退。
-                        if (b.AttackApplied && (b.Intent == BeetleIntent.Pressure || b.Intent == BeetleIntent.Counter) && BeetleTactics.CanCommit(b, 22, .3f))
-                            SetAction(b, BeetleAction.ShoveWindup, Range(.22f, .30f));
-                        else SetAction(b, BeetleAction.Disengage, Range(.28f, .48f));
+                        if (b.TouchingOpponent && BeetleTactics.CanCommit(b, 22, .3f))
+                            SetAction(b, BeetleAction.ShoveWindup, DecisionRange(b, .18f, .28f) / b.Traits.tempo);
+                        else Decide(b, opponent, distance, facing, edge, threatened);
                         break;
                     case BeetleAction.ChargeWindup: SetAction(b, BeetleAction.Charge, .48f); break;
                     case BeetleAction.Charge:
@@ -295,22 +347,22 @@ namespace BeetleArena
                         else SetAction(b, BeetleAction.Brace, .45f);
                         break;
                     case BeetleAction.HornLock:
-                        SetAction(b, b.PryRetryRemaining <= 0 && (Exchange == ExchangePhase.Clash || b.Intent == BeetleIntent.Pressure) && BeetleTactics.CanCommit(b, 32, .48f) && distance < EngagementDistance && !opponent.Airborne
+                        SetAction(b, b.PryRetryRemaining <= 0 && (b.CombatPhase == ExchangePhase.Clash || b.Intent == BeetleIntent.Pressure) && BeetleTactics.CanCommit(b, 32, .48f) && distance < EngagementDistance && !opponent.Airborne
                             ? BeetleAction.PryWindup : BeetleAction.Disengage, .55f);
                         break;
                     case BeetleAction.ShoveWindup: SetAction(b, BeetleAction.Shove, .34f); break;
-                    case BeetleAction.PryWindup: SetAction(b, BeetleAction.Pry, 2.15f); break;
+                    case BeetleAction.PryWindup: SetAction(b, BeetleAction.Pry, 1.50f / b.Traits.tempo); break;
                     case BeetleAction.Pry:
                         if (!b.AttackApplied)
                         {
                             b.PryRetryRemaining = Settings.failedPryRetrySeconds;
                             SetAction(b, BeetleAction.Circle, .48f);
                         }
-                        else SetAction(b, BeetleAction.Brace, Range(.24f, .38f));
+                        else SetAction(b, BeetleAction.Brace, DecisionRange(b, .24f, .38f));
                         break;
                     case BeetleAction.Shove:
                     case BeetleAction.Toss:
-                        SetAction(b, BeetleAction.Brace, b.AttackApplied ? Range(.24f, .38f) : Settings.missedAttackExposure); break;
+                        SetAction(b, BeetleAction.Brace, b.AttackApplied ? DecisionRange(b, .24f, .38f) : Settings.missedAttackExposure); break;
                     case BeetleAction.ReleaseLift: SetAction(b, BeetleAction.Brace, .4f); break;
                     case BeetleAction.Stagger: SetAction(b, BeetleAction.Brace, .5f); break;
                     default: Decide(b, opponent, distance, facing, edge, threatened); break;
@@ -327,6 +379,7 @@ namespace BeetleArena
                     var sample = b.Motion.CombatSample;
                     Vector2 localRight = new Vector2(b.Forward.y, -b.Forward.x);
                     desiredVelocity[b.Index] = (localRight * sample.LocalVelocity.x + b.Forward * sample.LocalVelocity.y) * effort;
+                    if (sample.RequiresRearSupport) desiredVelocity[b.Index] *= b.Motion.Context.RearSupport;
                     staminaCost = Mathf.Clamp(sample.StaminaPerSecond, 0, 30);
                     break;
                 case BeetleAction.Approach:
@@ -342,7 +395,9 @@ namespace BeetleArena
                     break;
                 case BeetleAction.Probe: desiredVelocity[b.Index] = toward * speed * .50f; staminaCost = 3f; break;
                 case BeetleAction.Disengage:
-                    desiredVelocity[b.Index] = -toward * speed * .40f;
+                    // Back out along our existing heading before turning; simultaneous pursuit yaw
+                    // was winding the forked horns around each other during an escape.
+                    desiredVelocity[b.Index] = -b.Forward * speed * (b.ContactReleaseRemaining > 0 ? .8f : .32f);
                     staminaCost = -Settings.staminaRecovery * .7f; break;
                 case BeetleAction.ChargeWindup: desiredVelocity[b.Index] = -toward * speed * .15f; staminaCost = 5f; break;
                 case BeetleAction.Charge: desiredVelocity[b.Index] = b.Forward * speed * 2.4f; staminaCost = Settings.chargeStaminaCost; break;
@@ -357,7 +412,7 @@ namespace BeetleArena
                 case BeetleAction.Pry:
                     // 低角略向一侧寻找胸腹下缘，避免两根叉角一直共面互顶。
                     Vector2 prySide = new Vector2(-b.Forward.y, b.Forward.x) * b.CircleDirection;
-                    desiredVelocity[b.Index] = (b.Forward + prySide * .3f) * speed * 1.15f; staminaCost = 12f; break;
+                    desiredVelocity[b.Index] = (b.Forward + prySide * .55f) * speed * 1.15f; staminaCost = 12f; break;
                 case BeetleAction.Toss: staminaCost = 4f; break;
                 case BeetleAction.ReleaseLift: desiredVelocity[b.Index] = -b.Forward * speed * .7f; staminaCost = 1; break;
                 case BeetleAction.Brace: staminaCost = -Settings.staminaRecovery * .55f; break;
@@ -385,44 +440,67 @@ namespace BeetleArena
         void Decide(BeetleState b, BeetleState opponent, float distance, float facing, float edge, bool threatened)
         {
             // 限制接近过程中提前重选动作的频率，避免每个模拟步都改变主意。
-            b.DecisionTime = .3f;
+            b.DecisionTime = DecisionRange(b, .18f, .36f) / b.Traits.tempo;
             var view = tactics[b.Index];
             if (BeetleRecoveryPolicy.IsRest(b.Action) && !BeetleRecoveryPolicy.Ready(b, Settings, threatened))
             {
 #if UNITY_EDITOR
                 BeetleDebugHooks.Choose(this,b.Index,false,-1,"recovery-not-ready");
 #endif
-                SetAction(b, distance < EngagementDistance - .1f && edge < .76f ? BeetleAction.Retreat : BeetleAction.Recover, Range(.35f, .6f));
+                SetAction(b, distance < EngagementDistance - .1f && edge < .76f ? BeetleAction.Retreat : BeetleAction.Recover, DecisionRange(b, .35f, .6f));
                 return;
             }
-            if (BeetleRecoveryPolicy.WantsRest(b, Settings, Exchange == ExchangePhase.Recovery, threatened))
+            if (!view.CanPressRecovery && BeetleRecoveryPolicy.WantsRest(b, Settings, b.CombatPhase == ExchangePhase.Recovery, threatened))
             {
 #if UNITY_EDITOR
                 BeetleDebugHooks.Choose(this,b.Index,false,-1,"recovery-requested");
 #endif
-                SetAction(b, distance < EngagementDistance && edge < .76f ? BeetleAction.Retreat : BeetleAction.Recover, Range(.4f, .65f));
+                SetAction(b, distance < EngagementDistance && edge < .76f ? BeetleAction.Retreat : BeetleAction.Recover, DecisionRange(b, .4f, .65f));
                 return;
             }
-            float choice = Range(0, 1);
-            var selected = BeetleTactics.Choose(b, view, Exchange, EngagementDistance, choice);
-            // 抢收招优先短推；受压先防守，不能被一个随机模块覆盖掉刚做出的战术选择。
-            bool permitModule = !threatened && b.Intent != BeetleIntent.Defend && b.Intent != BeetleIntent.Recover && b.Intent != BeetleIntent.Reposition &&
-                b.Intent != BeetleIntent.Counter && facing > .7f && distance < EngagementDistance && b.Stamina > 24 && b.BurstReserve > .30f;
-#if UNITY_EDITOR
-            BeetleDebugHooks.Choose(this,b.Index,permitModule,choice,
-                threatened ? "opponent-threat" : b.Intent == BeetleIntent.Defend || b.Intent == BeetleIntent.Recover || b.Intent == BeetleIntent.Reposition || b.Intent == BeetleIntent.Counter ? "tactical-intent" :
-                facing <= .7f ? "facing" : distance >= EngagementDistance ? "distance" : b.Stamina <= 24 ? "stamina" : b.BurstReserve <= .30f ? "burst-reserve" : choice >= Settings.moduleActionChance ? "random-gate" : "module-eligibility");
-#endif
-            if (permitModule && choice < Settings.moduleActionChance && b.Motion.TryStart(choice / Mathf.Max(.001f, Settings.moduleActionChance)))
+            // Two completed empty strokes mean the geometry needs changing, not
+            // another lottery at the same unreachable distance. Finish one short
+            // approach/flank step before choosing again; each animal owns its timer.
+            if (b.FailedAttacks >= 2 && b.Balance > .5f && b.Readiness01 > .25f)
             {
-                SetAction(b, BeetleAction.Module, b.Motion.Active.duration);
+                b.FailedAttacks = 0;
+                float adjustment = DecisionRange(b, .48f, .76f) / b.Traits.tempo;
+                SetAction(b, b.TouchingOpponent || facing < .65f ? BeetleAction.Circle : BeetleAction.Approach, adjustment);
+                b.DecisionTime = adjustment;
+                return;
+            }
+            float choice = DecisionRange(b, 0, 1);
+            var selected = BeetleTactics.Choose(b, view, b.CombatPhase, EngagementDistance, choice, Settings.throwInspectionMode);
+            // A supported front-leg counter is a direct close-range option, including
+            // under pressure. It must not pass the generic non-threat module lottery too.
+            bool forelegReady = selected != BeetleAction.PryWindup && b.Intent != BeetleIntent.Recover && b.Intent != BeetleIntent.Reposition &&
+                b.Balance > .55f && b.Stamina01 > .28f && b.BurstReserve > .22f && facing > .45f && distance < EngagementDistance;
+            float forelegChance = Mathf.Min(.86f, Settings.forelegActionChance + b.ConsecutiveHornActions * .14f);
+            if (forelegReady && DecisionRange(b, 0, 1) < forelegChance && b.Motion.TryStart(DecisionRange(b, 0, 1), BeetleMotionFamily.Foreleg))
+            {
+                SetAction(b, BeetleAction.Module, b.Motion.Duration);
                 Raise(Name(b.Index) + b.Motion.Active.DisplayName, b.Index, .25f);
                 return;
             }
-            float duration = selected == BeetleAction.ChargeWindup ? Settings.chargeWindupSeconds * Range(.9f, 1.1f) :
-                selected == BeetleAction.PryWindup ? .62f : selected == BeetleAction.ShoveWindup ? Range(.22f, .34f) :
-                selected == BeetleAction.Brace ? Range(.28f, .48f) : selected == BeetleAction.Assess ? .24f :
-                selected == BeetleAction.Disengage ? .34f : selected == BeetleAction.Circle ? Range(.45f, .72f) : Range(.48f, .76f);
+            // 受压仍先防守；反击也允许个人偏好的侧顶/扬头，不能一律退化成同一种短推。
+            bool permitModule = selected != BeetleAction.PryWindup && !threatened && b.Intent != BeetleIntent.Defend && b.Intent != BeetleIntent.Recover && b.Intent != BeetleIntent.Reposition &&
+                facing > .7f && distance < EngagementDistance && b.Stamina > 24 && b.BurstReserve > .30f;
+            float moduleChoice = DecisionRange(b, 0, 1);
+#if UNITY_EDITOR
+            BeetleDebugHooks.Choose(this,b.Index,permitModule,moduleChoice,
+                threatened ? "opponent-threat" : b.Intent == BeetleIntent.Defend || b.Intent == BeetleIntent.Recover || b.Intent == BeetleIntent.Reposition ? "tactical-intent" :
+                facing <= .7f ? "facing" : distance >= EngagementDistance ? "distance" : b.Stamina <= 24 ? "stamina" : b.BurstReserve <= .30f ? "burst-reserve" : moduleChoice >= Settings.moduleActionChance ? "random-gate" : "module-eligibility");
+#endif
+            if (permitModule && moduleChoice < Settings.moduleActionChance && b.Motion.TryStart(DecisionRange(b, 0, 1)))
+            {
+                SetAction(b, BeetleAction.Module, b.Motion.Duration);
+                Raise(Name(b.Index) + b.Motion.Active.DisplayName, b.Index, .25f);
+                return;
+            }
+            float duration = (selected == BeetleAction.ChargeWindup ? Settings.chargeWindupSeconds * DecisionRange(b, .65f, .95f) :
+                selected == BeetleAction.PryWindup ? .48f : selected == BeetleAction.ShoveWindup ? DecisionRange(b, .18f, .30f) :
+                selected == BeetleAction.Brace ? DecisionRange(b, .20f, .40f) : selected == BeetleAction.Assess ? .24f :
+                selected == BeetleAction.Disengage ? .26f : selected == BeetleAction.Circle ? DecisionRange(b, .35f, .65f) : DecisionRange(b, .48f, .76f)) / b.Traits.tempo;
             SetAction(b, selected, duration);
         }
 
@@ -430,11 +508,13 @@ namespace BeetleArena
         // 同一动作可以等待后续接触，但一旦结算过就不会每帧重复命中。
         Hit ComputeHit(BeetleState b, BeetleState opponent)
         {
-            if (Phase != MatchPhase.Fighting || b.HasFallen || b.Airborne || b.AttackApplied || opponent.HasFallen || opponent.Lift.Supported) return default;
+            if (Phase != MatchPhase.Fighting || b.HasFallen || b.IsOverturned || b.Airborne || b.AttackApplied || opponent.HasFallen || opponent.Lift.Supported) return default;
             bool pry = b.Action == BeetleAction.Pry;
             bool probe = b.Action == BeetleAction.Probe, charge = b.Action == BeetleAction.Charge;
             if (!pry && !probe && !charge && b.Action != BeetleAction.Shove) return default;
-            if (b.ActionProgress < (pry ? Settings.pryContactStart : .32f)) return default;
+            // The strike begins as loaded horns drive/release. Waiting for one third of
+            // the short stroke discarded its actual early impact and only sampled recoil.
+            if (b.ActionProgress < (pry ? Settings.pryContactStart : .06f)) return default;
             Vector2 delta = opponent.Position - b.Position;
             float distance = delta.magnitude;
             Vector2 direction = distance > .001f ? delta / distance : b.Forward;
@@ -442,9 +522,11 @@ namespace BeetleArena
             float alignment = Vector2.Dot(b.Forward, direction);
             if (ContactSolver != null)
             {
-                reach = 4.4f * b.Traits.size;
-                // 使用上一次接触求解的双方接触标记。它表示部件之间有接触，未细分角尖/腹部接触点。
-                if (!b.TouchingOpponent) return default;
+                reach = EngagementDistance + .4f;
+                // 读取本步已接受的真实角碰记录或仍位于 skin 容差内的角部接触。
+                if (ContactSolver is IBeetleMotionContacts articulated)
+                { if (!articulated.HasMotionContact(b.Index, BeetleMotionContact.Horn, 0)) return default; }
+                else if (!b.TouchingOpponent) return default;
             }
             if (distance > reach || alignment < .70f || Mathf.Abs(opponent.Height - b.Height) > .7f) return default;
             b.AttackApplied = true;
@@ -487,6 +569,7 @@ namespace BeetleArena
             defender.Stamina = Mathf.Max(0, defender.Stamina - (hit.probe ? .4f : hit.pry ? 4.5f : hit.charge ? 3.5f : 2.0f));
             defender.ImpactVisual = Mathf.Clamp01(impulse * .35f);
             attacker.Contacts++; defender.Contacts++;
+            ScoreContact(attacker, defender, hit.probe ? .22f : hit.charge ? 1.25f : .85f);
             BeetleEnergyPolicy.ReceiveContact(attacker, defender, hit.probe ? .18f : hit.charge ? 1 : .65f);
             if (hit.probe)
             {
@@ -514,24 +597,34 @@ namespace BeetleArena
             for (int i = 0; i < 2; i++)
             {
                 var a = Fighters[i]; var b = Fighters[1 - i];
-                if (a.Action != BeetleAction.Module || !a.Motion.CanHit || a.Airborne || a.HasFallen || b.Airborne || b.HasFallen) continue;
+                if (a.Action != BeetleAction.Module || !a.Motion.CanHit || a.Airborne || a.HasFallen || a.IsOverturned || b.Airborne || b.HasFallen) continue;
                 var sample = a.Motion.CombatSample;
                 if (!a.Motion.Active.AppliesContactResponse || sample.Contact == BeetleMotionContact.None || sample.Impulse <= 0 ||
-                    !contacts.HasMotionContact(i, sample.Contact, a.CircleDirection < 0 ? 0 : 3)) continue;
+                    !contacts.HasMotionContact(i, sample.Contact, sample.ContactLegPlusOne > 0
+                        ? sample.ContactLegPlusOne - 1 : a.CircleDirection < 0 ? 0 : 3)) continue;
                 Vector2 right = new Vector2(a.Forward.y, -a.Forward.x);
                 Vector2 direction = (right * sample.LocalImpulse.x + a.Forward * sample.LocalImpulse.y).normalized;
                 float drive = a.Traits.strength * BeetleEnergyPolicy.AttackEffort(a) *
                     Mathf.Lerp(.35f, 1, a.Footing) * Mathf.Lerp(.5f, 1, a.Balance);
+                if (sample.RequiresRearSupport)
+                {
+                    float support = ContactSolver is IBeetleDriveSupport feet ? feet.RearSupport(i, this) : 0;
+                    if (support <= .02f) continue;
+                    drive *= support;
+                }
                 if (a.CheerRemaining > 0) drive *= 1 + Settings.cheerEffortBonus;
                 float resistance = b.Traits.grip * Mathf.Lerp(.3f, 1, b.Stamina01) *
                     Mathf.Lerp(.3f, 1, b.Footing) * Mathf.Lerp(.5f, 1, b.Balance);
                 float force = Mathf.Clamp(sample.Impulse, 0, 1.5f) * drive / Mathf.Max(.5f, resistance);
                 force = Mathf.Min(force, 1.8f);
-                b.Velocity += direction * (force / b.Traits.mass);
-                a.Velocity -= direction * (force * .13f / a.Traits.mass);
+                float displacement = Mathf.Lerp(Settings.openingDisplacement, Settings.finalDisplacement, Escalation);
+                b.Velocity += direction * (force * displacement / b.Traits.mass);
+                a.Velocity -= direction * (force * displacement * .13f / a.Traits.mass);
                 b.Balance = Mathf.Max(.08f, b.Balance - Mathf.Clamp(sample.BalanceCost, 0, .2f) * drive);
                 b.ImpactVisual = Mathf.Max(b.ImpactVisual, Mathf.Clamp01(force * .5f));
                 a.Contacts++; b.Contacts++; a.Motion.MarkHit(); a.AttackApplied = true;
+                ScoreContact(a, b, Mathf.Clamp(force, .55f, 1.2f));
+                if (sample.Contact == BeetleMotionContact.Foreleg) a.ForelegHits++;
                 b.Stamina = Mathf.Max(0, b.Stamina - force * 1.5f);
                 BeetleEnergyPolicy.ReceiveContact(a, b, Mathf.Clamp01(force));
                 Raise(Name(a.Index) + a.Motion.Active.DisplayName + " · 接触发力", i, Mathf.Clamp01(force));
@@ -549,14 +642,17 @@ namespace BeetleArena
             }
             bool toss = false;
             float balanceAfterPry = defender.Balance - .29f * advantage;
-            if (!attacker.Airborne && !defender.Airborne && attacker.TossCooldown <= 0 && defender.TossCooldown <= 0 &&
-                attacker.Stamina01 >= Settings.tossMinimumStamina && attacker.Stamina >= Settings.tossStaminaCost &&
+            bool inspectionBurst = Settings.throwInspectionMode && attacker.BurstReserve >= .2f &&
+                attacker.Footing >= .4f && attacker.Balance >= .42f;
+            bool normalBurst = attacker.Stamina01 >= Settings.tossMinimumStamina &&
                 attacker.Footing >= .7f && attacker.Balance >= .6f && advantage > 1.05f &&
                 Vector2.Dot(attacker.Forward, hit.direction) > .85f &&
-                (balanceAfterPry < .7f || defender.Footing < .75f || Vector2.Dot(defender.Forward, -hit.direction) < .5f))
+                (balanceAfterPry < .7f || defender.Footing < .75f || Vector2.Dot(defender.Forward, -hit.direction) < .5f);
+            if (!attacker.Airborne && !defender.Airborne && attacker.TossCooldown <= 0 && defender.TossCooldown <= 0 &&
+                attacker.Stamina >= Settings.tossStaminaCost && (inspectionBurst || normalBurst))
             {
                 attacker.TossOpportunities++;
-                toss = Range(0, 1) < Settings.tossChance;
+                toss = Range(0, 1) < (Settings.throwInspectionMode ? .30f : Settings.tossChance);
             }
             attacker.Pries++;
             defender.Balance = Mathf.Max(.06f, defender.Balance - .29f * advantage);
@@ -571,7 +667,8 @@ namespace BeetleArena
             lift.GripReleased = false;
             lift.ResetMechanics();
             // 同一次攻击只选择一次发力节奏。普通成功顶举也必定尝试抛出；概率只控制额外爆发。
-            lift.Effort = Range(.85f, 1.18f) * (toss ? 1.5f : 1);
+            // Temporary inspection profile amplifies real angular work, never bypasses capture/support.
+            lift.Effort = Range(.85f, 1.18f) * (toss ? (Settings.throwInspectionMode ? 2.4f : 1.5f) : 1);
             float drive = Mathf.Clamp01((hit.force * lift.Effort - .5f) / 1.3f);
             lift.RaiseSeconds = Settings.liftRaiseSeconds * Mathf.Lerp(1.1f, .7f, drive);
             lift.HoldSeconds = Settings.liftHoldSeconds * Range(.35f, 1f) * (toss ? .12f : 1);
@@ -585,6 +682,7 @@ namespace BeetleArena
             BeetleEnergyPolicy.ReceiveContact(attacker, defender, 1);
             attacker.Velocity *= .2f;
             attacker.Contacts++; defender.Contacts++;
+            ScoreContact(attacker, defender, 1.35f);
             SetAction(attacker, BeetleAction.Lifting, lift.StrokeDuration + .35f);
             SetAction(defender, BeetleAction.Lifted, lift.StrokeDuration + .35f);
             Raise(Name(attacker.Index) + "角下托举，撬起前身并扭开抓地", attacker.Index, .85f);
@@ -677,6 +775,8 @@ namespace BeetleArena
         // 场景碰撞在积分后统一修正，所以这里不能代替接触求解。
         void Integrate(BeetleState b, Vector2 desired, float dt)
         {
+            if (b.Lift.Supported || b.Airborne && b.VerticalVelocity > .1f)
+            { b.LandingSliding = false; b.LandingImpactSpeed = 0; }
             // 托举期间的根位置由真实角-受击部位接触约束确定，不能同时施加自由下落重力。
             if (b.Lift.Supported && !b.HasFallen)
             {
@@ -694,10 +794,11 @@ namespace BeetleArena
                 b.VerticalVelocity -= Settings.gravity * dt;
                 b.Height += b.VerticalVelocity * dt;
                 b.Position += b.Velocity * dt;
-                b.Velocity *= Mathf.Exp(-(b.Fall.OnFloor ? Settings.fallSlideDamping : .18f) * dt);
+                b.Velocity *= Mathf.Exp(-.18f * dt);
                 if (ContactSolver == null)
                 {
                     bool landed = b.Height <= Settings.groundHeight;
+                    ResolveLandingFriction(b, landed, Vector3.up, dt);
                     b.Fall.SetFloorContact(landed, -b.VerticalVelocity);
                     if (landed) { b.Height = Settings.groundHeight; b.VerticalVelocity = 0; }
                 }
@@ -709,6 +810,7 @@ namespace BeetleArena
             if (b.Fall.Active) b.Fall.Tick(dt);
             if (beyondSupport && !b.Airborne)
             {
+                b.Fall.BeginEdgeDrop(b);
                 b.Airborne = true;
                 b.VerticalVelocity = Mathf.Min(0, b.VerticalVelocity);
                 SetAction(b, BeetleAction.Falling, 1);
@@ -724,6 +826,7 @@ namespace BeetleArena
                 // 必须从台面上方下降穿过表面；落到悬崖侧面以下后不能瞬移回台顶。
                 if (!beyondSupport && previousHeight >= b.SurfaceHeight - .08f && b.Height <= b.SurfaceHeight && b.VerticalVelocity <= 0)
                 {
+                    b.LandingImpactSpeed = Mathf.Max(0, -b.VerticalVelocity);
                     b.Airborne = false; b.Height = b.LastSupportHeight = b.SurfaceHeight; b.VerticalVelocity = 0;
                     b.Fall.Reset();
                     b.Lift.UnsupportedTime = 0;
@@ -742,6 +845,9 @@ namespace BeetleArena
             {
                 float slope = Vector3.Angle(Vector3.up, b.SurfaceNormal);
                 float traction = Mathf.Lerp(.7f, 3.1f, b.Footing) * b.Traits.grip * b.SurfaceGrip * Mathf.Lerp(1, .65f, slope / 38);
+                // A tired, unbalanced defender cannot instantly erase a real push with
+                // full-strength foot traction. Recovery restores control gradually.
+                traction *= Mathf.Lerp(.35f, 1, b.Stamina01) * Mathf.Lerp(.4f, 1, b.Balance);
                 if (b.Action == BeetleAction.Brace) traction *= 1.2f;
                 // 上坡主动行走变慢；抓地差/陡坡产生顺坡滑动，外部攻击冲量依然保留。
                 Vector2 downhill = new Vector2(b.SurfaceNormal.x, b.SurfaceNormal.z);
@@ -752,10 +858,45 @@ namespace BeetleArena
                 b.Velocity = Vector2.MoveTowards(b.Velocity, desired, traction * dt);
                 b.Height = b.SurfaceHeight;
             }
+            if (ContactSolver == null)
+                ResolveLandingFriction(b, !b.Airborne && b.HasGround, b.SurfaceNormal, dt);
             b.Position += b.Velocity * dt;
             // 位移后立即刷新高度，避免在坡上滞后一模拟步而穿入地面。
             UpdateGround(b);
             if (!b.Airborne && b.HasGround) b.Height = b.SurfaceHeight;
+        }
+
+        // Called once, after the FINAL accepted contact pose. Rejected collision trials and
+        // display interpolation cannot consume momentum. This is a game-unit friction model,
+        // not a replacement for the articulated collision solver or a measured material model.
+        public void ResolveLandingFriction(BeetleState b, bool contact, Vector3 normal, float dt)
+        {
+            if (dt <= 0 || b.Lift.Supported) return;
+            bool righting = b.IsOverturned || ContactSolver is IBeetleRightingPose pose && pose.IsRighting(b.Index);
+            if (b.LandingSliding && !b.HasFallen && !b.Airborne && !righting &&
+                b.Action != BeetleAction.Stagger && b.LandingImpactSpeed <= 0)
+                b.LandingSliding = false;
+            if (!contact || normal.y <= .5f || b.Airborne && b.VerticalVelocity > .1f) return;
+            if (!b.LandingSliding)
+            {
+                if (!b.HasFallen && !b.Airborne && b.LandingImpactSpeed <= 0) return;
+                b.LandingSliding = true;
+                Vector3 incoming = new Vector3(b.Velocity.x, b.VerticalVelocity, b.Velocity.y);
+                float normalSpeed = Mathf.Max(b.LandingImpactSpeed * normal.y, -Vector3.Dot(incoming, normal));
+                // Tangential impact loss is bounded by the normal impact impulse. Apply only
+                // on entry, so a rolling contact that flickers cannot repeatedly spend it.
+                b.Velocity = Vector2.MoveTowards(b.Velocity, Vector2.zero, .55f * Mathf.Max(0, normalSpeed));
+            }
+            b.LandingImpactSpeed = 0;
+            float grip = b.HasFallen ? 1 : Mathf.Clamp(b.SurfaceGrip, .35f, 1.5f);
+            float load = Mathf.Clamp01(normal.y) * grip;
+            // Calibrated at the 50 Hz fixed step: roughly one third of the previous
+            // post-contact sliding distance, without changing the airborne launch velocity.
+            const float landingFrictionGain = 2.54f;
+            b.Velocity *= Mathf.Exp(-Settings.fallSlideDamping * landingFrictionGain * load * dt);
+            // Coulomb-style stopping avoids the endless exponential tail. No surface contact
+            // means no friction, even during a real bounce or another fall off an edge.
+            b.Velocity = Vector2.MoveTowards(b.Velocity, Vector2.zero, .65f * Settings.gravity * landingFrictionGain * load * dt);
         }
 
         // 估算六个名义足位有多少仍在圆形台面上，平均得到 0～1 支撑系数。
@@ -799,19 +940,54 @@ namespace BeetleArena
             }
         }
 
-        // 只有 HasFallen 才结算。第一只落台后留出 doubleFallWindow，允许随后双落台判平局。
-        // 体力耗尽、碰到边缘或比赛超时都不会直接判负。
+        void ScoreContact(BeetleState attacker, BeetleState defender, float points)
+        {
+            attacker.AttackScore += points;
+            attacker.FailedAttacks = 0;
+        }
+        // Wall-clock fallback: a stalled renderer must not buy extra match time.
+        // Already confirmed falls still take precedence over a time-limit draw.
+        public void ReachTimeLimit()
+        {
+            if (Phase == MatchPhase.Finished) return;
+            Countdown = 0; Elapsed = FightTimeLimit;
+            CheckResult(0);
+        }
+        // Accepted simultaneous hits are applied before adjudication. Ring-out takes
+        // priority; the hard deadline cannot be extended by the double-fall window.
         void CheckResult(float dt)
         {
             bool a = Fighters[0].HasFallen, b = Fighters[1].HasFallen;
-            if (!a && !b) return;
-            if (Phase == MatchPhase.Fighting) { Phase = MatchPhase.Resolving; resolutionTime = Settings.doubleFallWindow; }
-            resolutionTime -= dt;
-            if (resolutionTime > 0 && !(a && b)) return;
-            Winner = a && b ? -1 : a ? 1 : 0;
+            if (a || b)
+            {
+                if (Phase == MatchPhase.Fighting) { Phase = MatchPhase.Resolving; resolutionTime = Settings.doubleFallWindow; }
+                resolutionTime -= dt;
+                if (resolutionTime > 0 && !(a && b) && Elapsed < FightTimeLimit) return;
+                Finish(a && b ? -1 : a ? 1 : 0, BeetleResultReason.RingOut); return;
+            }
+            bool downA = Fighters[0].OverturnedSeconds + .00001f >= RightingTimeLimit;
+            bool downB = Fighters[1].OverturnedSeconds + .00001f >= RightingTimeLimit;
+            if (downA || downB)
+            {
+                Finish(downA && downB ? -1 : downA ? 1 : 0, BeetleResultReason.UnableToRight); return;
+            }
+            if (Elapsed >= FightTimeLimit)
+            {
+                Finish(-1, BeetleResultReason.TimeLimit);
+            }
+        }
+        void Finish(int winner, BeetleResultReason reason)
+        {
+            if (Phase == MatchPhase.Finished) return;
+            Winner = winner; ResultReason = reason;
             Phase = MatchPhase.Finished;
-            if (Winner >= 0) SetAction(Fighters[Winner], BeetleAction.Winner, 10);
-            Raise(Winner < 0 ? "双方落台 · 本场平局" : Name(Winner) + "获胜 · 对手已落台", Winner);
+            foreach (var fighter in Fighters)
+            {
+                fighter.Lift.Supporter = -1;
+                if (!fighter.HasFallen) SetAction(fighter, fighter.Index == winner ? BeetleAction.Winner : BeetleAction.Subdued, 10);
+                else fighter.Motion.Cancel();
+            }
+            Raise((Winner < 0 ? "本场平局" : Name(Winner) + "获胜") + " · " + ResultDescription, Winner);
         }
 
         // 统一切换动作并重置动作计时、持续时间及命中标记，使下一个动作有独立结算机会。
@@ -824,13 +1000,36 @@ namespace BeetleArena
             bool endedAttack = b.Action == BeetleAction.Shove || b.Action == BeetleAction.Charge ||
                 b.Action == BeetleAction.Pry || b.Action == BeetleAction.Module;
             if (endedAttack && (action == BeetleAction.Brace || action == BeetleAction.Disengage || action == BeetleAction.Circle))
+            {
+                b.FailedAttacks = b.AttackApplied ? 0 : b.FailedAttacks + 1;
                 b.ExposureRemaining = Mathf.Max(b.ExposureRemaining, b.AttackApplied ? .24f : Settings.missedAttackExposure);
+            }
             // 受击、托举或结算抢占时立即归还模块控制权，不能等到下一步继续条件检查。
             if (action != BeetleAction.Module) b.Motion.Cancel();
             bool wasResting = BeetleRecoveryPolicy.IsRest(b.Action), willRest = BeetleRecoveryPolicy.IsRest(action);
             if (wasResting && !willRest) b.RecoveryCooldown = Settings.recoveryRetrySeconds;
             if (!wasResting || !willRest) b.RecoveryTime = 0;
+            if (action == BeetleAction.Module && b.Motion.Active && b.Motion.Active.Family == BeetleMotionFamily.Foreleg)
+            { b.ForelegActions++; b.ConsecutiveHornActions = 0; }
+            else if (action == BeetleAction.ShoveWindup || action == BeetleAction.ChargeWindup || action == BeetleAction.PryWindup || action == BeetleAction.Module)
+                b.ConsecutiveHornActions++;
             b.Action = action; b.ActionDuration = duration; b.ActionTime = 0; b.AttackApplied = false;
+            if (b.Committed) b.TimeSinceAttack = 0;
+        }
+        static bool ShouldReleaseContact(BeetleState b, BeetleState other)
+        {
+            if (b.ContactBlockedSeconds < .65f || b.ContactReleaseCooldown > 0 || other.ContactReleaseRemaining > 0 || b.Action == BeetleAction.Disengage) return false;
+            if (other.ContactBlockedSeconds < .65f || other.ContactReleaseCooldown > 0) return true;
+            // Only one animal yields a mutual jam; compare available support/drive, not a shared retreat whistle.
+            float self = b.Footing + b.Readiness01 + b.Traits.aggression;
+            float opponent = other.Footing + other.Readiness01 + other.Traits.aggression;
+            return Mathf.Abs(self - opponent) < .0001f ? b.Index == 0 : self < opponent;
+        }
+        static float DecisionRange(BeetleState b, float min, float max)
+        {
+            // Old debug snapshots predate per-animal streams; initialise only on first AI use.
+            if (b.DecisionRandom == null) b.DecisionRandom = new System.Random(7919 + b.Index * 104729);
+            return min + (float)b.DecisionRandom.NextDouble() * (max - min);
         }
         // 从本局随机源抽取区间数值；调用次数和顺序会影响后续所有随机选择。
         float Range(float minimum, float maximum) => minimum + (float)random.NextDouble() * (maximum - minimum);

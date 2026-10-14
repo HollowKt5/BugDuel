@@ -50,6 +50,23 @@ namespace BeetleArena
         public event Action MatchChanged;
         // accumulator 为未消费的模拟时间，animationTime 为表现时间，hudClock 控制 10Hz UI 刷新。
         float accumulator, animationTime, hudClock;
+        public float RoundClock { get; private set; }
+        [SerializeField] public bool defeatSlowMotion = true;
+        float defeatRemaining;
+        bool defeatPlayed;
+        public bool IsDefeatSlowMotion => defeatSlowMotion && defeatRemaining > 0;
+        public void ToggleDefeatSlowMotion()
+        {
+            defeatSlowMotion = !defeatSlowMotion;
+            if (!defeatSlowMotion) { defeatRemaining = 0; spectatorCamera.DefeatFocus = -1; }
+            hud.Refresh();
+        }
+        public void CycleView()
+        {
+            spectatorCamera.CycleView();
+            if (IsPaused && Simulation != null) spectatorCamera.Tick(Simulation, .5f);
+            hud.Refresh();
+        }
 
         // 运行入口：检查必需引用、约束参数、绑定按钮，再按配置或当前时刻选择初始种子。
         void Start()
@@ -77,6 +94,8 @@ namespace BeetleArena
             Simulation.SetGround(ActiveSurface);
             Simulation.EventRaised += OnContestEvent;
             accumulator = animationTime = 0; IsPaused = false; RoundNumber++;
+            RoundClock = 0;
+            defeatRemaining = 0; defeatPlayed = false;
             LatestEvent = "触角试探 · 即将开始";
             for (int i = 0; i < actors.Length; i++) actors[i].Bind(Simulation.Fighters[i], settings, ActiveSurface);
             Contacts = new BeetleContactSolver(actors, arenaContacts, .006f);
@@ -126,10 +145,19 @@ namespace BeetleArena
                 if (keyboard.spaceKey.wasPressedThisFrame) TogglePause();
                 if (keyboard.rKey.wasPressedThisFrame) NextMatch();
                 if (keyboard.tKey.wasPressedThisFrame) SwitchArena();
+                if (keyboard.cKey.wasPressedThisFrame) CycleView();
+                if (keyboard.vKey.wasPressedThisFrame) ToggleDefeatSlowMotion();
             }
-            // 使用不受 timeScale 影响的时间；单帧最多补 0.1 秒，避免长卡顿后无限追帧。
-            // 该限额也意味着严重卡顿时，比赛时间可能落后于真实墙钟时间。
+            AdvanceRoundClock(Time.unscaledDeltaTime);
+            // Physics catches up at most .1s per frame; the independent real clock
+            // above still enforces the deadline on the first frame after a stall.
             float dt = IsPaused ? 0 : Mathf.Min(Time.unscaledDeltaTime, .1f);
+            if (IsDefeatSlowMotion)
+            {
+                defeatRemaining = Mathf.Max(0, defeatRemaining - dt);
+                dt *= .28f;
+                if (defeatRemaining <= 0) spectatorCamera.DefeatFocus = -1;
+            }
             animationTime += dt;
             accumulator += dt;
             // 每一步先缓存旧根节点位置，Step 内更新 AI、接触和状态，再扣掉已消费的 0.02 秒。
@@ -151,10 +179,32 @@ namespace BeetleArena
             if (Simulation == null || IsPaused) return;
             foreach (var actor in actors) actor.BeforeStep();
             Simulation.Step(BeetleSimulation.FixedStep);
+            if (!defeatPlayed && (Simulation.Phase == MatchPhase.Resolving || Simulation.Phase == MatchPhase.Finished))
+            {
+                defeatPlayed = true;
+                if (defeatSlowMotion && (Simulation.Phase == MatchPhase.Resolving ||
+                    Simulation.ResultReason != BeetleResultReason.TimeLimit && Simulation.Winner >= 0))
+                {
+                    defeatRemaining = BeetleSimulation.FinishPresentationSeconds;
+                    spectatorCamera.DefeatFocus = Simulation.Fighters[0].HasFallen ? 0 :
+                        Simulation.Winner >= 0 ? 1 - Simulation.Winner : 1;
+                }
+            }
             if (contactFeedback) contactFeedback.Tick(Simulation, BeetleSimulation.FixedStep);
 #if UNITY_EDITOR
             BeetleDebugHooks.Step(this);
 #endif
+        }
+
+        public void AdvanceRoundClock(float seconds)
+        {
+            if (Simulation == null || IsPaused || seconds <= 0 || float.IsNaN(seconds) || float.IsInfinity(seconds)) return;
+            if (Simulation.Phase == MatchPhase.Finished && !IsDefeatSlowMotion) return;
+            RoundClock = Mathf.Min(BeetleSimulation.MaximumRoundSeconds, RoundClock + seconds);
+            if (RoundClock < BeetleSimulation.MaximumRoundSeconds) return;
+            Simulation.ReachTimeLimit();
+            defeatPlayed = true; defeatRemaining = 0;
+            spectatorCamera.DefeatFocus = -1;
         }
 
         /// <summary>共用显示顺序：插值 → 防穿透显示约束 → 标记（约束内部）→ 相机；不推进模拟。</summary>
@@ -164,7 +214,7 @@ namespace BeetleArena
             if (Simulation == null || IsPaused || dt <= 0) return;
             foreach (var actor in actors) actor.Render(alpha, time, dt);
             Contacts.ProjectView(Simulation, dt);
-            spectatorCamera.Tick(Simulation, dt);
+            spectatorCamera.Tick(Simulation, IsDefeatSlowMotion ? dt / .28f : dt);
         }
 
         // 文案只更新 HUD。碰撞声音与火星由最终接触采样驱动，避免虚晃/落台文案误触发。

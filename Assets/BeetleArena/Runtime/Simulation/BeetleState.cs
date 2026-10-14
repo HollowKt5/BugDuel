@@ -5,9 +5,10 @@ namespace BeetleArena
 {
     // 比赛阶段：准备倒计时、正常格斗、首次落台后的双落台等待、最终结束。
     public enum MatchPhase { Countdown, Fighting, Resolving, Finished }
+    public enum BeetleResultReason { None, RingOut, TimeLimit, UnableToRight }
     // 单只甲虫的动作状态。Windup 是准备动作，Pry 是抬举，Toss 是成功猛挑，Launched 是被挑飞。
     // 后续新增枚举值追加到末尾，避免旧的序列化整数映射到错误动作。
-    public enum BeetleAction { Assess, Approach, Circle, ShoveWindup, Shove, PryWindup, Pry, Brace, Recover, Retreat, Stagger, Falling, Defeated, Winner, Probe, Disengage, ChargeWindup, Charge, HornLock, Toss, Launched, Lifting, Lifted, ReleaseLift, Module }
+    public enum BeetleAction { Assess, Approach, Circle, ShoveWindup, Shove, PryWindup, Pry, Brace, Recover, Retreat, Stagger, Falling, Defeated, Winner, Probe, Disengage, ChargeWindup, Charge, HornLock, Toss, Launched, Lifting, Lifted, ReleaseLift, Module, Subdued }
     // 短周期交锋节奏，与 MatchPhase 的整场流程、BeetleAction 的个体动作分层管理。
     public enum ExchangePhase { Probing, Clash, Recovery }
 
@@ -19,11 +20,32 @@ namespace BeetleArena
         // strength/grip 分别控制发力和抓地，endurance 为耐力上限，aggression 为攻击倾向，
         // agility 影响移动/转向，hornReach 用于简化接触模式的触及距离。
         public float size, lengthMm, massGrams, mass, strength, grip, endurance, aggression, agility, hornReach;
+        public float aggressionScore, lengthScore, hornScore, agilityScore, hornLengthMm;
+        public float hornLengthFactor = 1;
+        // Independent style affects cadence and choices, not an extra strength bonus.
+        public float tempo = 1, drivePreference = .5f, liftPreference = .5f, lateralPreference = .5f;
+        public float TotalScore => aggressionScore + lengthScore + hornScore + agilityScore;
+        // N(240, 28²): the outer deciles start at z = ±1.28155.
+        public string QualityBand => TotalScore >= 275.88f ? "高" : TotalScore <= 204.12f ? "低" : "中";
         // 依据体型与同一个局内随机源生成属性。质量按 size³、力量按 size² 变化，
         // 再给予小幅个体差异；这些是游戏近似，不是物种实验数据拟合。
         public static BeetleTraits Create(float size, System.Random random, BeetleMatchSettings settings)
         {
             float Vary() => .95f + (float)random.NextDouble() * .10f;
+            float normal = Mathf.Sqrt(-2 * Mathf.Log(Mathf.Max(1e-7f, (float)random.NextDouble()))) *
+                Mathf.Cos(2 * Mathf.PI * (float)random.NextDouble());
+            float total = Mathf.Round(Mathf.Clamp(240 + 28 * normal, 150, 310));
+            float length = Mathf.Round(Mathf.Lerp(35, 75, Mathf.InverseLerp(settings.minimumSize, settings.maximumSize, size)));
+            float mean = (total - length) / 3;
+            float aggressionRating = Mathf.Round(Mathf.Clamp(mean + ((float)random.NextDouble() - .5f) * 24, 10, 100));
+            float hornRating = Mathf.Round(Mathf.Clamp(mean + ((float)random.NextDouble() - .5f) * 24, 10, 100));
+            float agilityRating = total - length - aggressionRating - hornRating;
+            // Redistribute any capped rating; the actual four-stat sum remains the sampled total.
+            float excess = agilityRating - Mathf.Clamp(agilityRating, 10, 100);
+            agilityRating -= excess;
+            float adjusted = Mathf.Clamp(aggressionRating + excess, 10, 100);
+            hornRating += excess - (adjusted - aggressionRating); aggressionRating = adjusted;
+            float hornFactor = Mathf.Lerp(.84f, 1.20f, hornRating / 100);
             return new BeetleTraits
             {
                 size = size,
@@ -33,9 +55,12 @@ namespace BeetleArena
                 strength = size * size * Vary(),
                 grip = size * Vary(),
                 endurance = 100 * Vary(),
-                aggression = .45f + (float)random.NextDouble() * .3f,
-                agility = Vary() / Mathf.Sqrt(size),
-                hornReach = 1.65f * size
+                aggression = Mathf.Lerp(.32f, .95f, aggressionRating / 100),
+                agility = Mathf.Lerp(.72f, 1.40f, agilityRating / 100) / Mathf.Sqrt(size),
+                hornReach = 1.65f * size * hornFactor,
+                aggressionScore = aggressionRating, lengthScore = length, hornScore = hornRating,
+                agilityScore = agilityRating, hornLengthFactor = hornFactor,
+                hornLengthMm = settings.referenceLengthMm * size * .48f * hornFactor
             };
         }
     }
@@ -64,6 +89,10 @@ namespace BeetleArena
         // 优势与接触记忆只影响选择，绝不作为额外伤害倍率。Simulation 是唯一写入者。
         public float BurstReserve = 1, ExertionCooldown, ExposureRemaining, ContactConfidence;
         public float TacticalAdvantage, IntentTime;
+        public System.Random DecisionRandom;
+        public ExchangePhase CombatPhase = ExchangePhase.Probing;
+        public float BoutTime, BoutDuration = 2, TimeSinceAttack;
+        public float ContactReleaseRemaining, ContactReleaseCooldown;
         // 找不到撬举支点后的短暂重试限制；期间可短推或换角度，避免原地重复昂贵失败。
         public float PryRetryRemaining;
         public BeetleIntent Intent = BeetleIntent.Assess;
@@ -79,11 +108,24 @@ namespace BeetleArena
         public float ActionTime, ActionDuration = 1, DecisionTime;
         // 恢复片段跨 Recover/Retreat 重选保留计时，防止短动作无限续杯；Simulation 唯一写入。
         public float RecoveryTime, RecoveryCooldown;
+        // Accepted contact geometry, sampled by the articulated solver. Render never writes these.
+        public bool IsOverturned, RightingGrounded, RightingStable;
+        public float OverturnedSeconds, RightingStableSeconds;
+        public Vector3 RightingTorque;
+        public int RightingSupports;
+        // Landing friction is armed by a descending ground contact, never by time in flight.
+        public bool LandingSliding;
+        // Preserve the impact speed when the support-height fallback clears vertical velocity.
+        public float LandingImpactSpeed;
         // 抬举、侧倾和冲击的表现权重/角度，随模拟时间衰减；不等于实际高度或受力。
         public float LiftVisual, RollVisual, ImpactVisual;
         // 统计已结算的命中、推顶、抬举、试探、冲顶、进入角力、挑飞成功和合格挑飞机会。
         // Contacts 在双方各增加一次，不是每帧接触数量；后者由 ContactSolver.ContactFrames 记录。
         public int Contacts, Shoves, Pries, ProbeTouches, Charges, Locks, Tosses, TossOpportunities;
+        // Outgoing accepted-contact telemetry only; never used to choose a winner.
+        public float AttackScore;
+        public int ForelegActions, ForelegHits, ConsecutiveHornActions;
+        public int FailedAttacks;
         // Airborne 决定是否受重力/禁用地面决策；HasFallen 是不可逆的本局落台标记。
         // AttackApplied 保证一个攻击动作只结算一次。
         public bool Airborne, HasFallen, AttackApplied;

@@ -32,7 +32,11 @@ MonoBehaviour:
   - {fileID: 11400000, guid: 5a89660713b39de498b08095cbfb5957, type: 2}
   - {fileID: 11400000, guid: c708a472719272f429fd99aeeac1b3a4, type: 2}
   - {fileID: 11400000, guid: bebea0c5a90bf9b4f95c5736af99002a, type: 2}
-  moduleActionChance: 0.42
+  - {fileID: 11400000, guid: b096bf81dca87874c958c8b84219865f, type: 2}
+  - {fileID: 11400000, guid: 1effb16bfdad0e14b9817c57044e1174, type: 2}
+  - {fileID: 11400000, guid: 72928f36b30e0124d9bf6055e820b37d, type: 2}
+  moduleActionChance: 0.58
+  forelegActionChance: 0.48
   gravity: 9.81
   minimumSize: 0.96
   maximumSize: 1.04
@@ -41,16 +45,16 @@ MonoBehaviour:
   referenceMassGrams: 8
   walkSpeed: 0.95
   turnSpeed: 145
-  shoveImpulse: 2.7
+  shoveImpulse: 3.6
   pryImpulse: 4.3
   staminaRecovery: 16
   fatiguePerSecond: 0.12
-  openingSeconds: 90
-  escalationSeconds: 90
-  openingDisplacement: 0.1
-  finalDisplacement: 2.4
-  probingSeconds: 7
-  clashSeconds: 9
+  openingSeconds: 12
+  escalationSeconds: 55
+  openingDisplacement: 0.75
+  finalDisplacement: 2.25
+  probingSeconds: 3.2
+  clashSeconds: 12
   exchangeRecoverySeconds: 1.35
   recoveryResumeFraction: 0.58
   recoveryMinimumSeconds: 0.35
@@ -80,6 +84,8 @@ MonoBehaviour:
   throwWorkLimit: 65
   throwMinimumSpeed: 2.2
   throwMaximumSpeed: 8
+  throwHeavySpeedMultiplier: 2.2
+  throwInspectionMode: 1
   throwQuickSpeed: 3.15
   throwArcSpeed: 4.35
   throwHighArcSpeed: 5.65
@@ -88,10 +94,10 @@ MonoBehaviour:
   throwOverheadWork: 32
   throwOverheadAngularSpeed: 2.5
   throwSnapSeconds: 0.22
-  exertionRecoveryDelay: 0.42
-  contactRecoveryMultiplier: 0.55
-  burstDrainPerSecond: 0.34
-  burstRecoveryPerSecond: 0.28
+  exertionRecoveryDelay: 0.24
+  contactRecoveryMultiplier: 0.72
+  burstDrainPerSecond: 0.26
+  burstRecoveryPerSecond: 0.4
   tacticalResponseSeconds: 0.3
   missedAttackExposure: 0.62
   failedPryRetrySeconds: 3.5

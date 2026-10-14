@@ -26,6 +26,9 @@ namespace BeetleArena
         // 切换按钮固定在 HUD 上，不随结算面板隐藏；文案明确提示切换会重开比赛。
         public UnityEngine.UI.Button arenaButton;
         public TMP_Text arenaText;
+        public UnityEngine.UI.Button viewButton, slowMotionButton;
+        public TMP_Text viewText, slowMotionText;
+        public TMP_Text[] traitTexts;
         BeetleMatchController match;
 
         // 重新绑定前先移除上一控制器的监听，避免重开比赛后一次点击调用多次。
@@ -38,6 +41,8 @@ namespace BeetleArena
             nextButton.onClick.AddListener(Next);
             rematchButton.onClick.AddListener(Rematch);
             if (arenaButton) arenaButton.onClick.AddListener(SwitchArena);
+            if (viewButton) viewButton.onClick.AddListener(CycleView);
+            if (slowMotionButton) slowMotionButton.onClick.AddListener(ToggleSlowMotion);
         }
         // 按钮适配方法使用固定选手索引；这里只传递请求，资格由控制器和模拟检查。
         void CheerAmber() => match.Cheer(0);
@@ -50,6 +55,8 @@ namespace BeetleArena
         // 重赛按钮复用本局种子生成初始阵容，不回放过去的输入记录。
         void Rematch() => match.Rematch();
         void SwitchArena() => match.SwitchArena();
+        void CycleView() => match.CycleView();
+        void ToggleSlowMotion() => match.ToggleDefeatSlowMotion();
         // 解除自己注册的各个具名回调，保留按钮上可能存在的其他监听者。
         void Unbind()
         {
@@ -60,6 +67,8 @@ namespace BeetleArena
             nextButton.onClick.RemoveListener(Next);
             rematchButton.onClick.RemoveListener(Rematch);
             if (arenaButton) arenaButton.onClick.RemoveListener(SwitchArena);
+            if (viewButton) viewButton.onClick.RemoveListener(CycleView);
+            if (slowMotionButton) slowMotionButton.onClick.RemoveListener(ToggleSlowMotion);
         }
         // HUD 被销毁时清理监听，防止持有失效的控制器引用。
         void OnDestroy() => Unbind();
@@ -70,16 +79,21 @@ namespace BeetleArena
             if (!match || match.Simulation == null) return;
             var sim = match.Simulation;
             if (arenaText) arenaText.text = "擂台：" + match.ArenaName + "  [T]\n切换并重开";
+            if (viewText) viewText.text = "视角：" + match.spectatorCamera.ViewName + "  [C]";
+            if (slowMotionText) slowMotionText.text = "击败慢镜头：" + (match.defeatSlowMotion ? "开" : "关") + "  [V]";
             for (int i = 0; i < 2; i++)
             {
                 var b = sim.Fighters[i]; var ui = fighters[i];
                 ui.name.text = (i == 0 ? "01  /  琥珀" : "02  /  墨甲");
                 ui.measurements.text = $"体长 {b.Traits.lengthMm:F1} mm    体重 {b.Traits.massGrams:F1} g";
-                ui.action.text = ActionName(b.Action) + (b.CheerRemaining > 0 ? "  ·  斗志提升" : "");
+                if (traitTexts != null && i < traitTexts.Length && traitTexts[i])
+                    traitTexts[i].text = $"好斗 {b.Traits.aggressionScore:F0}   体长 {b.Traits.lengthScore:F0}   角长 {b.Traits.hornScore:F0}   敏捷 {b.Traits.agilityScore:F0}\n角长 {b.Traits.hornLengthMm:F1} mm   总分 {b.Traits.TotalScore:F0}/400 · {b.Traits.QualityBand}";
+                ui.action.text = (b.Action == BeetleAction.Module && b.Motion.Active ? b.Motion.Active.DisplayName : ActionName(b.Action))
+                    + (b.CheerRemaining > 0 ? "  ·  斗志提升" : "");
                 ui.staminaFill.fillAmount = b.Stamina01;
                 // 把平衡与台面足部支撑相乘呈现综合稳定程度；不是物理求解器测出的摩擦力。
                 ui.footingFill.fillAmount = b.Balance * b.Footing;
-                ui.staminaText.text = $"体力  {Mathf.RoundToInt(b.Stamina01 * 100)}%";
+                ui.staminaText.text = $"体力 {Mathf.RoundToInt(b.Stamina01 * 100)}%";
                 ui.footingText.text = $"抓地 / 稳定  {Mathf.RoundToInt(b.Balance * b.Footing * 100)}%";
                 // 按钮可点击状态同时考虑比赛阶段、暂停、冷却和腾空/落台；模拟层仍会二次检查。
                 bool canCheer = sim.Phase == MatchPhase.Fighting && !match.IsPaused && b.CheerCooldown <= 0 && !b.Airborne && !b.HasFallen;
@@ -89,14 +103,17 @@ namespace BeetleArena
                 ui.cheerFill.fillAmount = 1 - b.CheerCooldown / match.settings.cheerCooldown;
             }
             clock.text = $"{(int)sim.Elapsed / 60:00}:{(int)sim.Elapsed % 60:00}";
-            roundText.text = $"第 {match.RoundNumber:00} 场  ·  体型差不超过 {match.settings.maximumSizeDifference * 100:F0}%";
+            int remaining = Mathf.CeilToInt(Mathf.Max(0, Mathf.Min(sim.FightTimeLimit - sim.Elapsed,
+                BeetleSimulation.MaximumRoundSeconds - match.RoundClock)));
+            roundText.text = sim.Phase == MatchPhase.Finished ? $"第 {match.RoundNumber:00} 场  ·  已结束" :
+                $"第 {match.RoundNumber:00} 场  ·  剩余 {remaining / 60:00}:{remaining % 60:00}";
             eventText.text = match.LatestEvent;
             pauseText.text = match.IsPaused ? "继续  [空格]" : "暂停  [空格]";
             pauseButton.interactable = sim.Phase != MatchPhase.Finished;
             bool finished = sim.Phase == MatchPhase.Finished;
             // 结算面板只在 Finished 展示，Resolving 阶段仍等待可能出现的双落台。
-            resultPanel.SetActive(finished);
-            resultText.text = sim.Winner < 0 ? "双方落台 · 平局" : $"{BeetleSimulation.Name(sim.Winner)} 获胜";
+            resultPanel.SetActive(finished && !match.IsDefeatSlowMotion);
+            resultText.text = (sim.Winner < 0 ? "本场平局" : $"{BeetleSimulation.Name(sim.Winner)} 获胜") + "\n<size=20>" + sim.ResultDescription + "</size>";
             // 显示外层交锋阶段；个体当前动作显示在选手卡上，两者可能因动作衔接暂时不同。
             phaseText.text = match.IsPaused ? "观察暂停" : sim.Phase == MatchPhase.Countdown ? $"准备  {Mathf.CeilToInt(sim.Countdown)}" : sim.Phase == MatchPhase.Resolving ? "落台判定中" : finished ? "本场结束" :
                 sim.Exchange == ExchangePhase.Clash ? "激烈交锋" : sim.Exchange == ExchangePhase.Recovery ? "拉开恢复" : "轻触试探";
@@ -132,6 +149,7 @@ namespace BeetleArena
                 case BeetleAction.Stagger: return "挣扎恢复支撑";
                 case BeetleAction.Falling: return "失去台面支撑";
                 case BeetleAction.Defeated: return "已落台";
+                case BeetleAction.Subdued: return "停止对抗 / 撑地恢复";
                 case BeetleAction.Winner: return "守住擂台";
                 default: return "观察中";
             }

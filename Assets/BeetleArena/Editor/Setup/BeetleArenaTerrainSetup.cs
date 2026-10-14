@@ -8,7 +8,7 @@ using UnityEditor.SceneManagement;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
-/// <summary>给现有游戏增量安装双擂台，不重新生成甲虫、相机、旧 HUD 或比赛参数。</summary>
+/// <summary>给现有游戏增量安装可切换的平地、岩台及两张凹槽擂台。</summary>
 public static class BeetleArenaTerrainSetup
 {
     const string Folder = "Assets/BeetleArena/Generated";
@@ -70,6 +70,12 @@ public static class BeetleArenaTerrainSetup
             uneven.contactColliders = new Collider[] { collider, floor };
             match.arenas = new[] { flat, uneven };
         }
+        if (match.arenas.Length == 2)
+        {
+            var floor = match.arenas[0].contactColliders.Last();
+            match.arenas = new[] { match.arenas[0], match.arenas[1],
+                CreateTrough(match.settings.arenaRadius, false, floor), CreateTrough(match.settings.arenaRadius, true, floor) };
+        }
         EnsureButton(match.hud);
         match.SelectArena(0);
         // 编辑状态也正确站在台面；正式 Play 时仍会根据当前种子重新绑定。
@@ -83,6 +89,53 @@ public static class BeetleArenaTerrainSetup
     // 缓坡、低谷和斜向脊线，约一世界单位高差；波长大于步长，让六足可在坡面上交替支撑。
     static float Height(float x, float z) => .48f + .34f * Mathf.Sin(x * .55f)
         + .20f * Mathf.Cos(z * .70f) + .16f * Mathf.Sin(x * .45f + z * .65f);
+
+    static BeetleArenaSurface CreateTrough(float radius, bool rolling, Collider floor)
+    {
+        var surface = new GameObject(rolling ? "Rolling cylinder trough" : "Cylinder trough").AddComponent<BeetleArenaSurface>();
+        surface.displayName = rolling ? "起伏圆槽" : "半圆槽";
+        surface.maximumSlope = 55; surface.grip = .98f;
+        const int cells = 64;
+        float half = radius * .90f, cylinder = half * 1.42f;
+        var vertices = new List<Vector3>(); var triangles = new List<int>(); var uv = new List<Vector2>();
+        for (int z = 0; z <= cells; z++) for (int x = 0; x <= cells; x++)
+        {
+            float px = Mathf.Lerp(-half, half, x / (float)cells), pz = Mathf.Lerp(-half, half, z / (float)cells);
+            float y = .08f + cylinder - Mathf.Sqrt(cylinder * cylinder - px * px);
+            if (rolling) y += .23f * Mathf.Sin(pz * .75f) + .09f * Mathf.Sin(px * .65f + pz * .9f);
+            vertices.Add(new Vector3(px, y, pz)); uv.Add(new Vector2(x / (float)cells, z / (float)cells));
+        }
+        for (int z = 0; z < cells; z++) for (int x = 0; x < cells; x++)
+        {
+            int a = z * (cells + 1) + x, b = a + cells + 1;
+            triangles.AddRange(new[] { a, b, a + 1, a + 1, b, b + 1 });
+        }
+        // Close the solid block below the concave surface, including the two open-channel ends.
+        var rim = new List<int>();
+        for (int x = 0; x <= cells; x++) rim.Add(x);
+        for (int z = 1; z <= cells; z++) rim.Add(z * (cells + 1) + cells);
+        for (int x = cells - 1; x >= 0; x--) rim.Add(cells * (cells + 1) + x);
+        for (int z = cells - 1; z > 0; z--) rim.Add(z * (cells + 1));
+        int bottom = vertices.Count; vertices.Add(new Vector3(0, -1.25f, 0)); uv.Add(Vector2.zero);
+        for (int k = 0; k < rim.Count; k++)
+        {
+            Vector3 a = vertices[rim[k]], b = vertices[rim[(k + 1) % rim.Count]];
+            int n = vertices.Count;
+            vertices.Add(a); vertices.Add(b); vertices.Add(new Vector3(a.x, -1.25f, a.z)); vertices.Add(new Vector3(b.x, -1.25f, b.z));
+            uv.Add(Vector2.up); uv.Add(Vector2.one); uv.Add(Vector2.zero); uv.Add(Vector2.right);
+            triangles.AddRange(new[] { n, n + 1, n + 2, n + 1, n + 3, n + 2, bottom, n + 2, n + 3 });
+        }
+        string path = Folder + (rolling ? "/RollingTrough.asset" : "/CylinderTrough.asset");
+        var mesh = AssetDatabase.LoadAssetAtPath<Mesh>(path);
+        if (!mesh) { mesh = new Mesh(); AssetDatabase.CreateAsset(mesh, path); } else mesh.Clear();
+        mesh.name = surface.displayName; mesh.SetVertices(vertices); mesh.SetUVs(0, uv); mesh.SetTriangles(triangles, 0);
+        mesh.RecalculateNormals(); mesh.RecalculateBounds(); EditorUtility.SetDirty(mesh);
+        surface.gameObject.AddComponent<MeshFilter>().sharedMesh = mesh;
+        surface.gameObject.AddComponent<MeshRenderer>().sharedMaterial = RockMaterial(rolling ? "Rolling trough" : "Cylinder trough", rolling ? new Color(.33f,.40f,.35f) : new Color(.42f,.34f,.24f));
+        var collider = surface.gameObject.AddComponent<MeshCollider>(); collider.sharedMesh = mesh;
+        surface.supportColliders = new Collider[] { collider }; surface.contactColliders = new Collider[] { collider, floor };
+        return surface;
+    }
 
     static Mesh MakeRockMesh(float radius)
     {
@@ -160,7 +213,7 @@ public static class BeetleArenaTerrainSetup
         // 只补本功能会显示的字符，不因代码注释变多而重新收集整项目字形。
         var font = hud.arenaText.font;
         font.atlasPopulationMode = AtlasPopulationMode.DynamicOS;
-        font.TryAddCharacters("擂台：平地木桩起伏岩台切换并重开T", out string missing);
+        font.TryAddCharacters("擂台：平地木桩起伏岩台切换并重开T半圆槽视角琥珀上方墨甲全景C击败慢镜头关V好斗体长敏捷总分高中低0123456789/400mm压角蓄势扬头顶击", out string missing);
         font.atlasPopulationMode = AtlasPopulationMode.Static;
         foreach (var texture in font.atlasTextures)
         {

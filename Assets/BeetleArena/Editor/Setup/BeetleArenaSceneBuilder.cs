@@ -107,6 +107,7 @@ public static class BeetleArenaSceneBuilder
 
             // 生成可在编辑器直接看到的初始姿态；进入 Play 后控制器仍会按实际种子重新创建本局。
             BeetleArenaTerrainSetup.Configure(controller);
+            BeetleCombatUpgrade.Configure(controller);
             var simulation = new BeetleSimulation(settings, settings.initialSeed);
             simulation.SetGround(controller.ActiveSurface);
             for (int i = 0; i < 2; i++)
@@ -227,7 +228,7 @@ public static class BeetleArenaSceneBuilder
             Color accent = i == 0 ? Amber : Teal;
             Vector2 anchor = new Vector2(i, 1);
             Vector2 position = new Vector2(i == 0 ? 34 : -34, -34);
-            var card = Panel("Fighter " + i, root, anchor, position, new Vector2(355, 196), new Color(.042f, .062f, .052f, .95f));
+            var card = Panel("Fighter " + i, root, anchor, position, new Vector2(355, 250), new Color(.042f, .062f, .052f, .95f));
             card.pivot = new Vector2(i, 1);
             var ui = new FighterHud(); hud.fighters[i] = ui;
             ui.name = Label("Name", card, i == 0 ? "01 / 琥珀" : "02 / 墨甲", new Vector2(0, 1), new Vector2(20, -12), new Vector2(310, 42), 24, accent);
@@ -244,14 +245,14 @@ public static class BeetleArenaSceneBuilder
         }
         hud.phaseText = Label("Match phase", root, "准备 3", new Vector2(.5f, 0), new Vector2(0, 133), new Vector2(500, 30), 19, new Color(.93f, .79f, .47f), TextAlignmentOptions.Center);
         hud.eventText = Label("Commentary", root, "触角试探 · 即将开始", new Vector2(.5f, 0), new Vector2(0, 99), new Vector2(700, 33), 21, Color.white, TextAlignmentOptions.Center);
-        Label("Rules", root, "只可加油，不能操控 · 每次鼓励持续 3.5 秒 / 冷却 6 秒\n掉出木台即负 · 无伤害血条 · 允许双方同时落台", new Vector2(.5f, 0), new Vector2(0, 48), new Vector2(700, 47), 15, new Color(.73f, .78f, .69f), TextAlignmentOptions.Center);
+        Label("Rules", root, "只有落台分胜负 · 时间到双方平局\n单局含开场与击败展示不超过 3 分钟（暂停除外）", new Vector2(.5f, 0), new Vector2(0, 48), new Vector2(700, 47), 15, new Color(.73f, .78f, .69f), TextAlignmentOptions.Center);
         hud.pauseButton = Button("Pause observation", root, new Vector2(1, .5f), new Vector2(-34, 0), new Vector2(138, 38), new Color(.20f, .28f, .23f), "暂停 [空格]", out hud.pauseText);
         hud.pauseButton.GetComponent<RectTransform>().pivot = new Vector2(1, .5f);
         hud.pauseText.color = new Color(.90f, .92f, .82f);
         var result = Panel("Match result", root, new Vector2(.5f, .48f), Vector2.zero, new Vector2(500, 245), new Color(.04f, .065f, .05f, .98f));
         result.pivot = new Vector2(.5f, .5f); hud.resultPanel = result.gameObject;
-        Label("Result kicker", result, "RING OUT  /  落台结算", new Vector2(.5f, 1), new Vector2(0, -27), new Vector2(440, 28), 17, Amber, TextAlignmentOptions.Center);
-        hud.resultText = Label("Result", result, "琥珀 获胜", new Vector2(.5f, 1), new Vector2(0, -72), new Vector2(460, 58), 38, Color.white, TextAlignmentOptions.Center);
+        Label("Result kicker", result, "MATCH RESULT  /  本场结算", new Vector2(.5f, 1), new Vector2(0, -27), new Vector2(440, 28), 17, Amber, TextAlignmentOptions.Center);
+        hud.resultText = Label("Result", result, "琥珀 获胜", new Vector2(.5f, 1), new Vector2(0, -72), new Vector2(460, 100), 38, Color.white, TextAlignmentOptions.Center);
         hud.rematchButton = Button("Rematch", result, new Vector2(0, 0), new Vector2(24, 24), new Vector2(210, 48), new Color(.24f, .32f, .26f), "原阵容再战", out var rematchLabel);
         rematchLabel.color = new Color(.90f, .92f, .82f);
         hud.nextButton = Button("Next match", result, new Vector2(1, 0), new Vector2(-24, 24), new Vector2(218, 48), Amber, "下一场 · 随机配对", out _);
@@ -308,7 +309,7 @@ public static class BeetleArenaSceneBuilder
     // 创建或补充静态中文 TMP 字体。临时启用系统字体动态填字，保存时恢复 Static，
     // 并把材质/图集保存为子资源。依赖本机 Microsoft YaHei 或 Microsoft YaHei UI。
     // 注意：当前按全部 C# 源文本收集字符，包含注释；大量中文注释在下次运行本方法时也会进入字形集合。
-    static TMP_FontAsset MakeFont()
+    public static TMP_FontAsset MakeFont()
     {
         string path = AssetFolder + "/ArenaCJK.asset";
         var existing = AssetDatabase.LoadAssetAtPath<TMP_FontAsset>(path);

@@ -62,6 +62,24 @@ public static class BeetleArenaEditorCommands
     {
         switch (request.action)
         {
+            case "validate-landing-slide": BeetleThrowValidation.LandingAndEdge(); return File.ReadAllText("Artifacts/LandingSlide/After.txt") + File.ReadAllText("Artifacts/LandingSlide/Edge.txt");
+            case "diagnose-replay": BeetleLiftCatchValidation.CompareReplay(); return File.ReadAllText("Artifacts/LiftCatch/Comparison.txt");
+            case "replay-natural-throw": BeetleRoundPacingValidation.Preview(); return File.ReadAllText("Artifacts/RoundPacing/Preview.txt");
+            case "validate-catch": BeetleLiftCatchValidation.CatchSteps(); return File.ReadAllText("Artifacts/LiftCatch/Recovery.txt");
+            case "diagnose-lift-catch": BeetleLiftCatchValidation.Diagnose(); return File.ReadAllText("Artifacts/LiftCatch/Diagnosis.csv");
+            case "validate-tumble-landing": BeetleThrowValidation.LandingOnly(); return File.ReadAllText("Artifacts/LeverThrows/Validation.txt");
+            case "validate-table-righting": BeetleThrowValidation.TableRighting(); return File.ReadAllText("Artifacts/TumbleLimbs/TableRighting.txt");
+            case "validate-supported-righting": BeetleThrowValidation.TableRighting(true); return File.ReadAllText("Artifacts/TumbleLimbs/SupportedRighting.txt");
+            case "validate-throws": BeetleThrowValidation.Run(); return File.ReadAllText("Artifacts/LeverThrows/Validation.txt");
+            case "validate-readability": BeetleReadabilityValidation.Run(); return File.ReadAllText("Artifacts/ActionReadability/Validation.txt");
+            case "pacing-pilot": BeetleRoundPacingValidation.Pilot(); return File.ReadAllText("Artifacts/RoundPacing/Pilot.txt");
+            case "pacing-final": BeetleRoundPacingValidation.Final(); return File.ReadAllText("Artifacts/RoundPacing/Final.txt");
+            case "diagnose-foreleg-reach": BeetleRoundPacingValidation.DiagnoseReach(); return File.ReadAllText("Artifacts/RoundPacing/ReachDiagnosis.txt");
+            case "validate-foreleg": BeetleForelegValidation.Final(); return File.ReadAllText("Artifacts/ForelegReview/Validation.txt");
+            case "validate-refinements": BeetleCombatRefinementValidation.Run(); return File.ReadAllText("Artifacts/CombatRefinement/Validation.txt");
+            case "validate-trough": BeetleCombatRefinementValidation.Run(3); return File.ReadAllText("Artifacts/CombatRefinement/Validation.txt");
+            case "combat-upgrade": BeetleCombatUpgrade.Apply(); return "Combat refinements saved.";
+            case "validate-escape": BeetleContactEscapeValidation.Run(); return File.ReadAllText("Artifacts/DeadlockFix/CapturedReplay.txt");
             case "refresh": AssetDatabase.Refresh(); return "Refresh requested.";
             // 只更新游戏材质；渲染验证在临时场景副本中进行。
             case "apply-toon": BeetleArenaToonSetup.Apply(); return "Toon materials saved.";

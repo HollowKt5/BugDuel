@@ -13,6 +13,8 @@ public static class BeetleImportedValidation
 {
     static float worstDepth;
     static string worstPart;
+    public static string WorstVisiblePart => worstPart;
+    public static void ResetVisibleMeasurement() { worstDepth = 0; worstPart = "none"; }
     public static string Run(int seed = 7319, int arena = 0, float seconds = 240)
     {
         if (EditorApplication.isPlaying) throw new InvalidOperationException("Stop Play before validation.");
@@ -61,7 +63,7 @@ public static class BeetleImportedValidation
     }
 
     // 检查最终蒙皮后的顶点，不把碰撞代理没有重叠等同于可见模型绝对没有穿透。
-    static float MeasureRenderedMesh(BeetleMatchController match)
+    public static float MeasureRenderedMesh(BeetleMatchController match)
     {
         float maximum = 0; var baked = new Mesh();
         try {

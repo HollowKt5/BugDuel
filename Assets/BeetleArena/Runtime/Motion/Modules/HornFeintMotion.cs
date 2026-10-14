@@ -10,6 +10,7 @@ namespace BeetleArena
         [Range(.1f, .4f)] public float footReach = .30f;
         public override string DisplayName => "探角虚晃 · 收角后撤";
         public override BeetleMotionChannel Channel => BeetleMotionChannel.Combat;
+        public override float SelectionWeight(in BeetleMotionContext c) => weight * Mathf.Lerp(1.2f, .25f, c.Drive);
         public override bool AppliesContactResponse => false;
         public override void SetDefaults()
         {
@@ -26,8 +27,8 @@ namespace BeetleArena
             float dip = Dip(phase);
             float recoil = Pulse(Mathf.InverseLerp(.52f, 1, phase));
             float forward = phase < .37f ? .65f * dip : c.Footing > .85f ? -.52f * dip : 0;
-            return new BeetleMotionSample { PoseResponse = 21, HeadPitch = headDip * dip - 6 * recoil,
-                HeadYaw = c.Side * 8 * dip, BodyPitch = 7 * dip - 2 * recoil,
+            return new BeetleMotionSample { PoseResponse = 26, HeadPitch = headDip * .72f * dip - 6 * recoil,
+                HeadYaw = 0, BodyPitch = 7 * dip - 5 * recoil,
                 BodyRoll = -c.Side * 2.5f * dip, BodyHeight = -.025f * dip,
                 Strain = .55f * dip, LocalVelocity = new Vector2(0, forward),
                 StaminaPerSecond = 4, Contact = BeetleMotionContact.None };
@@ -47,8 +48,10 @@ namespace BeetleArena
                 return phase >= start && phase <= end;
             }
             // 后足贴地向后撑，虚晃也有可见的发力链，但不产生攻击冲量。
-            offset = new Vector3(0, 0, -.14f * Dip(phase));
-            return slot % 3 == 2;
+            bool left = phase < .5f;
+            float drive = Mathf.Sin(Mathf.PI * Mathf.Clamp01(left ? phase * 2 : (phase - .5f) * 2));
+            offset = new Vector3(0, 0, -.14f * drive);
+            return slot == (left ? 2 : 5) && drive > .001f;
         }
     }
 }

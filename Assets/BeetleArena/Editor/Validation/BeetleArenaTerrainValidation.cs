@@ -27,8 +27,8 @@ public static class BeetleArenaTerrainValidation
             SceneManager.SetActiveScene(scene);
             var match = scene.GetRootGameObjects().SelectMany(r => r.GetComponentsInChildren<BeetleMatchController>(true)).Single();
             match.hud.Bind(match);
-            Require(match.arenas.Length == 2 && match.hud.arenaButton && match.hud.arenaText, "Missing arenas or HUD");
-            for (int mode = 0; mode < 2; mode++)
+            Require(match.arenas.Length == 4 && match.hud.arenaButton && match.hud.arenaText, "Missing arenas or HUD");
+            for (int mode = 0; mode < match.arenas.Length; mode++)
             {
                 match.SelectArena(mode); match.StartMatch(7319);
                 var surface = match.ActiveSurface;

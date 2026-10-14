@@ -8,7 +8,7 @@ namespace BeetleArena
     public readonly struct BeetleTacticalSnapshot
     {
         public readonly float Advantage, Opening, Distance, Facing, Edge;
-        public readonly bool Threatened;
+        public readonly bool Threatened, OpponentYielding, CanPressRecovery;
         public BeetleTacticalSnapshot(BeetleState self, BeetleState other, float radius, float reach)
         {
             Vector2 delta = other.Position - self.Position;
@@ -18,6 +18,11 @@ namespace BeetleArena
             Threatened = other.Committed && Distance < reach + .25f &&
                 Vector2.Dot(other.Forward, -delta.normalized) > .55f && other.ActionProgress < .78f;
             Opening = other.ExposureRemaining;
+            OpponentYielding = other.Action == BeetleAction.Disengage || BeetleRecoveryPolicy.IsRest(other.Action);
+            float initiative = self.Readiness01 + self.BurstReserve * .35f + self.Traits.aggression * .15f;
+            float otherInitiative = other.Readiness01 + other.BurstReserve * .35f + other.Traits.aggression * .15f;
+            CanPressRecovery = OpponentYielding && self.Readiness01 > .20f && self.BurstReserve > .14f &&
+                initiative > otherInitiative;
             if (other.Action == BeetleAction.Stagger) Opening = Mathf.Max(Opening, .65f);
             if (BeetleRecoveryPolicy.IsRest(other.Action)) Opening = Mathf.Max(Opening, .38f);
             float condition = .40f * (self.Stamina01 - other.Stamina01) +
@@ -35,16 +40,21 @@ namespace BeetleArena
     {
         public static BeetleIntent Evaluate(BeetleState b, in BeetleTacticalSnapshot view)
         {
-            if (b.ContactBlockedSeconds > .35f) return BeetleIntent.Reposition;
+            if (b.ContactReleaseRemaining > 0) return BeetleIntent.Reposition;
             if (view.Threatened && (b.Balance < .65f || b.Readiness01 < .30f || b.BurstReserve < .18f))
                 return BeetleIntent.Defend;
             if (b.Balance < .40f || view.Edge > .84f && b.Footing < .84f) return BeetleIntent.Reposition;
+            if (view.CanPressRecovery && view.Facing > .65f) return BeetleIntent.Counter;
             if (b.Readiness01 < .27f || b.BurstReserve < .22f)
                 return view.Threatened ? BeetleIntent.Defend : BeetleIntent.Recover;
             if (view.Opening > .10f && b.Readiness01 > .31f && b.BurstReserve > .28f && view.Facing > .72f)
                 return BeetleIntent.Counter;
+            if (!view.Threatened && b.Balance > .55f && b.Readiness01 > .38f && b.BurstReserve > .34f &&
+                (view.OpponentYielding || b.TimeSinceAttack > Mathf.Lerp(2.3f, .7f, b.Traits.aggression)))
+                return BeetleIntent.Pressure;
             // 滞回让接近临界点时不反复切换攻防；优势只影响选择，不额外增加伤害。
             float threshold = b.Intent == BeetleIntent.Pressure ? .025f : .09f;
+            threshold -= (b.Traits.aggression - .6f) * .22f;
             if (!view.Threatened && b.TacticalAdvantage > threshold && b.Balance > .58f && b.BurstReserve > .33f)
                 return BeetleIntent.Pressure;
             if (view.Threatened) return BeetleIntent.Defend;
@@ -57,11 +67,15 @@ namespace BeetleArena
 
         // 原随机 choice 仍负责同一情境里的变化；局势先限定可用行为，不靠抽签决定攻守。
         public static BeetleAction Choose(BeetleState b, in BeetleTacticalSnapshot v, ExchangePhase exchange,
-            float reach, float choice)
+            float reach, float choice, bool inspectThrows = false)
         {
             if (v.Facing < .70f) return BeetleAction.Assess;
             if (b.Intent == BeetleIntent.Defend)
-                return v.Edge < .72f && choice < .20f ? BeetleAction.Disengage : BeetleAction.Brace;
+            {
+                if (b.Action == BeetleAction.Brace && CanCommit(b, 24, .40f) && choice < b.Traits.drivePreference * .55f)
+                    return BeetleAction.ShoveWindup;
+                return v.Edge < .72f && choice < b.Traits.lateralPreference * .22f ? BeetleAction.Circle : BeetleAction.Brace;
+            }
             if (b.Intent == BeetleIntent.Reposition)
                 return b.Balance < .32f ? BeetleAction.Brace : BeetleAction.Circle;
             // 恢复冷却中也应卸力换位，不能因暂时不能 Rest 就再次承诺高消耗攻击。
@@ -70,15 +84,20 @@ namespace BeetleArena
             if (v.Distance > reach) return BeetleAction.Approach;
             bool opening = b.Intent == BeetleIntent.Counter;
             bool pressure = b.Intent == BeetleIntent.Pressure;
-            if (!CanCommit(b, 18, .20f)) return choice < .40f ? BeetleAction.Circle : BeetleAction.Probe;
-            if (!opening && !pressure && exchange != ExchangePhase.Clash)
+            bool aggressiveOpening = b.Traits.aggression > .72f && choice > .65f && b.BurstReserve > .55f;
+            if (!CanCommit(b, 18, .20f)) return opening ? BeetleAction.Probe : choice < .40f ? BeetleAction.Circle : BeetleAction.Probe;
+            if (!opening && !pressure && !aggressiveOpening && exchange != ExchangePhase.Clash)
                 return choice < .18f ? BeetleAction.Circle : BeetleAction.Probe;
             if (!opening && choice < (pressure ? .08f : .15f)) return BeetleAction.Circle;
-            // 抓收招先用短推；顶举需要更多余力与已建立的接触，不每次都选最贵攻击。
-            if (opening && choice < .40f) return b.TouchingOpponent || v.Distance < reach - .2f ? BeetleAction.ShoveWindup : BeetleAction.Approach;
-            if (b.PryRetryRemaining <= 0 && b.Contacts >= 2 && v.Distance < reach - .06f && CanCommit(b, 26, .35f) && choice < .78f)
+            // Evaluate the lifting opening before the short-push branch. Previously
+            // both used the low end of the same roll, so counter openings consumed
+            // the entire pry interval before this branch could be reached.
+            if (b.PryRetryRemaining <= 0 && (b.TouchingOpponent || v.Distance < reach - .25f) && b.Contacts >= 2 && CanCommit(b, 26, .35f) &&
+                choice < Mathf.Lerp(inspectThrows ? .35f : .16f, inspectThrows ? .85f : .55f, b.Traits.liftPreference))
                 return BeetleAction.PryWindup;
-            if (!b.TouchingOpponent && CanCommit(b, 32, .48f) && choice > .48f)
+            if (opening && choice < Mathf.Lerp(.12f, .48f, b.Traits.drivePreference))
+                return b.TouchingOpponent || v.Distance < reach - .2f ? BeetleAction.ShoveWindup : BeetleAction.Approach;
+            if (!b.TouchingOpponent && CanCommit(b, 32, .48f) && choice > Mathf.Lerp(.68f, .28f, b.Traits.drivePreference))
                 return BeetleAction.ChargeWindup;
             return BeetleAction.ShoveWindup;
         }

@@ -4,12 +4,13 @@ namespace BeetleArena
 {
     // 模拟依赖的接触接口：实现可以读取并修正双方状态。缺省为空时走纯数据备用分离算法。
     public interface IBeetleContactSolver { void Solve(BeetleSimulation simulation, float dt); }
+    public interface IBeetleRightingPose { bool IsRighting(int fighter); }
 
     // Kinematic articulated contact constraints. PhysX supplies narrow-phase convex
     // mesh contacts; this solver owns movement so animation cannot override a rigidbody.
     // 细分凸网格的运动学接触求解器：PhysX 负责检测，代码负责位置和速度修正。
     // 不是让动态 Rigidbody 自由碰撞；也没有逐脚求解摩擦、肌肉或真实角尖杠杆力。
-    public sealed class BeetleContactSolver : IBeetleContactSolver, IBeetleLiftContacts, IBeetleMotionContacts
+    public sealed class BeetleContactSolver : IBeetleContactSolver, IBeetleLiftContacts, IBeetleMotionContacts, IBeetleForelegTargets, IBeetleDriveSupport, IBeetleForebodySupport, IBeetleRightingPose
     {
         // Actor 提供姿态，ContactRig 保存部件碰撞体，arena 保存树桩和地面的接触体。
         readonly BeetleActor[] actors;
@@ -33,6 +34,12 @@ namespace BeetleArena
         readonly BeetleHornSupport hornSupport = new BeetleHornSupport();
         readonly BeetleContactMotion[] motion, viewMotion;
         bool viewInitialized;
+        float viewBlockedSeconds;
+        int acceptedHornContacts;
+        int acceptedForelegContacts;
+        bool recordingContacts;
+        readonly Vector2[] lastProgress = new Vector2[2];
+        readonly float[] progressClock = new float[2];
         readonly Vector2[] proposedVelocity = new Vector2[2];
         readonly float[] motionBudget = new float[2];
         public int LimitedMotionSteps { get; private set; }
@@ -109,10 +116,35 @@ namespace BeetleArena
                 }
                 if (!accepted)
                 {
+                    // A valid root retreat can be rejected solely by the new articulated pose.
+                    // Retry from the accepted joints, one animal at a time, through the same
+                    // penetration and distance limits. No collider is disabled and no teleport occurs.
+                    for (int candidate = 0; candidate < 2 && !accepted; candidate++)
+                    {
+                        int index = (Mathf.FloorToInt(sim.MotionTime / .8f) + candidate) % 2;
+                        var state = sim.Fighters[index];
+                        if (state.Airborne || state.HasFallen || state.ContactBlockedSeconds < .3f) continue;
+                        for (int i = 0; i < 2; i++) { motion[i].Apply(0); sim.Fighters[i].Velocity = proposedVelocity[i]; }
+                        Vector3 back = -actors[index].transform.forward;
+                        back.y = 0; back = back.normalized * Mathf.Min(.025f, motionBudget[index] * .4f);
+                        Vector3 origin = actors[index].transform.position;
+                        if (sim.SampleGround(new Vector2(origin.x, origin.z), out var from) &&
+                            sim.SampleGround(new Vector2(origin.x + back.x, origin.z + back.z), out var to))
+                            back.y = Mathf.Max(0, to.height - from.height);
+                        actors[index].transform.position += back;
+                        Physics.SyncTransforms(); Cache(); contact = Constrain(sim, true, true);
+                        accepted = MotionAccepted();
+                        if (accepted) AcceptedMotionFraction = .02f;
+                    }
+                }
+                if (!accepted)
+                {
                     // 上一步是已验证的安全姿态。暂缓受阻动作，不能强行平移整虫或关掉碰撞体。
                     for (int i = 0; i < 2; i++)
                     { motion[i].Apply(0); sim.Fighters[i].Velocity = proposedVelocity[i]; }
                     Physics.SyncTransforms(); Cache(); AcceptedMotionFraction = 0; contact = true;
+                    acceptedHornContacts = 0;
+                    acceptedForelegContacts = 0;
                 }
             }
             for (int i = 0; i < 2; i++)
@@ -120,9 +152,17 @@ namespace BeetleArena
                 var state = sim.Fighters[i];
                 Vector3 p = actors[i].transform.position;
                 state.Position = new Vector2(p.x, p.z); state.Height = p.y;
+                // Accept the actual heading too. Otherwise rejected turns accumulate in the AI
+                // while the rendered root keeps rolling back, producing endless spinning retries.
+                Vector3 forward = Quaternion.Inverse(Quaternion.FromToRotation(Vector3.up, state.SurfaceNormal)) * actors[i].transform.forward;
+                state.Heading = Mathf.Atan2(forward.x, forward.z) * Mathf.Rad2Deg;
+                bool landingContact = false; Vector3 landingNormal = Vector3.up;
+                if (state.HasFallen || state.Airborne && state.VerticalVelocity <= 0 || state.LandingSliding || state.LandingImpactSpeed > 0)
+                    landingContact = TryLandingContact(rigs[i], state.HasFallen, sim.Settings.groundHeight, out landingNormal);
+                sim.ResolveLandingFriction(state, landingContact, landingNormal, dt);
                 if (state.HasFallen)
                 {
-                    bool floor = HasForestFloorContact(rigs[i], sim.Settings.groundHeight);
+                    bool floor = landingContact;
                     state.Fall.SetFloorContact(floor, -state.VerticalVelocity);
                     if (floor && state.VerticalVelocity < 0) state.VerticalVelocity = 0;
                 }
@@ -130,9 +170,21 @@ namespace BeetleArena
                 state.TouchingOpponent = contact;
                 state.ContactBlockedSeconds = !state.Airborne && !state.HasFallen && AcceptedMotionFraction < .05f
                     ? state.ContactBlockedSeconds + dt : Mathf.Max(0, state.ContactBlockedSeconds - dt * 2);
+                // Root stillness during horn wrestling is legitimate, not a locomotion deadlock.
+                bool tryingToMove = state.Action == BeetleAction.Approach ||
+                    state.Action == BeetleAction.Circle || state.Action == BeetleAction.Disengage;
+                if (tryingToMove && !state.Airborne && !state.HasFallen && sim.Phase == MatchPhase.Fighting)
+                {
+                    if (Vector2.Distance(lastProgress[i], state.Position) > .10f)
+                    { lastProgress[i] = state.Position; progressClock[i] = 0; }
+                    else progressClock[i] += dt;
+                    if (progressClock[i] > 1.4f) state.ContactBlockedSeconds = Mathf.Max(.65f, state.ContactBlockedSeconds);
+                }
+                else { progressClock[i] = 0; lastProgress[i] = state.Position; }
                 if (state.Lift.Supported)
                     state.Lift.BlockedTime = AcceptedMotionFraction < .05f ? state.Lift.BlockedTime + dt : Mathf.Max(0, state.Lift.BlockedTime - 2 * dt);
                 UpdateFootSupport(actors[i], sim, dt);
+                UpdateRightingSupport(i, sim, dt);
                 actors[i].animator.AcceptSolvedPose(AcceptedMotionFraction < 1);
                 actors[i].CaptureSimulationPose();
             }
@@ -142,21 +194,24 @@ namespace BeetleArena
             { foreach (var m in viewMotion) m.Begin(); viewInitialized = true; }
             if (contact) ContactFrames++;
         }
-        // 将当前接受姿态向下探 3.5cm，确认确实接触配置高度处的台外地面。
-        // 用接触法线而非“判负/根节点高度”猜落地；不把擂台侧壁当作地面。
-        bool HasForestFloorContact(BeetleContactRig rig, float floorHeight)
+        // 将最终接受姿态向下探 3.5cm，确认支撑面接触；落台后只认台外地面。
+        // 用真实上向接触法线，不把擂台侧壁当作地面，也不靠渲染姿态消耗动量。
+        bool TryLandingContact(BeetleContactRig rig, bool forestOnly, float floorHeight, out Vector3 contactNormal)
         {
+            contactNormal = Vector3.up;
             if (arena == null) return false;
             foreach (var surface in arena)
             {
                 if (!surface || !surface.enabled || !surface.gameObject.activeInHierarchy ||
-                    Mathf.Abs(surface.bounds.max.y - floorHeight) > .05f) continue;
+                    forestOnly && Mathf.Abs(surface.bounds.max.y - floorHeight) > .05f) continue;
                 foreach (var shape in rig.shapes)
                 {
-                    if (shape.bounds.min.y > floorHeight + .05f) continue;
+                    var bounds = shape.bounds; bounds.Expand(.08f);
+                    if (!bounds.Intersects(surface.bounds)) continue;
                     if (Physics.ComputePenetration(shape, shape.transform.position - Vector3.up * .035f,
                         shape.transform.rotation, surface, surface.transform.position, surface.transform.rotation,
-                        out var normal, out _) && normal.y > .5f) return true;
+                        out var normal, out _) && normal.y > .5f)
+                    { contactNormal = normal; return true; }
                 }
             }
             return false;
@@ -164,6 +219,11 @@ namespace BeetleArena
         public bool HasMotionContact(int attacker, BeetleMotionContact kind, int forelegSlot)
         {
             if (attacker < 0 || attacker > 1 || kind == BeetleMotionContact.None) return false;
+            // Separation intentionally opens a skin gap. Preserve actual horn collisions from
+            // the accepted fixed-step solve; rejected retries and display projection never count.
+            if (kind == BeetleMotionContact.Horn && (acceptedHornContacts & (1 << attacker)) != 0) return true;
+            if (kind == BeetleMotionContact.Foreleg && forelegSlot != 0 && forelegSlot != 3) return false;
+            if (kind == BeetleMotionContact.Foreleg && (acceptedForelegContacts & (1 << (attacker * 2 + forelegSlot / 3))) != 0) return true;
             Physics.SyncTransforms(); Cache();
             var a = rigs[attacker]; var b = rigs[1 - attacker];
             for (int i = 0; i < a.shapes.Length; i++)
@@ -172,8 +232,8 @@ namespace BeetleArena
                 if (kind == BeetleMotionContact.Foreleg && a.LegIndex(i) != forelegSlot) continue;
                 for (int j = 0; j < b.shapes.Length; j++)
                 {
-                    // 前足必须触到对方足/身体，不能把两个角碰到当作前足打中。
-                    if (kind == BeetleMotionContact.Foreleg && b.Role(j) == BeetleContactRole.HeadHorn) continue;
+                    // The attacking collider must be the selected foreleg. It may push a horn
+                    // as well as a leg/body; horn-versus-horn alone never passes the filter above.
                     var bounds = a.bounds[i]; bounds.Expand(.05f);
                     if (!bounds.Intersects(b.bounds[j])) continue;
                     var ca = a.shapes[i]; var cb = b.shapes[j];
@@ -184,6 +244,129 @@ namespace BeetleArena
                 }
             }
             return false;
+        }
+        public Vector3 ForelegAimCorrection(int attacker, int slot, out float targetDistance)
+        {
+            // BeforeStep restored authoritative bones; do not query stale interpolated PhysX poses.
+            Physics.SyncTransforms();
+            var anim = actors[attacker].animator; var leg = anim.legs[slot];
+            // Aim the end of the stroke at a nearby actual surface. This is an IK intent,
+            // never a contact certificate; collision and bone-length constraints still apply.
+            Vector3 stroke = actors[attacker].State.Motion.Active is ForelegPushMotion
+                ? new Vector3(-leg.side * .18f, .52f, .62f) : new Vector3(-leg.side * .28f, .72f, .70f);
+            Vector3 end = anim.MotionFootBase(slot, actors[attacker].State) + anim.model.TransformVector(stroke);
+            Vector3 closest = end; float distance = float.MaxValue;
+            var opponentRig = rigs[1 - attacker];
+            for (int index = 0; index < opponentRig.shapes.Length; index++)
+            {
+                // A resisting foreleg reaches the opponent's head/horn or torso.
+                // Chasing the nearest ground-level tarsus requires an impossible
+                // fully stretched low reach while the long horns hold bodies apart.
+                if (opponentRig.LegIndex(index) >= 0) continue;
+                var shape = opponentRig.shapes[index];
+                Vector3 p = shape.ClosestPoint(end); float d = (p - end).sqrMagnitude;
+                if (d < distance) { distance = d; closest = p; }
+            }
+            Vector3 delta = anim.model.InverseTransformVector(closest - end);
+            targetDistance = delta.magnitude;
+            return Vector3.ClampMagnitude(delta + delta.normalized * .035f, .55f);
+        }
+        void UpdateRightingSupport(int index, BeetleSimulation sim, float dt)
+        {
+            var b = sim.Fighters[index]; var anim = actors[index].animator; var rig = rigs[index];
+            Vector3 normal = b.HasFallen ? Vector3.up : b.SurfaceNormal;
+            float up = Vector3.Dot(anim.bodyPivot.up, normal);
+            b.RightingTorque = Vector3.zero; b.RightingSupports = 0;
+            b.RightingGrounded = false; b.RightingStable = false;
+            if (!b.IsOverturned && !anim.IsRighting && up > .7f) { b.RightingStableSeconds = 0; return; }
+            Vector3 center = anim.bodyPivot.position, pivot = Vector3.zero;
+            int bodyContacts = 0, contacts = 0; Vector3 allContacts = Vector3.zero;
+            var points = new Vector3[7]; var forces = new float[7];
+            for (int i = 0; i < rig.shapes.Length; i++)
+            {
+                var shape = rig.shapes[i]; var bounds = shape.bounds;
+                var flat = new Vector2(bounds.center.x, bounds.center.z);
+                float height; Vector3 surfaceNormal;
+                if (!b.HasFallen && sim.SampleGround(flat, out var surface)) { height = surface.height; surfaceNormal = surface.normal; }
+                else if (b.HasFallen) { height = sim.Settings.groundHeight; surfaceNormal = Vector3.up; }
+                else continue;
+                if (bounds.min.y > height + .045f) continue;
+                // Probe the lower envelope, not the capsule's centre projection: a long
+                // angled tarsus often touches at its tip while its centre is well above ground.
+                Vector3 point = shape.ClosestPoint(new Vector3(flat.x, height - 100 * (bounds.size.magnitude + 1), flat.y));
+                if (!b.HasFallen)
+                {
+                    if (!sim.SampleGround(new Vector2(point.x, point.z), out var exact)) continue;
+                    height = exact.height; surfaceNormal = exact.normal;
+                }
+                if (Mathf.Abs(point.y - height) > .045f || surfaceNormal.y < .5f) continue;
+                contacts++; allContacts += point;
+                if (rig.Role(i) == BeetleContactRole.Body && !rig.IsHorn(i)) { pivot += point; bodyContacts++; }
+                int slot = rig.LegIndex(i);
+                if (slot < 0 && rig.IsHorn(i)) slot = 6;
+                if (slot < 0) continue;
+                // A leg/horn can contribute only when its actual accepted collider touches.
+                // One force per limb, independent of its number of collision capsules.
+                float pulse = .5f + .5f * Mathf.Sin(sim.MotionTime * 10 + slot * 1.1f);
+                float force = (slot == 6 ? 4 : 5) * b.Traits.strength * Mathf.Lerp(.35f, 1, b.Stamina01) * pulse;
+                if (force > forces[slot]) { forces[slot] = force; points[slot] = point; }
+            }
+            b.RightingGrounded = contacts > 0;
+            if (contacts == 0) { b.RightingStableSeconds = 0; return; }
+            pivot = bodyContacts > 0 ? pivot / bodyContacts : allContacts / contacts;
+            Vector3 wanted = Vector3.Cross(anim.bodyPivot.up, normal);
+            if (wanted.sqrMagnitude < .01f) wanted = anim.model.forward * b.CircleDirection;
+            wanted.Normalize();
+            Vector3 torque = Vector3.Cross(center - pivot, -normal * (b.Traits.mass * sim.Settings.gravity));
+            for (int i = 0; i < 7; i++) if (forces[i] > 0)
+            {
+                b.RightingSupports++;
+                Vector3 push = Vector3.Cross(points[i] - pivot, normal * forces[i]);
+                if (Vector3.Dot(push, wanted) > 0) torque += push;
+            }
+            // Damped torque-driven articulation is a gameplay approximation, not a full rigid-body solver.
+            // Gravity can settle an unstable pose; no contact means no active righting torque.
+            b.RightingTorque = Vector3.ProjectOnPlane(torque, normal);
+            b.RightingStableSeconds = up > .9f && b.RightingSupports >= 2 ? b.RightingStableSeconds + dt : 0;
+            b.RightingStable = b.RightingStableSeconds >= .2f;
+            if (b.RightingStable && anim.IsRighting)
+            {
+                // Transfer the recovered body's heading to the locomotion root without
+                // rotating the physical body. Avoid snapping its residual flight yaw away.
+                Vector3 facing = Vector3.ProjectOnPlane(anim.bodyPivot.forward, normal);
+                if (facing.sqrMagnitude > .001f)
+                {
+                    Quaternion bodyRotation = anim.bodyPivot.rotation;
+                    Vector3 bodyPosition = anim.bodyPivot.position;
+                    actors[index].transform.rotation = Quaternion.LookRotation(facing, normal);
+                    anim.bodyPivot.SetPositionAndRotation(bodyPosition, bodyRotation);
+                    Vector3 flatForward = Quaternion.Inverse(Quaternion.FromToRotation(Vector3.up, normal)) * facing;
+                    b.Heading = Mathf.Atan2(flatForward.x, flatForward.z) * Mathf.Rad2Deg;
+                }
+            }
+            if (up < .35f && !b.Lift.Supported) b.IsOverturned = true;
+        }
+        public bool IsRighting(int fighter) => actors[fighter].animator.IsRighting;
+        public bool ForebodyRaised(int attacker) =>
+            Mathf.DeltaAngle(0, actors[attacker].animator.bodyPivot.localEulerAngles.x) < -8;
+        public float RearSupport(int attacker, BeetleSimulation sim)
+        {
+            var state = sim.Fighters[attacker];
+            if (state.Airborne || state.HasFallen) return 0;
+            var anim = actors[attacker].animator;
+            float Contact(int slot)
+            {
+                var leg = anim.legs[slot];
+                Vector3 tip = anim.importedRig ? anim.importedRig.bindings[slot].tip.position : leg.lastFoot;
+                if (!sim.SampleGround(new Vector2(tip.x, tip.z), out var hit)) return 0;
+                float scale = Mathf.Abs(anim.model.lossyScale.x);
+                float sole = (leg.soleOffset + (anim.importedRig ? anim.importedRig.soleClearance : 0)) * scale;
+                float gap = tip.y - hit.height - sole;
+                return Mathf.InverseLerp(.12f * scale, .035f * scale, gap) * Mathf.Clamp01(hit.normal.y);
+            }
+            float left = Contact(2), right = Contact(5);
+            // One rear grip can contribute a limited push; two secure contacts support full drive.
+            return Mathf.Max(left, right) * Mathf.Lerp(.55f, 1, Mathf.Min(left, right));
         }
         bool MotionAccepted()
         {
@@ -217,7 +400,7 @@ namespace BeetleArena
             // 上一显示帧的安全姿态作为起点。回退固定步 alpha 会让画面倒跳；这里沿上一
             // 实际显示姿态连续前进，时间步决定可移动距离。显示缓存不参与权威模拟。
             foreach (var m in viewMotion) m.Propose();
-            bool accepted = false;
+            bool accepted = false; float visibleProgress = 0;
             for (int attempt = 0; attempt <= 8; attempt++)
             {
                 if (attempt > 0)
@@ -229,20 +412,27 @@ namespace BeetleArena
                 {
                     var state = sim.Fighters[i];
                     float speed = new Vector3(state.Velocity.x, state.Airborne ? state.VerticalVelocity : 0, state.Velocity.y).magnitude;
-                    float budget = Mathf.Max(sim.Settings.contactMotionSpeed, speed + .5f) * Mathf.Max(0, dt);
+                    float budget = Mathf.Max(sim.Settings.contactMotionSpeed, speed + .5f) * Mathf.Max(0, dt)
+                        + Mathf.Min(.12f, viewBlockedSeconds * .08f);
                     safe &= Vector3.Distance(viewMotion[i].Start, actors[i].transform.position) <= budget + .0001f;
                 }
-                if (safe) { accepted = true; break; }
+                if (safe) { accepted = true; visibleProgress = attempt == 0 ? 1 : Mathf.Pow(.5f, attempt - 1); break; }
             }
             if (!accepted) foreach (var m in viewMotion) m.Apply(0);
+            // Tiny accepted fractions can still freeze the visible tumble while simulation recovers.
+            // Accumulate stalled progress rather than resetting recovery on a 1/128 step.
+            viewBlockedSeconds = accepted && visibleProgress >= .25f
+                ? Mathf.Max(0, viewBlockedSeconds - dt * 2) : viewBlockedSeconds + dt;
             Physics.SyncTransforms(); Cache();
             foreach (var m in viewMotion) m.Begin();
             foreach (var actor in actors) actor.UpdateMarker();
         }
         // 最多八轮交替处理甲虫互碰和环境碰撞；环境修正可能把甲虫重新挤向对方。
         // 当环境不再移动模型时提前停止，避免每帧总是跑满迭代预算。
-        bool Constrain(BeetleSimulation sim, bool changeVelocity, bool useContactNormals = false)
+        bool Constrain(BeetleSimulation sim, bool changeVelocity, bool useContactNormals = true)
         {
+            recordingContacts = changeVelocity;
+            if (changeVelocity) { acceptedHornContacts = 0; acceptedForelegContacts = 0; }
             bool contact = false;
             for (int pass = 0; pass < 8; pass++)
             {
@@ -254,7 +444,19 @@ namespace BeetleArena
             // 最后一轮环境修正也可能重新挤入对手，不能沿用 Separate 之前的残余值。
             // 将台面与双方全部代理的最终检测作为接受条件，防止岩台把不安全姿态存成回退点。
             separationRemaining = MeasurePenetration(false);
+            recordingContacts = false;
             return contact;
+        }
+        void RecordPartContact(int a, int b)
+        {
+            if (!recordingContacts) return;
+            if (rigs[0].Role(a) == BeetleContactRole.HeadHorn) acceptedHornContacts |= 1;
+            if (rigs[1].Role(b) == BeetleContactRole.HeadHorn) acceptedHornContacts |= 2;
+            int left = rigs[0].LegIndex(a), right = rigs[1].LegIndex(b);
+            if (left == 0 || left == 3)
+                acceptedForelegContacts |= 1 << (left / 3);
+            if (right == 0 || right == 3)
+                acceptedForelegContacts |= 1 << (2 + right / 3);
         }
         // 按当前姿态更新部件与整只甲虫的世界 AABB，供后面的宽阶段快速筛选。
         void Cache() { foreach (var rig in rigs) rig.CacheBounds(); }
@@ -342,9 +544,9 @@ namespace BeetleArena
                 if(ra==BeetleContactRole.HeadHorn && rb==BeetleContactRole.HeadHorn)
                 {
                     if(n.y<-.25f && !headB)
-                    {actors[1].animator.YieldHead(4);headB=true;changed=true;}
+                    {actors[1].animator.YieldHead(Inserting(sim.Fighters[0]) ? Mathf.Lerp(10, 4, sim.Fighters[1].Balance) : 4);headB=true;changed=true;}
                     else if(n.y>.25f && !headA)
-                    {actors[0].animator.YieldHead(4);headA=true;changed=true;}
+                    {actors[0].animator.YieldHead(Inserting(sim.Fighters[1]) ? Mathf.Lerp(10, 4, sim.Fighters[0].Balance) : 4);headA=true;changed=true;}
                 }
                 int la=a.LegIndex(i),lb=b.LegIndex(j);
                 if(la>=0 && (changedLegsA&(1<<la))==0)
@@ -371,7 +573,7 @@ namespace BeetleArena
                     if(!a.bounds[i].Intersects(b.bounds[j]))continue;
                     var ca=a.shapes[i];var cb=b.shapes[j];
                     if(Physics.ComputePenetration(ca,ca.transform.position,ca.transform.rotation,cb,cb.transform.position,cb.transform.rotation,out var normal,out float depth) && depth>deepest)
-                    { deepest=depth;n=normal;separationA=ca;separationB=cb;LastSeparationNormal=normal;
+                    { RecordPartContact(i,j); deepest=depth;n=normal;separationA=ca;separationB=cb;LastSeparationNormal=normal;
 #if UNITY_EDITOR
                         BeetleDebugHooks.Pair(this,ca,cb,normal,depth,"normal-separation");
 #endif
@@ -462,6 +664,7 @@ namespace BeetleArena
                 // ComputePenetration 只返回分离法线与深度，不会自动移动碰撞体。
                 if (!Physics.ComputePenetration(ca, ca.transform.position, ca.transform.rotation,
                     cb, cb.transform.position, cb.transform.rotation, out Vector3 normal, out float depth)) continue;
+                RecordPartContact(i, j);
 #if UNITY_EDITOR
                 BeetleDebugHooks.Pair(this,ca,cb,normal,depth,"beetle-pair");
 #endif

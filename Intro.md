@@ -1,6 +1,6 @@
 # BugDuel 项目地图
 
-> 根据当前代码核对：2026-10-13。本文描述现有实现；修改模块职责、调用顺序或状态写入者时，同步更新本文。
+> 根据当前代码核对：2026-10-14。本文描述现有实现；修改模块职责、调用顺序或状态写入者时，同步更新本文。
 > 下文目录均相对于 BugDuel 项目根目录，核心游戏代码位于 `Assets/BeetleArena/`。
 
 游戏设计：[Design Intro.md](Design%20Intro.md)，说明玩家体验、玩法循环、激励、交锋节奏、六档撬飞、擂台与视听方向；不涉及技术实现。
@@ -13,7 +13,7 @@
 
 ## 1. 项目入口与结构
 
-这是一个使用真实甲虫模型的自动格斗游戏。玩家只能鼓励选手，双方自主选择动作，落台后判负。
+这是一个使用真实甲虫模型的自动格斗游戏。玩家只能鼓励选手，双方自主选择动作；落台或台内倒地连续 5 秒未能翻正判负，时限到达时双方平局。单局含开场与击败展示最多三分钟（暂停除外），平均约90秒为调参目标。
 
 | 项目项 | 位置 / 当前实现 |
 | --- | --- |
@@ -29,6 +29,10 @@
 | 验证报告与截图 | 项目根目录的 `Artifacts/` |
 
 当前 `Start()` 调用 `SelectArena(0)`，默认平地木桩；T 键或换场按钮切换擂台，并用当前种子重新开局。
+当前共四张擂台：平地木桩、起伏岩台、半圆槽、起伏圆槽。C 在全景与两只虫各自上方的跟随视角间循环，V 开关击败近景慢放。
+
+2026-10-14 增量：`BeetleCombatUpgrade` 安装双骨颈膜、头部/下颚地形采样、镜头按钮与 `HornSurgeMotion`。`BeetleTraits` 生成四项整数评分和正态总分；`BeetleMotionRuntime` 统一后足所有权，动画器协调步态交替。接触求解器回写实际接受朝向，并检测有运动意图却无位移的卡角；脱困仍经过碰撞与位移预算。`BeetleMatchController` 持有击败慢放时钟，`ArenaCamera` 只管理取景，不改变胜负状态。
+后续独立行为修复：每只 `BeetleState` 拥有独立决策随机流、交锋阶段、决策节奏和脱困冷却；总览 `Exchange` 只用于展示。稳定行为偏好调整推顶/侧顶/撬举权重和幅度，反击也进入个体模块选择。`ContactSolver` 保留本步最终接受提案的真实角碰记录，普通命中在该次求解之后计算；详见技术说明末尾与 `BeetleIndividualityValidation`。
 
 ```text
 Assets/BeetleArena/
@@ -150,11 +154,11 @@ flowchart TD
     K --> L[标记、镜头、HUD]
 ```
 
-`Step()` 正常战斗分支内的顺序是：MotionTime 与模块计时更新 → 交锋阶段更新 → 托举时序更新 → 冷却/动作计时与 AI → 先计算双方命中，再应用命中 → 积分移动 → 接触求解 → 模块真实接触响应 → 掉台标记 → 胜负结算。
+`Step()` 正常战斗分支内的顺序是：MotionTime 与模块计时更新 → 个体交锋阶段更新 → 托举时序更新 → 冷却/动作计时与 AI → 积分移动 → 当前姿态接触求解 → 缓存双方命中并应用 → 模块真实接触响应 → 掉台标记 → 胜负结算。新命中冲量进入下一固定步积分。
 
 所有固定步先推进 `MotionTime` 和模块宿主；倒计时分支随后推进倒计时；结束后仍积分已落台甲虫并执行接触求解；`BeetleFallResponse` 用独立固定步时钟继续寻触、跌落、地面缓冲和撑起，`HasFallen` 不代表死亡或停止动画。
 
-**关键时序约束：** `BeforeStep()` 必须同时恢复根节点与骨骼。命中/托举捕获会在本步 `PoseSimulation()` 前查询模型，不能让上一个显示帧的插值位置参与判定。显示路径可以修改 Transform 和显示缓存，但不得把显示修正回写 `BeetleState`。
+**关键时序约束：** `BeforeStep()` 必须同时恢复根节点与骨骼，避免上一个显示帧的插值位置参与固定步求解。普通攻击在本步 `PoseSimulation()` 与碰撞接受之后检查命中；求解器保留该次被接受提案的真实角部碰撞记录，避免分离间隙使攻击漏判。显示投影和被拒绝重试不能产生命中记录，也不得把显示修正回写 `BeetleState`。
 
 ### 3.3 玩家按 Q / E 鼓励
 
@@ -202,7 +206,7 @@ flowchart TD
 | 平面位置、高度、平面速度 | `BeetleState.Position/Height/Velocity` | 模拟先积分；`ContactSolver.Solve()` 修正位置/高度及闭合平面速度 | 两者按固定先后顺序协作；显示路径不得回写。 |
 | 朝向、竖直速度、腾空、落台标记、地表采样与名义支撑 | `Heading/VerticalVelocity/Airborne/HasFallen/Surface*/Footing` 等 | `BeetleSimulation` | Actor、动画、接触、HUD 读取；`Footing` 是名义足位支撑估算，不是六足接触力测量。 |
 | 持续受阻时长 | `BeetleState.ContactBlockedSeconds` | ContactSolver.Solve 按本步接受比例累积/衰减 | Tactics/Simulation 读取并选择撤步换位；不直接修改位置或跳过碰撞。 |
-| 双方接触标记 | `BeetleState.TouchingOpponent` | 正常场景由 `ContactSolver.Solve()` 写入 | 下一步命中判断读取；无场景求解器时，纯数据备用接触逻辑写入。 |
+| 双方接触标记 | `BeetleState.TouchingOpponent` 与求解器当前步角碰记录 | 正常场景由 `ContactSolver.Solve()` 写入 | AI读取接触状态；本步攻击读取接受姿态及真实角碰记录。纯数据模式使用备用接触逻辑。 |
 | 托举支撑者、时长、俯仰/侧倾目标、方向、额外爆发意图 | `BeetleState.Lift` | `BeetleSimulation` | 动画与 `BeetleHornSupport` 读取。 |
 | 实际离地计时、抓地释放、受阻累计 | `Lift.UnsupportedTime/GripReleased/BlockedTime` | 场景求解器根据接受的姿态和实际脚尖更新；模拟在开始/落地等转换时重置 | 模拟用来决定撤角，动画用来决定挣扎；无场景模式的离地时间由模拟近似维护。 |
 | 角与受击部位的 Transform、局部接触点 | `BeetleHornSupport` | 求解器通过 `TryCapture()` 建立；`Follow()` 使用 | 只在对应支撑状态有效时执行跟随，不把受击者设为攻击者子对象。 |

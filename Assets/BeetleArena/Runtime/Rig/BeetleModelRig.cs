@@ -33,6 +33,8 @@ namespace BeetleArena
         }
         public FeelerBinding[] feelers;
         public BeetleJawRig jaws;
+        // Baked lower envelope of the actual rigid head, in head-local space.
+        public Vector3[] headGroundPoints;
         float postureLift;
         [Min(0)] public float soleClearance = .025f;
         [Range(.1f, 1)] public float headMotionScale = .48f;
@@ -51,6 +53,41 @@ namespace BeetleArena
             if(feelers != null) foreach(var f in feelers) f.avoidanceAngle=0;
             postureLift=0;
             if(jaws) jaws.ResetPose();
+        }
+
+        public float AvoidHeadGround(Transform head, IBeetleGround ground, float pitch, float yaw)
+        {
+            if (ground == null || headGroundPoints == null || headGroundPoints.Length == 0) return pitch;
+            float Clearance()
+            {
+                float depth = 0;
+                foreach (var local in headGroundPoints)
+                {
+                    Vector3 p = head.TransformPoint(local);
+                    if (ground.Sample(new Vector2(p.x, p.z), out var hit)) depth = Mathf.Max(depth, hit.height + .012f - p.y);
+                }
+                return depth;
+            }
+            if (Clearance() <= 0) return pitch;
+            float unsafePitch = pitch;
+            for (int step = 1; step <= 20; step++)
+            {
+                float candidate = Mathf.Max(-65, pitch - step * 3);
+                head.localRotation = Quaternion.Euler(candidate, yaw, 0);
+                if (Clearance() <= 0)
+                {
+                    float safePitch = candidate;
+                    for (int refine = 0; refine < 3; refine++)
+                    {
+                        float middle = (safePitch + unsafePitch) * .5f;
+                        head.localRotation = Quaternion.Euler(middle, yaw, 0);
+                        if (Clearance() <= 0) safePitch = middle; else unsafePitch = middle;
+                    }
+                    head.localRotation = Quaternion.Euler(safePitch, yaw, 0); return safePitch;
+                }
+                unsafePitch = candidate;
+            }
+            head.localRotation = Quaternion.Euler(pitch, yaw, 0); return pitch;
         }
 
         /// <summary>触角靠近坡面时主动收起，避免用细触角的碰撞反过来顶起整只甲虫。</summary>
@@ -137,10 +174,18 @@ namespace BeetleArena
             var b = bindings[index];
             float scale = Mathf.Abs(model.lossyScale.x);
             // 支撑点限制在本腿的活动扇区内。限制用模型实测脚位，避免继承几何体腿宽。
-            Vector3 local = model.InverseTransformPoint(target);
-            local.x = leg.side * Mathf.Max(Mathf.Abs(leg.restAnkle.x) * .55f, local.x * leg.side);
-            local.z = Mathf.Clamp(local.z, leg.restAnkle.z - .55f, leg.restAnkle.z + .55f);
-            target = model.TransformPoint(local);
+            Quaternion legFrame = Quaternion.Slerp(model.rotation, body.rotation, leg.tumbleFrameWeight);
+            Vector3 legOrigin = Vector3.Lerp(model.TransformPoint(bodyRest), body.position, leg.tumbleFrameWeight);
+            Vector3 local = Quaternion.Inverse(legFrame) * (target - legOrigin) / scale + bodyRest;
+            float innerLimit = leg.pair == 0 && leg.moduleOwned ? .20f : .55f;
+            local.x = leg.side * Mathf.Max(Mathf.Abs(leg.restAnkle.x) * innerLimit, local.x * leg.side);
+            // A combat foreleg needs a forward strike envelope, not the short walking envelope.
+            // The two-bone solve below still clamps to the real bone lengths and reach margin.
+            // Include the bounded target correction (.55) as well as the .92 stroke.
+            // Clamping at .95 silently discarded forward aiming, so most reaches missed.
+            float forwardReach = leg.pair == 0 && leg.moduleOwned ? 1.5f : .55f;
+            local.z = Mathf.Clamp(local.z, leg.restAnkle.z - .55f, leg.restAnkle.z + forwardReach);
+            target = legOrigin + legFrame * ((local - bodyRest) * scale);
             Vector3 normal = state.SurfaceNormal;
             if (!state.Airborne && !state.HasFallen && ground != null && ground.Sample(new Vector2(target.x, target.z), out var hit))
             {
@@ -150,6 +195,7 @@ namespace BeetleArena
             // 足节的原始弯曲形状保留，只让整个足节顺着坡面转动。
             Quaternion footFrame = Quaternion.FromToRotation(Vector3.up, normal) * Quaternion.Euler(0, state.Heading, 0);
             if (state.Airborne || state.HasFallen) footFrame = model.rotation;
+            footFrame = Quaternion.Slerp(footFrame, body.rotation, leg.tumbleFrameWeight);
             Vector3 ankleTarget = target - footFrame * (b.footOffsetInModel * scale);
             b.hip.localRotation = b.hipRest;
             b.knee.localRotation = b.kneeRest;
@@ -159,7 +205,10 @@ namespace BeetleArena
             float distance = Mathf.Clamp(offset.magnitude, Mathf.Abs(a - c) + .001f * scale, (a + c) * (1 - reachMargin));
             Vector3 direction = offset.sqrMagnitude > 1e-10f ? offset.normalized : Vector3.down;
             ankleTarget = hip + direction * distance;
-            Vector3 pole = Vector3.ProjectOnPlane(body.TransformDirection(b.bendInBody), direction);
+            Vector3 bend = body.TransformDirection(b.bendInBody);
+            if (leg.pair == 0 && leg.moduleOwned && state.Motion.Active is ForelegPushMotion)
+                bend = Vector3.Slerp(bend.normalized, (model.forward + model.up * .3f + model.right * leg.side * .12f).normalized, .8f);
+            Vector3 pole = Vector3.ProjectOnPlane(bend, direction);
             // 提示向量接近共线时沿用上一有效弯曲方向，最后用身体外侧轴作为备用。
             if (pole.sqrMagnitude < 1e-6f) pole = Vector3.ProjectOnPlane(b.lastBend, direction);
             if (pole.sqrMagnitude < 1e-6f) pole = Vector3.ProjectOnPlane(model.right * leg.side, direction);
