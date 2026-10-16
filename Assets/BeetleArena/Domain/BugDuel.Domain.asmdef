@@ -1,0 +1,7 @@
+{
+    "name": "BugDuel.Domain",
+    "rootNamespace": "BugDuel.Domain",
+    "references": [],
+    "autoReferenced": true,
+    "noEngineReferences": true
+}

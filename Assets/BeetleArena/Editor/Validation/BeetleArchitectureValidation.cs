@@ -36,6 +36,8 @@ public static class BeetleArchitectureValidation
                 }
                 Require(m.contactFeedback.ObservedContacts > 0 && m.audioFeedback.PlayedContacts > 0,
                     "Common fixed-step entry omitted contact feedback");
+                // 当前战斗可能在30秒内自然结束；暂停契约不能依赖一次随机对局恰好还没结束。
+                if (m.Simulation.Phase == MatchPhase.Finished) m.StartMatch(71);
                 m.TogglePause(); Require(m.IsPaused, "Could not pause fixture");
                 float time = m.Simulation.MotionTime;
                 var transforms = m.actors.SelectMany(a => a.GetComponentsInChildren<Transform>(true)).ToArray();
@@ -109,16 +111,31 @@ public static class BeetleArchitectureValidation
                 Require(float.IsFinite(noArena.MeasurePenetration()), "Null environment query failed");
                 report.AppendLine("PASS: metadata invalidation, same-length replacement, optional environment query.");
             }
+            // 立即正常退出作为对照：区分刚打开场景的清理与异常展开期间的清理。
+            string immediatePath;
+            using (var immediate = new BeetleValidationScene("ArchitectureImmediateCleanup"))
+                immediatePath = immediate.Scene.path;
+            Require(!AssetDatabase.LoadAssetAtPath<SceneAsset>(immediatePath) && !File.Exists(immediatePath)
+                && !File.Exists(immediatePath + ".meta"), "Immediate normal cleanup left a temporary asset: " + immediatePath);
             // using 必须在测试本体抛异常时也恢复场景；故意抛出专属异常，不吞掉构造/清理错误。
-            string temporary;
+            string temporary = null;
+            bool probeCaught = false;
             try
             {
-                using var fault = new BeetleValidationScene("ArchitectureFaultCleanup");
-                temporary = fault.Scene.path;
-                throw new ValidationProbeException(temporary);
+                using (var fault = new BeetleValidationScene("ArchitectureFaultCleanup"))
+                {
+                    temporary = fault.Scene.path;
+                    throw new ValidationProbeException(temporary);
+                }
             }
             catch (ValidationProbeException probe)
-            { Require(!AssetDatabase.LoadAssetAtPath<SceneAsset>(probe.Path), "Failed validation left a temporary scene asset"); }
+            {
+                probeCaught = true;
+                Require(probe.Path == temporary, "Unexpected fault-cleanup probe path");
+            }
+            Require(probeCaught, "Fault cleanup did not execute the intentional exception");
+            Require(!AssetDatabase.LoadAssetAtPath<SceneAsset>(temporary) && !File.Exists(temporary) && !File.Exists(temporary + ".meta"),
+                "Failed validation left a temporary scene asset: " + temporary);
             Require(SceneManager.sceneCount == sceneCount && SceneManager.GetActiveScene() == previous
                 && previous.isLoaded && previous.isDirty == dirty, "Validation changed user's scene state");
             report.AppendLine("PASS: settings isolation, exception cleanup, original scene/dirty state preserved.");

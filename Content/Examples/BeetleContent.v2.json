@@ -1,0 +1,121 @@
+{
+  "SchemaVersion": 2,
+  "Version": 2,
+  "Species": [
+    {
+      "Id": "example.horn-beetle",
+      "DisplayName": "角斗甲虫（示例）",
+      "AdultLengthMm": 55,
+      "AdultMassGrams": 8,
+      "CombatEnabled": true,
+      "EggDays": 3,
+      "LarvaDays": 30,
+      "PupaDays": 10,
+      "AdultDays": 90,
+      "MinimumTemperature": 20,
+      "MaximumTemperature": 28,
+      "MinimumHumidity": 60,
+      "MaximumHumidity": 80,
+      "NutritionLossPerDay": 3,
+      "HydrationLossPerDay": 4,
+      "RecoveryPerDay": 4,
+      "StressChangePerDay": 8,
+      "HealthLossPerDay": 8,
+      "LarvalFoods": 6,
+      "AdultFoods": 49,
+      "OverturnedGraceDays": 0.05,
+      "OverturnedHealthLossPerDay": 500.0,
+      "ClutchSize": 3,
+      "CooldownDays": 7,
+      "MinimumHealth": 70,
+      "MinimumNutrition": 60,
+      "MaximumStress": 40,
+      "TraitVariation": 0.1
+    },
+    {
+      "Id": "example.stag-beetle",
+      "DisplayName": "大颚甲虫（示例）",
+      "AdultLengthMm": 60,
+      "AdultMassGrams": 9,
+      "CombatEnabled": false,
+      "EggDays": 3,
+      "LarvaDays": 30,
+      "PupaDays": 10,
+      "AdultDays": 90,
+      "MinimumTemperature": 20,
+      "MaximumTemperature": 28,
+      "MinimumHumidity": 60,
+      "MaximumHumidity": 80,
+      "NutritionLossPerDay": 3,
+      "HydrationLossPerDay": 4,
+      "RecoveryPerDay": 4,
+      "StressChangePerDay": 8,
+      "HealthLossPerDay": 8,
+      "LarvalFoods": 6,
+      "AdultFoods": 49,
+      "OverturnedGraceDays": 0.05,
+      "OverturnedHealthLossPerDay": 500.0,
+      "ClutchSize": 3,
+      "CooldownDays": 7,
+      "MinimumHealth": 70,
+      "MinimumNutrition": 60,
+      "MaximumStress": 40,
+      "TraitVariation": 0.1
+    }
+  ],
+  "Habitats": [
+    {
+      "Id": "habitat.adult",
+      "DisplayName": "成虫饲养箱",
+      "TemperatureCelsius": 24,
+      "HumidityPercent": 70,
+      "CleanlinessPercent": 95,
+      "Crowding": 0.1,
+      "Resting": true,
+      "AllowedStages": [
+        3
+      ],
+      "Tags": [
+        "adult",
+        "feeding"
+      ]
+    },
+    {
+      "Id": "habitat.substrate",
+      "DisplayName": "幼虫发酵基质箱",
+      "TemperatureCelsius": 24,
+      "HumidityPercent": 75,
+      "CleanlinessPercent": 95,
+      "Crowding": 0,
+      "Resting": true,
+      "AllowedStages": [
+        0,
+        1,
+        2
+      ],
+      "Tags": [
+        "substrate",
+        "development"
+      ]
+    },
+    {
+      "Id": "habitat.recovery",
+      "DisplayName": "隔离休养箱",
+      "TemperatureCelsius": 24,
+      "HumidityPercent": 70,
+      "CleanlinessPercent": 100,
+      "Crowding": 0,
+      "Resting": true,
+      "AllowedStages": [
+        0,
+        1,
+        2,
+        3
+      ],
+      "Tags": [
+        "isolation",
+        "rest"
+      ]
+    }
+  ]
+}

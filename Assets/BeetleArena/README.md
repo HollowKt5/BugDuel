@@ -7,6 +7,10 @@ C 循环切换全景、琥珀上方跟随、墨甲上方跟随；V 或右侧按�
 双方自动行动，玩家不能控制移动或招式。落台或台内倒地连续 5 秒未能翻正判负；到时双方平局，体力耗尽不直接判负。保留体型配对、交战节奏、抬举和挑飞。
 双方拥有独立的决策随机流、交锋时钟和稳定招式偏好；试探、追击、退让按各自状态决定。普通攻击根据本步真正撞角的时刻结算，避免动画发力却漏掉碰撞。
 
+养殖、物种和环境扩展见项目根目录 [Framework.md](../../Framework.md)：包含纯领域服务、名册事务、参赛与结果快照、存档及数据 JSON 更新；现有战斗模型仍仅支持已标定的角斗行为。
+
+养殖场景为 `Assets/Scenes/BeetleNursery.unity`，也可从擂台的“养殖 [B]”入口进入。选中甲虫后可喂红薯、水果或果冻、选择环境、帮翻倒的甲虫扶正；首次名册中的琥珀需要救助。翻倒会持续挣扎，宽限后损失健康，长期不救会死亡；暂停及离线不推进照料时间。名册默认保存在 `Application.persistentDataPath/husbandry-roster.json`，同目录 `beetle-content.json` 可通过界面读取并校验更新。当前养殖名册尚未自动加入比赛，返回擂台仍使用展示对局。
+
 ## 模型与骨架
 
 源文件是 `Assets/bug.fbx`，原文件及 `bug.fbm` 贴图保持不变。
@@ -38,14 +42,18 @@ C 循环切换全景、琥珀上方跟随、墨甲上方跟随；V 或右侧按�
 
 | 目录 | 主要内容 |
 | --- | --- |
+| Domain | 无 Unity 依赖的个体、物种、养殖/繁殖、战后恢复、内容目录与个体存档映射 |
+| Runtime/Application | 名册占用与幂等结算、环境选择、完整内容 JSON 更新、养殖场景时间与保存 |
+| Runtime/Integration | 养殖到战斗的参赛快照、冻结的比赛结果 |
+| Runtime/Persistence | 显式路径 JSON 存储与名册/账本/环境选择的原子保存 |
 | Runtime/Simulation | 战斗状态、固定步模拟与事件 |
-| Runtime/Configuration | MatchSettings 配置定义 |
+| Runtime/Configuration | MatchSettings、物种作者资产与目录、独立战斗模型标定 |
 | Runtime/Actors | Actor 绑定与 MatchController 调度 |
 | Runtime/Animation | 程序步态、身体头角姿态、完整姿态插值 |
 | Runtime/Rig | 真实模型骨骼 IK、触角避地 |
 | Runtime/Physics | 碰撞代理缓存与接触求解 |
 | Runtime/Environment | 地形支撑和贴地标记 |
-| Runtime/Presentation | 镜头、音效和原有 HUD |
+| Runtime/Presentation | 表现姿态镜头快照、跟随取景、音效、对战/养殖 HUD 与救助姿态 |
 | Editor/Model | FBX 部件、关节、蒙皮、材质与碰撞代理生成 |
 | Editor/Setup | 场景、四擂台与材质安装、格斗增量升级 |
 | Editor/Validation | 规则、碰撞、蒙皮和地形验证 |
@@ -55,6 +63,7 @@ C 循环切换全景、琥珀上方跟随、墨甲上方跟随；V 或右侧按�
 | Generated/MatchSettings.asset | 比赛参数及模型脚位 |
 
 `Tools > Beetle Arena > Build Game Scene` 会重建生成场景和预制体；手工定制请另存。
+`Tools > Beetle Arena > Build Husbandry Scene` 创建独立养殖场景、安装擂台入口并加入 Build Settings；已有养殖场景时拒绝覆盖。
 模型绑定坐标在 `BeetleImportedModelBuilder`；骨骼求解在 `BeetleModelRig`；步态在 `BeetleProceduralAnimator`。
 
 ## 验证与备份

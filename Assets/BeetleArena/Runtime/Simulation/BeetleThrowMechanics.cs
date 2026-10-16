@@ -14,11 +14,23 @@ namespace BeetleArena
     /// </summary>
     public static class BeetleThrowMechanics
     {
+        // 仅增强原本会翻滚的远抛。先按原始出手判断，避免加速反过来扩大触发范围。
+        public const float TumblingLaunchSpeedMultiplier = 3f;
+        public const float MinimumTumbleRange = 4f;
+
+        public static bool ShouldTumble(BeetleMatchSettings settings, Vector3 launchVelocity)
+        {
+            float horizontalSpeed = new Vector2(launchVelocity.x, launchVelocity.z).magnitude;
+            float estimatedRange = horizontalSpeed * 2 * Mathf.Max(0, launchVelocity.y) / Mathf.Max(1, settings.gravity);
+            return estimatedRange >= MinimumTumbleRange && launchVelocity.magnitude >= settings.throwHighArcSpeed;
+        }
+
         public static void Accumulate(BeetleMatchSettings settings, BeetleState attacker,
             BeetleState defender, float dt, float raisedRadians, float arm,
             Vector3 tangent, float contactQuality)
         {
-            if (dt <= 0 || !defender.Lift.Supported) return;
+            if (dt <= 0 || !defender.Lift.Supported)
+                return;
             var lift = defender.Lift;
             float quality = Mathf.Clamp01(contactQuality);
             lift.ContactSeconds += dt * quality;
@@ -28,11 +40,13 @@ namespace BeetleArena
             lift.AngularSpeed = Mathf.Lerp(lift.AngularSpeed, delta / dt, 1 - Mathf.Exp(-dt * 30));
             lift.HeadSweep += delta * Mathf.Rad2Deg;
             lift.PeakAngularSpeed = Mathf.Max(lift.PeakAngularSpeed, lift.AngularSpeed);
-            if (quality <= 0 || delta <= .00001f) return;
+            if (quality <= 0 || delta <= .00001f)
+                return;
 
             // 持续顶举也消耗爆发储备，与入角/推顶使用同一发力规则，不能绕过体力策略。
             float effort = BeetleEnergyPolicy.AttackEffort(attacker) * lift.Effort;
-            if (attacker.CheerRemaining > 0) effort *= 1 + settings.cheerEffortBonus;
+            if (attacker.CheerRemaining > 0)
+                effort *= 1 + settings.cheerEffortBonus;
             float inputArm = settings.throwInputArm * attacker.Traits.size;
             float torque = settings.throwMuscleForce * attacker.Traits.strength * effort * inputArm
                 * Mathf.Lerp(.55f, 1, attacker.Footing) * Mathf.Lerp(.6f, 1, attacker.Balance);
@@ -43,20 +57,28 @@ namespace BeetleArena
             float netTorque = lift.OutputForce * lift.LeverArm;
             lift.Work = Mathf.Min(settings.throwWorkLimit, lift.Work + netTorque * delta * quality);
             lift.Impulse += lift.OutputForce * dt * quality;
-            if (tangent.sqrMagnitude > .0001f) lift.ReleaseTangent = tangent.normalized;
+            if (tangent.sqrMagnitude > .0001f)
+                lift.ReleaseTangent = tangent.normalized;
         }
 
         public static int TierNumber(BeetleThrowKind kind)
         {
             switch (kind)
             {
-                case BeetleThrowKind.ShortPry: return 1;
-                case BeetleThrowKind.QuickPry: return 2;
-                case BeetleThrowKind.ArcThrow: return 3;
-                case BeetleThrowKind.HighArc: return 4;
-                case BeetleThrowKind.Overhead: return 5;
-                case BeetleThrowKind.PowerOverhead: return 6;
-                default: return 0;
+                case BeetleThrowKind.ShortPry:
+                    return 1;
+                case BeetleThrowKind.QuickPry:
+                    return 2;
+                case BeetleThrowKind.ArcThrow:
+                    return 3;
+                case BeetleThrowKind.HighArc:
+                    return 4;
+                case BeetleThrowKind.Overhead:
+                    return 5;
+                case BeetleThrowKind.PowerOverhead:
+                    return 6;
+                default:
+                    return 0;
             }
         }
 
@@ -64,22 +86,32 @@ namespace BeetleArena
         {
             switch (kind)
             {
-                case BeetleThrowKind.ShortPry: return "近身短促撬飞！";
-                case BeetleThrowKind.QuickPry: return "快速扬角，向前抛出！";
-                case BeetleThrowKind.ArcThrow: return "持续发力，弧线抛出！";
-                case BeetleThrowKind.HighArc: return "强力扬角，高弧抛起！";
-                case BeetleThrowKind.Overhead: return "后扬头角，翻抛对手！";
-                case BeetleThrowKind.PowerOverhead: return "猛然发力，越顶反抛！";
-                default: return "撬投";
+                case BeetleThrowKind.ShortPry:
+                    return "近身短促撬飞！";
+                case BeetleThrowKind.QuickPry:
+                    return "快速扬角，向前抛出！";
+                case BeetleThrowKind.ArcThrow:
+                    return "持续发力，弧线抛出！";
+                case BeetleThrowKind.HighArc:
+                    return "强力扬角，高弧抛起！";
+                case BeetleThrowKind.Overhead:
+                    return "后扬头角，翻抛对手！";
+                case BeetleThrowKind.PowerOverhead:
+                    return "猛然发力，越顶反抛！";
+                default:
+                    return "撬投";
             }
         }
 
         /// <summary>按连续出手速度和实际方向划为六档；四个不等距阈值均可配置。</summary>
         public static BeetleThrowKind Classify(BeetleMatchSettings settings, float speed, bool backwards)
         {
-            if (backwards) return speed < settings.throwPowerOverheadSpeed ? BeetleThrowKind.Overhead : BeetleThrowKind.PowerOverhead;
-            if (speed < settings.throwQuickSpeed) return BeetleThrowKind.ShortPry;
-            if (speed < settings.throwArcSpeed) return BeetleThrowKind.QuickPry;
+            if (backwards)
+                return speed < settings.throwPowerOverheadSpeed ? BeetleThrowKind.Overhead : BeetleThrowKind.PowerOverhead;
+            if (speed < settings.throwQuickSpeed)
+                return BeetleThrowKind.ShortPry;
+            if (speed < settings.throwArcSpeed)
+                return BeetleThrowKind.QuickPry;
             return speed < settings.throwHighArcSpeed ? BeetleThrowKind.ArcThrow : BeetleThrowKind.HighArc;
         }
 
@@ -114,6 +146,8 @@ namespace BeetleArena
             Vector3 direction = (forward * Mathf.Cos(angle) + Vector3.up * Mathf.Sin(angle) + side * lateral).normalized;
             float launchSpeed = speed * Mathf.Lerp(1, settings.throwHeavySpeedMultiplier, heavy);
             lift.LaunchVelocity = direction * launchSpeed;
+            if (ShouldTumble(settings, lift.LaunchVelocity))
+                lift.LaunchVelocity *= TumblingLaunchSpeedMultiplier;
             lift.LaunchElevation = Mathf.Atan2(lift.LaunchVelocity.y, Vector3.Dot(lift.LaunchVelocity, forward)) * Mathf.Rad2Deg;
             // Tier remains based on measured work/impulse speed, before the explicit game gain.
             lift.ThrowKind = Classify(settings, speed, Vector3.Dot(lift.LaunchVelocity, forward) < 0);

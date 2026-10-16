@@ -10,21 +10,32 @@ namespace BeetleArena
     public sealed class BeetleFallResponse
     {
         public bool Active { get; private set; }
+
         public bool OnFloor { get; private set; }
+
         public float Time { get; private set; }
+
         public float UnsupportedSeconds { get; private set; }
+
         public float GroundSeconds { get; private set; }
+
         public float ImpactSpeed { get; private set; }
+
         public float ForwardSpeed { get; private set; }
+
         public float SideSpeed { get; private set; }
+
         public bool EdgeDrop { get; private set; }
+
         public Vector2 EdgeDirection { get; private set; }
+
         public float EdgeSpeed { get; private set; }
 
         public void BeginEdgeDrop(BeetleState state)
         {
             Begin(state);
-            if (EdgeDrop) return;
+            if (EdgeDrop)
+                return;
             EdgeDrop = true;
             EdgeSpeed = state.Velocity.magnitude;
             EdgeDirection = EdgeSpeed > .05f ? state.Velocity.normalized : state.Position.normalized;
@@ -32,7 +43,8 @@ namespace BeetleArena
 
         public void Begin(BeetleState state)
         {
-            if (Active) return;
+            if (Active)
+                return;
             Active = true;
             UnsupportedSeconds = state.Lift.UnsupportedTime;
             ForwardSpeed = Vector2.Dot(state.Velocity, state.Forward);
@@ -41,25 +53,37 @@ namespace BeetleArena
 
         public void Tick(float dt)
         {
-            if (!Active) return;
+            if (!Active)
+                return;
             Time += dt;
-            if (OnFloor) GroundSeconds += dt;
-            else UnsupportedSeconds += dt;
+            if (OnFloor)
+                GroundSeconds += dt;
+            else
+                UnsupportedSeconds += dt;
         }
 
         // 必须在最终接受的碰撞姿态上调用，不能把被回退的试算当作落地。
         public void SetFloorContact(bool supported, float downwardSpeed)
         {
-            if (!Active) return;
-            if (supported && !OnFloor) { ImpactSpeed = Mathf.Max(0, downwardSpeed); GroundSeconds = 0; }
-            if (!supported) GroundSeconds = 0;
+            if (!Active)
+                return;
+            if (supported && !OnFloor)
+            {
+                ImpactSpeed = Mathf.Max(0, downwardSpeed);
+                GroundSeconds = 0;
+            }
+
+            if (!supported)
+                GroundSeconds = 0;
             OnFloor = supported;
         }
 
         public void Reset()
         {
             Active = OnFloor = false;
-            EdgeDrop = false; EdgeDirection = Vector2.zero; EdgeSpeed = 0;
+            EdgeDrop = false;
+            EdgeDirection = Vector2.zero;
+            EdgeSpeed = 0;
             Time = UnsupportedSeconds = GroundSeconds = ImpactSpeed = ForwardSpeed = SideSpeed = 0;
         }
     }

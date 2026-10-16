@@ -5,9 +5,15 @@
 
 游戏设计：[Design Intro.md](Design%20Intro.md)，说明玩家体验、玩法循环、激励、交锋节奏、六档撬飞、擂台与视听方向；不涉及技术实现。
 
+扩展框架：[Framework.md](Framework.md)，说明养殖领域、物种与环境定义、参赛快照、名册事务、存档、内容 JSON 更新及新模型接入边界。
+
+单机经营：[Campaign.md](Campaign.md)，GDD v2 的完整入口与主流程。打开 `Assets/Scenes/Campaign/CampaignMainMenu.unity` 运行，包含四存档槽、温室、独立捕虫队与市场、联赛和冠军拍卖；现有战斗演示场景保留。
+
 配套阅读：[TechnicalGuide.md：关键技术说明](TechnicalGuide.md)，详细介绍真实模型绑定、六足 IK、程序步态、接触求解、托举挣扎与运动连续性。
 
 动作扩展：[MotionModules.md](MotionModules.md)，包括模块增删、接口、状态归属与研究依据；虚晃垫步/顶角冲击调参见技术说明第 17.7 节。
+
+动画制作目标：[Aim.md](Aim.md)，维护特别推荐的关键帧动作、制作优先级、接入边界与验收进度；计划内容不等于已实现。
 
 改动历史：[CHANGELOG.md](CHANGELOG.md)，按带时区时间戳追加记录。
 
@@ -252,6 +258,7 @@ flowchart TD
 | `IBeetleLiftContacts.TryBeginLift(sim, attacker, defender)` | 定义在 `Simulation/BeetleLiftResponse.cs`；同一接触求解器实现 | 模拟请求建立真实托举几何。返回成功表示捕获到可用接触，不替代体力/平衡等战斗条件。 |
 | `BeetleMotionModule.CanStart / CanContinue / Sample / SampleLeg` | `Motion/Core` 定义，独立模块实现 | 宿主传值快照并消费意图；脚端最终仍经过原有 IK 和碰撞，不准模块直接移动 Transform。 |
 | `IBeetleMotionContacts.HasMotionContact` | `Motion/Core` 定义；接触求解器实现 | 模拟在接受本步姿态后确认角/指定前足接触；没有接口则模块不产生攻击响应。 |
+| `IBeetlePairContacts.HasOpponentContact` | `Motion/Core` 定义；接触求解器实现 | 当前双方几何接触检查；前足抵推必须先接触，再抬身伸爪，陈旧接触标记不能授权起手。 |
 | `BeetleActor.Bind / BeforeStep / PoseSimulation / CaptureSimulationPose / Render` | Actor | 控制器负责绑定、步前恢复和显示；接触求解器负责调用模拟姿态生成与最终捕获。调用顺序决定模拟与显示能否隔离。 |
 | `BeetleProceduralAnimator.Pose / YieldHead / YieldLeg / AcceptSolvedPose` | 程序动画 | Actor 请求动作姿态；接触求解器请求局部退让，并让动画缓存与实际接受的姿态对齐。 |
 | `BeetleModelRig.PlanSupport / SupportReach` | 真实模型 Rig | 动画规划名义/新一步足点，保留可达余量并提前补步；已经锁定的支撑脚不会逐帧滑向新目标。 |

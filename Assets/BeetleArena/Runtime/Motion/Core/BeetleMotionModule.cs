@@ -11,6 +11,7 @@ namespace BeetleArena
     {
         public readonly float Time, SimulationTime, Speed, Size, Stamina, Footing, Balance, Distance, Facing, Side, FloorTime, Impact;
         public readonly bool Fighting, Grounded, Fallen, OnFloor, Touching, OpponentAirborne, Committed, ForebodyRaised, CatchingBalance;
+        public readonly bool OpponentContactConfirmed;
         public readonly BeetleIntent Intent;
         public readonly float Burst;
         public readonly float Tempo, Drive, LiftStyle, Lateral, ForelegSide, RearSupport, ForelegTargetDistance;
@@ -23,16 +24,34 @@ namespace BeetleArena
             var other = sim.Fighters[1 - b.Index];
             Vector2 delta = other.Position - b.Position;
             var right = new Vector2(b.Forward.y, -b.Forward.x);
-            Tempo = b.Traits.tempo; Drive = b.Traits.drivePreference; LiftStyle = b.Traits.liftPreference; Lateral = b.Traits.lateralPreference;
-            Time = sim.MotionTime * Tempo + b.Index * .83f; Speed = b.Velocity.magnitude; Size = b.Traits.size;
+            Tempo = b.Traits.tempo;
+            Drive = b.Traits.drivePreference;
+            LiftStyle = b.Traits.liftPreference;
+            Lateral = b.Traits.lateralPreference;
+            Time = sim.MotionTime * Tempo + b.Index * .83f;
+            Speed = b.Velocity.magnitude;
+            Size = b.Traits.size;
             SimulationTime = sim.MotionTime;
-            Stamina = b.Stamina01; Footing = b.Footing; Balance = b.Balance;
-            Distance = delta.magnitude; Facing = Vector2.Dot(b.Forward, delta.normalized);
-            Side = b.CircleDirection; FloorTime = b.Fall.GroundSeconds; Impact = Mathf.Clamp01(b.ImpactVisual);
-            Fighting = sim.Phase == MatchPhase.Fighting; Grounded = !b.Airborne && !b.HasFallen;
-            Fallen = b.HasFallen; OnFloor = b.Fall.OnFloor; Touching = b.TouchingOpponent;
-            OpponentAirborne = other.Airborne || other.HasFallen; Committed = b.Committed;
-            Action = b.Action; Exchange = b.CombatPhase; Intent = b.Intent; Burst = b.BurstReserve;
+            Stamina = b.Stamina01;
+            Footing = b.Footing;
+            Balance = b.Balance;
+            Distance = delta.magnitude;
+            Facing = Vector2.Dot(b.Forward, delta.normalized);
+            Side = b.CircleDirection;
+            FloorTime = b.Fall.GroundSeconds;
+            Impact = Mathf.Clamp01(b.ImpactVisual);
+            Fighting = sim.Phase == MatchPhase.Fighting;
+            Grounded = !b.Airborne && !b.HasFallen;
+            Fallen = b.HasFallen;
+            OnFloor = b.Fall.OnFloor;
+            Touching = b.TouchingOpponent;
+            OpponentContactConfirmed = sim.ContactSolver is IBeetlePairContacts pair && pair.HasOpponentContact(b.Index);
+            OpponentAirborne = other.Airborne || other.HasFallen;
+            Committed = b.Committed;
+            Action = b.Action;
+            Exchange = b.CombatPhase;
+            Intent = b.Intent;
+            Burst = b.BurstReserve;
             OpponentLocal = new Vector2(Vector2.Dot(delta, right), Vector2.Dot(delta, b.Forward));
             // Choose the nearer foreleg, alternate frontal attempts, then lock it for the action.
             ForelegSide = b.Motion.HasActive ? b.Motion.ForelegSide : Mathf.Abs(OpponentLocal.x) > .25f
@@ -43,7 +62,8 @@ namespace BeetleArena
             if (!b.Motion.HasActive && sim.ContactSolver is IBeetleForelegTargets both)
             {
                 var alternative = both.ForelegAimCorrection(b.Index, ForelegSide < 0 ? 3 : 0, out float otherReach);
-                if (otherReach + .08f < reach) { ForelegSide = -ForelegSide; ForelegAimCorrection = alternative; reach = otherReach; }
+                if (otherReach + .08f < reach)
+                { ForelegSide = -ForelegSide; ForelegAimCorrection = alternative; reach = otherReach; }
             }
             ForelegTargetDistance = reach;
             RearSupport = sim.ContactSolver is IBeetleDriveSupport support ? support.RearSupport(b.Index, sim) : b.Footing;
@@ -62,6 +82,8 @@ namespace BeetleArena
         public BeetleMotionContact Contact;
         public Vector2 LocalImpulse;
         public float Impulse, BalanceCost;
+        // 有效命中后的失衡窗口；默认 0，不打断原有模块的防守动作。
+        public float StaggerSeconds;
         // 0 retains legacy selection; 1/4 explicitly identify left/right front leg.
         public int ContactLegPlusOne;
         public bool PlantRearFeet, RequiresRearSupport;
@@ -106,6 +128,10 @@ namespace BeetleArena
     public interface IBeetleMotionContacts
     {
         bool HasMotionContact(int attacker, BeetleMotionContact kind, int forelegSlot);
+    }
+    public interface IBeetlePairContacts
+    {
+        bool HasOpponentContact(int fighter);
     }
     public interface IBeetleForelegTargets
     {

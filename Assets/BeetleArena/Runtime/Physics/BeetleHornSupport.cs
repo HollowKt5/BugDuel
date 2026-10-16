@@ -42,7 +42,7 @@ namespace BeetleArena
                 {
                     var role = target.Role(j);
                     // 角尖互顶不是腹下承重；必须先低头入角，直到接触前胸/头部/腹部实体。
-                    if (role != BeetleContactRole.Body || target.shapes[j].name == "Thoracic horn") continue;
+                    if (role != BeetleContactRole.Body || target.IsHorn(j)) continue;
                     var b = target.shapes[j];
                     // 交替最近点覆盖胶囊与凸壳；贴合容差只接纳上一固定步刚分离的真实角接触。
                     Vector3 q = b.ClosestPoint(a.bounds.center);

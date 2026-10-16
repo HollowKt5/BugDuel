@@ -1,0 +1,6 @@
+{
+    "name": "BeetleArena.Editor",
+    "references": ["BugDuel.Domain", "BeetleArena.Runtime", "Unity.InputSystem", "Unity.TextMeshPro", "UnityEngine.UI", "Unity.RenderPipelines.Universal.Runtime", "Unity.RenderPipelines.Core.Runtime"],
+    "includePlatforms": ["Editor"],
+    "autoReferenced": true
+}

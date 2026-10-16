@@ -27,7 +27,8 @@ namespace BeetleArena
         public void Refresh(BeetleSimulation sim, BeetleState self)
         {
             modules.Clear();
-            var configured = sim.Settings.motionModules;
+            var configured = self.Entrant != null && self.Entrant.OverridesMotionModules
+                ? self.Entrant.ConfiguredModules : sim.Settings.motionModules;
             if (configured != null)
                 for (int i = 0; i < configured.Length; i++)
                     if (configured[i] && !modules.Contains(configured[i])) modules.Add(configured[i]);

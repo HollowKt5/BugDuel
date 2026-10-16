@@ -84,10 +84,11 @@ namespace BeetleArena
             for (int i = 0; i < 2; i++)
             {
                 var b = sim.Fighters[i]; var ui = fighters[i];
-                ui.name.text = (i == 0 ? "01  /  琥珀" : "02  /  墨甲");
+                ui.name.text = $"{i + 1:00}  /  {sim.FighterName(i)}";
                 ui.measurements.text = $"体长 {b.Traits.lengthMm:F1} mm    体重 {b.Traits.massGrams:F1} g";
                 if (traitTexts != null && i < traitTexts.Length && traitTexts[i])
-                    traitTexts[i].text = $"好斗 {b.Traits.aggressionScore:F0}   体长 {b.Traits.lengthScore:F0}   角长 {b.Traits.hornScore:F0}   敏捷 {b.Traits.agilityScore:F0}\n角长 {b.Traits.hornLengthMm:F1} mm   总分 {b.Traits.TotalScore:F0}/400 · {b.Traits.QualityBand}";
+                    traitTexts[i].text = $"好斗 {b.Traits.aggressionScore:F0}   体长 {b.Traits.lengthScore:F0}   角长 {b.Traits.hornScore:F0}   敏捷 {b.Traits.agilityScore:F0}\n角长 {b.Traits.hornLengthMm:F1} mm   " +
+                        (b.Entrant == null ? $"总分 {b.Traits.TotalScore:F0}/400 · {b.Traits.QualityBand}" : "养成个体");
                 ui.action.text = (b.Action == BeetleAction.Module && b.Motion.Active ? b.Motion.Active.DisplayName : ActionName(b.Action))
                     + (b.CheerRemaining > 0 ? "  ·  斗志提升" : "");
                 ui.staminaFill.fillAmount = b.Stamina01;
@@ -99,7 +100,7 @@ namespace BeetleArena
                 bool canCheer = sim.Phase == MatchPhase.Fighting && !match.IsPaused && b.CheerCooldown <= 0 && !b.Airborne && !b.HasFallen;
                 ui.cheerButton.interactable = canCheer;
                 string key = i == 0 ? "Q" : "E";
-                ui.cheerText.text = b.CheerCooldown > .05f ? $"{key}   加油恢复中 · {b.CheerCooldown:F1}s" : $"{key}   为{BeetleSimulation.Name(i)}加油";
+                ui.cheerText.text = b.CheerCooldown > .05f ? $"{key}   加油恢复中 · {b.CheerCooldown:F1}s" : $"{key}   为{sim.FighterName(i)}加油";
                 ui.cheerFill.fillAmount = 1 - b.CheerCooldown / match.settings.cheerCooldown;
             }
             clock.text = $"{(int)sim.Elapsed / 60:00}:{(int)sim.Elapsed % 60:00}";
@@ -113,7 +114,8 @@ namespace BeetleArena
             bool finished = sim.Phase == MatchPhase.Finished;
             // 结算面板只在 Finished 展示，Resolving 阶段仍等待可能出现的双落台。
             resultPanel.SetActive(finished && !match.IsDefeatSlowMotion);
-            resultText.text = (sim.Winner < 0 ? "本场平局" : $"{BeetleSimulation.Name(sim.Winner)} 获胜") + "\n<size=20>" + sim.ResultDescription + "</size>";
+            resultText.text = (sim.Winner < 0 ? "本场平局" : $"{sim.FighterName(sim.Winner)} 获胜") + "\n<size=20>" + sim.ResultDescription + "</size>";
+            nextButton.interactable = rematchButton.interactable = finished && match.CanRequestNextMatch;
             // 显示外层交锋阶段；个体当前动作显示在选手卡上，两者可能因动作衔接暂时不同。
             phaseText.text = match.IsPaused ? "观察暂停" : sim.Phase == MatchPhase.Countdown ? $"准备  {Mathf.CeilToInt(sim.Countdown)}" : sim.Phase == MatchPhase.Resolving ? "落台判定中" : finished ? "本场结束" :
                 sim.Exchange == ExchangePhase.Clash ? "激烈交锋" : sim.Exchange == ExchangePhase.Recovery ? "拉开恢复" : "轻触试探";

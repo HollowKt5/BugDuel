@@ -6,11 +6,38 @@ EditorBuildSettings:
   serializedVersion: 2
   m_Scenes:
   - enabled: 1
+    path: Assets/Scenes/Campaign/CampaignMainMenu.unity
+    guid: 9765e4b5b8d04134492639bfd5bd0732
+  - enabled: 1
+    path: Assets/Scenes/Campaign/CampaignSaves.unity
+    guid: 8d420e3b5ba1cd049983ad3f0e4d415c
+  - enabled: 1
+    path: Assets/Scenes/Campaign/CampaignGreenhouse.unity
+    guid: 5220f7fa538b97a41bdea2130527da5e
+  - enabled: 1
+    path: Assets/Scenes/Campaign/CampaignCatching.unity
+    guid: 32607897f4fefed4486e57d733f7c509
+  - enabled: 1
+    path: Assets/Scenes/Campaign/CampaignMarket.unity
+    guid: ef7d13c835208d942af75651935d9a83
+  - enabled: 1
+    path: Assets/Scenes/Campaign/CampaignLeague.unity
+    guid: fde7dc6a1a652be4fbd6759a4a17faaf
+  - enabled: 1
+    path: Assets/Scenes/Campaign/CampaignArena.unity
+    guid: 3720e277e5bfeb84dbf1219645894095
+  - enabled: 1
+    path: Assets/Scenes/Campaign/CampaignAuction.unity
+    guid: 5c5c6fe15adcb3c4ea29993ffd2c6385
+  - enabled: 1
     path: Assets/Scenes/BeetleArena.unity
     guid: 5fb6110ec5cafe843853fcf11f2cca69
   - enabled: 1
     path: Assets/Scenes/SampleScene.unity
     guid: 99c9720ab356a0642a771bea13969a05
+  - enabled: 1
+    path: Assets/Scenes/BeetleNursery.unity
+    guid: 87a47e54159192647bad3cdb57223594
   m_configObjects:
     com.unity.input.settings.actions: {fileID: -944628639613478452, guid: 052faaac586de48259a63d0c4782560b, type: 3}
   m_UseUCBPForAssetBundles: 0

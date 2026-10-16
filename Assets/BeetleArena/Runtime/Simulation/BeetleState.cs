@@ -4,65 +4,60 @@ using UnityEngine;
 namespace BeetleArena
 {
     // 比赛阶段：准备倒计时、正常格斗、首次落台后的双落台等待、最终结束。
-    public enum MatchPhase { Countdown, Fighting, Resolving, Finished }
-    public enum BeetleResultReason { None, RingOut, TimeLimit, UnableToRight }
+    public enum MatchPhase
+    {
+        Countdown,
+        Fighting,
+        Resolving,
+        Finished
+    }
+
+    public enum BeetleResultReason
+    {
+        None,
+        RingOut,
+        TimeLimit,
+        UnableToRight
+    }
+
     // 单只甲虫的动作状态。Windup 是准备动作，Pry 是抬举，Toss 是成功猛挑，Launched 是被挑飞。
     // 后续新增枚举值追加到末尾，避免旧的序列化整数映射到错误动作。
-    public enum BeetleAction { Assess, Approach, Circle, ShoveWindup, Shove, PryWindup, Pry, Brace, Recover, Retreat, Stagger, Falling, Defeated, Winner, Probe, Disengage, ChargeWindup, Charge, HornLock, Toss, Launched, Lifting, Lifted, ReleaseLift, Module, Subdued }
-    // 短周期交锋节奏，与 MatchPhase 的整场流程、BeetleAction 的个体动作分层管理。
-    public enum ExchangePhase { Probing, Clash, Recovery }
-
-    [Serializable]
-    // 本局个体属性，在创建后按只读数据使用；与每步变化的 BeetleState 分离。
-    public sealed class BeetleTraits
+    public enum BeetleAction
     {
-        // size 为基准体型倍率；lengthMm/massGrams 只供展示；mass 为归一化运动质量。
-        // strength/grip 分别控制发力和抓地，endurance 为耐力上限，aggression 为攻击倾向，
-        // agility 影响移动/转向，hornReach 用于简化接触模式的触及距离。
-        public float size, lengthMm, massGrams, mass, strength, grip, endurance, aggression, agility, hornReach;
-        public float aggressionScore, lengthScore, hornScore, agilityScore, hornLengthMm;
-        public float hornLengthFactor = 1;
-        // Independent style affects cadence and choices, not an extra strength bonus.
-        public float tempo = 1, drivePreference = .5f, liftPreference = .5f, lateralPreference = .5f;
-        public float TotalScore => aggressionScore + lengthScore + hornScore + agilityScore;
-        // N(240, 28²): the outer deciles start at z = ±1.28155.
-        public string QualityBand => TotalScore >= 275.88f ? "高" : TotalScore <= 204.12f ? "低" : "中";
-        // 依据体型与同一个局内随机源生成属性。质量按 size³、力量按 size² 变化，
-        // 再给予小幅个体差异；这些是游戏近似，不是物种实验数据拟合。
-        public static BeetleTraits Create(float size, System.Random random, BeetleMatchSettings settings)
-        {
-            float Vary() => .95f + (float)random.NextDouble() * .10f;
-            float normal = Mathf.Sqrt(-2 * Mathf.Log(Mathf.Max(1e-7f, (float)random.NextDouble()))) *
-                Mathf.Cos(2 * Mathf.PI * (float)random.NextDouble());
-            float total = Mathf.Round(Mathf.Clamp(240 + 28 * normal, 150, 310));
-            float length = Mathf.Round(Mathf.Lerp(35, 75, Mathf.InverseLerp(settings.minimumSize, settings.maximumSize, size)));
-            float mean = (total - length) / 3;
-            float aggressionRating = Mathf.Round(Mathf.Clamp(mean + ((float)random.NextDouble() - .5f) * 24, 10, 100));
-            float hornRating = Mathf.Round(Mathf.Clamp(mean + ((float)random.NextDouble() - .5f) * 24, 10, 100));
-            float agilityRating = total - length - aggressionRating - hornRating;
-            // Redistribute any capped rating; the actual four-stat sum remains the sampled total.
-            float excess = agilityRating - Mathf.Clamp(agilityRating, 10, 100);
-            agilityRating -= excess;
-            float adjusted = Mathf.Clamp(aggressionRating + excess, 10, 100);
-            hornRating += excess - (adjusted - aggressionRating); aggressionRating = adjusted;
-            float hornFactor = Mathf.Lerp(.84f, 1.20f, hornRating / 100);
-            return new BeetleTraits
-            {
-                size = size,
-                lengthMm = settings.referenceLengthMm * size,
-                massGrams = settings.referenceMassGrams * size * size * size,
-                mass = size * size * size,
-                strength = size * size * Vary(),
-                grip = size * Vary(),
-                endurance = 100 * Vary(),
-                aggression = Mathf.Lerp(.32f, .95f, aggressionRating / 100),
-                agility = Mathf.Lerp(.72f, 1.40f, agilityRating / 100) / Mathf.Sqrt(size),
-                hornReach = 1.65f * size * hornFactor,
-                aggressionScore = aggressionRating, lengthScore = length, hornScore = hornRating,
-                agilityScore = agilityRating, hornLengthFactor = hornFactor,
-                hornLengthMm = settings.referenceLengthMm * size * .48f * hornFactor
-            };
-        }
+        Assess,
+        Approach,
+        Circle,
+        ShoveWindup,
+        Shove,
+        PryWindup,
+        Pry,
+        Brace,
+        Recover,
+        Retreat,
+        Stagger,
+        Falling,
+        Defeated,
+        Winner,
+        Probe,
+        Disengage,
+        ChargeWindup,
+        Charge,
+        HornLock,
+        Toss,
+        Launched,
+        Lifting,
+        Lifted,
+        ReleaseLift,
+        Module,
+        Subdued
+    }
+
+    // 短周期交锋节奏，与 MatchPhase 的整场流程、BeetleAction 的个体动作分层管理。
+    public enum ExchangePhase
+    {
+        Probing,
+        Clash,
+        Recovery
     }
 
     // 单个选手的全部动态数据。模拟写入，Actor/动画/HUD 读取；本类不依赖场景对象。
@@ -71,6 +66,8 @@ namespace BeetleArena
         // 固定身份索引，0 为琥珀、1 为墨甲。Traits 引用在一局中保持不变。
         public readonly int Index;
         public readonly BeetleTraits Traits;
+        public BeetleMatchEntrant Entrant { get; internal set; }
+        public float VisualScale(BeetleMatchSettings settings) => Entrant?.VisualScale ?? settings.visualScale;
         // Position/Velocity 是世界 XZ 平面的坐标和每秒速度，Vector2.y 映射世界 Z。
         public Vector2 Position, Velocity;
         // Heading 使用角度；Height 为根节点世界 Y，高低起伏台面不再共用 Y=0。
@@ -146,13 +143,18 @@ namespace BeetleArena
         // 将偏航角变为世界平面的正前方：0° 朝 +Z，90° 朝 +X。
         public Vector2 Forward => new Vector2(Mathf.Sin(Heading * Mathf.Deg2Rad), Mathf.Cos(Heading * Mathf.Deg2Rad));
         // 正在蓄力、发力或角力的动作集合，用于限制转向、控制迈步和累积疲劳。
-        public bool Committed => Action == BeetleAction.Module || Action == BeetleAction.ShoveWindup || Action == BeetleAction.Shove || Action == BeetleAction.PryWindup || Action == BeetleAction.Pry ||
-            Action == BeetleAction.ChargeWindup || Action == BeetleAction.Charge || Action == BeetleAction.HornLock || Action == BeetleAction.Toss || Action == BeetleAction.Lifting || Action == BeetleAction.ReleaseLift;
-
+        public bool Committed => Action == BeetleAction.Module || Action == BeetleAction.ShoveWindup || Action ==
+            BeetleAction.Shove || Action == BeetleAction.PryWindup || Action == BeetleAction.Pry || Action ==
+            BeetleAction.ChargeWindup || Action == BeetleAction.Charge || Action == BeetleAction.HornLock || Action ==
+            BeetleAction.Toss || Action == BeetleAction.Lifting || Action == BeetleAction.ReleaseLift;
         // 初始化身份、站位和体力；其余字段使用声明处默认值，每局创建新状态。
         public BeetleState(int index, BeetleTraits traits, Vector2 position, float heading)
         {
-            Index = index; Traits = traits; Position = position; Heading = heading; Stamina = traits.endurance;
+            Index = index;
+            Traits = traits;
+            Position = position;
+            Heading = heading;
+            Stamina = traits.endurance;
         }
     }
 
@@ -163,6 +165,11 @@ namespace BeetleArena
         public readonly int Actor;
         public readonly float Intensity;
         // 构造事件时固定文本和反馈强度；订阅者收到后不修改原始事件。
-        public ContestEvent(string message, int actor = -1, float intensity = 0) { Message = message; Actor = actor; Intensity = intensity; }
+        public ContestEvent(string message, int actor = -1, float intensity = 0)
+        {
+            Message = message;
+            Actor = actor;
+            Intensity = intensity;
+        }
     }
 }

@@ -7,6 +7,8 @@ namespace BeetleArena
     {
         [SerializeField] public BeetleProceduralAnimator animator;
         [SerializeField] public Transform teamMarker;
+        [Tooltip("模型适配版本，必须匹配参赛快照的 RigId；新模型不能只改物种名称复用旧骨架标定。")]
+        public string rigId = BeetleCombatProfile.LegacyRigId;
         public BeetleState State { get; private set; }
         // 由接触求解器开启；开启后只在固定模拟的 PoseSimulation 中推进关节姿态。
         public bool ContactDriven { get; set; }
@@ -27,7 +29,7 @@ namespace BeetleArena
             previousRotation = currentRotation = GroundRotation(state);
             transform.SetPositionAndRotation(previous, previousRotation);
             // 卡通材质使用较清楚的琥珀/青绿色分队；仅改变显示颜色，不参与体型或战斗计算。
-            animator.Initialize(state.Traits, settings, state.Index == 0 ? new Color(.72f, .30f, .085f) : new Color(.10f, .37f, .40f), surface);
+            animator.Initialize(state.Traits, settings, state.Index == 0 ? new Color(.72f, .30f, .085f) : new Color(.10f, .37f, .40f), surface, state.VisualScale(settings));
             animator.Pose(state, 0, 0);
             poses = new BeetlePoseBuffer(animator.model);
             marker?.Dispose(); marker = null;

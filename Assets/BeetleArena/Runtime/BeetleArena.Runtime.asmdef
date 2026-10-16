@@ -1,0 +1,6 @@
+{
+    "name": "BeetleArena.Runtime",
+    "rootNamespace": "BeetleArena",
+    "references": ["BugDuel.Domain", "Unity.InputSystem", "Unity.TextMeshPro", "UnityEngine.UI", "Unity.RenderPipelines.Core.Runtime"],
+    "autoReferenced": true
+}
