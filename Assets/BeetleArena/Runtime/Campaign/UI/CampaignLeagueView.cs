@@ -27,7 +27,7 @@ namespace BeetleArena.Campaign
                 var b=beetle;var tier=Session.Catalog.Tier(b.length);var c=Card(roster,190);
                 Label(c,$"{b.name}  ·  {b.length:0.0} mm  ·  Lv.{tier.tier}",22,15,690,40,27,accent);
                 Label(c,$"健康 {b.hearts:0.0}/{b.maxHearts}  ·  饱食 {b.nutrition:0}%\n赛季 {b.seasonWins}/{Session.Catalog.seasonWins}  ·  身价 {b.value:N0} G",22,67,690,70,22);
-                Btn(c,$"报名  {tier.fee:N0} G",22,140,690,38,()=>{if(app.Execute(s=>s.EnterLeague(b.id)))app.Go(CampaignPage.Arena);},State.battle==null&&!b.listed&&!b.overturned);
+                Btn(c,$"报名  {tier.fee:N0} G",22,140,690,38,()=>app.Execute(s=>s.EnterLeague(b.id),()=>app.Go(CampaignPage.Arena)),State.battle==null&&!b.listed&&!b.overturned);
             }
         }
         void DrawAuction()
@@ -76,7 +76,7 @@ namespace BeetleArena.Campaign
         }
         UnityEngine.UI.Image Bar(RectTransform parent,float x,float y,float width,Color color)
         {
-            var rt=Rect("Meter",parent,x,y,width,5);var image=rt.gameObject.AddComponent<UnityEngine.UI.Image>();image.color=color;image.sprite=rounded;image.type=UnityEngine.UI.Image.Type.Filled;image.fillMethod=UnityEngine.UI.Image.FillMethod.Horizontal;image.raycastTarget=false;return image;
+            var rt=Rect("Meter",parent,x,y,width,5);var image=Component<UnityEngine.UI.Image>(rt);image.color=color;image.sprite=rounded;image.type=UnityEngine.UI.Image.Type.Filled;image.fillMethod=UnityEngine.UI.Image.FillMethod.Horizontal;image.raycastTarget=false;return image;
         }
     }
 }

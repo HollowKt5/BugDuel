@@ -20,8 +20,13 @@ namespace BeetleArena.Campaign
         public CampaignLeagueBridge leagueBridge;
         CampaignApp app;
         RectTransform canvas,root,modal;
-        TMP_Text notice,careLabel;
-        Material glass;
+        TMP_Text notice,careLabel,behaviorLabel;
+        CampaignCareController careController;
+        readonly CampaignUiTree tree=new CampaignUiTree();
+        CanvasGroup pageInteraction;
+        GameObject focusBeforeModal;
+        bool closingModal;
+        bool settingsOpen;
         Sprite rounded;
         Texture2D roundTexture;
         readonly List<Texture2D> thumbnails=new List<Texture2D>();
@@ -41,7 +46,7 @@ namespace BeetleArena.Campaign
         {
             app=CampaignApp.Ensure();
             if(page!=CampaignPage.MainMenu && page!=CampaignPage.Saves && Session==null) { app.Go(CampaignPage.MainMenu);return; }
-            glass=new Material(glassShader); CreateRounded();
+            CreateRounded();
             var go=new GameObject("CampaignCanvas",typeof(RectTransform),typeof(Canvas),typeof(UI.CanvasScaler),typeof(UI.GraphicRaycaster)); go.transform.SetParent(transform,false);
             canvas=(RectTransform)go.transform; go.GetComponent<Canvas>().renderMode=RenderMode.ScreenSpaceOverlay;
             var scaler=go.GetComponent<UI.CanvasScaler>(); scaler.uiScaleMode=UI.CanvasScaler.ScaleMode.ScaleWithScreenSize; scaler.referenceResolution=new Vector2(1600,900);scaler.screenMatchMode=UI.CanvasScaler.ScreenMatchMode.Expand;
@@ -49,6 +54,7 @@ namespace BeetleArena.Campaign
             {
                 var background=Rect("World",canvas,0,0,1600,900); Stretch(background);
                 backdrop.output=background.gameObject.AddComponent<UI.RawImage>(); backdrop.output.raycastTarget=false; backdrop.output.texture=backdrop.Frame;
+                backdrop.SetUiFocus(page==CampaignPage.Saves || page==CampaignPage.Catching || page==CampaignPage.Market || page==CampaignPage.League || page==CampaignPage.Auction);
             }
             if(!EventSystem.current) { var e=new GameObject("CampaignEvents",typeof(EventSystem),typeof(InputSystemUIInputModule)); e.GetComponent<InputSystemUIInputModule>().AssignDefaultActions(); }
             app.Changed+=QueueRefresh;
@@ -60,6 +66,7 @@ namespace BeetleArena.Campaign
         {
             // Keep keyboard/controller navigation inside the visible portion of scrollable lists.
             var focus=EventSystem.current?EventSystem.current.currentSelectedGameObject:null;
+            if(modal && (!focus || !focus.transform.IsChildOf(modal))) { SelectFirst(modal); return; }
             if(!focus||focus==lastFocus)return;lastFocus=focus;
             var scroll=focus.GetComponentInParent<UI.ScrollRect>();if(!scroll||!scroll.viewport||!scroll.content)return;
             Canvas.ForceUpdateCanvases();var bounds=RectTransformUtility.CalculateRelativeRectTransformBounds(scroll.viewport,focus.transform);
@@ -69,27 +76,34 @@ namespace BeetleArena.Campaign
         void Update()
         {
             if(!app || !canvas) return;
-            if(refreshQueued && !modal) { refreshQueued=false;Rebuild(); }
+            if(pageInteraction)pageInteraction.interactable=!app.Busy&&!modal;
+            if(refreshQueued && !modal && !app.Busy) { refreshQueued=false;Rebuild(); }
             if(notice) notice.text=app.Message.Length>0?app.Message:Session?.State.notice??"";
             careLabelClock+=Time.unscaledDeltaTime;
             if(careLabel && Session!=null && careLabelClock>=.25f)
             {
                 careLabelClock=0;
                 var b=State.beetles.Find(x=>x.id==State.selectedId); if(b!=null) careLabel.text=Details(b);
+                if(!careController)careController=FindFirstObjectByType<CampaignCareController>();
+                if(behaviorLabel&&b!=null)behaviorLabel.text=careController?careController.Describe(b.id):"观察中";
             }
             if(app.Busy || rebind!=null) return;
             if(app.Controls["Back"].WasPressedThisFrame())
             { if(modal) CloseModal(); else if(page!=CampaignPage.MainMenu) Confirm("返回主菜单？当前进度会自动保存。",()=>{if(Session!=null)app.SaveSlot(0);app.Go(CampaignPage.MainMenu);}); }
-            if(modal || Session==null || page==CampaignPage.Arena) return;
-            if(app.Controls["NextWeek"].WasPressedThisFrame()) app.Execute(s=>s.NextWeek());
-            if(app.Controls["Help"].WasPressedThisFrame() && State.beetles.Any(b=>b.id==State.selectedId)) app.Execute(s=>s.Rescue(State.selectedId));
+            if(app.Controls["NextWeek"].WasPressedThisFrame()) app.Manage(page,"NextWeek");
+            if(app.Controls["Help"].WasPressedThisFrame()) app.Manage(page,"Help");
         }
         void Rebuild()
         {
-            if(root) { root.gameObject.SetActive(false);Destroy(root.gameObject); }
-            foreach(var t in thumbnails) if(t) Destroy(t); thumbnails.Clear(); careLabel=null;
-            root=Rect("Page",canvas,0,0,1600,900); CenterFrame(root);
-            if(page==CampaignPage.Arena) { DrawArena(); return; }
+            var selected=EventSystem.current?EventSystem.current.currentSelectedGameObject:null;
+            if(!root)
+            {
+                root=Rect("Page",canvas,0,0,1600,900); CenterFrame(root);
+                pageInteraction=root.gameObject.AddComponent<CanvasGroup>();
+            }
+            foreach(var t in thumbnails) if(t) Destroy(t); thumbnails.Clear(); careLabel=null;behaviorLabel=null;
+            tree.Begin();
+            if(page==CampaignPage.Arena) { DrawArena(); EndRefresh(selected); return; }
             if(page==CampaignPage.MainMenu) DrawMenu();
             else if(page==CampaignPage.Saves) DrawSaves();
             else
@@ -105,7 +119,18 @@ namespace BeetleArena.Campaign
                 }
             }
             var footer=Panel(root,32,835,1536,45);notice=Label(footer,"",18,10,1500,30,17,muted);
-            SelectFirst(root);
+            EndRefresh(selected);
+        }
+        void EndRefresh(GameObject selected)
+        {
+            tree.End();
+            if(!selected || !selected.activeInHierarchy || (selected.GetComponent<UI.Selectable>() is UI.Selectable control && !control.IsInteractable()))SelectFirst(root);
+            foreach(var scroll in root.GetComponentsInChildren<UI.ScrollRect>())
+            {
+                var position=scroll.content.anchoredPosition;
+                position.y=Mathf.Clamp(position.y,0,Mathf.Max(0,scroll.content.rect.height-scroll.viewport.rect.height));
+                scroll.content.anchoredPosition=position;
+            }
         }
         void Navigation()
         {
@@ -117,36 +142,47 @@ namespace BeetleArena.Campaign
             Btn(nav,L("存档","Saves"),1060,10,100,44,()=>app.Go(CampaignPage.Saves));
             Btn(nav,L("设置","Settings"),1170,10,100,44,OpenSettings);
             Btn(nav,L("主菜单","Menu"),1280,10,125,44,()=>{app.SaveSlot(0);app.Go(CampaignPage.MainMenu);});
+            if(page==CampaignPage.Greenhouse)
+            {
+                var clock=Label(nav,"",1414,6,108,52,16,accent);clock.name="LocalClock";clock.alignment=TextAlignmentOptions.Center;
+                Component<Canvas>(clock.transform);Component<CampaignLocalClock>(clock.transform).Bind(clock);
+            }
             Label(root,$"第 {State.week:00} 周    ·    {State.coins:N0} G    ·    温室 {State.beetles.Count}+{Session.Reserved}/{State.capacity}    ·    口碑 {State.reputation}",42,110,1200,35,24,ink);
             Btn(root,L("下一周  N","Next week  N"),1350,105,210,48,()=>app.Execute(s=>s.NextWeek()));
         }
         void Title(string title,string subtitle) { Label(root,title,42,163,1180,48,32,ink); Label(root,subtitle,44,212,1480,32,18,muted); }
         RectTransform Rect(string name,Transform parent,float x,float y,float w,float h)
         {
-            var go=new GameObject(name,typeof(RectTransform));var rt=(RectTransform)go.transform;rt.SetParent(parent,false);rt.anchorMin=rt.anchorMax=new Vector2(0,1);rt.pivot=new Vector2(0,1);rt.anchoredPosition=new Vector2(x,-y);rt.sizeDelta=new Vector2(w,h);return rt;
+            bool created=true;
+            var rt=tree.Building?tree.Take(name,parent,out created):new GameObject(name,typeof(RectTransform)).GetComponent<RectTransform>();
+            if(!tree.Building)rt.SetParent(parent,false);
+            rt.anchorMin=rt.anchorMax=new Vector2(0,1);rt.pivot=new Vector2(0,1);
+            if(created || name!="Content")rt.anchoredPosition=new Vector2(x,-y);
+            rt.sizeDelta=new Vector2(w,h);return rt;
         }
+        static T Component<T>(Transform target) where T:UnityEngine.Component => target.GetComponent<T>() ?? target.gameObject.AddComponent<T>();
         static void Stretch(RectTransform rt) { rt.anchorMin=Vector2.zero;rt.anchorMax=Vector2.one;rt.offsetMin=rt.offsetMax=Vector2.zero; }
         static void CenterFrame(RectTransform rt) { rt.anchorMin=rt.anchorMax=rt.pivot=new Vector2(.5f,.5f);rt.anchoredPosition=Vector2.zero;rt.sizeDelta=new Vector2(1600,900); }
         RectTransform Panel(Transform parent,float x,float y,float w,float h,bool clear=false)
         {
-            var rt=Rect("Glass",parent,x,y,w,h);var im=rt.gameObject.AddComponent<UI.Image>(); im.sprite=rounded;im.type=UI.Image.Type.Sliced;im.pixelsPerUnitMultiplier=clear?2:1.3f;im.material=glass;
-            im.color=clear?new Color(.16f,.25f,.2f,.86f):new Color(.065f,.12f,.09f,.95f);return rt;
+            var rt=Rect("Surface",parent,x,y,w,h);var im=Component<UI.Image>(rt); im.sprite=rounded;im.type=UI.Image.Type.Sliced;im.pixelsPerUnitMultiplier=clear?2:1.3f;im.material=null;
+            im.color=clear?new Color(.16f,.25f,.2f,1):new Color(.065f,.12f,.09f,1);return rt;
         }
         TMP_Text Label(Transform parent,string text,float x,float y,float w,float h,int size=22,Color? color=null)
         {
-            var rt=Rect("Text",parent,x,y,w,h);var t=rt.gameObject.AddComponent<TextMeshProUGUI>();t.font=font;t.text=text;t.fontSize=size;t.color=color??ink;t.textWrappingMode=TextWrappingModes.Normal;t.overflowMode=TextOverflowModes.Ellipsis;t.raycastTarget=false;return t;
+            var rt=Rect("Text",parent,x,y,w,h);var t=Component<TextMeshProUGUI>(rt);t.font=font;t.text=text;t.fontSize=size;t.color=color??ink;t.textWrappingMode=TextWrappingModes.Normal;t.overflowMode=TextOverflowModes.Ellipsis;t.raycastTarget=false;return t;
         }
         UI.Button Btn(Transform parent,string text,float x,float y,float w,float h,Action action,bool enabled=true)
         {
-            var rt=Panel(parent,x,y,w,h,true);rt.name=text;var b=rt.gameObject.AddComponent<UI.Button>();b.targetGraphic=rt.GetComponent<UI.Image>();b.interactable=enabled;
-            var colors=b.colors;colors.normalColor=Color.white;colors.highlightedColor=new Color(1.2f,1.3f,1.1f);colors.pressedColor=new Color(.7f,.9f,.55f);colors.disabledColor=new Color(.6f,.6f,.6f,.55f);b.colors=colors;
-            var label=Label(rt,text,10,0,w-20,h,19,enabled?ink:muted);label.alignment=TextAlignmentOptions.Center;b.onClick.AddListener(()=>action());return b;
+            var rt=Panel(parent,x,y,w,h,true);rt.name=text;var b=Component<UI.Button>(rt);b.onClick.RemoveAllListeners();b.targetGraphic=rt.GetComponent<UI.Image>();b.interactable=enabled;
+            var colors=b.colors;colors.normalColor=Color.white;colors.highlightedColor=new Color(1.2f,1.3f,1.1f);colors.pressedColor=new Color(.7f,.9f,.55f);colors.disabledColor=new Color(.6f,.6f,.6f,1);b.colors=colors;
+            var label=Label(rt,text,10,0,w-20,h,19,enabled?ink:muted);label.alignment=TextAlignmentOptions.Center;b.onClick.AddListener(()=>{if(app.Busy || (modal&&!rt.IsChildOf(modal)))return;action();});return b;
         }
         sealed class Flow { public RectTransform content; public float y,width; }
         Flow Column(float x,float y,float width,float height,Transform parent=null)
         {
-            var view=Rect("Scroll",parent?parent:root,x,y,width,height);var scroll=view.gameObject.AddComponent<UI.ScrollRect>(); scroll.horizontal=false;scroll.movementType=UI.ScrollRect.MovementType.Clamped;scroll.scrollSensitivity=35;
-            var vp=Rect("Viewport",view,0,0,width,height);vp.gameObject.AddComponent<UI.RectMask2D>();var hit=vp.gameObject.AddComponent<UI.Image>();hit.color=new Color(0,0,0,.001f);
+            var view=Rect("Scroll",parent?parent:root,x,y,width,height);var scroll=Component<UI.ScrollRect>(view); scroll.horizontal=false;scroll.movementType=UI.ScrollRect.MovementType.Clamped;scroll.scrollSensitivity=35;
+            var vp=Rect("Viewport",view,0,0,width,height);Component<UI.RectMask2D>(vp);var hit=Component<UI.Image>(vp);hit.color=Color.clear;
             var content=Rect("Content",vp,0,0,width,1);scroll.viewport=vp;scroll.content=content;
             return new Flow{content=content,width=width};
         }
@@ -163,10 +199,23 @@ namespace BeetleArena.Campaign
         void Confirm(string text,Action action) { var p=OpenModal(670,290);Label(p,text,32,32,606,140,25);Btn(p,"确定",32,205,290,52,()=>{CloseModal();action();});Btn(p,"取消",340,205,290,52,CloseModal); }
         RectTransform OpenModal(float w,float h)
         {
-            CloseModal(); app.Modal=true;modal=Rect("Modal",canvas,0,0,1600,900);CenterFrame(modal);var dim=modal.gameObject.AddComponent<UI.Image>();dim.color=new Color(.01f,.03f,.02f,.72f);
+            CloseModal(); focusBeforeModal=EventSystem.current?EventSystem.current.currentSelectedGameObject:null;
+            app.Modal=true;if(pageInteraction){pageInteraction.interactable=false;pageInteraction.blocksRaycasts=false;}
+            if(EventSystem.current)EventSystem.current.SetSelectedGameObject(null);
+            modal=Rect("Modal",canvas,0,0,1600,900);CenterFrame(modal);var dim=modal.gameObject.AddComponent<UI.Image>();dim.color=new Color(.025f,.055f,.047f,1);
             var panel=Panel(modal,(1600-w)/2,(900-h)/2,w,h);panel.GetComponent<UI.Image>().pixelsPerUnitMultiplier=1;return panel;
         }
-        void CloseModal() { rebind?.Cancel();rebind?.Dispose();rebind=null;if(modal) { modal.gameObject.SetActive(false);Destroy(modal.gameObject);modal=null; } if(app)app.Modal=false; }
+        void CloseModal()
+        {
+            closingModal=true;
+            var operation=rebind;rebind=null;operation?.Cancel();operation?.Dispose();
+            if(settingsOpen && app){settingsOpen=false;app.SavePreferences();}
+            if(modal){modal.gameObject.SetActive(false);Destroy(modal.gameObject);modal=null;}
+            if(app)app.Modal=false;
+            if(pageInteraction){pageInteraction.interactable=!app.Busy;pageInteraction.blocksRaycasts=true;}
+            if(focusBeforeModal && focusBeforeModal.activeInHierarchy && EventSystem.current)EventSystem.current.SetSelectedGameObject(focusBeforeModal);
+            focusBeforeModal=null;closingModal=false;
+        }
         static void SelectFirst(Transform parent) { var b=parent.GetComponentsInChildren<UI.Button>().FirstOrDefault(x=>x.interactable);if(b&&EventSystem.current)EventSystem.current.SetSelectedGameObject(b.gameObject); }
         void CreateRounded()
         {
@@ -177,7 +226,7 @@ namespace BeetleArena.Campaign
         void OnDestroy()
         {
             if(app)app.Changed-=QueueRefresh;if(leagueBridge)leagueBridge.Finished-=QueueRefresh;CloseModal();
-            if(glass)Destroy(glass);if(rounded)Destroy(rounded);if(roundTexture)Destroy(roundTexture);foreach(var t in thumbnails)if(t)Destroy(t);
+            if(rounded)Destroy(rounded);if(roundTexture)Destroy(roundTexture);foreach(var t in thumbnails)if(t)Destroy(t);
         }
     }
 }

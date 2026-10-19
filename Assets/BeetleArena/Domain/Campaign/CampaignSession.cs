@@ -39,6 +39,11 @@ namespace BugDuel.Campaign
             b.initialValue = b.value = CampaignEconomy.Initial(b,s); return b;
         }
         public void Add(CampaignBeetle b) { Space(1); State.beetles.Add(b); State.selectedId = b.id; State.recordLength = Math.Max(State.recordLength,b.length); }
+        void RemoveBeetle(CampaignBeetle b)
+        {
+            State.beetles.Remove(b);
+            if(State.selectedId==b.id)State.selectedId=State.beetles.FirstOrDefault()?.id;
+        }
         public void Upgrade()
         {
             Require(State.capacity < 20, "温室已经是20格"); Spend(State.capacity == 6 ? Catalog.upgrade12 : Catalog.upgrade20);
@@ -47,22 +52,32 @@ namespace BugDuel.Campaign
         public void Feed(string id, int food)
         {
             var b = Beetle(id); Available(b); Require(b.Adult(State.week) && !b.overturned, "先帮助甲虫翻身；幼虫使用饲料瓶"); Require(food >= 0 && food <= 2, "食物不存在");
-            Spend(food == 0 ? 15 : 20); b.nutrition = Math.Min(100,b.nutrition + (food == 0 ? 35 : 25)); b.hearts = Math.Min(b.maxHearts,b.hearts + .5);
-            Tell(b.name + " 正在享用" + new[] { "红薯", "香蕉", "苹果" }[food] + "，咔嚓咔嚓。");
+            Require(b.meal == null,"食盆里还有食物，请等它吃完");
+            Spend(food == 0 ? 15 : 20); b.meal = new CampaignMeal { id=Id(), food=food }; b.hasMeal=true;
+            Tell("已放下" + new[] { "红薯", "香蕉", "苹果" }[food] + "，" + b.name + "会走过去进食。");
+        }
+        public void CompleteMeal(string id,string mealId)
+        {
+            var b=Beetle(id); Available(b);
+            Require(b.Adult(State.week) && !b.overturned && b.meal!=null && b.meal.id==mealId,"这份食物当前不能结算");
+            b.nutrition=Math.Min(100,b.nutrition+(b.meal.food==0?35:25)); b.hearts=Math.Min(b.maxHearts,b.hearts+.5);
+            b.meal=null;b.hasMeal=false;Tell(b.name+"吃好了，正在清理触角。");
         }
         public void Rescue(string id)
         {
             var b = Beetle(id); Available(b); Require(b.overturned,"它已经站稳啦"); b.overturned = false; b.overturnSeconds = 0; Tell("轻轻扶正了 " + b.name + "。记得补充食物和休息。");
         }
         public void House(string id,string habitat) { var b = Beetle(id); Available(b); Catalog.Housing(habitat); b.habitat = habitat; Tell("已移入 " + Catalog.Housing(habitat).name); }
-        public void ClearDead(string id) { var b = Beetle(id); Require(b.dead,"只有死亡甲虫可以清理；健康甲虫请在市场交易"); State.beetles.Remove(b); Tell("已清理栏位，留下了一份小小的纪念。"); }
-        public void CareSeconds(double seconds)
+        public void ClearDead(string id) { var b = Beetle(id); Require(b.dead,"只有死亡甲虫可以清理；健康甲虫请在市场交易"); RemoveBeetle(b); Tell("已清理栏位，留下了一份小小的纪念。"); }
+        public void CareSeconds(double seconds, Func<string, bool> isEating = null)
         {
             if (State.battle != null || State.auction != null) return;
             foreach (var b in State.beetles.Where(x => x.Adult(State.week) && !x.listed))
             {
                 if (!b.overturned)
                 {
+                    // The host supplies transient behavior facts; pending food alone is not eating.
+                    if (b.meal != null && isEating?.Invoke(b.id) == true) continue;
                     if (Roll() < 1 - Math.Exp(-Catalog.Housing(b.habitat).accidentPerMinute * seconds / 60))
                     { b.overturned = true; b.overturnSeconds = 0; Tell(b.name + " 翻不过身了！请到温室帮忙（60秒后开始受伤）。"); }
                 }
@@ -108,6 +123,8 @@ namespace BugDuel.Campaign
         public void NextWeek(bool work = false)
         {
             Require(State.battle == null && State.auction == null && State.pupaAuction == null,"请先完成当前赛事或拍卖"); Require(!State.beetles.Any(b => b.overturned && !b.dead),"还有甲虫在挣扎，先帮它翻身再快进一周");
+            // A week is ample time to finish placed food. No second payment and no scene dependency.
+            foreach(var b in State.beetles.Where(x=>x.Adult(State.week)&&!x.listed&&x.meal!=null))CompleteMeal(b.id,b.meal.id);
             State.week++; if (work) Earn(150);
             int matured = 0, caught = 0;
             foreach (var b in State.beetles.Where(x => !x.dead))
@@ -152,6 +169,7 @@ namespace BugDuel.Campaign
             {
                 Require(b != null && !string.IsNullOrEmpty(b.id) && ids.Add(b.id),"甲虫 ID 重复或缺失"); Catalog.Species(b.speciesId); Catalog.Housing(b.habitat);
                 Require(b.genes != null && b.genes.Count > 0 && b.genes.Count <= 5 && b.genes.All(g => g != null && CampaignGenetics.GeneIds.Contains(g.id) && g.stars >= 1 && g.stars <= 3) && b.ancestors != null,"基因或血统数据无效");
+                Require((b.meal!=null)==b.hasMeal && (b.meal==null || !string.IsNullOrWhiteSpace(b.meal.id)&&b.meal.food>=0&&b.meal.food<=2),"待进食记录无效");
                 Require(Finite(b.length,1,1000) && Finite(b.hearts,0,5) && Finite(b.nutrition,0,100) && Finite(b.inheritance,.1,2) && Finite(b.overturnSeconds,0,100000) && b.maxHearts >= 1 && b.maxHearts <= 5 && b.hearts <= b.maxHearts && b.feed >= -1 && b.feed < 3 && b.climate >= 0 && b.climate < 3 && b.readyWeek >= 0 && b.value >= 1 && b.value <= CampaignEconomy.Maximum && b.initialValue >= 1 && b.initialValue <= CampaignEconomy.Maximum,"甲虫数值无效");
             }
             foreach (var e in State.expeditions) { Catalog.Catch(e.habitat); Require((e.count == 2 || e.count == 4) && e.dueWeek > State.week,"捕虫队数据无效"); }

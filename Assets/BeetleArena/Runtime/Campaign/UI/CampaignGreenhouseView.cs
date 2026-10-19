@@ -24,14 +24,14 @@ namespace BeetleArena.Campaign
             var detail=Column(425,265,700,550);
             if(selected!=null)
             {
-                var b=selected; if(State.selectedId!=b.id)State.selectedId=b.id;
+                var b=selected;
                 var card=Card(detail,345);Label(card,b.name,24,20,640,42,31,accent);careLabel=Label(card,Details(b),24,76,645,220,23);
                 Btn(card,"帮助翻身  H",24,290,310,40,()=>app.Execute(s=>s.Rescue(b.id)),b.overturned&&!b.dead);
                 Btn(card,b.dead?"清理栏位":"更换养殖环境",350,290,315,40,()=>{if(b.dead)app.Execute(s=>s.ClearDead(b.id));else OpenHousing(b.id);});
                 if(b.Adult(State.week))
                 {
-                    var food=Card(detail,145);Label(food,"开饭啦  ·  喂养同时恢复半颗心",22,18,640,40,25);
-                    string[] names={"红薯 15 G","香蕉 20 G","苹果 20 G"};for(int i=0;i<3;i++){int index=i;Btn(food,names[i],22+i*218,77,207,45,()=>app.Execute(s=>s.Feed(b.id,index)),!b.listed&&!b.overturned);}
+                    var food=Card(detail,145);Label(food,b.meal==null?"开饭啦 · 吃完恢复饱食与半颗心":"食盆已备好 · 等待甲虫吃完",22,18,640,40,25);
+                    string[] names={"红薯 15 G","香蕉 20 G","苹果 20 G"};for(int i=0;i<3;i++){int index=i;Btn(food,names[i],22+i*218,77,207,45,()=>app.Execute(s=>s.Feed(b.id,index)),!b.listed&&!b.overturned&&b.meal==null&&State.battle?.beetleId!=b.id&&State.auction?.beetleId!=b.id);}
                 }
                 else if(!b.dead)
                 {
@@ -53,8 +53,10 @@ namespace BeetleArena.Campaign
             Btn(tools,"帮工一周 +150 G",22,75,310,45,()=>app.Execute(s=>s.NextWeek(true)));
             Btn(tools,"保存当前日记",348,75,310,45,()=>app.SaveSlot(0));
             Btn(tools,"重载物种 / 环境配置",22,135,636,45,app.ReloadContent);
-            Label(root,"OBSERVATION\n微距观察",1170,285,360,70,26,accent);
-            Label(root,"每只甲虫都值得\n一份耐心。\n\n翻身求助后60秒开始受伤。\n休息环境可降低意外概率。",1170,665,350,140,20,muted);
+            Label(root,"OBSERVATION · 微距观察",1170,265,390,42,24,accent);
+            behaviorLabel=Label(root,"观察中",1170,605,390,40,23,accent);
+            Btn(root,"轻触观察区",1170,655,350,40,()=>{if(!careController)careController=FindFirstObjectByType<CampaignCareController>();if(careController)careController.Disturb(State.selectedId);},selected!=null&&!selected.dead);
+            Label(root,"投下食物后会自行靠近、进食。\n翻倒需扶正，60秒后开始受伤。\n开菜单时暂停，换对象仍继续。",1170,720,370,90,18,muted);
         }
         void OpenHousing(string id)
         {

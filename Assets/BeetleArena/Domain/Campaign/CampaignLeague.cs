@@ -59,7 +59,7 @@ namespace BugDuel.Campaign
         {
             var a=State.auction; Require(a != null && a.round == a.rounds,"请完成所有举牌轮次"); var b=Beetle(a.beetleId);
             State.hall.Add(new HallRecord { name=b.name,speciesId=b.speciesId,length=b.length,mutation=b.mutation,week=State.week,price=a.bid,rights=a.rights });
-            Earn(a.bid); if (a.rights) b.rightsSold=true; else State.beetles.Remove(b); State.auction=null;
+            Earn(a.bid); if (a.rights) b.rightsSold=true; else RemoveBeetle(b); State.auction=null;
             Tell("落槌！" + a.bid + " G。已入名人堂；血统每周参加一次NPC赛事，胜场奖金的10%作为分红。");
         }
     }

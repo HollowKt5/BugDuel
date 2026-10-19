@@ -1,12 +1,14 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using BugDuel.Domain;
 
 namespace BugDuel.Campaign
 {
     // Save DTOs deliberately contain no Unity objects. IDs, never display names, are foreign keys.
     [Serializable] public sealed class CampaignState
     {
+        internal CampaignState ShallowCopy() => (CampaignState)MemberwiseClone();
         public int schema = 1, week = 1, capacity = 6, cabinet = 3, highestLeague, reputation;
         public long coins = 1800;
         public uint random = 18273;
@@ -28,6 +30,7 @@ namespace BugDuel.Campaign
     }
     [Serializable] public sealed class CampaignBeetle
     {
+        internal CampaignBeetle ShallowCopy() => (CampaignBeetle)MemberwiseClone();
         public string id, speciesId, name, mother, father, brood, habitat = "woodland";
         public List<string> ancestors = new List<string>();
         public bool female, dead, overturned, listed, rightsSold;
@@ -35,9 +38,12 @@ namespace BugDuel.Campaign
         public int maxHearts = 5, inbred, readyWeek, feed, climate = 1, cooldownWeek, wins, streak, championships, seasonWins;
         public long initialValue, value;
         public string mutation = "";
+        public CampaignMeal meal;
+        public bool hasMeal; // Preserve nullness through Unity inline serialization.
         public List<Gene> genes = new List<Gene>();
         public bool Adult(int week) => !dead && readyWeek <= week;
     }
+    [Serializable] public sealed class CampaignMeal { public string id; public int food; }
     [Serializable] public sealed class Gene { public string id; public int stars; public Gene(string id, int stars = 1) { this.id = id; this.stars = stars; } }
     [Serializable] public sealed class Expedition { public string id, habitat; public int dueWeek, count; public bool large; }
     [Serializable] public sealed class MarketOffer { public string id, beetleId, buyer; public long price; public int week; public bool femaleBonus, recipe, permit; }
@@ -65,12 +71,20 @@ namespace BugDuel.Campaign
             Unique(species?.Select(x => x.id)); Unique(catches?.Select(x => x.id)); Unique(housing?.Select(x => x.id));
             if (species.Length == 0 || catches.Length == 0 || housing.Length == 0 || feeds == null || feeds.Length != 3 || leagues == null || leagues.Length != 5)
                 throw new InvalidOperationException("内容表缺少必需分类");
+            if (!species.Any(x => x.id == "red") || !housing.Any(x => x.id == "woodland") || !catches.Any(x => x.unlock == 0))
+                throw new InvalidOperationException("内容表必须保留初始物种 red、初始环境 woodland 和至少一个初始捕虫地点");
             foreach (var x in species)
+            {
                 if (string.IsNullOrWhiteSpace(x.name) || !Finite(x.length, 10, 250) || x.price < 1 || x.price > 1000000 || !Finite(x.hue, 0, 1)) throw new InvalidOperationException("物种参数无效");
+                x.behavior?.Validate();
+            }
             foreach (var x in catches)
                 if (x.species == null || x.species.Length == 0 || x.species.Any(id => !species.Any(s => s.id == id)) || x.cost < 1 || x.cost > 10000000 || x.weeks < 1 || x.weeks > 2 || x.unlock < 0 || x.unlock > 5 || !Finite(x.min, 10, 250) || !Finite(x.max, x.min, 250) || !Finite(x.twoStar, 0, 1) || !Finite(x.rare, 0, 1) || x.twoStar + x.rare > 1) throw new InvalidOperationException("捕虫表参数无效");
             foreach (var x in housing)
+            {
                 if (!Finite(x.healthRecovery, 0, 2) || !Finite(x.accidentPerMinute, 0, .25) || !Finite(x.temperature, 0, 40) || !Finite(x.humidity, 0, 100)) throw new InvalidOperationException("环境参数无效");
+                x.behavior?.Validate();
+            }
             foreach (var x in feeds)
                 if (x.cost < 0 || x.cost > 100000 || !Finite(x.multiplier, .5, 2) || !Finite(x.mutationChance, 0, 1)) throw new InvalidOperationException("饲料参数无效");
             double end = 0;
@@ -101,9 +115,9 @@ namespace BugDuel.Campaign
             leagues = new[] { new LeagueRule(1,"新秀微型树桩赛",0,55,50,200,1000), new LeagueRule(2,"轻量级林间联赛",55,80,200,600,3500), new LeagueRule(3,"中量级栎木杯",80,110,600,1800,12000), new LeagueRule(4,"重量级雨林大师赛",110,145,2000,5500,38000), new LeagueRule(5,"巨神级树液王座赛",145,10000,6000,16000,120000) }
         };
     }
-    [Serializable] public sealed class SpeciesRule { public string id, name; public double length, hue; public int price; public SpeciesRule(string id,string name,double length,int price,double hue) { this.id=id;this.name=name;this.length=length;this.price=price;this.hue=hue; } }
+    [Serializable] public sealed class SpeciesRule { public string id, name; public double length, hue; public int price; public CareBehaviorProfile behavior; public SpeciesRule(string id,string name,double length,int price,double hue) { this.id=id;this.name=name;this.length=length;this.price=price;this.hue=hue; behavior=new CareBehaviorProfile { nocturnal=id!="goliath",activity=id=="goliath"?.85:.7,walkSpeed=length>100?.18:.24 }; } }
     [Serializable] public sealed class CatchRule { public string id,name; public int unlock,cost,weeks; public double min,max,twoStar,rare; public string[] species; public CatchRule(string id,string name,int unlock,int cost,int weeks,double min,double max,double twoStar,double rare,params string[] species) { this.id=id;this.name=name;this.unlock=unlock;this.cost=cost;this.weeks=weeks;this.min=min;this.max=max;this.twoStar=twoStar;this.rare=rare;this.species=species; } }
-    [Serializable] public sealed class HousingRule { public string id,name; public double temperature,humidity,healthRecovery,accidentPerMinute; public HousingRule(string id,string name,double t,double h,double recovery,double risk) { this.id=id;this.name=name;temperature=t;humidity=h;healthRecovery=recovery;accidentPerMinute=risk; } }
+    [Serializable] public sealed class HousingRule { public string id,name; public double temperature,humidity,healthRecovery,accidentPerMinute; public CareHabitatProfile behavior; public HousingRule(string id,string name,double t,double h,double recovery,double risk) { this.id=id;this.name=name;temperature=t;humidity=h;healthRecovery=recovery;accidentPerMinute=risk;behavior=new CareHabitatProfile { activityMultiplier=id=="recovery"?.6:1,restPreference=id=="recovery"?.9:.5 }; } }
     [Serializable] public sealed class FeedRule { public string name; public int cost; public double multiplier,mutationChance; public FeedRule(string name,int cost,double multiplier,double mutationChance) { this.name=name;this.cost=cost;this.multiplier=multiplier;this.mutationChance=mutationChance; } }
     [Serializable] public sealed class LeagueRule { public int tier,fee,win,champion; public string name; public double minimum,maximum; public LeagueRule(int tier,string name,double min,double max,int fee,int win,int champion) { this.tier=tier;this.name=name;minimum=min;maximum=max;this.fee=fee;this.win=win;this.champion=champion; } }
 }

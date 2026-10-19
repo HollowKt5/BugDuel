@@ -31,6 +31,9 @@ namespace BeetleArena
         // 运行时部件 AABB 缓存，worldBounds 是它们合并后的整只甲虫 AABB。
         [NonSerialized] public Bounds[] bounds;
         [NonSerialized] public Bounds worldBounds;
+        // Cache references only. Read exact world poses for narrow-phase tests so repeated
+        // root translations cannot accumulate rounding error in an independent pose cache.
+        [NonSerialized] public Transform[] shapeTransforms;
         BeetleContactRole[] roles;
         int[] legIndices;
         bool[] weapons;
@@ -142,8 +145,14 @@ namespace BeetleArena
         {
             if (shapes == null || shapes.Length == 0) throw new InvalidOperationException("No collision shapes bound.");
             if (bounds == null || bounds.Length != shapes.Length) bounds = new Bounds[shapes.Length];
+            if (shapeTransforms == null || shapeTransforms.Length != shapes.Length)
+                shapeTransforms = new Transform[shapes.Length];
             EnsureShapeMetadata();
-            for (int i = 0; i < shapes.Length; i++) bounds[i] = shapes[i].bounds;
+            for (int i = 0; i < shapes.Length; i++)
+            {
+                bounds[i] = shapes[i].bounds;
+                shapeTransforms[i] = shapes[i].transform;
+            }
             worldBounds = bounds[0];
             for (int i = 1; i < bounds.Length; i++) worldBounds.Encapsulate(bounds[i]);
         }
@@ -152,7 +161,8 @@ namespace BeetleArena
         public void Translate(Vector3 movement)
         {
             transform.position += movement;
-            for (int i = 0; i < bounds.Length; i++) bounds[i].center += movement;
+            for (int i = 0; i < bounds.Length; i++)
+                bounds[i].center += movement;
             worldBounds.center += movement;
         }
     }

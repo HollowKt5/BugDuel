@@ -69,7 +69,7 @@ namespace BeetleArena.Campaign
         public void CycleCamera(){if(controller&&controller.Simulation!=null)controller.CycleView();}
         void Update()
         {
-            if(!controller||controller.Simulation==null||app.Modal)return;
+            if(!controller||controller.Simulation==null||app.Modal||app.Busy)return;
             if(result!=null&&!IsFinished){retryTime-=Time.unscaledDeltaTime;if(retryTime<=0){retryTime=3;TrySettle();}}
             if(IsFinished){finishTime+=Time.unscaledDeltaTime;if(finishTime>3)return;}
             accumulator=Mathf.Min(.24f,accumulator+Mathf.Min(.05f,Time.unscaledDeltaTime)*Speed);
@@ -96,8 +96,8 @@ namespace BeetleArena.Campaign
         void TrySettle()
         {
             if(result==null||IsFinished||app.Busy)return;
-            if(app.Execute(s=>{if(result.Winner<0)s.DrawBattle(result.MatchId);else s.SettleBattle(result.MatchId,result.Winner==0);}))
-            {IsFinished=true;ResultTitle=result.Winner<0?"平局 · 棋逢对手":result.Winner==0?"赢啦！漂亮的一战":"这一场，先歇一歇";Finished?.Invoke();}
+            app.Execute(s=>{if(result.Winner<0)s.DrawBattle(result.MatchId);else s.SettleBattle(result.MatchId,result.Winner==0);},
+                ()=>{IsFinished=true;ResultTitle=result.Winner<0?"平局 · 棋逢对手":result.Winner==0?"赢啦！漂亮的一战":"这一场，先歇一歇";Finished?.Invoke();});
         }
         void OnDestroy(){if(controller)controller.MatchCompleted-=OnCompleted;foreach(var item in owned)if(item)Destroy(item);}
     }

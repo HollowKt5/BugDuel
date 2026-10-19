@@ -19,6 +19,8 @@ public static class CampaignSceneBuilder
     {
         if(EditorApplication.isPlaying)throw new InvalidOperationException("Stop Play before installing scenes.");
         if(!Application.isBatchMode && SceneManager.GetActiveScene().isDirty)throw new InvalidOperationException("Save the current scene before installation.");
+        CampaignTransitionSetup.Apply();
+        CareGroundingSetup.Apply();
         Directory.CreateDirectory(Folder);Directory.CreateDirectory("Assets/StreamingAssets");
         var font=BeetleArenaSceneBuilder.MakeFont();var blur=Shader.Find("Hidden/BugDuel/CampaignBlur");var glass=Shader.Find("BugDuel/CampaignGlass");
         if(!blur||!glass||!font)throw new InvalidOperationException("Campaign shaders or font are missing.");
@@ -67,6 +69,7 @@ public static class CampaignSceneBuilder
         var existing=EditorBuildSettings.scenes.Where(x=>!paths.Contains(x.path)).ToList();
         EditorBuildSettings.scenes=paths.Select(x=>new EditorBuildSettingsScene(x,true)).Concat(existing).ToArray();
         AssetDatabase.Refresh();AssetDatabase.SaveAssets();
+        CampaignIridescenceSetup.Apply();
         EditorSceneManager.playModeStartScene=AssetDatabase.LoadAssetAtPath<SceneAsset>(paths[0]);
         EditorSceneManager.OpenScene(paths[0],OpenSceneMode.Single);
         Debug.Log("Campaign flow installed: 8 scenes; combat source and original scenes preserved.");

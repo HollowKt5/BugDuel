@@ -50,7 +50,7 @@ namespace BugDuel.Campaign
         public void AcceptOffer(string offerId)
         {
             var o = State.offers.FirstOrDefault(x=>x.id==offerId); Require(o != null && o.week == State.week,"报价已失效"); var b = Beetle(o.beetleId);
-            Require(b.listed && !b.dead,"甲虫无法成交"); State.beetles.Remove(b); State.offers.RemoveAll(x=>x.beetleId==b.id); Earn(o.price);
+            Require(b.listed && !b.dead,"甲虫无法成交"); RemoveBeetle(b); State.offers.RemoveAll(x=>x.beetleId==b.id); Earn(o.price);
             if (o.buyer == "狂热小学生") State.reputation += 20;
             if (o.recipe) State.feedRecipe = true;
             if (o.permit) { State.scientistPermit = true; State.mutationRecipe = true; }

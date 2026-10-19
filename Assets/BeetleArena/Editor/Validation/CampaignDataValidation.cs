@@ -12,7 +12,9 @@ public static class CampaignDataValidation
         var c=CampaignCatalog.Defaults();c.Validate();
         var s=CampaignSession.New(c,1987);s.Validate();
         var copy=new CampaignSession(CampaignApp.CloneState(s.State),c);copy.Validate();
-        Check(copy.State.battle==null&&copy.State.auction==null&&copy.State.pupaAuction==null,"optional JSON records remain absent");
+        Check(copy.State.battle==null&&copy.State.auction==null&&copy.State.pupaAuction==null,"optional snapshot records remain absent");
+        copy.State.beetles[0].genes[0].stars=3;copy.State.beetles[0].ancestors.Add("isolated");copy.State.stock.Clear();
+        Check(s.State.beetles[0].genes[0].stars==1&&s.State.beetles[0].ancestors.Count==0&&s.State.stock.Count>0,"transaction snapshot owns nested collections");
         Check(new[]{54.999,55,79.999,80,109.999,110,144.999,145}.Select(c.Tier).Select(x=>x.tier).SequenceEqual(new[]{1,2,2,3,3,4,4,5}),"league boundaries");
         string id=s.State.beetles[0].id,mother=s.State.beetles[1].id;
         s.State.coins=100000;s.Breed(id,mother);var child=s.State.beetles.Last();Check(child.maxHearts==5&&child.inheritance>=.945,"outcrossing");s.Grow(child.id,1,0);s.NextWeek();s.NextWeek();Check(child.Adult(s.State.week),"growth completion");s.Validate();
@@ -27,7 +29,16 @@ public static class CampaignDataValidation
         var father=new CampaignBeetle{genes=new System.Collections.Generic.List<Gene>{new Gene("力量"),new Gene("力量",2)}};
         var mom=new CampaignBeetle{genes=new System.Collections.Generic.List<Gene>{new Gene("力量",2)}};
         var genes=CampaignGenetics.Inherit(father,mom);Check(genes.Last().stars==3&&genes.Count==2,"adjacent gene merge");
-        Debug.Log("Campaign data contracts PASS: JSON, league boundaries, outcrossing, growth, expeditions, capacity, weekly offers, championship, auction, rescue, genetics.");
+        CheckPendingActivities();
+        var sale=CampaignSession.New(c,77);string sold=sale.State.selectedId;sale.List(sold);sale.AcceptOffer(sale.State.offers.First().id);
+        Check(sale.State.selectedId!=sold&&sale.State.beetles.Any(b=>b.id==sale.State.selectedId),"sale keeps selection valid without UI mutating state");
+        foreach(CampaignPage page in Enum.GetValues(typeof(CampaignPage)))
+        {
+            Check(!CampaignInputPolicy.CanManage(page,true,true,false)&&!CampaignInputPolicy.CanManage(page,true,false,true),"busy/modal input policy: "+page);
+        }
+        var invalid=CampaignCatalog.Defaults();invalid.species=invalid.species.Where(x=>x.id!="red").ToArray();
+        bool blocked=false;try{invalid.Validate();}catch(InvalidOperationException){blocked=true;}Check(blocked,"content preserves starter species");
+        Debug.Log("Campaign data contracts PASS: snapshot isolation, league boundaries, outcrossing, growth, expeditions, capacity, weekly offers, championship, auction, rescue, genetics, input policy.");
     }
     public static void CheckPendingActivities()
     {

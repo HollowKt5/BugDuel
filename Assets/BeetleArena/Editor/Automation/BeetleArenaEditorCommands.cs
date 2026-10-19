@@ -62,6 +62,22 @@ public static class BeetleArenaEditorCommands
     {
         switch (request.action)
         {
+            case "menu-iridescence": CampaignIridescenceSetup.Apply(); return "Menu iridescent shell installed.";
+            case "menu-iridescence-validate": CampaignIridescenceValidation.Run(); return File.ReadAllText("Artifacts/IridescentShell/Validation.txt");
+            case "care-behavior": CareBehaviorValidation.Run(); return File.ReadAllText("Artifacts/Campaign/Care/Contracts.txt");
+            case "care-grounding": CareGroundingValidation.Run(); return File.ReadAllText("Artifacts/Campaign/Care/GroundContact.txt");
+            case "care-ground-setup": CareGroundingSetup.Apply(); return "Care shell geometry prepared.";
+            case "campaign-transition-profile": CampaignTransitionSetup.Apply(); return "Transition curve profile ready.";
+            case "campaign-transition-baseline": CampaignTransitionValidation.Run(false); return "Transition baseline capture started.";
+            case "campaign-transition-verify": CampaignTransitionValidation.Run(true); return "Transition frame acceptance started.";
+            case "campaign-style": CampaignToonSetup.Apply(); return "Campaign toon materials applied.";
+            case "campaign-fonts": CampaignFontSetup.Apply(); return "Campaign font coverage PASS.";
+            case "low-throw-baseline": BeetleLowThrowValidation.Run(); return File.ReadAllText("Artifacts/LowThrow/Before/Report.txt");
+            case "low-throw-verify": BeetleLowThrowValidation.Run(true); return File.ReadAllText("Artifacts/LowThrow/After/Report.txt");
+            case "campaign-data": CampaignDataValidation.Run(); return "Campaign data PASS.";
+            case "campaign-scenes": CampaignSceneValidation.Run(); return "Campaign scenes PASS.";
+            case "campaign-status": return "Playing="+EditorApplication.isPlaying+"; scene="+SceneManager.GetActiveScene().path+"; dirty="+SceneManager.GetActiveScene().isDirty;
+            case "campaign-play-validation": CampaignPlayModeValidation.Run(); return "Campaign Play acceptance started; see Artifacts/Campaign/Acceptance/Result.txt.";
             case "validate-landing-slide": BeetleThrowValidation.LandingAndEdge(); return File.ReadAllText("Artifacts/LandingSlide/After.txt") + File.ReadAllText("Artifacts/LandingSlide/Edge.txt");
             case "diagnose-replay": BeetleLiftCatchValidation.CompareReplay(); return File.ReadAllText("Artifacts/LiftCatch/Comparison.txt");
             case "replay-natural-throw": BeetleRoundPacingValidation.Preview(); return File.ReadAllText("Artifacts/RoundPacing/Preview.txt");
@@ -80,6 +96,7 @@ public static class BeetleArenaEditorCommands
             case "validate-trough": BeetleCombatRefinementValidation.Run(3); return File.ReadAllText("Artifacts/CombatRefinement/Validation.txt");
             case "combat-upgrade": BeetleCombatUpgrade.Apply(); return "Combat refinements saved.";
             case "validate-escape": BeetleContactEscapeValidation.Run(); return File.ReadAllText("Artifacts/DeadlockFix/CapturedReplay.txt");
+            case "validate-stalls": BeetleStallValidation.Run(); return File.ReadAllText("Artifacts/DeadlockFix/NaturalRounds.txt");
             case "refresh": AssetDatabase.Refresh(); return "Refresh requested.";
             // 只更新游戏材质；渲染验证在临时场景副本中进行。
             case "apply-toon": BeetleArenaToonSetup.Apply(); return "Toon materials saved.";

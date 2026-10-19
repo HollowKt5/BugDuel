@@ -1,0 +1,445 @@
+{
+  "schema": 1,
+  "revision": 2,
+  "species": [
+    {
+      "id": "rhinoceros",
+      "name": "独角仙",
+      "length": 65.0,
+      "hue": 0.08,
+      "price": 280,
+      "behavior": {
+        "nocturnal": true,
+        "activity": 0.7,
+        "walkSpeed": 0.24,
+        "idleMin": 2,
+        "idleMax": 5,
+        "walkSeconds": 5,
+        "inspectSeconds": 2,
+        "eatSeconds": 4,
+        "groomSeconds": 3,
+        "restSeconds": 9,
+        "recoverSeconds": 2,
+        "startleSeconds": 1.6,
+        "hungerThreshold": 65
+      }
+    },
+    {
+      "id": "flat",
+      "name": "本土扁锹",
+      "length": 62.0,
+      "hue": 0.04,
+      "price": 320,
+      "behavior": {
+        "nocturnal": true,
+        "activity": 0.7,
+        "walkSpeed": 0.24,
+        "idleMin": 2,
+        "idleMax": 5,
+        "walkSeconds": 5,
+        "inspectSeconds": 2,
+        "eatSeconds": 4,
+        "groomSeconds": 3,
+        "restSeconds": 9,
+        "recoverSeconds": 2,
+        "startleSeconds": 1.6,
+        "hungerThreshold": 65
+      }
+    },
+    {
+      "id": "red",
+      "name": "鸡冠细身赤锹",
+      "length": 45.0,
+      "hue": 0.01,
+      "price": 200,
+      "behavior": {
+        "nocturnal": true,
+        "activity": 0.7,
+        "walkSpeed": 0.24,
+        "idleMin": 2,
+        "idleMax": 5,
+        "walkSeconds": 5,
+        "inspectSeconds": 2,
+        "eatSeconds": 4,
+        "groomSeconds": 3,
+        "restSeconds": 9,
+        "recoverSeconds": 2,
+        "startleSeconds": 1.6,
+        "hungerThreshold": 65
+      }
+    },
+    {
+      "id": "giant-stag",
+      "name": "日本大锹",
+      "length": 78.0,
+      "hue": 0.65,
+      "price": 850,
+      "behavior": {
+        "nocturnal": true,
+        "activity": 0.7,
+        "walkSpeed": 0.24,
+        "idleMin": 2,
+        "idleMax": 5,
+        "walkSeconds": 5,
+        "inspectSeconds": 2,
+        "eatSeconds": 4,
+        "groomSeconds": 3,
+        "restSeconds": 9,
+        "recoverSeconds": 2,
+        "startleSeconds": 1.6,
+        "hungerThreshold": 65
+      }
+    },
+    {
+      "id": "rainbow",
+      "name": "澳洲彩虹锹甲",
+      "length": 68.0,
+      "hue": 0.38,
+      "price": 1000,
+      "behavior": {
+        "nocturnal": true,
+        "activity": 0.7,
+        "walkSpeed": 0.24,
+        "idleMin": 2,
+        "idleMax": 5,
+        "walkSeconds": 5,
+        "inspectSeconds": 2,
+        "eatSeconds": 4,
+        "groomSeconds": 3,
+        "restSeconds": 9,
+        "recoverSeconds": 2,
+        "startleSeconds": 1.6,
+        "hungerThreshold": 65
+      }
+    },
+    {
+      "id": "palawan",
+      "name": "巴拉望巨扁锹",
+      "length": 108.0,
+      "hue": 0.12,
+      "price": 2200,
+      "behavior": {
+        "nocturnal": true,
+        "activity": 0.7,
+        "walkSpeed": 0.18,
+        "idleMin": 2,
+        "idleMax": 5,
+        "walkSeconds": 5,
+        "inspectSeconds": 2,
+        "eatSeconds": 4,
+        "groomSeconds": 3,
+        "restSeconds": 9,
+        "recoverSeconds": 2,
+        "startleSeconds": 1.6,
+        "hungerThreshold": 65
+      }
+    },
+    {
+      "id": "giraffe",
+      "name": "长颈鹿锯锹",
+      "length": 116.0,
+      "hue": 0.07,
+      "price": 2400,
+      "behavior": {
+        "nocturnal": true,
+        "activity": 0.7,
+        "walkSpeed": 0.18,
+        "idleMin": 2,
+        "idleMax": 5,
+        "walkSeconds": 5,
+        "inspectSeconds": 2,
+        "eatSeconds": 4,
+        "groomSeconds": 3,
+        "restSeconds": 9,
+        "recoverSeconds": 2,
+        "startleSeconds": 1.6,
+        "hungerThreshold": 65
+      }
+    },
+    {
+      "id": "caucasus",
+      "name": "高卡萨斯大兜",
+      "length": 120.0,
+      "hue": 0.32,
+      "price": 2800,
+      "behavior": {
+        "nocturnal": true,
+        "activity": 0.7,
+        "walkSpeed": 0.18,
+        "idleMin": 2,
+        "idleMax": 5,
+        "walkSeconds": 5,
+        "inspectSeconds": 2,
+        "eatSeconds": 4,
+        "groomSeconds": 3,
+        "restSeconds": 9,
+        "recoverSeconds": 2,
+        "startleSeconds": 1.6,
+        "hungerThreshold": 65
+      }
+    },
+    {
+      "id": "hercules",
+      "name": "赫克力士长戟大兜",
+      "length": 150.0,
+      "hue": 0.15,
+      "price": 6000,
+      "behavior": {
+        "nocturnal": true,
+        "activity": 0.7,
+        "walkSpeed": 0.18,
+        "idleMin": 2,
+        "idleMax": 5,
+        "walkSeconds": 5,
+        "inspectSeconds": 2,
+        "eatSeconds": 4,
+        "groomSeconds": 3,
+        "restSeconds": 9,
+        "recoverSeconds": 2,
+        "startleSeconds": 1.6,
+        "hungerThreshold": 65
+      }
+    },
+    {
+      "id": "actaeon",
+      "name": "亚克提恩象兜",
+      "length": 135.0,
+      "hue": 0.62,
+      "price": 5000,
+      "behavior": {
+        "nocturnal": true,
+        "activity": 0.7,
+        "walkSpeed": 0.18,
+        "idleMin": 2,
+        "idleMax": 5,
+        "walkSeconds": 5,
+        "inspectSeconds": 2,
+        "eatSeconds": 4,
+        "groomSeconds": 3,
+        "restSeconds": 9,
+        "recoverSeconds": 2,
+        "startleSeconds": 1.6,
+        "hungerThreshold": 65
+      }
+    },
+    {
+      "id": "mars",
+      "name": "战神象兜",
+      "length": 155.0,
+      "hue": 0.02,
+      "price": 7000,
+      "behavior": {
+        "nocturnal": true,
+        "activity": 0.7,
+        "walkSpeed": 0.18,
+        "idleMin": 2,
+        "idleMax": 5,
+        "walkSeconds": 5,
+        "inspectSeconds": 2,
+        "eatSeconds": 4,
+        "groomSeconds": 3,
+        "restSeconds": 9,
+        "recoverSeconds": 2,
+        "startleSeconds": 1.6,
+        "hungerThreshold": 65
+      }
+    },
+    {
+      "id": "goliath",
+      "name": "大王花金龟",
+      "length": 105.0,
+      "hue": 0.53,
+      "price": 4500,
+      "behavior": {
+        "nocturnal": false,
+        "activity": 0.85,
+        "walkSpeed": 0.18,
+        "idleMin": 2,
+        "idleMax": 5,
+        "walkSeconds": 5,
+        "inspectSeconds": 2,
+        "eatSeconds": 4,
+        "groomSeconds": 3,
+        "restSeconds": 9,
+        "recoverSeconds": 2,
+        "startleSeconds": 1.6,
+        "hungerThreshold": 65
+      }
+    }
+  ],
+  "catches": [
+    {
+      "id": "oak",
+      "name": "夏日郊野栎木林",
+      "unlock": 0,
+      "cost": 200,
+      "weeks": 1,
+      "min": 30.0,
+      "max": 65.0,
+      "twoStar": 0.14,
+      "rare": 0.01,
+      "species": [
+        "rhinoceros",
+        "flat",
+        "red"
+      ]
+    },
+    {
+      "id": "mist",
+      "name": "迷雾高山朽木林",
+      "unlock": 1,
+      "cost": 800,
+      "weeks": 1,
+      "min": 55.0,
+      "max": 88.0,
+      "twoStar": 0.28,
+      "rare": 0.07,
+      "species": [
+        "giant-stag",
+        "rainbow"
+      ]
+    },
+    {
+      "id": "islands",
+      "name": "东南亚季风群岛",
+      "unlock": 2,
+      "cost": 2500,
+      "weeks": 2,
+      "min": 75.0,
+      "max": 125.0,
+      "twoStar": 0.4,
+      "rare": 0.15,
+      "species": [
+        "palawan",
+        "giraffe",
+        "caucasus"
+      ]
+    },
+    {
+      "id": "amazon",
+      "name": "亚马逊赤道禁猎区",
+      "unlock": 3,
+      "cost": 8000,
+      "weeks": 2,
+      "min": 100.0,
+      "max": 170.0,
+      "twoStar": 0.25,
+      "rare": 0.2,
+      "species": [
+        "hercules",
+        "actaeon",
+        "mars",
+        "goliath"
+      ]
+    }
+  ],
+  "housing": [
+    {
+      "id": "woodland",
+      "name": "林地生态箱",
+      "temperature": 24.0,
+      "humidity": 70.0,
+      "healthRecovery": 0.35,
+      "accidentPerMinute": 0.025,
+      "behavior": {
+        "activityMultiplier": 1,
+        "restPreference": 0.5
+      }
+    },
+    {
+      "id": "humid",
+      "name": "湿润朽木箱",
+      "temperature": 22.0,
+      "humidity": 85.0,
+      "healthRecovery": 0.25,
+      "accidentPerMinute": 0.012,
+      "behavior": {
+        "activityMultiplier": 1,
+        "restPreference": 0.5
+      }
+    },
+    {
+      "id": "recovery",
+      "name": "安静恢复箱",
+      "temperature": 25.0,
+      "humidity": 65.0,
+      "healthRecovery": 0.75,
+      "accidentPerMinute": 0.0,
+      "behavior": {
+        "activityMultiplier": 0.6,
+        "restPreference": 0.9
+      }
+    }
+  ],
+  "feeds": [
+    {
+      "name": "绿标安全瓶",
+      "cost": 100,
+      "multiplier": 1.0,
+      "mutationChance": 0.0
+    },
+    {
+      "name": "黄标催肥瓶",
+      "cost": 450,
+      "multiplier": 1.18,
+      "mutationChance": 0.0
+    },
+    {
+      "name": "紫标突变瓶",
+      "cost": 1200,
+      "multiplier": 1.12,
+      "mutationChance": 0.35
+    }
+  ],
+  "leagues": [
+    {
+      "tier": 1,
+      "fee": 50,
+      "win": 200,
+      "champion": 1000,
+      "name": "新秀微型树桩赛",
+      "minimum": 0.0,
+      "maximum": 55.0
+    },
+    {
+      "tier": 2,
+      "fee": 200,
+      "win": 600,
+      "champion": 3500,
+      "name": "轻量级林间联赛",
+      "minimum": 55.0,
+      "maximum": 80.0
+    },
+    {
+      "tier": 3,
+      "fee": 600,
+      "win": 1800,
+      "champion": 12000,
+      "name": "中量级栎木杯",
+      "minimum": 80.0,
+      "maximum": 110.0
+    },
+    {
+      "tier": 4,
+      "fee": 2000,
+      "win": 5500,
+      "champion": 38000,
+      "name": "重量级雨林大师赛",
+      "minimum": 110.0,
+      "maximum": 145.0
+    },
+    {
+      "tier": 5,
+      "fee": 6000,
+      "win": 16000,
+      "champion": 120000,
+      "name": "巨神级树液王座赛",
+      "minimum": 145.0,
+      "maximum": 10000.0
+    }
+  ],
+  "seasonWins": 3,
+  "upgrade12": 2500,
+  "upgrade20": 10000,
+  "cabinetUpgrade": 1800
+}

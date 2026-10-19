@@ -79,8 +79,9 @@ namespace BeetleArena
             motion = new[] { new BeetleContactMotion(actors[0]), new BeetleContactMotion(actors[1]) };
             viewMotion = new[] { new BeetleContactMotion(actors[0]), new BeetleContactMotion(actors[1]) };
             rigs = new[] { actors[0].GetComponent<BeetleContactRig>(), actors[1].GetComponent<BeetleContactRig>() };
-            candidatesA = new int[rigs[0].shapes.Length];
-            candidatesB = new int[rigs[1].shapes.Length];
+            int capacity = Mathf.Max(rigs[0].shapes.Length, rigs[1].shapes.Length);
+            candidatesA = new int[capacity];
+            candidatesB = new int[capacity];
             foreach (var actor in actors)
                 actor.ContactDriven = true;
         }
@@ -826,9 +827,11 @@ namespace BeetleArena
             var b = rigs[1];
             int changedLegsA = 0, changedLegsB = 0;
             bool headA = false, headB = false, changed = false;
-            for (int i = 0; i < a.shapes.Length; i++)
-                for (int j = 0; j < b.shapes.Length; j++)
+            CollectCandidates(a, b, out int countA, out int countB);
+            for (int ai = 0; ai < countA; ai++)
+                for (int bi = 0; bi < countB; bi++)
                 {
+                    int i = candidatesA[ai], j = candidatesB[bi];
                     if (!a.bounds[i].Intersects(b.bounds[j]))
                         continue;
                     var ca = a.shapes[i];
@@ -891,15 +894,16 @@ namespace BeetleArena
             {
                 float deepest = 0;
                 Vector3 n = Vector3.zero;
-                for (int i = 0; i < a.shapes.Length; i++)
-                    for (int j = 0; j < b.shapes.Length; j++)
+                CollectCandidates(a, b, out int countA, out int countB);
+                for (int ai = 0; ai < countA; ai++)
+                    for (int bi = 0; bi < countB; bi++)
                     {
+                        int i = candidatesA[ai], j = candidatesB[bi];
                         if (!a.bounds[i].Intersects(b.bounds[j]))
                             continue;
                         var ca = a.shapes[i];
                         var cb = b.shapes[j];
-                        if (Physics.ComputePenetration(ca, ca.transform.position, ca.transform.rotation, cb,
-                            cb.transform.position, cb.transform.rotation, out var normal, out float depth) && depth >
+                        if (Penetrates(a, i, b, j, out var normal, out float depth) && depth >
                             deepest)
                         {
                             RecordPartContact(i, j);
@@ -956,15 +960,16 @@ namespace BeetleArena
             {
                 float deepest = 0;
                 Vector3 correction = Vector3.zero;
-                for (int i = 0; i < a.shapes.Length; i++)
-                    for (int j = 0; j < b.shapes.Length; j++)
+                CollectCandidates(a, b, out int countA, out int countB);
+                for (int ai = 0; ai < countA; ai++)
+                    for (int bi = 0; bi < countB; bi++)
                     {
+                        int i = candidatesA[ai], j = candidatesB[bi];
                         if (!a.bounds[i].Intersects(b.bounds[j]))
                             continue;
                         var ca = a.shapes[i];
                         var cb = b.shapes[j];
-                        if (Physics.ComputePenetration(cb, cb.transform.position, cb.transform.rotation, ca,
-                            ca.transform.position, ca.transform.rotation, out var normal, out float depth) && depth >
+                        if (Penetrates(b, j, a, i, out var normal, out float depth) && depth >
                             deepest)
                         {
                             deepest = depth;
@@ -1003,6 +1008,26 @@ namespace BeetleArena
             return contact;
         }
 
+        // Rebuild after every root correction. Preserve shape order and all narrow-phase
+        // tests, but avoid the full limb x limb scan on every low-throw contact retry.
+        void CollectCandidates(BeetleContactRig a, BeetleContactRig b, out int countA, out int countB)
+        {
+            countA = countB = 0;
+            if (!a.worldBounds.Intersects(b.worldBounds)) return;
+            for (int i = 0; i < a.shapes.Length; i++)
+                if (a.bounds[i].Intersects(b.worldBounds)) candidatesA[countA++] = i;
+            for (int i = 0; i < b.shapes.Length; i++)
+                if (b.bounds[i].Intersects(a.worldBounds)) candidatesB[countB++] = i;
+        }
+
+        static bool Penetrates(BeetleContactRig a, int i, BeetleContactRig b, int j, out Vector3 normal, out float depth)
+        {
+            a.shapeTransforms[i].GetPositionAndRotation(out var positionA, out var rotationA);
+            b.shapeTransforms[j].GetPositionAndRotation(out var positionB, out var rotationB);
+            return Physics.ComputePenetration(a.shapes[i], positionA, rotationA, b.shapes[j], positionB, rotationB,
+                out normal, out depth);
+        }
+
         // 先检查整只甲虫包围盒，再挑出可能相交的部件，最后对部件对进行精确凸体检测。
         // 先用 AABB 排除远离部件，仅精确检测可能接触的代理对。
         float RequiredSeparation(Vector3 axis, out float maximumDepth, bool describe = false)
@@ -1011,15 +1036,7 @@ namespace BeetleArena
             maximumDepth = 0;
             var a = rigs[0];
             var b = rigs[1];
-            if (!a.worldBounds.Intersects(b.worldBounds))
-                return 0;
-            int countA = 0, countB = 0;
-            for (int i = 0; i < a.shapes.Length; i++)
-                if (a.bounds[i].Intersects(b.worldBounds))
-                    candidatesA[countA++] = i;
-            for (int i = 0; i < b.shapes.Length; i++)
-                if (b.bounds[i].Intersects(a.worldBounds))
-                    candidatesB[countB++] = i;
+            CollectCandidates(a, b, out int countA, out int countB);
             for (int ai = 0; ai < countA; ai++)
                 for (int bi = 0; bi < countB; bi++)
                 {
@@ -1029,8 +1046,7 @@ namespace BeetleArena
                     var ca = a.shapes[i];
                     var cb = b.shapes[j];
                     // ComputePenetration 只返回分离法线与深度，不会自动移动碰撞体。
-                    if (!Physics.ComputePenetration(ca, ca.transform.position, ca.transform.rotation, cb,
-                        cb.transform.position, cb.transform.rotation, out Vector3 normal, out float depth))
+                    if (!Penetrates(a, i, b, j, out Vector3 normal, out float depth))
                         continue;
                     RecordPartContact(i, j);
 #if UNITY_EDITOR
@@ -1070,7 +1086,8 @@ namespace BeetleArena
                             !rig.bounds[i].Intersects(surface.bounds))
                             continue;
                         var c = rig.shapes[i];
-                        if (Physics.ComputePenetration(c, c.transform.position, c.transform.rotation, surface,
+                        rig.shapeTransforms[i].GetPositionAndRotation(out var position, out var rotation);
+                        if (Physics.ComputePenetration(c, position, rotation, surface,
                             surface.transform.position, surface.transform.rotation, out Vector3 normal,
                             out float depth) && depth > deepest)
                         {
@@ -1113,7 +1130,8 @@ namespace BeetleArena
                             !rig.bounds[i].Intersects(surface.bounds))
                             continue;
                         var shape = rig.shapes[i];
-                        if (Physics.ComputePenetration(shape, shape.transform.position, shape.transform.rotation,
+                        rig.shapeTransforms[i].GetPositionAndRotation(out var position, out var rotation);
+                        if (Physics.ComputePenetration(shape, position, rotation,
                             surface, surface.transform.position, surface.transform.rotation, out _,
                             out float distance) && distance > depth)
                         {
