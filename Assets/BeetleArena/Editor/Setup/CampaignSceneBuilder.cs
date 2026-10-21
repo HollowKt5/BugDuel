@@ -57,7 +57,6 @@ public static class CampaignSceneBuilder
                 if(page==CampaignPage.MainMenu)
                 {
                     specimen.transform.rotation=Quaternion.Euler(0,75,0);
-                    var second=UnityEngine.Object.Instantiate(specimen.gameObject);second.name="Menu opponent";Place(second.transform,camera,.85f,.48f);second.transform.rotation=Quaternion.Euler(0,250,0);second.GetComponent<CampaignSpecimen>().phase=1.7f;
                 }
                 camera.orthographicSize=page==CampaignPage.MainMenu?3.6f:4.2f;
                 InstallDepthOfField(go,camera);

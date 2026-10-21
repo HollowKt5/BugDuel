@@ -43,9 +43,9 @@ public static class CampaignDataValidation
     public static void CheckPendingActivities()
     {
         var s=CampaignSession.New(CampaignCatalog.Defaults(),4511);s.State.coins=100000;s.NextWeek();s.StartPupaAuction();
-        Check(s.Reserved==1,"blind auction reservation");s.Validate();
+        Check(s.Reserved==0,"blind auction delivers through mail without reserving greenhouse space");s.Validate();
         var copy=new CampaignSession(CampaignApp.CloneState(s.State),s.Catalog);copy.Validate();Check(copy.State.pupaAuction!=null,"blind auction persistence");
-        copy.BidPupa();copy.BidPupa();copy.BidPupa();copy.Validate();Check(copy.Reserved==0&&copy.State.beetles.Count==3,"blind auction reserved slot settlement");
+        copy.BidPupa();copy.BidPupa();copy.BidPupa();copy.Validate();Check(copy.Reserved==0&&copy.State.beetles.Count==2&&copy.State.mail.Last().senderId=="auction","blind auction mailbox settlement");
         var b=copy.State.beetles[0];b.nutrition=100;long value=b.value;int streak=b.streak;copy.EnterLeague(b.id);copy.DrawBattle(copy.State.battle.id);
         Check(b.value==value&&b.streak==streak&&copy.State.battle==null,"draw does not become a defeat");copy.Validate();
         Debug.Log("Campaign pending-activity contracts PASS: blind auction reservation, JSON, settlement, combat draw.");

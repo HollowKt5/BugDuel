@@ -14,7 +14,7 @@ namespace BeetleArena.Campaign
     {
         public BeetleMatchController controller;
         [NonSerialized] public TMP_Text playerLabel,opponentLabel;
-        [NonSerialized] public UI.Image playerBar,opponentBar,playerStructure,opponentStructure;
+        [NonSerialized] public UI.Image playerBar,opponentBar;
         public event Action Finished;
         public bool IsFinished { get; private set; }
         public string ResultTitle { get; private set; }
@@ -24,8 +24,6 @@ namespace BeetleArena.Campaign
         BeetleMatchResult result;
         float accumulator,hudTime,retryTime,finishTime;
         readonly List<UnityEngine.Object> owned=new List<UnityEngine.Object>();
-        readonly float[] structure={1,1};
-        readonly int[] previousContacts={0,0};
         void Awake() { if(controller)controller.enabled=false; }
         void Start()
         {
@@ -77,20 +75,13 @@ namespace BeetleArena.Campaign
             while(accumulator>=BeetleSimulation.FixedStep && steps++<12)
             {
                 controller.AdvanceRoundClock(BeetleSimulation.FixedStep);controller.AdvanceFixedStep();accumulator-=BeetleSimulation.FixedStep;
-                for(int i=0;i<2;i++)
-                {
-                    var f=controller.Simulation.Fighters[i];int contacts=Math.Max(0,f.Contacts-previousContacts[i]);previousContacts[i]=f.Contacts;
-                    // Presentation-only structural wear telemetry. It does not alter the existing combat outcome.
-                    structure[i]=Mathf.Max(.1f,structure[i]-contacts*.006f);
-                }
             }
             controller.Present(accumulator/BeetleSimulation.FixedStep,controller.Simulation.MotionTime,Mathf.Min(.05f,Time.unscaledDeltaTime)*Speed);
             hudTime+=Time.unscaledDeltaTime;if(hudTime<.1f)return;hudTime=0;
             var a=controller.Simulation.Fighters[0];var b=controller.Simulation.Fighters[1];
-            if(playerLabel)playerLabel.text=$"角斗  {a.Traits.lengthMm:0.0} mm    {controller.Simulation.FighterName(0)}";
-            if(opponentLabel)opponentLabel.text=$"角斗  {b.Traits.lengthMm:0.0} mm    {controller.Simulation.FighterName(1)}";
-            if(playerBar)playerBar.fillAmount=a.Stamina01*(.7f+.3f*a.Footing);if(opponentBar)opponentBar.fillAmount=b.Stamina01*(.7f+.3f*b.Footing);
-            if(playerStructure)playerStructure.fillAmount=structure[0];if(opponentStructure)opponentStructure.fillAmount=structure[1];
+            if(playerLabel)playerLabel.text=controller.Simulation.FighterName(0);
+            if(opponentLabel)opponentLabel.text=controller.Simulation.FighterName(1);
+            if(playerBar)playerBar.fillAmount=a.Stamina01;if(opponentBar)opponentBar.fillAmount=b.Stamina01;
         }
         void OnCompleted(BeetleMatchResult completed){result=completed;TrySettle();}
         void TrySettle()

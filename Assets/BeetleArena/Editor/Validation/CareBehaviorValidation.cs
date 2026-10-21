@@ -66,7 +66,7 @@ public static class CareBehaviorValidation
         var catalog=JsonUtility.FromJson<CampaignCatalog>(File.ReadAllText("Assets/StreamingAssets/campaign-content.json"));catalog.Validate();
         Check(true,"shipped/legacy catalog without behavior fields loads");
         var s=CampaignSession.New(catalog,31);var b=s.Beetle(s.State.selectedId);b.nutrition=40;b.hearts=3;long coins=s.State.coins;uint random=s.State.random;
-        s.Feed(b.id,0);string meal=b.meal.id;
+        CampaignMailboxValidation.SupplyFood(s,0);s.Feed(b.id,0);string meal=b.meal.id;
         Check(s.State.coins==coins-15&&b.nutrition==40&&b.hearts==3,"placing food pays once and does not grant instant nutrition");
         bool rejected=false;try{s.Feed(b.id,1);}catch(InvalidOperationException){rejected=true;}
         Check(rejected&&s.State.coins==coins-15&&b.meal.id==meal,"duplicate food neither overwrites nor charges");
@@ -81,7 +81,7 @@ public static class CareBehaviorValidation
         rejected=false;try{s.CompleteMeal(b.id,meal);}catch(InvalidOperationException){rejected=true;}
         Check(rejected&&b.nutrition==75,"stale completion cannot grant food twice");
         Check(s.State.random==random,"food and behavior do not perturb economy/combat RNG");
-        s.Feed(b.id,1);s.NextWeek();Check(b.meal==null,"week advance resolves offered food once");
+        CampaignMailboxValidation.SupplyFood(s,1);s.Feed(b.id,1);s.NextWeek();Check(b.meal==null,"week advance resolves offered food once");
         s.Validate();
         Directory.CreateDirectory("Artifacts/Campaign/Care/Serialization");
         var repository=new CampaignSaveRepository(Path.GetFullPath("Artifacts/Campaign/Care/Serialization"));
@@ -100,7 +100,7 @@ public static class CareBehaviorValidation
         var eating = s.State.beetles[0];
         var walking = s.State.beetles[1];
         s.Catalog.Housing(eating.habitat).accidentPerMinute = .25;
-        s.Feed(eating.id, 0);
+        CampaignMailboxValidation.SupplyFood(s,0);s.Feed(eating.id, 0);
         // Seed 1 makes the first one-second accident draw succeed deterministically.
         s.State.random = 1;
         s.CareSeconds(1, id => id == eating.id);

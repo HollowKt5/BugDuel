@@ -153,7 +153,9 @@ namespace BeetleArena
             bodyPivot.localPosition = bodyRest;
             bodyPivot.localRotation = Quaternion.identity;
             headPivot.localRotation = Quaternion.identity;
-            headPivot.localScale = new Vector3(1, 1, traits.hornLengthFactor);
+            var hornRig = importedRig ? importedRig.GetComponent<BeetleHornRig>() : null;
+            if (hornRig && hornRig.lengthPivot) hornRig.SetLength(traits.hornLengthFactor);
+            else headPivot.localScale = new Vector3(1, 1, traits.hornLengthFactor);
             bodyPitch = bodyRoll = headPitch = walkCycle = bodyHeightOffset = 0;
             antennaAngles = new Vector3[antennae.Length];
             if (antennaRest == null || antennaRest.Length != antennae.Length)
@@ -523,6 +525,14 @@ namespace BeetleArena
             // 提前松脱/未完全抬起时也从实际头角开始收角，不能假定已经扬到 -85 度。
             if (state.Action == BeetleAction.ReleaseLift)
                 targetHead = Mathf.Lerp(releaseHeadStart, importedRig ? (30 - 12) * importedRig.headMotionScale : 30, Ease(phase));
+            // During a jam withdrawal keep the accepted horn/chest pitch while backing
+            // out. Raising a low horn toward the idle pose pushes it into the abdomen
+            // above and can cancel the same retreat that is meant to free it.
+            if (state.Action == BeetleAction.Disengage)
+            {
+                targetHead = Mathf.DeltaAngle(0, headPivot.localEulerAngles.x);
+                pitch = Mathf.DeltaAngle(0, bodyPivot.localEulerAngles.x);
+            }
             headPitch = Mathf.Lerp(headPitch, targetHead, blend);
             bodyPitch = Mathf.Lerp(bodyPitch, pitch, blend);
             bodyRoll = Mathf.Lerp(bodyRoll, roll, blend);
@@ -562,6 +572,8 @@ namespace BeetleArena
                 BeetleAction.PryWindup || state.Action == BeetleAction.Pry ? 0 : state.Action == BeetleAction.Lifting ||
                 state.Action == BeetleAction.ReleaseLift || state.Action == BeetleAction.Toss ? liftingYaw : 0;
             yawTarget += modulePose.HeadYaw;
+            if (state.Action == BeetleAction.Disengage)
+                yawTarget = Mathf.DeltaAngle(0, headPivot.localEulerAngles.y);
             headYaw = Mathf.LerpAngle(headYaw, yawTarget, blend);
             headPivot.localRotation = Quaternion.Euler(headPitch, headYaw, 0);
             if (importedRig && !state.Airborne && !state.HasFallen)
@@ -900,6 +912,20 @@ namespace BeetleArena
             // 的头强行拉回 -32 度，瞬间重新顶入对手并引发整虫位置修正。
             headPitch = Mathf.Min(headPitch, Mathf.Max(-55, headPitch - degrees));
             headPivot.localRotation = Quaternion.Euler(headPitch, headYaw, 0);
+        }
+
+        // A withdrawing horn can need to lower under an abdomen before the root can move.
+        // This only proposes a joint pose: the contact solver must still accept every
+        // collider and the root budget. Do not change smoothing caches on a rejected trial.
+        public bool TryLowerHeadForRetreat(float degrees)
+        {
+            float pitch = Mathf.DeltaAngle(0, headPivot.localEulerAngles.x);
+            float target = Mathf.Min(35, pitch + Mathf.Max(0, degrees));
+            if (target <= pitch + .0001f)
+                return false;
+            float yaw = Mathf.DeltaAngle(0, headPivot.localEulerAngles.y);
+            headPivot.localRotation = Quaternion.Euler(target, yaw, 0);
+            return true;
         }
 
         // 可动腿被角/对方脚挡住时调整其 IK 目标，骨长不变；坚硬胸腹才承担整虫分离。

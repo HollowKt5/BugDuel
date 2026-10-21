@@ -1,0 +1,3421 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e9620f8c34305754d8cc9a7e49e852d9, type: 3}
+  m_Name: GameText_en
+  m_EditorClassIdentifier: Unity.Localization::UnityEngine.Localization.Tables.StringTable
+  m_LocaleId:
+    m_Code: en
+  m_SharedData: {fileID: 11400000, guid: f80e64be961431448bc9324863453179, type: 2}
+  m_Metadata:
+    m_Items: []
+  m_TableData:
+  - m_Id: 5077127168
+    m_Localized: 'Could not load settings; using defaults: '
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5257482240
+    m_Localized: Invalid key bindings; defaults restored
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5261676544
+    m_Localized: Please wait for saving or the transition to finish
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5261676545
+    m_Localized: 'Save failed; operation not committed: '
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5261676546
+    m_Localized: This slot is occupied. Choose an empty slot or delete the old save.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5261676547
+    m_Localized: 'Could not create game: '
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5261676548
+    m_Localized: This save slot is empty
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5261676549
+    m_Localized: 'Loaded save from week '
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5261676550
+    m_Localized: .
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5261676551
+    m_Localized: 'Load failed; original file preserved: '
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5261676552
+    m_Localized: Start a game first
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5261676553
+    m_Localized: 'Saved to '
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5261676554
+    m_Localized: auto slot
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5261676555
+    m_Localized: 'manual slot '
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5261676556
+    m_Localized: 'Save failed: '
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5261676557
+    m_Localized: Save slot deleted
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5261676558
+    m_Localized: 'Delete failed: '
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5261676559
+    m_Localized: Enter the greenhouse first
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5261676560
+    m_Localized: Finish battles and auctions before reloading content
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5261676561
+    m_Localized: Content pack exceeds 1 MB
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5261676562
+    m_Localized: Increase the content revision before reloading
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5261676563
+    m_Localized: Content updated to r
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5261676564
+    m_Localized: ; active species and habitats validated.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5261676565
+    m_Localized: 'Content reload not applied: '
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5261676566
+    m_Localized: 'Could not load scene: '
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5261676567
+    m_Localized: Settings saved
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5261676568
+    m_Localized: 'Could not save settings: '
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5261676569
+    m_Localized: Save file is too large
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5261676570
+    m_Localized: Unsupported or damaged save
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5261676571
+    m_Localized: Could not load arena
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5261676572
+    m_Localized: Strength
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5261676573
+    m_Localized: Shell
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5261676574
+    m_Localized: Agility
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5261676575
+    m_Localized: Stamina
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5261676576
+    m_Localized: "Draw \xB7 Evenly matched"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5261676577
+    m_Localized: Victory! A fine duel
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5261676578
+    m_Localized: "Defeat \xB7 Time to rest"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5261676579
+    m_Localized: Observing
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5261676580
+    m_Localized: Wandering
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5261676581
+    m_Localized: Exploring with antennae
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5261676582
+    m_Localized: Approaching food
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5261676583
+    m_Localized: Eating {0}
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5261676584
+    m_Localized: Grooming antennae
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5261676585
+    m_Localized: Seeking shelter
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5261676586
+    m_Localized: Resting quietly
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5261676587
+    m_Localized: Startled
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5261676588
+    m_Localized: Recovering after rescue
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5261676589
+    m_Localized: "Struggling upside down \xB7 Help needed"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5261676590
+    m_Localized: Larva growing
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5261676591
+    m_Localized: Dead
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5261676592
+    m_Localized: Listed / Competing / At auction
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5261676593
+    m_Localized: Standing still
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5261676594
+    m_Localized: " \xB7 Paused"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5261676595
+    m_Localized: 'Scene transition failed: '
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5261676596
+    m_Localized: Scene display timed out
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5261676597
+    m_Localized: Golden shell
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5261676598
+    m_Localized: Indigo
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5261676599
+    m_Localized: BUG DUEL / GREENHOUSE
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5261676600
+    m_Localized: Catching
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5261676601
+    m_Localized: Market
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5261676602
+    m_Localized: Leagues
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5261676603
+    m_Localized: Auction
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5261676604
+    m_Localized: Saves
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5261676605
+    m_Localized: Settings
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5261676606
+    m_Localized: "Week {0}  |  {1} G  |  Rep. {2}\nResidents {3}/{4}  \xB7  Reserved
+      {5}"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5261676607
+    m_Localized: Whole habitat
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5261676608
+    m_Localized: Beetle close-up
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5261676609
+    m_Localized: Reset view
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5261676610
+    m_Localized: "Right side: wheel to zoom \xB7 hold RMB to orbit"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5261676611
+    m_Localized: "Beetle roster \xB7 Empty"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5261676612
+    m_Localized: "Selected: {0}  \xB7  Change\u2026"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5261676613
+    m_Localized: Daily care
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5261676614
+    m_Localized: Breeding
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5261676615
+    m_Localized: Management
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5261676616
+    m_Localized: Next week  N
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5261676617
+    m_Localized: Save and return
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5261676618
+    m_Localized: "Beetle roster \xB7 {0}/{1}"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5261676619
+    m_Localized: "  \u25C2 Selected"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5261676620
+    m_Localized: "Female \u2640"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5261676621
+    m_Localized: "Male \u2642"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5261676622
+    m_Localized: Dead
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5261676623
+    m_Localized: Help needed!
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5261676624
+    m_Localized: Adult
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5261676625
+    m_Localized: Growing
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5261676626
+    m_Localized: Observe
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5261676627
+    m_Localized: 'No beetles yet.
+
+      Visit the market or send a catching squad.'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5261676628
+    m_Localized: Greenhouse
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5261676629
+    m_Localized: 'The greenhouse is quiet.
+
+      Buy a beetle or send a catching
+      squad.'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5261676630
+    m_Localized: Visit market
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5261676631
+    m_Localized: Help upright  H
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5261676632
+    m_Localized: Clear slot
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5261676633
+    m_Localized: Change habitat
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5261676634
+    m_Localized: Touch / Interact
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5261676635
+    m_Localized: Help overturned beetles; injury begins after 60 seconds.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5261676636
+    m_Localized: "Adult food \xB7 Restores nutrition and health"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5261676637
+    m_Localized: "Food ready \xB7 Waiting for the beetle to eat"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5261676638
+    m_Localized: Sweet potato 15 G
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5261676639
+    m_Localized: Banana 20 G
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5261676640
+    m_Localized: Apple 20 G
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5261676641
+    m_Localized: Beetles approach food themselves and stay stable while eating.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5261676642
+    m_Localized: "Larva care \xB7 Growth advances each week"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5261676643
+    m_Localized: "Heated\n2 wk \xD70.88"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5261676644
+    m_Localized: "Room temp.\n3 wk \xD71.00"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5261676645
+    m_Localized: "Chilled\n4\u20135 wk \xD71.22"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5261676646
+    m_Localized: Confirm feed and temperature
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5261676647
+    m_Localized: "Growing \xB7 Waiting to mature"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5261676648
+    m_Localized: Feed and temperature are locked after growth starts.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5261676649
+    m_Localized: Breeding lab
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5261676650
+    m_Localized: Not selected
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5261676651
+    m_Localized: 'Father: {0}
+
+      Mother: {1}
+
+      Select a beetle in the roster,
+      then set it as a parent.
+
+      Same-species adult pair required; maternal
+      genes enter from the right.'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5261676652
+    m_Localized: Set selected beetle as parent
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5261676653
+    m_Localized: "Breed 100 G \xB7 1 offspring"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5261676654
+    m_Localized: Greenhouse and habitats
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5261676655
+    m_Localized: "Residents {0}/{1}  \xB7  Reserved {2}\nMaximum capacity: 20"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5261676656
+    m_Localized: Expand greenhouse  {0} G
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5261676657
+    m_Localized: Fully expanded
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5261676658
+    m_Localized: No beetle selected
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5261676659
+    m_Localized: 'Habitat: {0}'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5261676660
+    m_Localized: Clear deceased beetle slot
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5261676661
+    m_Localized: Change selected beetle habitat
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5261676662
+    m_Localized: Greenhouse ledger
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5261676663
+    m_Localized: Work one week +150 G
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5261676664
+    m_Localized: Save journal
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5261676665
+    m_Localized: Reload species / habitats
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5261676666
+    m_Localized: Choose habitat
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5261676667
+    m_Localized: "{0}  {1}\xB0C / {2}% RH\nRestores {3} hearts per week"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5261676668
+    m_Localized: Back
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5261676669
+    m_Localized: Catching squad / New friends await
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5261676670
+    m_Localized: Each squad brings back 2 beetles by default. Coins and supplies
+      are spent on departure; returning beetles enter your greenhouse.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5261676671
+    m_Localized: 3-star
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5261676672
+    m_Localized: 2-star
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5261676673
+    m_Localized: "{0}\u2013{1} mm  \xB7  {2} wk  \xB7  {3} G\n{4}\nRare {5}  /  {6}
+      {7}"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5261676674
+    m_Localized: Send catching squad
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5261676675
+    m_Localized: Win the Lv.{0} league first
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5261676676
+    m_Localized: ' / Scientist permit'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5261676677
+    m_Localized: Pack for departure
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5261676678
+    m_Localized: "{0} Fermented sap \xB7 +2 beetles \xB7 Stock {1}"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5261676679
+    m_Localized: "{0} UV lamp \xB7 +25% large chance \xB7 Stock {1}"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5261676680
+    m_Localized: Buy supplies at the market. Squads reserve greenhouse slots.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5261676681
+    m_Localized: UV lamp packed
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5261676682
+    m_Localized: Travel light
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5261676683
+    m_Localized: "Returns week {0} \xB7 {1} wk remaining\n{2} slots reserved  {3}"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5261676684
+    m_Localized: 'No squads away.
+
+      Choose a habitat and start exploring!'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5261676685
+    m_Localized: Leagues / From the stump to the throne
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5261676686
+    m_Localized: Length sets the league tier. Win {0} in a row to become champion;
+      a loss resets the season streak.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5261676687
+    m_Localized: "{0}\u2013{1} mm (upper bound excluded)\nEntry {2} G / Win {3} G
+      / Title {4} G"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5261676688
+    m_Localized: "Unfinished match \xB7 Entry fee paid"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5261676689
+    m_Localized: '{0} vs. Woodland challenger
+
+      Resume this match or forfeit.'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5261676690
+    m_Localized: Resume match
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5261676691
+    m_Localized: Forfeit
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5261676692
+    m_Localized: Forfeit counts as a loss. Entry fees are not refunded.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5261676693
+    m_Localized: "Health {0}/{1} \xB7 Nutrition {2}%\nSeason {3}/{4} \xB7 Value {5}
+      G"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5261676694
+    m_Localized: Enter  {0} G
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5261676695
+    m_Localized: Champion auction / Your moment in the spotlight
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5261676696
+    m_Localized: "League champions only. Bidding lasts 5\u20138 rounds; sales reach
+      2\u20134.5\xD7 current value. First breeding rights can be sold once."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5261676697
+    m_Localized: Sold
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5261676698
+    m_Localized: Available
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5261676699
+    m_Localized: "Champion value {0} G\n{1} \xB7 First breeding rights: {2}"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5261676700
+    m_Localized: Auction champion
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5261676701
+    m_Localized: The champion leaves after sale and earns ongoing bloodline royalties.
+      Start auction?
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5261676702
+    m_Localized: Auction first breeding rights
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5261676703
+    m_Localized: 'The red carpet awaits.
+
+      Win a league championship first!'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5261676704
+    m_Localized: Visit leagues
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5261676705
+    m_Localized: First breeding rights
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5261676706
+    m_Localized: Champion beetle
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5261676707
+    m_Localized: Waiting for first bidder
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5261676708
+    m_Localized: 'Round {0} / {1}
+
+
+      {2}
+
+      Current bid  {3} G'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5261676709
+    m_Localized: Next bid
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5261676710
+    m_Localized: Close sale
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5261676711
+    m_Localized: Auction hall of fame
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5261676712
+    m_Localized: "Each bloodline enters one simulated NPC match weekly; royalties
+      are 10% of that tier\u2019s win reward."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5261676713
+    m_Localized: Breeding rights
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5261676714
+    m_Localized: "Week {0} \xB7 {1} \xB7 {2} G\nTotal royalties {3} G / {4}"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5261676715
+    m_Localized: 'Speed '
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5261676716
+    m_Localized: Camera
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5261676717
+    m_Localized: Continue league
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5261676718
+    m_Localized: 'MM/dd
+
+      HH:mm'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5261676719
+    m_Localized: Item specifications - Information
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5261676720
+    m_Localized: 'Category:'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5261676721
+    m_Localized: 'Species:'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5261676722
+    m_Localized: 'Size:'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5261676723
+    m_Localized: 'Details:'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265870848
+    m_Localized: 'Price:'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265870849
+    m_Localized: Select a healthy adult, empty its food dish and remove its listing
+      first.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265870850
+    m_Localized: Cancel
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265870851
+    m_Localized: New sale post - Choose a beetle
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265870852
+    m_Localized: "Listings {0}/{1} \xB7 Offers last until week end; withdraw before
+      selling."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265870853
+    m_Localized: '{0}   {1} mm  /  {2} hearts'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265870854
+    m_Localized: "Healthy adult \xB7 Can list"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265870855
+    m_Localized: Cannot list in current condition
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265870856
+    m_Localized: List
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265870857
+    m_Localized: No beetles available to select.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265870858
+    m_Localized: "Sale post - This week\u2019s offers"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265870859
+    m_Localized: "{0}  {1}mm \xB7 Estimated value {2} G"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265870860
+    m_Localized: Valid this week
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265870861
+    m_Localized: " \xB7 Bonus female"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265870862
+    m_Localized: " \xB7 Unlocks recipe"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265870863
+    m_Localized: " \xB7 Includes permit"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265870864
+    m_Localized: Accept offer
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265870865
+    m_Localized: Sell {0} to {1} for {2} G?
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265870866
+    m_Localized: Withdraw listing
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265870867
+    m_Localized: "Weekend \xB7 Mystery pupa auction"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265870868
+    m_Localized: 'Starts at 150 G, with three bids.
+
+      Species is hidden until
+      sold. Leaving costs nothing; one entry per event.'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265870869
+    m_Localized: "Enter this week\u2019s auction"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265870870
+    m_Localized: "Current bid {0} G \xB7 Round {1}/3"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265870871
+    m_Localized: "Each bid adds 50\u2013149 G; sold on the third round.\nLeaving
+      costs nothing, but you cannot re-enter this week."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265870872
+    m_Localized: Bid
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265870873
+    m_Localized: Leave auction
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265870874
+    m_Localized: Close window
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265870875
+    m_Localized: 'Choose a seasonal theme:'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265870876
+    m_Localized: "Spring \xB7 Fresh green"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265870877
+    m_Localized: "Summer \xB7 Warm gold"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265870878
+    m_Localized: "Autumn \xB7 Maple red"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265870879
+    m_Localized: "Winter \xB7 Frost white"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265870880
+    m_Localized: 'Color mode:'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265870881
+    m_Localized: Light mode
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265870882
+    m_Localized: Dark mode
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265870883
+    m_Localized: Store and seasonal care guide - Help
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265870884
+    m_Localized: BEETLE STORE 2003 - User guide
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265870885
+    m_Localized: '1. Beetle store
+
+      Browse categories on the left. Cards show
+      real stock, sizes and prices. Stock and offers refresh weekly; trending species
+      receive a buying-price bonus.
+
+
+      2. Care supplies
+
+      Configure terrariums
+      in the greenhouse. Buy food for the selected adult. Sap and UV lamps are single-use
+      expedition supplies.
+
+
+      3. Trading BBS
+
+      List healthy adults, inspect
+      buyer offers and accept a sale. Withdraw before selling. Mystery pupa auctions
+      open on even weeks for three bidding rounds.
+
+
+      4. Themes and display
+
+      Choose
+      a seasonal palette. Alt+T: themes; Alt+M: light/dark; Alt+H: help. Themes change
+      appearance only; configure the actual habitat in the greenhouse.'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265870886
+    m_Localized: Help overturned beetles promptly. Feed adults potato or fruit; choose
+      feed bottles for larvae.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265870887
+    m_Localized: OK (O)
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265870888
+    m_Localized: Rhinoceros & other beetles
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265870889
+    m_Localized: Stag beetles
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265870890
+    m_Localized: Terrariums & equipment
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265870891
+    m_Localized: Habitat decorations
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265870892
+    m_Localized: Beetle food (potato/fruit)
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265870893
+    m_Localized: Order
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265870894
+    m_Localized: BUG DUEL 2003 - Seasonal beetle store & market [
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265870895
+    m_Localized: "Theme (T) \u25BC"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265870896
+    m_Localized: Mode (M)
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265870897
+    m_Localized: Help (H)
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265870898
+    m_Localized: Next week (N)
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265870899
+    m_Localized: dark
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265870900
+    m_Localized: light
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265870901
+    m_Localized: "Week {0} | {1} G | Theme: {2} \xB7 {3}"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265870902
+    m_Localized: Beetle store & supplies
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265870903
+    m_Localized: 5 types
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265870904
+    m_Localized: Beetle market (BBS)
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265870905
+    m_Localized: '{0} posts'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265870906
+    m_Localized: Beetles and supplies
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265870907
+    m_Localized: '[5 types]'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265870908
+    m_Localized: 'As temperatures rise, keep the habitat clean.
+
+      Check humidity.
+      Offer potato or fruit to adults and suitable feed to larvae.'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265870909
+    m_Localized: Provide shade and ventilation in hot weather. Check temperature
+      and humidity, replace fruit and watch feeding.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265870910
+    m_Localized: 'Keep the habitat stable as temperatures vary.
+
+      Check new
+      adults; provide food and climbing supports.'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265870911
+    m_Localized: 'Keep terrarium temperature and humidity stable.
+
+      Watch feeding
+      and activity; help overturned beetles promptly.'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265870912
+    m_Localized: ' care tips:'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265870913
+    m_Localized: 'Category: '
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265870914
+    m_Localized: '{0} items in this category'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265870915
+    m_Localized: No stock in this category this week
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265870916
+    m_Localized: 'Stock refreshes weekly. Browse other categories
+
+      or send
+      a squad to find new beetles.'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265870917
+    m_Localized: Catching squads
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265870918
+    m_Localized: stag
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265870919
+    m_Localized: Female
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265870920
+    m_Localized: Male
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265870921
+    m_Localized: Female
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265870922
+    m_Localized: Male
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265870923
+    m_Localized: "Live adult \xB7 Health "
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265870924
+    m_Localized: ' hearts'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265870925
+    m_Localized: Terrariums
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265870926
+    m_Localized: Decorations
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265870927
+    m_Localized: Habitat setup
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265870928
+    m_Localized: Habitat decor
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265870929
+    m_Localized: Restores {0} hearts / week
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265870930
+    m_Localized: Configure in greenhouse
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265870931
+    m_Localized: Configure habitat
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265870932
+    m_Localized: Catching equipment
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265870933
+    m_Localized: High-power UV lamp
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265870934
+    m_Localized: Single-use expedition supply
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265870935
+    m_Localized: 'Stock: {0} lamps'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265870936
+    m_Localized: +25% large chance on expeditions
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265870937
+    m_Localized: Sweet potato
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265870938
+    m_Localized: Banana
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265870939
+    m_Localized: Apple
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265870940
+    m_Localized: Beetle food
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265870941
+    m_Localized: " \xB7 One adult serving"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265870942
+    m_Localized: Adult food
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265870943
+    m_Localized: "1 serving / Selected beetle\u2019s dish"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265870944
+    m_Localized: Select a beetle in the greenhouse first
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265870945
+    m_Localized: 'Selected: '
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265870946
+    m_Localized: Buy & feed
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265870947
+    m_Localized: Catching bait
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265870948
+    m_Localized: Fermented tree sap
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265870949
+    m_Localized: 'Stock: {0} servings'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265870950
+    m_Localized: +2 beetles per expedition
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265870951
+    m_Localized: 'Species:'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265870952
+    m_Localized: 'Size:'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265870953
+    m_Localized: 'Details:'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265870954
+    m_Localized: 'Price:'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265870955
+    m_Localized: View details...
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265870956
+    m_Localized: Beetle market & live sales (BBS)
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265870957
+    m_Localized: Listings {0}/{1}
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265870958
+    m_Localized: + New sale post
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265870959
+    m_Localized: Expand cabinet {0} G
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265870960
+    m_Localized: Cabinet fully expanded
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265870961
+    m_Localized: Type
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265870962
+    m_Localized: Beetle sales / Weekly auction
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265870963
+    m_Localized: Seller
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265870964
+    m_Localized: Status
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265870965
+    m_Localized: Offer / Bid
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265870966
+    m_Localized: Action
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265870967
+    m_Localized: '[Auction]'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265870968
+    m_Localized: "[Mystery auction] Pupa \xB7 Species revealed after three bids"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265870969
+    m_Localized: Even weeks only; one entry per event. Leaving costs nothing.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265870970
+    m_Localized: "Round {0}/3 \xB7 Next bid adds 50\u2013149 G; sold on round three."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265870971
+    m_Localized: Auctioneer
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265870972
+    m_Localized: Open this week
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265870973
+    m_Localized: Opens next week
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265870974
+    m_Localized: Bidding
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265870975
+    m_Localized: Enter auction
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265870976
+    m_Localized: Continue bidding
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265870977
+    m_Localized: '[For sale]'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265870978
+    m_Localized: '[Listed] {0}  {1}mm {2}'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265870979
+    m_Localized: "{0} \xB7 {1} active offers"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265870980
+    m_Localized: My greenhouse
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265870981
+    m_Localized: Listed this week
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265870982
+    m_Localized: View / Sell
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265870983
+    m_Localized: "No sale posts yet. Select a healthy adult and choose \u201CNew
+      sale post\u201D above."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265870984
+    m_Localized: "BUG DUEL \xB7 Beetle Sanctuary"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265870985
+    m_Localized: Beetle duels / Greenhouse journal
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265870986
+    m_Localized: Start
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265870987
+    m_Localized: Settings
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265870988
+    m_Localized: How to play
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265870989
+    m_Localized: Exit
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265870990
+    m_Localized: Save progress and exit?
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265870991
+    m_Localized: 'Offline world | '
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265870992
+    m_Localized: Your greenhouse / Save slots
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265870993
+    m_Localized: One auto slot and three manual slots. Create a save in an empty
+      slot or load a journey.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265870994
+    m_Localized: Create save
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265870995
+    m_Localized: Start a new journey here? Existing manual saves remain; future auto
+      saves will record the new journey.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265870996
+    m_Localized: "Week {0} \xB7 {1} G\nResidents {2}/{3}\nHighest league Lv.{4}\nLength
+      record {5} mm\n{6}"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265870997
+    m_Localized: 'Unreadable save
+
+'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265870998
+    m_Localized: Load
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265870999
+    m_Localized: Overwrite
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265871000
+    m_Localized: Overwrite this save slot?
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265871001
+    m_Localized: Delete
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265871002
+    m_Localized: Permanently delete this slot and its backup?
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265871003
+    m_Localized: Main menu
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265871004
+    m_Localized: From a tiny greenhouse to the throne
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265871005
+    m_Localized: 01  Collect
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265871006
+    m_Localized: 02  Care
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265871007
+    m_Localized: 03  Compete
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265871008
+    m_Localized: 'Send squads to four habitats.
+
+      Buy beetles or bid on mystery
+      pupae.
+
+      Reserve slots for returning squads.'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265871009
+    m_Localized: 'Potato and fruit restore nutrition and health.
+
+      Choose feed
+      and temperature for larvae.
+
+      Help beetles that cannot turn upright!'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265871010
+    m_Localized: 'Length sets the league tier.
+
+      Three straight wins earn a
+      title!
+
+      Sell champions or rights for royalties.'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265871011
+    m_Localized: Let's go!
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265871012
+    m_Localized: "Language / \u754C\u9762\u8BED\u8A00"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265871013
+    m_Localized: "\u7B80\u4F53\u4E2D\u6587"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265871014
+    m_Localized: Auto save (trades save instantly)
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265871015
+    m_Localized: Default battle speed
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265871016
+    m_Localized: Classic window theme
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265871017
+    m_Localized: Display mode
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265871018
+    m_Localized: Classic dark
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265871019
+    m_Localized: Bright light
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265871020
+    m_Localized: Master volume
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265871021
+    m_Localized: Music
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265871022
+    m_Localized: Nature ambience
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265871023
+    m_Localized: Shell impact ASMR
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265871024
+    m_Localized: Resolution
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265871025
+    m_Localized: Window mode
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265871026
+    m_Localized: Windowed
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265871027
+    m_Localized: Borderless full screen
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265871028
+    m_Localized: Exclusive full screen
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265871029
+    m_Localized: Frame rate / VSync
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265871030
+    m_Localized: Macro depth of field
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265871031
+    m_Localized: On
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265871032
+    m_Localized: Off
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265871033
+    m_Localized: Management transitions
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265871034
+    m_Localized: Fade through black
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265871035
+    m_Localized: TV opening
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265871036
+    m_Localized: Leaving the menu or save screen uses a fade through black.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265871037
+    m_Localized: 'Keyboard / Xbox / PlayStation / Switch
+
+      Navigate with arrows
+      or stick, confirm and cancel. Remap management shortcuts below.'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265871038
+    m_Localized: Back / Close
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265871039
+    m_Localized: Next week
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265871040
+    m_Localized: Help upright
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265871041
+    m_Localized: Reset key bindings
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265871042
+    m_Localized: Save & close
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265871043
+    m_Localized: 'Press a new key or controller button
+
+      Esc to cancel'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265871044
+    m_Localized: "Spring \xB7 Fresh green"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265871045
+    m_Localized: "Summer \xB7 Warm gold"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265871046
+    m_Localized: "Autumn \xB7 Maple red"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265871047
+    m_Localized: "Winter \xB7 Frost white"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265871048
+    m_Localized: Return to the main menu? Progress will be saved.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265871049
+    m_Localized: BUG DUEL / Greenhouse journal
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265871050
+    m_Localized: Greenhouse
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265871051
+    m_Localized: Menu
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265871052
+    m_Localized: "Week {0} \xB7 {1} G \xB7 Greenhouse {2}+{3}/{4} \xB7 Reputation
+      {5}"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265871053
+    m_Localized: Help me upright! Struggling for {0}s
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265871054
+    m_Localized: Choose a feed bottle
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265871055
+    m_Localized: Matures in week {0}
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265871056
+    m_Localized: Listed for sale
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265871057
+    m_Localized: "Adult \xB7 Stable"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265871058
+    m_Localized: None
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265871059
+    m_Localized: "{0} {1}/{2} hearts \xB7 Nutrition {3}%\n{4}\n{5} \xB7 {6} \xB7
+      {7} mm\nValue {8} G \xB7 Stud fee estimate {9} G\nGenes {10}\nMutation {11}
+      \xB7 Wins {12} / Streak {13}"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265871060
+    m_Localized: OK
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265871061
+    m_Localized: Welcome to your greenhouse. Care for your beetles, then try the
+      rookie league.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265871062
+    m_Localized: Unsupported content version
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265871063
+    m_Localized: Required content categories are missing
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265871064
+    m_Localized: Content must retain species red, habitat woodland and an initial
+      catching area.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265871065
+    m_Localized: Invalid species parameters
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265871066
+    m_Localized: Invalid catching parameters
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265871067
+    m_Localized: Invalid habitat parameters
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265871068
+    m_Localized: Invalid feed parameters
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265871069
+    m_Localized: Invalid league ranges or rewards
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265871070
+    m_Localized: Invalid management settings
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265871071
+    m_Localized: Empty content table
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265871072
+    m_Localized: Duplicate or empty content ID
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265871073
+    m_Localized: Japanese rhinoceros beetle
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265871074
+    m_Localized: Lesser stag beetle
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265871075
+    m_Localized: Crested red stag beetle
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265871076
+    m_Localized: Japanese giant stag beetle
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265871077
+    m_Localized: Rainbow stag beetle
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265871078
+    m_Localized: Palawan giant stag beetle
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265871079
+    m_Localized: Giraffe stag beetle
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265871080
+    m_Localized: Caucasus beetle
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265871081
+    m_Localized: Hercules beetle
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265871082
+    m_Localized: Actaeon elephant beetle
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265871083
+    m_Localized: Mars elephant beetle
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265871084
+    m_Localized: Goliath beetle
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265871085
+    m_Localized: Summer oak woodland
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265871086
+    m_Localized: Misty mountain deadwood
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265871087
+    m_Localized: Southeast Asian monsoon islands
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265871088
+    m_Localized: Amazon equatorial reserve
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265871089
+    m_Localized: Woodland terrarium
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265871090
+    m_Localized: Damp deadwood terrarium
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265871091
+    m_Localized: Quiet recovery terrarium
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265871092
+    m_Localized: Green safe-feed bottle
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265871093
+    m_Localized: Yellow growth-feed bottle
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265871094
+    m_Localized: Purple mutation-feed bottle
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265871095
+    m_Localized: Rookie stump league
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265871096
+    m_Localized: Lightweight woodland league
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265871097
+    m_Localized: Middleweight oak cup
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265871098
+    m_Localized: Heavyweight rainforest masters
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265871099
+    m_Localized: Titan sap-throne league
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265871100
+    m_Localized: Giant
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265871101
+    m_Localized: Massive pincers
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265871102
+    m_Localized: Legendary subspecies
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265871103
+    m_Localized: Rare subspecies
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265871104
+    m_Localized: Finish the current match or auction first
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265871105
+    m_Localized: Woodland challenger
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265871106
+    m_Localized: 'Entered: '
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265871107
+    m_Localized: . Match saved; resume or forfeit if you leave.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265871108
+    m_Localized: Match already settled or record mismatch
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265871109
+    m_Localized: 'Defeat: value -8%, with a floor of 80% of initial value. Rest and
+      try again!'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265871110
+    m_Localized: 'Victory! Prize '
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265871111
+    m_Localized: ' G; season progress '
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265871112
+    m_Localized: '. Value '
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265871113
+    m_Localized: 'League champion! Reward '
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265871114
+    m_Localized: "Value \xD72.5; siblings\u2019 minimum value \xD72. Champion auctions
+      unlocked!"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265871115
+    m_Localized: Title defended! Season prize awarded.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265871116
+    m_Localized: No unfinished match
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265871117
+    m_Localized: 'Time up: a draw. Value, streak and season progress are kept. No
+      win prize; entry fee is spent.'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265871118
+    m_Localized: Finish the current activity first
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265871119
+    m_Localized: League champions only
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265871120
+    m_Localized: First breeding rights already sold; you can auction the champion
+      itself
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265871121
+    m_Localized: Consortium representative
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265871122
+    m_Localized: Breeding-rights auction started. Your champion stays in the greenhouse.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265871123
+    m_Localized: Champion auction started. The champion will leave after sale.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265871124
+    m_Localized: Bidding has ended
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265871125
+    m_Localized: Amber Consortium
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265871126
+    m_Localized: Oak Club president
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265871127
+    m_Localized: Golden-wing collector
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265871128
+    m_Localized: World Beetle Champion Fund
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265871129
+    m_Localized: ' bids '
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265871130
+    m_Localized: ' G! (round '
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265871131
+    m_Localized: )
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265871132
+    m_Localized: Finish all bidding rounds first
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265871133
+    m_Localized: 'Sold! '
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265871134
+    m_Localized: ' G. Added to the hall of fame; the bloodline earns 10% of win prizes
+      from weekly NPC matches.'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265871135
+    m_Localized: "This week\u2019s stock is sold out"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265871136
+    m_Localized: 'Welcome '
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265871137
+    m_Localized: ' to the greenhouse!'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265871138
+    m_Localized: Bought a high-power UV lamp (single use)
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265871139
+    m_Localized: Bought fermented tree sap (single use)
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265871140
+    m_Localized: Listing cabinet expanded to 6 slots
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265871141
+    m_Localized: Listing cabinet is full
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265871142
+    m_Localized: Listed. Offers last until week end; withdraw any time before selling.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265871143
+    m_Localized: Not listed
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265871144
+    m_Localized: Listing withdrawn
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265871145
+    m_Localized: Enthusiastic schoolchild
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265871146
+    m_Localized: Professional club scout
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265871147
+    m_Localized: Eccentric mutation collector
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265871148
+    m_Localized: Veteran breeder
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265871149
+    m_Localized: Subspecies
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265871150
+    m_Localized: Entomologist
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265871151
+    m_Localized: Offer expired
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265871152
+    m_Localized: This beetle cannot be sold
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265871153
+    m_Localized: 'Sold for '
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265871154
+    m_Localized: ' G! Buyer: '
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265871155
+    m_Localized: ', with a pure-bred female bonus.'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265871156
+    m_Localized: 'Feed recipe unlocked: green bottles now grant +5% length.'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265871157
+    m_Localized: Reserve permit and mutation guide unlocked.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265871158
+    m_Localized: Mystery auctions open on even weeks
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265871159
+    m_Localized: "Already entered this week\u2019s auction"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265871160
+    m_Localized: Mystery pupa
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265871161
+    m_Localized: Auction begins! Each bid raises the price; the species is revealed
+      after three rounds. Leave at any time.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265871162
+    m_Localized: Auction has not started
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265871163
+    m_Localized: Not enough coins to bid again
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265871164
+    m_Localized: 'Sold for '
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265871165
+    m_Localized: ' G! This is a '
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265871166
+    m_Localized: ' pupa. Choose a growth plan in the greenhouse.'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265871167
+    m_Localized: 'An NPC raised the bid. Bid again? Current price: '
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265871168
+    m_Localized: No mystery auction in progress
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265871169
+    m_Localized: "Left this week\u2019s auction. No coins spent."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265871170
+    m_Localized: This beetle has left the greenhouse
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265871171
+    m_Localized: Not enough coins
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265871172
+    m_Localized: Invalid amount
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265871173
+    m_Localized: Greenhouse full (including reserved squad slots)
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265871174
+    m_Localized: This beetle has died; clear its slot first
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265871175
+    m_Localized: This beetle is listed, competing or at auction
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265871176
+    m_Localized: A healthy upright adult is required (at least 3 hearts and 40 nutrition)
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265871177
+    m_Localized: Chestnut
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265871178
+    m_Localized: Peach
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265871179
+    m_Localized: Greenhouse already has 20 slots
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265871180
+    m_Localized: 'Greenhouse expanded! Capacity: '
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265871181
+    m_Localized: ' slots.'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265871182
+    m_Localized: Help the beetle upright first; larvae need feed bottles
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265871183
+    m_Localized: Food not found
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265871184
+    m_Localized: Food remains in the dish; wait until it is eaten
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265871185
+    m_Localized: 'Food placed: '
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265871186
+    m_Localized: ' will approach and eat.'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265871187
+    m_Localized: This meal cannot be completed right now
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265871188
+    m_Localized: ' has finished eating and is grooming.'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265871189
+    m_Localized: Already standing firmly
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265871190
+    m_Localized: 'Gently helped '
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265871191
+    m_Localized: ' upright. Provide food and rest.'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265871192
+    m_Localized: 'Moved to '
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265871193
+    m_Localized: Only deceased beetles can be cleared; sell healthy beetles at the
+      market
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265871194
+    m_Localized: Slot cleared, leaving a small remembrance.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265871195
+    m_Localized: ' cannot turn upright! Help in the greenhouse (injury begins after
+      60s).'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265871196
+    m_Localized: ' died after being unable to turn upright for too long.'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265871197
+    m_Localized: Adult length is fixed; feed bottles are for larvae
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265871198
+    m_Localized: Invalid growth plan
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265871199
+    m_Localized: Growth plan already selected
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265871200
+    m_Localized: 'Growth started; matures in week '
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265871201
+    m_Localized: . Larvae feed automatically from the bottle.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265871202
+    m_Localized: A male and female of the same species are required
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265871203
+    m_Localized: Parents must rest until next week
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265871204
+    m_Localized: Inbreeding has reached the health limit; use an unrelated line
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265871205
+    m_Localized: ' larva'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265871206
+    m_Localized: 'Inbred offspring born: health cap '
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265871207
+    m_Localized: ' hearts. Choose feed and temperature.'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265871208
+    m_Localized: 'Outcross successful: 5-heart cap and +5% length. Choose feed and
+      temperature.'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265871209
+    m_Localized: Habitat not unlocked
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265871210
+    m_Localized: Buy fermented tree sap at the market first
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265871211
+    m_Localized: Buy a UV lamp first
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265871212
+    m_Localized: 'Squad departed! Reserved '
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265871213
+    m_Localized: A beetle is still struggling. Help it upright before advancing the
+      week.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265871214
+    m_Localized: White eyes
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265871215
+    m_Localized: Trident horn
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265871216
+    m_Localized: Rare color
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265871217
+    m_Localized: 'Week '
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265871218
+    m_Localized: ': matured '
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265871219
+    m_Localized: ', caught '
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265871220
+    m_Localized: ', bloodline royalties '
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265871221
+    m_Localized: Greenhouse work earned 150 G.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265871222
+    m_Localized: Remember to feed adults.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265871223
+    m_Localized: Invalid save data
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265871224
+    m_Localized: Save collections are missing
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265871225
+    m_Localized: Invalid hall-of-fame data
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265871226
+    m_Localized: Duplicate or missing beetle ID
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265871227
+    m_Localized: Invalid gene or lineage data
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265871228
+    m_Localized: Invalid pending meal record
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265871229
+    m_Localized: Invalid beetle values
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265871230
+    m_Localized: Invalid expedition data
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265871231
+    m_Localized: Invalid offer data
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265871232
+    m_Localized: Invalid stock or cabinet data
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265871233
+    m_Localized: Invalid mystery auction record
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265871234
+    m_Localized: Invalid match reservation
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265871235
+    m_Localized: Invalid auction data
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265871236
+    m_Localized: 'Arena: '
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265871237
+    m_Localized: '  [T]
+
+      Switch and restart'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265871238
+    m_Localized: 'View: '
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265871239
+    m_Localized: 'Defeat slow motion: '
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265871240
+    m_Localized: On
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265871241
+    m_Localized: Off
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265871242
+    m_Localized: "{0}   Cheer recharging \xB7 {1}s"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265871243
+    m_Localized: '{0}   Cheer for {1}'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265871244
+    m_Localized: "Match {0} \xB7 Finished"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265871245
+    m_Localized: "Match {0} \xB7 Remaining {1}:{2}"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265871246
+    m_Localized: 'Resume [Space]'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265871247
+    m_Localized: 'Pause [Space]'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265871248
+    m_Localized: Match drawn
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265871249
+    m_Localized: '{0} wins'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265871250
+    m_Localized: Observation paused
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265871251
+    m_Localized: Ready {0}
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265871252
+    m_Localized: Checking fall
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265871253
+    m_Localized: Match finished
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265871254
+    m_Localized: Fierce clash
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265871255
+    m_Localized: Disengaging to recover
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265871256
+    m_Localized: Testing the opponent
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265871257
+    m_Localized: Antenna / Horn-tip probing
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265871258
+    m_Localized: Horn-tip contact / Short push
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265871259
+    m_Localized: Withdrawing horn / Stepping back
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265871260
+    m_Localized: Bracing hind legs / Winding up
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265871261
+    m_Localized: Charging hard
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265871262
+    m_Localized: Horns locked / Pushing
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265871263
+    m_Localized: Approaching opponent
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265871264
+    m_Localized: Sidestepping for leverage
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265871265
+    m_Localized: Lowering head
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265871266
+    m_Localized: Short shove
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265871267
+    m_Localized: Sliding horn underneath
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265871268
+    m_Localized: Seeking a support point
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265871269
+    m_Localized: Lifting / Twisting
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265871270
+    m_Localized: Being lifted / Losing grip
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265871271
+    m_Localized: Withdrawing horn / Disengaging
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265871272
+    m_Localized: Tossing off the arena
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265871273
+    m_Localized: Airborne / Struggling
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265871274
+    m_Localized: Bracing all six legs
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265871275
+    m_Localized: Recovering balance and breath
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265871276
+    m_Localized: Retreating from fatigue
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265871277
+    m_Localized: Struggling for support
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265871278
+    m_Localized: Losing arena support
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265871279
+    m_Localized: Fallen from the arena
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265871280
+    m_Localized: No longer fighting / Recovering
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265871281
+    m_Localized: Holding the arena
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265871282
+    m_Localized: '
+
+      <size=14>Nutrition +'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265871283
+    m_Localized: " \xB7 Hydration +"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265871284
+    m_Localized: 'Health {0} / 100
+
+      Nutrition {1} / 100
+
+      Hydration {2}
+      / 100
+
+      Stress {3} / 100'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265871285
+    m_Localized: "Dead \xB7 No activity"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265871286
+    m_Localized: "Struggling \xB7 Help upright"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265871287
+    m_Localized: "Upright \xB7 Ready for care"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265871288
+    m_Localized: Health is depleted. Feeding or rescue cannot revive it.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265871289
+    m_Localized: 'Rescue grace: {0}s remaining
+
+      Help it upright before feeding.'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265871290
+    m_Localized: 'Struggling is draining health!
+
+      Help upright to stop the
+      damage.'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265871291
+    m_Localized: 'Potato, fruit and jelly provide different nutrients.
+
+      Help
+      overturned beetles upright before feeding.'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265871292
+    m_Localized: Resume care
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265871293
+    m_Localized: Pause care
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265871294
+    m_Localized: Rescue needed!
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265871295
+    m_Localized: Normal
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265871296
+    m_Localized: "BEETLE DUEL \xB7 Woodland arena"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265871297
+    m_Localized: FOREST DUEL / Autonomous combat
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265871298
+    m_Localized: "Match 01 \xB7 Size difference within 8%"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265871299
+    m_Localized: 01 / Amber
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265871300
+    m_Localized: 02 / Ink
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265871301
+    m_Localized: "Length 55.0 mm \xB7 Mass 8.0 g"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265871302
+    m_Localized: Stamina 100%
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265871303
+    m_Localized: Grip / Stability 100%
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265871304
+    m_Localized: Q   Cheer for Amber
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265871305
+    m_Localized: E   Cheer for Ink
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265871306
+    m_Localized: Ready 3
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265871307
+    m_Localized: "Antenna probing \xB7 Starting soon"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265871308
+    m_Localized: "Only a fall decides victory \xB7 Time limit means a draw\nEach
+      round lasts up to 3 minutes, excluding pauses"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265871309
+    m_Localized: 'Pause [Space]'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265871310
+    m_Localized: MATCH RESULT
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265871311
+    m_Localized: Amber wins
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265871312
+    m_Localized: Rematch same pair
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265871313
+    m_Localized: "Next match \xB7 Random pair"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265871314
+    m_Localized: "BEETLE NURSERY \xB7 Woodland"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265871315
+    m_Localized: "BEETLE NURSERY / Care \xB7 Growth \xB7 Observation"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265871316
+    m_Localized: Save
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265871317
+    m_Localized: Reload content
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265871318
+    m_Localized: My beetles
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265871319
+    m_Localized: Select a beetle to observe and care for
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265871320
+    m_Localized: Return to arena
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5265871321
+    m_Localized: Waiting for selection
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5270065152
+    m_Localized: "Health \xB7 Nutrition \xB7 Stamina"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5270065153
+    m_Localized: Individual profile
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5270065154
+    m_Localized: Feeding and care
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5270065155
+    m_Localized: Help upright
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5270065156
+    m_Localized: Observe your beetles. Watch for overturning and health changes.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5270065157
+    m_Localized: Habitat
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5270065158
+    m_Localized: Choose a habitat suitable for this life stage
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5270065159
+    m_Localized: Option
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5270065160
+    m_Localized: 'Nursery [B]'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5270065161
+    m_Localized: Flat stump
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5270065162
+    m_Localized: Game
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5270065163
+    m_Localized: Audio
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5270065164
+    m_Localized: Video
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5270065165
+    m_Localized: Controls
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5270065166
+    m_Localized: Spring
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5270065167
+    m_Localized: Summer
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5270065168
+    m_Localized: Autumn
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5270065169
+    m_Localized: Winter
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5270065170
+    m_Localized: Amber
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5270065171
+    m_Localized: Ink
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5270065172
+    m_Localized: Overview
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5270065173
+    m_Localized: Follow
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5270065174
+    m_Localized: Low angle
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5270065175
+    m_Localized: AUTO SAVE
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5270065176
+    m_Localized: JOURNAL 0{0}
+    m_Metadata:
+      m_Items: []
+  - m_Id: 3691769679872
+    m_Localized: "Time limit \xB7 Draw"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 3691840983040
+    m_Localized: Unable to turn upright for 5 seconds
+    m_Metadata:
+      m_Items: []
+  - m_Id: 3691840983041
+    m_Localized: Fall from arena
+    m_Metadata:
+      m_Items: []
+  - m_Id: 3691840983042
+    m_Localized: ' is encouraged and pushes again'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 3691840983043
+    m_Localized: "Match begins \xB7 Both beetles are probing"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 3691840983044
+    m_Localized: ' falls from the arena'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 3691840983045
+    m_Localized: ' probes with a brief push'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 3691840983046
+    m_Localized: ' charges for horn leverage!'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 3691840983047
+    m_Localized: " shoves briefly \xB7 "
+    m_Metadata:
+      m_Items: []
+  - m_Id: 3691840983048
+    m_Localized: Opponent slides back
+    m_Metadata:
+      m_Items: []
+  - m_Id: 3691840983049
+    m_Localized: Both beetles push
+    m_Metadata:
+      m_Items: []
+  - m_Id: 3691840983050
+    m_Localized: " \xB7 Contact push"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 3691840983051
+    m_Localized: ' braces its legs and blocks the lift'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 3691840983052
+    m_Localized: ' lifts and twists the opponent off its footing'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 3691840983053
+    m_Localized: ' loses support!'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 3691840983054
+    m_Localized: ' lands and regains support'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 3691840983055
+    m_Localized: ' wins'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 3691840983056
+    m_Localized: Above Amber
+    m_Metadata:
+      m_Items: []
+  - m_Id: 3691840983057
+    m_Localized: Above Ink
+    m_Metadata:
+      m_Items: []
+  - m_Id: 3691840983058
+    m_Localized: Sloped stump
+    m_Metadata:
+      m_Items: []
+  - m_Id: 3691840983059
+    m_Localized: Grooved stump
+    m_Metadata:
+      m_Items: []
+  - m_Id: 3691840983060
+    m_Localized: Low toss
+    m_Metadata:
+      m_Items: []
+  - m_Id: 3691840983061
+    m_Localized: High toss
+    m_Metadata:
+      m_Items: []
+  - m_Id: 3691840983062
+    m_Localized: Dodge
+    m_Metadata:
+      m_Items: []
+  - m_Id: 3691840983063
+    m_Localized: Horn lift
+    m_Metadata:
+      m_Items: []
+  - m_Id: 3691840983064
+    m_Localized: Start
+    m_Metadata:
+      m_Items: []
+  - m_Id: 3691840983065
+    m_Localized: How to play
+    m_Metadata:
+      m_Items: []
+  - m_Id: 3691840983066
+    m_Localized: Exit
+    m_Metadata:
+      m_Items: []
+  - m_Id: 4711509839872
+    m_Localized: Win the Lv.{0} league{1}
+    m_Metadata:
+      m_Items: []
+  - m_Id: 17452081532928
+    m_Localized: Greenhouse keeper
+    m_Metadata:
+      m_Items: []
+  - m_Id: 17452119281664
+    m_Localized: Beetle store
+    m_Metadata:
+      m_Items: []
+  - m_Id: 17452119281665
+    m_Localized: Supply store
+    m_Metadata:
+      m_Items: []
+  - m_Id: 17452119281666
+    m_Localized: Trading market
+    m_Metadata:
+      m_Items: []
+  - m_Id: 17452119281667
+    m_Localized: Greenhouse news and guidance. These contacts are for in-game mail
+      only.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 17452119281668
+    m_Localized: Ships beetle orders. Claim live deliveries into storage, then move
+      them into your greenhouse.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 17452119281669
+    m_Localized: Ships sweet potatoes, fruit, expedition supplies and display expansion
+      kits.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 17452119281670
+    m_Localized: Ships mystery pupae after a successful auction.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 17452119281671
+    m_Localized: Ships physical bonus gifts from market trades.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 17452119281672
+    m_Localized: Display expansion kit
+    m_Metadata:
+      m_Items: []
+  - m_Id: 17452119281673
+    m_Localized: Welcome to your mailbox
+    m_Metadata:
+      m_Items: []
+  - m_Id: 17452119281674
+    m_Localized: 'Market purchases arrive by mail: beetles, food and supplies.
+
+
+      Claim
+      attachments to add them to storage. Feed stored food to your beetles, and move
+      stored live beetles into the greenhouse.
+
+
+      Deleted mail can be restored.
+      Mail with unclaimed attachments cannot be permanently deleted.'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 17452119281675
+    m_Localized: Thank you for your order. Claim the attachments below to add them
+      to storage. Items are not used automatically.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 17452119281676
+    m_Localized: "Live delivery \xB7 "
+    m_Metadata:
+      m_Items: []
+  - m_Id: 17452119281677
+    m_Localized: "Order delivery \xB7 "
+    m_Metadata:
+      m_Items: []
+  - m_Id: 17452119281678
+    m_Localized: '{0} has arrived in your mailbox. Claim the attachment.'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 17452119281679
+    m_Localized: Mail not found
+    m_Metadata:
+      m_Items: []
+  - m_Id: 17452119281680
+    m_Localized: Moved to Deleted. You can restore this message.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 17452119281681
+    m_Localized: Message restored to Inbox.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 17452119281682
+    m_Localized: Move this message to Deleted first.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 17452119281683
+    m_Localized: Restore the message and claim its attachments first.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 17452119281684
+    m_Localized: Message permanently deleted.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 17452119281685
+    m_Localized: Restore this message before claiming attachments.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 17452119281686
+    m_Localized: Attachments already claimed, or this message has no attachments.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 17452119281687
+    m_Localized: Invalid attachment quantity
+    m_Metadata:
+      m_Items: []
+  - m_Id: 17452119281688
+    m_Localized: Invalid live attachment
+    m_Metadata:
+      m_Items: []
+  - m_Id: 17452119281689
+    m_Localized: Invalid storage item or quantity
+    m_Metadata:
+      m_Items: []
+  - m_Id: 17452119281690
+    m_Localized: '{0} added to storage'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 17452119281691
+    m_Localized: No {0} in storage. Claim it from your mailbox first.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 17452119281692
+    m_Localized: This beetle is not in storage.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 17452119281693
+    m_Localized: '{0} moved from storage into the greenhouse.'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 17452119281694
+    m_Localized: Missing mailbox or storage data
+    m_Metadata:
+      m_Items: []
+  - m_Id: 17452119281695
+    m_Localized: Invalid mail data
+    m_Metadata:
+      m_Items: []
+  - m_Id: 17452119281696
+    m_Localized: Invalid attachment data
+    m_Metadata:
+      m_Items: []
+  - m_Id: 17452119281697
+    m_Localized: Invalid attachment contents
+    m_Metadata:
+      m_Items: []
+  - m_Id: 17452119281698
+    m_Localized: Invalid inventory record
+    m_Metadata:
+      m_Items: []
+  - m_Id: 17452119281699
+    m_Localized: Display already upgraded or kit already purchased. Check your mailbox
+      and storage.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 17452119281700
+    m_Localized: . The bonus female beetle has been sent to your mailbox.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 17452119281701
+    m_Localized: ' pupa'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 17452119281702
+    m_Localized: Greenhouse Mail - BUG DUEL MAIL
+    m_Metadata:
+      m_Items: []
+  - m_Id: 17452119281703
+    m_Localized: Inbox
+    m_Metadata:
+      m_Items: []
+  - m_Id: 17452119281704
+    m_Localized: Unread
+    m_Metadata:
+      m_Items: []
+  - m_Id: 17452119281705
+    m_Localized: Attachments
+    m_Metadata:
+      m_Items: []
+  - m_Id: 17452119281706
+    m_Localized: Deleted
+    m_Metadata:
+      m_Items: []
+  - m_Id: 17452119281707
+    m_Localized: Contacts
+    m_Metadata:
+      m_Items: []
+  - m_Id: 17452119281708
+    m_Localized: Open storage
+    m_Metadata:
+      m_Items: []
+  - m_Id: 17452119281709
+    m_Localized: "Unread: {0}  \xB7  Unclaimed: {1}"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 17452119281710
+    m_Localized: "Messages \xB7 {0}"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 17452119281711
+    m_Localized: " \xB7 Week {0}"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 17452119281712
+    m_Localized: "Open \xB7 Attachment"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 17452119281713
+    m_Localized: Open message
+    m_Metadata:
+      m_Items: []
+  - m_Id: 17452119281714
+    m_Localized: No messages in this folder.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 17452119281715
+    m_Localized: Select a message
+    m_Metadata:
+      m_Items: []
+  - m_Id: 17452119281716
+    m_Localized: 'Select a message on the left to read it and claim attachments.
+
+      Your
+      market purchases arrive here.'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 17452119281717
+    m_Localized: "From: {0}  <{1}>\nTo: My greenhouse    \xB7    Week {2}"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 17452119281718
+    m_Localized: "Claimed \xB7 Added to storage"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 17452119281719
+    m_Localized: "Live attachment \xB7 Claim into storage, then move into the greenhouse"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 17452119281720
+    m_Localized: "Item attachment \xB7 Claim to add to storage"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 17452119281721
+    m_Localized: This message has no attachments.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 17452119281722
+    m_Localized: Restore to Inbox
+    m_Metadata:
+      m_Items: []
+  - m_Id: 17452119281723
+    m_Localized: Delete permanently
+    m_Metadata:
+      m_Items: []
+  - m_Id: 17452119281724
+    m_Localized: Unclaimed attachments are protected. Restore this message to claim
+      them.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 17452119281725
+    m_Localized: Attachments claimed
+    m_Metadata:
+      m_Items: []
+  - m_Id: 17452119281726
+    m_Localized: Claim all attachments
+    m_Metadata:
+      m_Items: []
+  - m_Id: 17452119281727
+    m_Localized: Delete message
+    m_Metadata:
+      m_Items: []
+  - m_Id: 17452119281728
+    m_Localized: Address book
+    m_Metadata:
+      m_Items: []
+  - m_Id: 17452119281729
+    m_Localized: 'Messages from this contact: {0}'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 17452119281730
+    m_Localized: View messages
+    m_Metadata:
+      m_Items: []
+  - m_Id: 17452119281731
+    m_Localized: Greenhouse Storage - BUG DUEL STORAGE
+    m_Metadata:
+      m_Items: []
+  - m_Id: 17452119281732
+    m_Localized: Items in storage
+    m_Metadata:
+      m_Items: []
+  - m_Id: 17452119281733
+    m_Localized: Open mailbox
+    m_Metadata:
+      m_Items: []
+  - m_Id: 17452119281734
+    m_Localized: Feed stored food to the selected beetle; use supplies when dispatching
+      squads. Stored live beetles enter care when moved into the greenhouse.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 17452119281735
+    m_Localized: 'Selected beetle: '
+    m_Metadata:
+      m_Items: []
+  - m_Id: 17452119281736
+    m_Localized: Install to expand the trading display from 3 slots to 6.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 17452119281737
+    m_Localized: Choose this consumable when dispatching a catching squad.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 17452119281738
+    m_Localized: Feed selected beetle
+    m_Metadata:
+      m_Items: []
+  - m_Id: 17452119281739
+    m_Localized: Install expansion kit
+    m_Metadata:
+      m_Items: []
+  - m_Id: 17452119281740
+    m_Localized: Open expeditions
+    m_Metadata:
+      m_Items: []
+  - m_Id: 17452119281741
+    m_Localized: "Live storage \xB7 {0} \xB7 {1}"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 17452119281742
+    m_Localized: Move to greenhouse
+    m_Metadata:
+      m_Items: []
+  - m_Id: 17452119281743
+    m_Localized: Greenhouse full
+    m_Metadata:
+      m_Items: []
+  - m_Id: 17452119281744
+    m_Localized: Storage is empty. Claim market order attachments in your mailbox
+      first.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 17452119281745
+    m_Localized: Mail ({0})
+    m_Metadata:
+      m_Items: []
+  - m_Id: 17452119281746
+    m_Localized: Mailbox
+    m_Metadata:
+      m_Items: []
+  - m_Id: 17452119281747
+    m_Localized: Storage
+    m_Metadata:
+      m_Items: []
+  - m_Id: 17452119281748
+    m_Localized: Claim purchases in your mailbox; feeding uses stored food.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 17452119281749
+    m_Localized: One portion / Delivered by mail
+    m_Metadata:
+      m_Items: []
+  - m_Id: 17452119281750
+    m_Localized: 'In storage: {0}'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 17452119281751
+    m_Localized: Buy and send
+    m_Metadata:
+      m_Items: []
+  - m_Id: 17452119281752
+    m_Localized: Display kit {0} G
+    m_Metadata:
+      m_Items: []
+  - m_Id: 17452119281753
+    m_Localized: Orders arrive by mail. Claim attachments to add them to storage.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 17452119281754
+    m_Localized: '1. Beetle store
+
+      Browse categories and inspect stock and
+      prices. All paid purchases arrive by mail; claim them into storage.
+
+
+      2.
+      Mailbox and storage
+
+      Open mail from the greenhouse or market. Feed claimed
+      food; move stored beetles into the greenhouse. Claimed sap and lamps can be
+      used on expeditions. Install display kits from storage.
+
+
+      3. Trading
+      BBS
+
+      List healthy adults for sale. Mystery pupa auctions open on even
+      weeks and deliver by mail. Habitat and scenery cards remain free greenhouse
+      configuration shortcuts.
+
+
+      4. Seasonal themes
+
+      Alt+T opens themes,
+      Alt+M switches light/dark, Alt+H opens help.'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 17452119281755
+    m_Localized: "{0} \xB7 Week {1}"
+    m_Metadata:
+      m_Items: []
+  references:
+    version: 2
+    RefIds: []

@@ -8,9 +8,9 @@ Shader "BeetleArena/IridescentShell"
         [Header(Iridescent Film)]
         [NoScaleOffset] _IridescenceRamp("Rainbow Strip", 2D) = "white" {}
         _Iridescence("Iridescence Strength", Range(0,1)) = 1
-        _RampOffset("Facing Color Position", Range(0,1)) = 0.72
-        _AngleShift("Grazing Color Shift", Range(-1,1)) = -0.62
-        _AnglePower("Angle Response", Range(0.1,4)) = 1
+        _RampOffset("Facing Color Position", Range(0,1)) = 0.32
+        _AngleShift("Grazing Color Shift", Range(-1,1)) = 0.3
+        _AnglePower("Angle Response", Range(0.1,4)) = 0.7
         _RampRow("Strip Sample Row", Range(0,1)) = 0.5
         _FilmVariation("Film Variation", Range(0,0.25)) = 0.045
         _FilmScale("Film Variation Scale", Range(0.1,8)) = 1.2
@@ -18,14 +18,16 @@ Shader "BeetleArena/IridescentShell"
         _HueShift("Rainbow Hue (Degrees)", Range(-180,180)) = 0
         _Saturation("Rainbow Saturation", Range(0,2)) = 1.15
         _Brightness("Reflectance Brightness", Range(0.25,2)) = 1
+        _ReflectanceLift("Ramp Reflectance Recovery", Range(0,1)) = 0.65
         [Header(Metal and Clear Coat)]
-        _Metallic("Metallic", Range(0,1)) = 0.94
-        _Smoothness("Metal Smoothness", Range(0,0.95)) = 0.78
-        _CoatStrength("Clear Coat", Range(0,1)) = 0.65
+        _Metallic("Metallic", Range(0,1)) = 1
+        _Smoothness("Metal Smoothness", Range(0,0.95)) = 0.88
+        _CoatStrength("Clear Coat", Range(0,1)) = 0.18
         _CoatSmoothness("Coat Smoothness", Range(0,0.95)) = 0.88
         [Header(Toon Silhouette)]
         _OutlineColor("Outline Color", Color) = (0.018,0.028,0.022,1)
         _OutlineWidth("Outline Width (Pixels)", Range(0,5)) = 0.85
+        [HideInInspector] _MetalFinishVersion("Metal Finish Version", Float) = 0
     }
     SubShader
     {

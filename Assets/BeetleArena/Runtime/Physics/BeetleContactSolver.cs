@@ -44,7 +44,7 @@ namespace BeetleArena
         public Vector3 LastSeparationNormal { get; private set; }
 
         readonly BeetleHornSupport hornSupport = new BeetleHornSupport();
-        readonly BeetleContactMotion[] motion, viewMotion;
+        readonly BeetleContactMotion[] motion, viewMotion, retreatFallback;
         bool viewInitialized;
         float viewBlockedSeconds;
         int acceptedHornContacts;
@@ -52,9 +52,12 @@ namespace BeetleArena
         bool recordingContacts;
         readonly Vector2[] lastProgress = new Vector2[2];
         readonly float[] progressClock = new float[2];
+        readonly float[] recentContact = new float[2];
         readonly Vector2[] proposedVelocity = new Vector2[2];
         readonly float[] motionBudget = new float[2];
         public int LimitedMotionSteps { get; private set; }
+        public int ContactRetreatSteps { get; private set; }
+        public int ContactHeadRetreatSteps { get; private set; }
 
         public float AcceptedMotionFraction { get; private set; } = 1;
         // 本次 Solve 真正使用的预算；落地后速度可能清零，诊断不能由事后速度重新猜测。
@@ -78,6 +81,7 @@ namespace BeetleArena
             this.skin = skin;
             motion = new[] { new BeetleContactMotion(actors[0]), new BeetleContactMotion(actors[1]) };
             viewMotion = new[] { new BeetleContactMotion(actors[0]), new BeetleContactMotion(actors[1]) };
+            retreatFallback = new[] { new BeetleContactMotion(actors[0]), new BeetleContactMotion(actors[1]) };
             rigs = new[] { actors[0].GetComponent<BeetleContactRig>(), actors[1].GetComponent<BeetleContactRig>() };
             int capacity = Mathf.Max(rigs[0].shapes.Length, rigs[1].shapes.Length);
             candidatesA = new int[capacity];
@@ -152,16 +156,33 @@ namespace BeetleArena
                     }
                 }
 
-                if (!accepted)
+                if (!accepted || AcceptedMotionFraction < .25f)
                 {
+                    // A tiny valid joint step is not an escape. Keep it as a fallback, but
+                    // also try retreat once sustained blockage has been observed. Previously
+                    // accepting even 1/128 of the pose skipped this branch forever.
+                    bool hadAccepted = accepted;
+                    float savedFraction = AcceptedMotionFraction, savedResidual = separationRemaining;
+                    bool savedContact = contact;
+                    int savedHorns = acceptedHornContacts, savedForelegs = acceptedForelegContacts;
+                    Vector2 savedVelocityA = sim.Fighters[0].Velocity, savedVelocityB = sim.Fighters[1].Velocity;
+                    if (hadAccepted)
+                        foreach (var m in retreatFallback) m.Begin();
+                    accepted = false;
                     // A valid root retreat can be rejected solely by the new articulated pose.
                     // Retry from the accepted joints, one animal at a time, through the same
                     // penetration and distance limits. No collider is disabled and no teleport occurs.
+                    // Keep an already valid rigid retreat unchanged. Only if those routes
+                    // fail, add local joint yielding, then a bounded downward neck rotation.
+                    // Re-solving legs on every valid retreat can start repeated correction loops.
+                    for (int pose = 0; pose < 3 && !accepted; pose++)
                     for (int candidate = 0; candidate < 2 && !accepted; candidate++)
                     {
                         int index = (Mathf.FloorToInt(sim.MotionTime / .8f) + candidate) % 2;
                         var state = sim.Fighters[index];
-                        if (state.Airborne || state.HasFallen || state.ContactBlockedSeconds < .3f)
+                        if (state.Airborne || state.HasFallen || state.IsOverturned || state.ContactBlockedSeconds < .3f)
+                            continue;
+                        if (pose == 2 && (hornSupport.Active(sim) || state.Lift.Supported || actors[index].animator.IsRighting))
                             continue;
                         for (int i = 0; i < 2; i++)
                         {
@@ -174,32 +195,72 @@ namespace BeetleArena
                         away.y = 0;
                         away = away.sqrMagnitude > .000001f ? away.normalized : -actors[index].transform.forward;
                         Vector3 side = Vector3.Cross(Vector3.up, away);
-                        // Forked horns can block the backward direction even when a short
-                        // lateral step is free. Every trial starts at the same accepted pose.
-                        for (int direction = 0; direction < 4 && !accepted; direction++)
+                        // A horn under an abdomen on a slope may only slide out diagonally:
+                        // backward and sideways alone both drive a different part into contact.
+                        // Sample those combined directions too, from the same accepted pose.
+                        for (int direction = 0; direction < 8 && !accepted; direction++)
                         {
                             for (int i = 0; i < 2; i++)
                             {
                                 motion[i].Apply(0);
                                 sim.Fighters[i].Velocity = proposedVelocity[i];
                             }
+                            if (pose == 2 && !actors[index].animator.TryLowerHeadForRetreat(Mathf.Min(4, 200 * dt)))
+                                break;
 
-                            Vector3 retreat = direction == 0 ? -actors[index].transform.forward : direction ==
-                                1 ? away : direction == 2 ? side : -side;
+                            Vector3 forward = actors[index].transform.forward;
+                            Vector3 retreat = direction switch
+                            {
+                                0 => -forward,
+                                1 => away,
+                                2 => side,
+                                3 => -side,
+                                4 => -forward + side,
+                                5 => -forward - side,
+                                6 => forward + side,
+                                _ => forward - side
+                            };
                             retreat.y = 0;
                             retreat = retreat.normalized * Mathf.Min(.025f, motionBudget[index] * .4f);
-                            if (sim.SampleGround(new Vector2(origin.x, origin.z), out var from) &&
-                                sim.SampleGround(new Vector2(origin.x + retreat.x, origin.z + retreat.z), out var to))
-                                retreat.y = Mathf.Max(0, to.height - from.height);
+                            if (!sim.SampleGround(new Vector2(origin.x, origin.z), out var from) ||
+                                !sim.SampleGround(new Vector2(origin.x + retreat.x, origin.z + retreat.z), out var to) ||
+                                to.normal.y < .5f)
+                                continue;
+                            retreat.y = to.height - from.height;
                             actors[index].transform.position += retreat;
                             Physics.SyncTransforms();
                             Cache();
+                            // Moving a frozen compound rig can wedge a front leg against a
+                            // horn even when the torso has room. Re-solve local joint contacts
+                            // at this retreat pose before attempting whole-body separation.
+                            if (pose != 0) YieldArticulatedContacts(sim);
                             contact = Constrain(sim, true, true);
-                            accepted = MotionAccepted() && Vector3.Distance(origin, actors[index].transform.position) > .0005f;
+                            Vector3 actual = actors[index].transform.position - origin;
+                            accepted = MotionAccepted() && Vector3.Dot(actual, retreat.normalized) > .002f;
                         }
 
                         if (accepted)
+                        {
                             AcceptedMotionFraction = .02f;
+                            ContactRetreatSteps++;
+                            if (pose == 2) ContactHeadRetreatSteps++;
+                        }
+                    }
+                    // Failed search must not throw away the already validated small step,
+                    // its velocity response, or the accepted-contact hit certificates.
+                    if (!accepted && hadAccepted)
+                    {
+                        foreach (var m in retreatFallback) m.Restore();
+                        sim.Fighters[0].Velocity = savedVelocityA;
+                        sim.Fighters[1].Velocity = savedVelocityB;
+                        AcceptedMotionFraction = savedFraction;
+                        separationRemaining = savedResidual;
+                        contact = savedContact;
+                        acceptedHornContacts = savedHorns;
+                        acceptedForelegContacts = savedForelegs;
+                        Physics.SyncTransforms();
+                        Cache();
+                        accepted = true;
                     }
                 }
 
@@ -235,12 +296,16 @@ namespace BeetleArena
                 ResolveLandingContact(i, sim, dt);
                 // 双方共用本次是否相互接触的结果。当前不记录具体接触部位、法线或接触点。
                 state.TouchingOpponent = contact;
-                state.ContactBlockedSeconds = !state.Airborne && !state.HasFallen && AcceptedMotionFraction <
-                    .05f ? state.ContactBlockedSeconds + dt : Mathf.Max(0, state.ContactBlockedSeconds - dt * 2);
-                // Root stillness during horn wrestling is legitimate, not a locomotion deadlock.
+                bool standing = !state.Airborne && !state.HasFallen && !state.IsOverturned;
+                bool barelyMoved = Vector3.Distance(motion[i].Start, p) < .005f;
+                state.ContactBlockedSeconds = standing && AcceptedMotionFraction < .25f && barelyMoved
+                    ? state.ContactBlockedSeconds + dt : Mathf.Max(0, state.ContactBlockedSeconds - dt * 2);
+                // Keep contact memory across the skin gap and action transitions. Long
+                // pry/brace loops with moving legs but no body progress are jams too.
+                recentContact[i] = contact ? .2f : Mathf.Max(0, recentContact[i] - dt);
                 bool tryingToMove = state.Action == BeetleAction.Approach || state.Action == BeetleAction.Circle ||
-                    state.Action == BeetleAction.Disengage;
-                if (tryingToMove && !state.Airborne && !state.HasFallen && sim.Phase == MatchPhase.Fighting)
+                    state.Action == BeetleAction.Disengage || recentContact[i] > 0;
+                if (tryingToMove && standing && !hornSupport.Active(sim) && sim.Phase == MatchPhase.Fighting)
                 {
                     if (Vector2.Distance(lastProgress[i], state.Position) > .10f)
                     {
@@ -249,6 +314,8 @@ namespace BeetleArena
                     }
                     else
                         progressClock[i] += dt;
+                    // Allow a normal brief horn lock, but do not restart this clock at every
+                    // attack transition. Real displacement, flight or separation resets it.
                     if (progressClock[i] > 1.4f)
                         state.ContactBlockedSeconds = Mathf.Max(.65f, state.ContactBlockedSeconds);
                 }
@@ -819,7 +886,7 @@ namespace BeetleArena
         // 托举与脱角仍允许头/腿局部退让。仅在入角时启用会使岩台高低差下的叉角互锁，
         // 受击者无法沿任何小步安全抬起，最终整只虫子僵住到托举结束。
         static bool ArticulatedContact(BeetleState state) => Inserting(state) || state.Action == BeetleAction.Lifting ||
-            state.Action == BeetleAction.ReleaseLift || state.ContactBlockedSeconds >= .3f;
+            state.Action == BeetleAction.ReleaseLift || state.Action == BeetleAction.Disengage || state.ContactBlockedSeconds >= .3f;
         void YieldArticulatedContacts(BeetleSimulation sim)
         {
             // 每步只处理一轮局部退让，之后重新同步实际胶囊体；绝不关闭或忽略它们的碰撞。

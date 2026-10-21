@@ -661,7 +661,7 @@ MeshFilter:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2014808710773908254}
-  m_Mesh: {fileID: 4300000, guid: 835a583cd149b1e458781f412e021352, type: 2}
+  m_Mesh: {fileID: 4300000, guid: 82822788a8c1fce4982ecffcd4c46584, type: 2}
 --- !u!23 &3799514228748275273
 MeshRenderer:
   m_ObjectHideFlags: 0
@@ -2223,6 +2223,7 @@ Transform:
   - {fileID: 6833028570912338982}
   - {fileID: 4835920378273628035}
   - {fileID: 1228829982536898693}
+  - {fileID: 4916826719346786720}
   m_Father: {fileID: 1664837203694898124}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &4120077239251380990
@@ -2344,6 +2345,38 @@ Transform:
   - {fileID: 2539905666297364111}
   - {fileID: 8673941279190180072}
   m_Father: {fileID: 4387985921820257150}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &4315991738503711494
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 4916826719346786720}
+  m_Layer: 0
+  m_Name: Cephalic horn length
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &4916826719346786720
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4315991738503711494}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 1.9940313e-14, y: 0, z: 0.4500003}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children:
+  - {fileID: 4977321452908297214}
+  m_Father: {fileID: 6403867445740178352}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &4356792394010543085
 GameObject:
@@ -2813,6 +2846,7 @@ Transform:
   - {fileID: 6526700401778902496}
   - {fileID: 5429728599107511591}
   - {fileID: 1445755102098321046}
+  - {fileID: 8683923077564105500}
   m_Father: {fileID: 5722028852029943143}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &6061384574168394713
@@ -3154,6 +3188,96 @@ SkinnedMeshRenderer:
     m_Center: {x: 0, y: 1, z: 0}
     m_Extent: {x: 2.5, y: 2.5, z: 3.5}
   m_DirtyAABB: 0
+--- !u!1 &6699432305826765389
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 4977321452908297214}
+  - component: {fileID: 1745795989244606347}
+  - component: {fileID: 1117475750462230531}
+  m_Layer: 0
+  m_Name: Cephalic horn surface
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &4977321452908297214
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6699432305826765389}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 7.8743994e-17, z: 0, w: 1}
+  m_LocalPosition: {x: -2.3608065e-14, y: -0.725, z: -1.7000002}
+  m_LocalScale: {x: 1.0000001, y: 1, z: 1.0000001}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 4916826719346786720}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!33 &1745795989244606347
+MeshFilter:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6699432305826765389}
+  m_Mesh: {fileID: 4300000, guid: 74ad27cff0758ce4b98e45ee33729baa, type: 2}
+--- !u!23 &1117475750462230531
+MeshRenderer:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6699432305826765389}
+  m_Enabled: 1
+  m_CastShadows: 1
+  m_ReceiveShadows: 1
+  m_DynamicOccludee: 1
+  m_StaticShadowCaster: 0
+  m_MotionVectors: 1
+  m_LightProbeUsage: 1
+  m_ReflectionProbeUsage: 1
+  m_RayTracingMode: 2
+  m_RayTraceProcedural: 0
+  m_RayTracingAccelStructBuildFlagsOverride: 0
+  m_RayTracingAccelStructBuildFlags: 1
+  m_SmallMeshCulling: 1
+  m_ForceMeshLod: -1
+  m_MeshLodSelectionBias: 0
+  m_RenderingLayerMask: 1
+  m_RendererPriority: 0
+  m_Materials:
+  - {fileID: 2100000, guid: 21f5ced72a38a7e4d87ff2e2bfda2cfe, type: 2}
+  m_StaticBatchInfo:
+    firstSubMesh: 0
+    subMeshCount: 0
+  m_StaticBatchRoot: {fileID: 0}
+  m_ProbeAnchor: {fileID: 0}
+  m_LightProbeVolumeOverride: {fileID: 0}
+  m_ScaleInLightmap: 1
+  m_ReceiveGI: 1
+  m_PreserveUVs: 0
+  m_IgnoreNormalsForChartDetection: 0
+  m_ImportantGI: 0
+  m_StitchLightmapSeams: 1
+  m_SelectedEditorRenderState: 3
+  m_MinimumChartSize: 4
+  m_AutoUVMaxDistance: 0.5
+  m_AutoUVMaxAngle: 89
+  m_LightmapParameters: {fileID: 0}
+  m_GlobalIlluminationMeshLod: 0
+  m_SortingLayerID: 0
+  m_SortingLayer: 0
+  m_SortingOrder: 0
+  m_MaskInteraction: 0
+  m_AdditionalVertexStreams: {fileID: 0}
 --- !u!1 &6827799285870678375
 GameObject:
   m_ObjectHideFlags: 0
@@ -3640,6 +3764,7 @@ GameObject:
   - component: {fileID: 6420216574289741935}
   - component: {fileID: 7715216937276287199}
   - component: {fileID: 1514772331371568346}
+  - component: {fileID: 6767868875985972880}
   m_Layer: 0
   m_Name: ArticulatedBeetle
   m_TagString: Untagged
@@ -3678,6 +3803,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::BeetleArena.BeetleActor
   animator: {fileID: 3206107930282938116}
   teamMarker: {fileID: 719108164770765840}
+  rigId: bugduel.horn-rig.v1
 --- !u!114 &3206107930282938116
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -3911,6 +4037,7 @@ MonoBehaviour:
     - {x: 0.28868166, y: -0.05141595, z: 0.13479269}
     bendAxis: {x: -0.26100388, y: 0, z: 0.965338}
   jaws: {fileID: 1514772331371568346}
+  headGroundPoints: []
   soleClearance: 0.025
   headMotionScale: 0.48
   reachMargin: 0.015
@@ -3956,6 +4083,7 @@ MonoBehaviour:
   - {fileID: 3132891258912472856}
   - {fileID: 5814421722075957007}
   - {fileID: 5571225424934442037}
+  shapeBindings: []
   surfaces:
   - {fileID: 7674948979969883417}
   - {fileID: 2578661164188509854}
@@ -3984,6 +4112,8 @@ MonoBehaviour:
   - {fileID: 2470223951329698023}
   - {fileID: 959050031160602461}
   - {fileID: 1002454450284166673}
+  - {fileID: 1117475750462230531}
+  - {fileID: 6885593813280353689}
 --- !u!54 &7715216937276287199
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -4029,6 +4159,79 @@ MonoBehaviour:
   rightRest: {x: -0, y: -0, z: -0, w: 1}
   openingDegrees: 12
   sweepDegrees: 6
+--- !u!114 &6767868875985972880
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7573736952956250445}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fea342a354999fc44ad71b5aa47a2309, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: BeetleArena.Runtime::BeetleArena.BeetleHornRig
+  head: {fileID: 6403867445740178352}
+  lengthPivot: {fileID: 4916826719346786720}
+  cephalicSurface: {fileID: 1117475750462230531}
+  thoracicSurface: {fileID: 6885593813280353689}
+  contacts:
+  - shape: {fileID: 3064756958356083496}
+    a: {x: 1.9940313e-14, y: 0, z: 0.1500001}
+    b: {x: 1.9940313e-14, y: 0.00999999, z: 0.6000005}
+    restPosition: {x: 0, y: 0.004999995, z: 0.375}
+    restScale: {x: 1, y: 1, z: 1}
+    restRotation: {x: 0.6992079, y: -0, z: -0, w: 0.7149185}
+    radius: 0.16
+    height: 0.77011126
+  - shape: {fileID: 1064726498489041767}
+    a: {x: 1.9940313e-14, y: 0.00999999, z: 0.6000005}
+    b: {x: 3.9880625e-14, y: 0.23500001, z: 1.0250008}
+    restPosition: {x: 0, y: 0.1225, z: 0.8125}
+    restScale: {x: 1, y: 1, z: 1}
+    restRotation: {x: 0.5158062, y: -0, z: -0, w: 0.8567053}
+    radius: 0.1
+    height: 0.6808845
+  - shape: {fileID: 7160374041238668841}
+    a: {x: 3.9880625e-14, y: 0.23499995, z: 1.0250006}
+    b: {x: 3.9880625e-14, y: 0.49999988, z: 1.3000007}
+    restPosition: {x: 0, y: 0.36749995, z: 1.1624999}
+    restScale: {x: 1, y: 1, z: 1}
+    restRotation: {x: 0.39122048, y: -0, z: -0, w: 0.920297}
+    radius: 0.1
+    height: 0.5819032
+  - shape: {fileID: 8574393536307406349}
+    a: {x: 3.9880625e-14, y: 0.23499995, z: 1.0250006}
+    b: {x: 0.33000004, y: 0.4799999, z: 1.2800007}
+    restPosition: {x: 0.16499999, y: 0.35749996, z: 1.1524999}
+    restScale: {x: 1, y: 1, z: 1}
+    restRotation: {x: 0.30372116, y: -0, z: -0.3930507, w: 0.86790824}
+    radius: 0.078
+    height: 0.63968384
+  - shape: {fileID: 7594083377668782322}
+    a: {x: 0.33000004, y: 0.48000002, z: 1.2800009}
+    b: {x: 0.26500002, y: 0.55999994, z: 1.5200007}
+    restPosition: {x: 0.29749998, y: 0.52, z: 1.4000001}
+    restScale: {x: 1, y: 1, z: 1}
+    restRotation: {x: 0.5684686, y: -0, z: 0.15396023, w: 0.8081706}
+    radius: 0.045
+    height: 0.35119915
+  - shape: {fileID: 3132891258912472856}
+    a: {x: 3.9880625e-14, y: 0.23499995, z: 1.0250006}
+    b: {x: -0.33000022, y: 0.4799999, z: 1.2800007}
+    restPosition: {x: -0.16499999, y: 0.35749996, z: 1.1524999}
+    restScale: {x: 1, y: 1, z: 1}
+    restRotation: {x: 0.30372116, y: -0, z: 0.3930507, w: 0.86790824}
+    radius: 0.078
+    height: 0.63968384
+  - shape: {fileID: 5814421722075957007}
+    a: {x: -0.33000004, y: 0.48000002, z: 1.2800009}
+    b: {x: -0.2650002, y: 0.55999994, z: 1.5200007}
+    restPosition: {x: -0.29749998, y: 0.52, z: 1.4000001}
+    restScale: {x: 1, y: 1, z: 1}
+    restRotation: {x: 0.5684686, y: -0, z: -0.15396023, w: 0.8081706}
+    radius: 0.045
+    height: 0.35119915
 --- !u!1 &7575029264599667356
 GameObject:
   m_ObjectHideFlags: 0
@@ -4258,7 +4461,7 @@ MeshFilter:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 7895957482650783218}
-  m_Mesh: {fileID: 4300000, guid: 3d363ab328d1ac74f8e1a49353387eed, type: 2}
+  m_Mesh: {fileID: 4300000, guid: 3291f5f7958fffe4099b04751432ff74, type: 2}
 --- !u!23 &8884960958154340074
 MeshRenderer:
   m_ObjectHideFlags: 0
@@ -4931,6 +5134,96 @@ MeshRenderer:
   m_RendererPriority: 0
   m_Materials:
   - {fileID: 2100000, guid: e03bddd5b4f6ff1438047e35c3fc1821, type: 2}
+  m_StaticBatchInfo:
+    firstSubMesh: 0
+    subMeshCount: 0
+  m_StaticBatchRoot: {fileID: 0}
+  m_ProbeAnchor: {fileID: 0}
+  m_LightProbeVolumeOverride: {fileID: 0}
+  m_ScaleInLightmap: 1
+  m_ReceiveGI: 1
+  m_PreserveUVs: 0
+  m_IgnoreNormalsForChartDetection: 0
+  m_ImportantGI: 0
+  m_StitchLightmapSeams: 1
+  m_SelectedEditorRenderState: 3
+  m_MinimumChartSize: 4
+  m_AutoUVMaxDistance: 0.5
+  m_AutoUVMaxAngle: 89
+  m_LightmapParameters: {fileID: 0}
+  m_GlobalIlluminationMeshLod: 0
+  m_SortingLayerID: 0
+  m_SortingLayer: 0
+  m_SortingOrder: 0
+  m_MaskInteraction: 0
+  m_AdditionalVertexStreams: {fileID: 0}
+--- !u!1 &8474477166913667202
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 8683923077564105500}
+  - component: {fileID: 4112883932316219861}
+  - component: {fileID: 6885593813280353689}
+  m_Layer: 0
+  m_Name: Thoracic horn surface
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &8683923077564105500
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8474477166913667202}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 7.8743994e-17, z: 0, w: 1}
+  m_LocalPosition: {x: 4.813644e-15, y: -0.95, z: 0.00000016227602}
+  m_LocalScale: {x: 1.0000001, y: 1, z: 1.0000001}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1664837203694898124}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!33 &4112883932316219861
+MeshFilter:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8474477166913667202}
+  m_Mesh: {fileID: 4300000, guid: 9619c14dd51f3fc488e8419a5bae9a16, type: 2}
+--- !u!23 &6885593813280353689
+MeshRenderer:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8474477166913667202}
+  m_Enabled: 1
+  m_CastShadows: 1
+  m_ReceiveShadows: 1
+  m_DynamicOccludee: 1
+  m_StaticShadowCaster: 0
+  m_MotionVectors: 1
+  m_LightProbeUsage: 1
+  m_ReflectionProbeUsage: 1
+  m_RayTracingMode: 2
+  m_RayTraceProcedural: 0
+  m_RayTracingAccelStructBuildFlagsOverride: 0
+  m_RayTracingAccelStructBuildFlags: 1
+  m_SmallMeshCulling: 1
+  m_ForceMeshLod: -1
+  m_MeshLodSelectionBias: 0
+  m_RenderingLayerMask: 1
+  m_RendererPriority: 0
+  m_Materials:
+  - {fileID: 2100000, guid: 6460b2e7c43fe8341afae605053c823f, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0

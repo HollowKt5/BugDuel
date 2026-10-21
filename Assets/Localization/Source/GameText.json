@@ -1,0 +1,6486 @@
+{
+  "entries": [
+    {
+      "key": "t_a8b4eb2749a3",
+      "zh": "配置读取失败，使用内置设置：",
+      "en": "Could not load settings; using defaults: ",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Campaign\\CampaignApp.cs:68"
+      ]
+    },
+    {
+      "key": "t_a45efc33f911",
+      "zh": "按键配置无效，已使用默认按键",
+      "en": "Invalid key bindings; defaults restored",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Campaign\\CampaignApp.cs:73"
+      ]
+    },
+    {
+      "key": "t_5eae78b2171f",
+      "zh": "请等待当前保存或转场完成",
+      "en": "Please wait for saving or the transition to finish",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Campaign\\CampaignApp.cs:98"
+      ]
+    },
+    {
+      "key": "t_3b03d204c5fa",
+      "zh": "保存失败，操作未提交：",
+      "en": "Save failed; operation not committed: ",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Campaign\\CampaignApp.cs:109"
+      ]
+    },
+    {
+      "key": "t_60d662e62cfc",
+      "zh": "此槽位已有存档，请选择空槽或先删除旧存档",
+      "en": "This slot is occupied. Choose an empty slot or delete the old save.",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Campaign\\CampaignApp.cs:124"
+      ]
+    },
+    {
+      "key": "t_5fb89557a51b",
+      "zh": "无法新建游戏：",
+      "en": "Could not create game: ",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Campaign\\CampaignApp.cs:134"
+      ]
+    },
+    {
+      "key": "t_175467889025",
+      "zh": "这是一个空槽位",
+      "en": "This save slot is empty",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Campaign\\CampaignApp.cs:142"
+      ]
+    },
+    {
+      "key": "t_b6df1a4c81d0",
+      "zh": "已读取第 ",
+      "en": "Loaded save from week ",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Campaign\\CampaignApp.cs:144"
+      ]
+    },
+    {
+      "key": "t_2111632ba06f",
+      "zh": " 周存档。",
+      "en": ".",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Campaign\\CampaignApp.cs:144"
+      ]
+    },
+    {
+      "key": "t_4fb100fd65bd",
+      "zh": "读取失败，原文件保留：",
+      "en": "Load failed; original file preserved: ",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Campaign\\CampaignApp.cs:146"
+      ]
+    },
+    {
+      "key": "t_06f179a80f1a",
+      "zh": "请先开始游戏",
+      "en": "Start a game first",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Campaign\\CampaignApp.cs:154"
+      ]
+    },
+    {
+      "key": "t_ef95a7b725bf",
+      "zh": "已保存到 ",
+      "en": "Saved to ",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Campaign\\CampaignApp.cs:156"
+      ]
+    },
+    {
+      "key": "t_5ce7240a2c53",
+      "zh": "自动槽",
+      "en": "auto slot",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Campaign\\CampaignApp.cs:156"
+      ]
+    },
+    {
+      "key": "t_baa89805bdff",
+      "zh": "手动槽 ",
+      "en": "manual slot ",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Campaign\\CampaignApp.cs:156"
+      ]
+    },
+    {
+      "key": "t_b12163000cd3",
+      "zh": "保存失败：",
+      "en": "Save failed: ",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Campaign\\CampaignApp.cs:160",
+        "Assets\\BeetleArena\\Runtime\\Campaign\\CampaignApp.cs:266"
+      ]
+    },
+    {
+      "key": "t_7992038a9fe1",
+      "zh": "槽位已删除",
+      "en": "Save slot deleted",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Campaign\\CampaignApp.cs:165"
+      ]
+    },
+    {
+      "key": "t_2b5829a325d7",
+      "zh": "删除失败：",
+      "en": "Delete failed: ",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Campaign\\CampaignApp.cs:166"
+      ]
+    },
+    {
+      "key": "t_8698a27059e0",
+      "zh": "先进入温室",
+      "en": "Enter the greenhouse first",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Campaign\\CampaignApp.cs:174"
+      ]
+    },
+    {
+      "key": "t_43e47d1cf996",
+      "zh": "请先完成赛事与拍卖再热更",
+      "en": "Finish battles and auctions before reloading content",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Campaign\\CampaignApp.cs:175"
+      ]
+    },
+    {
+      "key": "t_31181f4c97a3",
+      "zh": "内容包超过1MB",
+      "en": "Content pack exceeds 1 MB",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Campaign\\CampaignApp.cs:176"
+      ]
+    },
+    {
+      "key": "t_2328d283db57",
+      "zh": "请提高内容 revision 后再重载",
+      "en": "Increase the content revision before reloading",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Campaign\\CampaignApp.cs:178"
+      ]
+    },
+    {
+      "key": "t_9b585179492b",
+      "zh": "内容已原子更新至 r",
+      "en": "Content updated to r",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Campaign\\CampaignApp.cs:180"
+      ]
+    },
+    {
+      "key": "t_b310802be17c",
+      "zh": "；占用中的物种与环境均已校验。",
+      "en": "; active species and habitats validated.",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Campaign\\CampaignApp.cs:180"
+      ]
+    },
+    {
+      "key": "t_7e2b194163d3",
+      "zh": "热更未应用：",
+      "en": "Content reload not applied: ",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Campaign\\CampaignApp.cs:182"
+      ]
+    },
+    {
+      "key": "t_59885c0b1726",
+      "zh": "无法载入场景：",
+      "en": "Could not load scene: ",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Campaign\\CampaignApp.cs:212",
+        "Assets\\BeetleArena\\Runtime\\Campaign\\Presentation\\CampaignSceneTransition.cs:51"
+      ]
+    },
+    {
+      "key": "t_cb84a961b0ed",
+      "zh": "设置已保存",
+      "en": "Settings saved",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Campaign\\CampaignApp.cs:258"
+      ]
+    },
+    {
+      "key": "t_f495083a9b7e",
+      "zh": "设置保存失败：",
+      "en": "Could not save settings: ",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Campaign\\CampaignApp.cs:259"
+      ]
+    },
+    {
+      "key": "t_5c5243670aa1",
+      "zh": "存档过大",
+      "en": "Save file is too large",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Campaign\\CampaignSaveRepository.cs:31"
+      ]
+    },
+    {
+      "key": "t_68eba45953cf",
+      "zh": "不支持或损坏的存档",
+      "en": "Unsupported or damaged save",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Campaign\\CampaignSaveRepository.cs:33"
+      ]
+    },
+    {
+      "key": "t_b82f9958ef80",
+      "zh": "赛场载入失败",
+      "en": "Could not load arena",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Campaign\\Integration\\CampaignLeagueBridge.cs:49"
+      ]
+    },
+    {
+      "key": "t_043b41ab7d67",
+      "zh": "力量",
+      "en": "Strength",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Campaign\\Integration\\CampaignLeagueBridge.cs:60",
+        "Assets\\BeetleArena\\Domain\\Campaign\\CampaignGenetics.cs:9",
+        "Assets\\BeetleArena\\Domain\\Campaign\\CampaignGenetics.cs:26"
+      ]
+    },
+    {
+      "key": "t_95c3c311ee64",
+      "zh": "甲壳",
+      "en": "Shell",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Campaign\\Integration\\CampaignLeagueBridge.cs:60",
+        "Assets\\BeetleArena\\Domain\\Campaign\\CampaignGenetics.cs:9",
+        "Assets\\BeetleArena\\Domain\\Campaign\\CampaignGenetics.cs:25"
+      ]
+    },
+    {
+      "key": "t_0258aadc3190",
+      "zh": "敏捷",
+      "en": "Agility",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Campaign\\Integration\\CampaignLeagueBridge.cs:60",
+        "Assets\\BeetleArena\\Domain\\Campaign\\CampaignGenetics.cs:9",
+        "Assets\\BeetleArena\\Domain\\Campaign\\CampaignGenetics.cs:27"
+      ]
+    },
+    {
+      "key": "t_e1b1cb94d76d",
+      "zh": "耐力",
+      "en": "Stamina",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Campaign\\Integration\\CampaignLeagueBridge.cs:60",
+        "Assets\\BeetleArena\\Domain\\Campaign\\CampaignGenetics.cs:9",
+        "Assets\\BeetleArena\\Domain\\Campaign\\CampaignGenetics.cs:27"
+      ]
+    },
+    {
+      "key": "t_e371a2cc96f8",
+      "zh": "平局 · 棋逢对手",
+      "en": "Draw · Evenly matched",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Campaign\\Integration\\CampaignLeagueBridge.cs:91"
+      ]
+    },
+    {
+      "key": "t_172797a8eedb",
+      "zh": "赢啦！漂亮的一战",
+      "en": "Victory! A fine duel",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Campaign\\Integration\\CampaignLeagueBridge.cs:91"
+      ]
+    },
+    {
+      "key": "t_689a7c6cde97",
+      "zh": "这一场，先歇一歇",
+      "en": "Defeat · Time to rest",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Campaign\\Integration\\CampaignLeagueBridge.cs:91"
+      ]
+    },
+    {
+      "key": "t_e82f89358652",
+      "zh": "观察中",
+      "en": "Observing",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Campaign\\Presentation\\CampaignCareController.cs:84",
+        "Assets\\BeetleArena\\Runtime\\Campaign\\UI\\CampaignGreenhouseView.cs:98",
+        "Assets\\BeetleArena\\Runtime\\Campaign\\UI\\CampaignView.cs:98",
+        "Assets\\BeetleArena\\Runtime\\Presentation\\BeetleArenaHud.cs:171",
+        "Assets\\BeetleArena\\Editor\\Setup\\BeetleHusbandrySceneBuilder.cs:219"
+      ]
+    },
+    {
+      "key": "t_4ce94cba204e",
+      "zh": "缓步游走",
+      "en": "Wandering",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Campaign\\Presentation\\CampaignCareController.cs:88"
+      ]
+    },
+    {
+      "key": "t_2e4a8c91b7cf",
+      "zh": "触角探索",
+      "en": "Exploring with antennae",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Campaign\\Presentation\\CampaignCareController.cs:89"
+      ]
+    },
+    {
+      "key": "t_559e9ffa0f86",
+      "zh": "走向食盆",
+      "en": "Approaching food",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Campaign\\Presentation\\CampaignCareController.cs:90"
+      ]
+    },
+    {
+      "key": "t_c2db98d63aaa",
+      "zh": "低头进食 {0}",
+      "en": "Eating {0}",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Campaign\\Presentation\\CampaignCareController.cs:91"
+      ]
+    },
+    {
+      "key": "t_79552b921dea",
+      "zh": "清理触角",
+      "en": "Grooming antennae",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Campaign\\Presentation\\CampaignCareController.cs:92"
+      ]
+    },
+    {
+      "key": "t_5eb65abf14c2",
+      "zh": "寻找休息处",
+      "en": "Seeking shelter",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Campaign\\Presentation\\CampaignCareController.cs:93"
+      ]
+    },
+    {
+      "key": "t_d87708f56fa3",
+      "zh": "安静休息",
+      "en": "Resting quietly",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Campaign\\Presentation\\CampaignCareController.cs:94"
+      ]
+    },
+    {
+      "key": "t_5cfea5be9ee9",
+      "zh": "受惊停顿",
+      "en": "Startled",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Campaign\\Presentation\\CampaignCareController.cs:95"
+      ]
+    },
+    {
+      "key": "t_062dd59a8ef3",
+      "zh": "扶正后恢复",
+      "en": "Recovering after rescue",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Campaign\\Presentation\\CampaignCareController.cs:96"
+      ]
+    },
+    {
+      "key": "t_ad3b3457d38b",
+      "zh": "翻倒挣扎 · 需要帮助",
+      "en": "Struggling upside down · Help needed",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Campaign\\Presentation\\CampaignCareController.cs:97"
+      ]
+    },
+    {
+      "key": "t_548692a8be4b",
+      "zh": "幼虫养成中",
+      "en": "Larva growing",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Campaign\\Presentation\\CampaignCareController.cs:98"
+      ]
+    },
+    {
+      "key": "t_79ee6793f691",
+      "zh": "已死亡",
+      "en": "Dead",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Campaign\\Presentation\\CampaignCareController.cs:99",
+        "Assets\\BeetleArena\\Runtime\\Campaign\\UI\\CampaignView.cs:214",
+        "Assets\\BeetleArena\\Runtime\\Presentation\\BeetleHusbandryHud.cs:136"
+      ]
+    },
+    {
+      "key": "t_729ef2ad2ae1",
+      "zh": "挂牌 / 参赛 / 拍卖中",
+      "en": "Listed / Competing / At auction",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Campaign\\Presentation\\CampaignCareController.cs:100"
+      ]
+    },
+    {
+      "key": "t_2fdff4dc2b03",
+      "zh": "静止观察",
+      "en": "Standing still",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Campaign\\Presentation\\CampaignCareController.cs:101"
+      ]
+    },
+    {
+      "key": "t_20a53d0c39bb",
+      "zh": " · 暂停",
+      "en": " · Paused",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Campaign\\Presentation\\CampaignCareController.cs:103"
+      ]
+    },
+    {
+      "key": "t_d5f6637ac280",
+      "zh": "场景切换失败：",
+      "en": "Scene transition failed: ",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Campaign\\Presentation\\CampaignSceneTransition.cs:77"
+      ]
+    },
+    {
+      "key": "t_1e267d90ca05",
+      "zh": "场景画面准备超时",
+      "en": "Scene display timed out",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Campaign\\Presentation\\CampaignSceneTransition.cs:85"
+      ]
+    },
+    {
+      "key": "t_89d6f1243f47",
+      "zh": "纯金壳",
+      "en": "Golden shell",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Campaign\\Presentation\\CampaignSpecimen.cs:108",
+        "Assets\\BeetleArena\\Domain\\Campaign\\CampaignGenetics.cs:25",
+        "Assets\\BeetleArena\\Domain\\Campaign\\CampaignGenetics.cs:40"
+      ]
+    },
+    {
+      "key": "t_9bc552db934e",
+      "zh": "紫绀色",
+      "en": "Indigo",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Campaign\\Presentation\\CampaignSpecimen.cs:109",
+        "Assets\\BeetleArena\\Domain\\Campaign\\CampaignGenetics.cs:27"
+      ]
+    },
+    {
+      "key": "t_b8e9fa920eeb",
+      "zh": "虫舍日记 · 温室",
+      "en": "BUG DUEL / GREENHOUSE",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Campaign\\UI\\CampaignGreenhouseView.cs:22"
+      ]
+    },
+    {
+      "key": "t_39344487a522",
+      "zh": "捕虫队",
+      "en": "Catching",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Campaign\\UI\\CampaignGreenhouseView.cs:29",
+        "Assets\\BeetleArena\\Runtime\\Campaign\\UI\\CampaignView.cs:157"
+      ]
+    },
+    {
+      "key": "t_930f2e66d995",
+      "zh": "市场",
+      "en": "Market",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Campaign\\UI\\CampaignGreenhouseView.cs:29",
+        "Assets\\BeetleArena\\Runtime\\Campaign\\UI\\CampaignView.cs:157"
+      ]
+    },
+    {
+      "key": "t_1a39ad160838",
+      "zh": "联赛",
+      "en": "Leagues",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Campaign\\UI\\CampaignGreenhouseView.cs:29",
+        "Assets\\BeetleArena\\Runtime\\Campaign\\UI\\CampaignView.cs:157"
+      ]
+    },
+    {
+      "key": "t_60acd00c6859",
+      "zh": "冠军拍卖",
+      "en": "Auction",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Campaign\\UI\\CampaignGreenhouseView.cs:29",
+        "Assets\\BeetleArena\\Runtime\\Campaign\\UI\\CampaignLeagueView.cs:73",
+        "Assets\\BeetleArena\\Runtime\\Campaign\\UI\\CampaignView.cs:157"
+      ]
+    },
+    {
+      "key": "t_40e191bd7bfb",
+      "zh": "存档",
+      "en": "Saves",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Campaign\\UI\\CampaignGreenhouseView.cs:29",
+        "Assets\\BeetleArena\\Runtime\\Campaign\\UI\\CampaignView.cs:159"
+      ]
+    },
+    {
+      "key": "t_7debf9cb0372",
+      "zh": "设置",
+      "en": "Settings",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Campaign\\UI\\CampaignGreenhouseView.cs:29",
+        "Assets\\BeetleArena\\Runtime\\Campaign\\UI\\CampaignMenuView.cs:70",
+        "Assets\\BeetleArena\\Runtime\\Campaign\\UI\\CampaignView.cs:160"
+      ]
+    },
+    {
+      "key": "t_a7749c4a30e8",
+      "zh": "第 {0} 周  |  {1} G  |  口碑 {2}\n入住 {3}/{4}  ·  回程预留 {5}",
+      "en": "Week {0}  |  {1} G  |  Rep. {2}\nResidents {3}/{4}  ·  Reserved {5}",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Campaign\\UI\\CampaignGreenhouseView.cs:36"
+      ]
+    },
+    {
+      "key": "t_5fb8a6936d86",
+      "zh": "场景全景",
+      "en": "Whole habitat",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Campaign\\UI\\CampaignGreenhouseView.cs:37"
+      ]
+    },
+    {
+      "key": "t_7c3c8999873f",
+      "zh": "甲虫近观",
+      "en": "Beetle close-up",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Campaign\\UI\\CampaignGreenhouseView.cs:38"
+      ]
+    },
+    {
+      "key": "t_e5506038f335",
+      "zh": "重置视角",
+      "en": "Reset view",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Campaign\\UI\\CampaignGreenhouseView.cs:39"
+      ]
+    },
+    {
+      "key": "t_d2c2680f2eae",
+      "zh": "右侧：滚轮缩放 · 按住右键转动视角",
+      "en": "Right side: wheel to zoom · hold RMB to orbit",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Campaign\\UI\\CampaignGreenhouseView.cs:40"
+      ]
+    },
+    {
+      "key": "t_594fcf888634",
+      "zh": "甲虫名册 · 尚未入住",
+      "en": "Beetle roster · Empty",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Campaign\\UI\\CampaignGreenhouseView.cs:43"
+      ]
+    },
+    {
+      "key": "t_cca112f3b871",
+      "zh": "当前：{0}  ·  切换甲虫…",
+      "en": "Selected: {0}  ·  Change…",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Campaign\\UI\\CampaignGreenhouseView.cs:43"
+      ]
+    },
+    {
+      "key": "t_3c027428404d",
+      "zh": "日常照料",
+      "en": "Daily care",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Campaign\\UI\\CampaignGreenhouseView.cs:44"
+      ]
+    },
+    {
+      "key": "t_adc5ac9077eb",
+      "zh": "育种",
+      "en": "Breeding",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Campaign\\UI\\CampaignGreenhouseView.cs:44"
+      ]
+    },
+    {
+      "key": "t_fc9b7887772c",
+      "zh": "虫舍管理",
+      "en": "Management",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Campaign\\UI\\CampaignGreenhouseView.cs:44"
+      ]
+    },
+    {
+      "key": "t_d528e98ac193",
+      "zh": "下一周  N",
+      "en": "Next week  N",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Campaign\\UI\\CampaignGreenhouseView.cs:55",
+        "Assets\\BeetleArena\\Runtime\\Campaign\\UI\\CampaignView.cs:168"
+      ]
+    },
+    {
+      "key": "t_de3b7b72dbfe",
+      "zh": "保存并回主菜单",
+      "en": "Save and return",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Campaign\\UI\\CampaignGreenhouseView.cs:56"
+      ]
+    },
+    {
+      "key": "t_c4905158d403",
+      "zh": "甲虫名册 · {0}/{1}",
+      "en": "Beetle roster · {0}/{1}",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Campaign\\UI\\CampaignGreenhouseView.cs:72"
+      ]
+    },
+    {
+      "key": "t_b7e220b1efa1",
+      "zh": "  ◂ 当前",
+      "en": "  ◂ Selected",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Campaign\\UI\\CampaignGreenhouseView.cs:77"
+      ]
+    },
+    {
+      "key": "t_9b7511df8581",
+      "zh": "雌 ♀",
+      "en": "Female ♀",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Campaign\\UI\\CampaignGreenhouseView.cs:1"
+      ]
+    },
+    {
+      "key": "t_bca7b7ce1f8b",
+      "zh": "雄 ♂",
+      "en": "Male ♂",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Campaign\\UI\\CampaignGreenhouseView.cs:1"
+      ]
+    },
+    {
+      "key": "t_f5cee561ae89",
+      "zh": "死亡",
+      "en": "Dead",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Campaign\\UI\\CampaignGreenhouseView.cs:1"
+      ]
+    },
+    {
+      "key": "t_651b6959aca6",
+      "zh": "需要帮助！",
+      "en": "Help needed!",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Campaign\\UI\\CampaignGreenhouseView.cs:1"
+      ]
+    },
+    {
+      "key": "t_a5465f083e41",
+      "zh": "成虫",
+      "en": "Adult",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Campaign\\UI\\CampaignGreenhouseView.cs:1"
+      ]
+    },
+    {
+      "key": "t_5c03e8d7eb8c",
+      "zh": "养成中",
+      "en": "Growing",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Campaign\\UI\\CampaignGreenhouseView.cs:1"
+      ]
+    },
+    {
+      "key": "t_716527c2cbda",
+      "zh": "选择观察",
+      "en": "Observe",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Campaign\\UI\\CampaignGreenhouseView.cs:79"
+      ]
+    },
+    {
+      "key": "t_6cc79d27e28d",
+      "zh": "虫舍还没有甲虫。\n去市场购买，或派遣捕虫队。",
+      "en": "No beetles yet.\nVisit the market or send a catching squad.",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Campaign\\UI\\CampaignGreenhouseView.cs:83"
+      ]
+    },
+    {
+      "key": "t_d1d952058d34",
+      "zh": "返回温室",
+      "en": "Greenhouse",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Campaign\\UI\\CampaignGreenhouseView.cs:85",
+        "Assets\\BeetleArena\\Runtime\\Campaign\\UI\\CampaignLeagueView.cs:73",
+        "Assets\\BeetleArena\\Runtime\\Campaign\\UI\\CampaignMarketView.cs:36",
+        "Assets\\BeetleArena\\Runtime\\Campaign\\UI\\CampaignMenuView.cs:57"
+      ]
+    },
+    {
+      "key": "t_46e381f6398c",
+      "zh": "虫舍有点安静。\n先去市场买一只，或派捕虫队出发。",
+      "en": "The greenhouse is quiet.\nBuy a beetle or send a catching squad.",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Campaign\\UI\\CampaignGreenhouseView.cs:93"
+      ]
+    },
+    {
+      "key": "t_7315cf9ffcb7",
+      "zh": "去市场",
+      "en": "Visit market",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Campaign\\UI\\CampaignGreenhouseView.cs:94"
+      ]
+    },
+    {
+      "key": "t_9a0f06e745e5",
+      "zh": "帮助翻身 H",
+      "en": "Help upright  H",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Campaign\\UI\\CampaignGreenhouseView.cs:100"
+      ]
+    },
+    {
+      "key": "t_ca10c9acb205",
+      "zh": "清理栏位",
+      "en": "Clear slot",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Campaign\\UI\\CampaignGreenhouseView.cs:101"
+      ]
+    },
+    {
+      "key": "t_f97e8c9a024b",
+      "zh": "更换环境",
+      "en": "Change habitat",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Campaign\\UI\\CampaignGreenhouseView.cs:101"
+      ]
+    },
+    {
+      "key": "t_55ccd273bacf",
+      "zh": "轻触 / 互动",
+      "en": "Touch / Interact",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Campaign\\UI\\CampaignGreenhouseView.cs:102"
+      ]
+    },
+    {
+      "key": "t_319650f2d193",
+      "zh": "翻倒后需扶正；持续 60 秒会开始受伤。",
+      "en": "Help overturned beetles; injury begins after 60 seconds.",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Campaign\\UI\\CampaignGreenhouseView.cs:103"
+      ]
+    },
+    {
+      "key": "t_0210ae627f7d",
+      "zh": "成虫喂食 · 吃完恢复饱食与健康",
+      "en": "Adult food · Restores nutrition and health",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Campaign\\UI\\CampaignGreenhouseView.cs:108"
+      ]
+    },
+    {
+      "key": "t_4c2b1f34c16c",
+      "zh": "食盆已备好 · 等待甲虫自行进食",
+      "en": "Food ready · Waiting for the beetle to eat",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Campaign\\UI\\CampaignGreenhouseView.cs:108"
+      ]
+    },
+    {
+      "key": "t_b37e443922b2",
+      "zh": "红薯 15 G",
+      "en": "Sweet potato 15 G",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Campaign\\UI\\CampaignGreenhouseView.cs:109"
+      ]
+    },
+    {
+      "key": "t_2cccf85e019a",
+      "zh": "香蕉 20 G",
+      "en": "Banana 20 G",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Campaign\\UI\\CampaignGreenhouseView.cs:109"
+      ]
+    },
+    {
+      "key": "t_7a404a70cd88",
+      "zh": "苹果 20 G",
+      "en": "Apple 20 G",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Campaign\\UI\\CampaignGreenhouseView.cs:109"
+      ]
+    },
+    {
+      "key": "t_337f1e461610",
+      "zh": "投下食物后会自行靠近，进食时保持稳定。",
+      "en": "Beetles approach food themselves and stay stable while eating.",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Campaign\\UI\\CampaignGreenhouseView.cs:114"
+      ]
+    },
+    {
+      "key": "t_a9e446336041",
+      "zh": "幼虫养成 · 选好后按周成长",
+      "en": "Larva care · Growth advances each week",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Campaign\\UI\\CampaignGreenhouseView.cs:118"
+      ]
+    },
+    {
+      "key": "t_ff9ab8123e61",
+      "zh": "暖气\n2周 ×0.88",
+      "en": "Heated\n2 wk ×0.88",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Campaign\\UI\\CampaignGreenhouseView.cs:125"
+      ]
+    },
+    {
+      "key": "t_fcef2e732da9",
+      "zh": "常温\n3周 ×1.00",
+      "en": "Room temp.\n3 wk ×1.00",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Campaign\\UI\\CampaignGreenhouseView.cs:125"
+      ]
+    },
+    {
+      "key": "t_2928b07744f4",
+      "zh": "冷柜\n4–5周 ×1.22",
+      "en": "Chilled\n4–5 wk ×1.22",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Campaign\\UI\\CampaignGreenhouseView.cs:125"
+      ]
+    },
+    {
+      "key": "t_ebaada14d3fd",
+      "zh": "确认饲料和温度 · 开始养成",
+      "en": "Confirm feed and temperature",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Campaign\\UI\\CampaignGreenhouseView.cs:130"
+      ]
+    },
+    {
+      "key": "t_9429340d4541",
+      "zh": "养成中 · 等待出栏",
+      "en": "Growing · Waiting to mature",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Campaign\\UI\\CampaignGreenhouseView.cs:130"
+      ]
+    },
+    {
+      "key": "t_de76aee00974",
+      "zh": "饲料与温度在开始养成后锁定。",
+      "en": "Feed and temperature are locked after growth starts.",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Campaign\\UI\\CampaignGreenhouseView.cs:131"
+      ]
+    },
+    {
+      "key": "t_5b8ade01a90e",
+      "zh": "配种实验室",
+      "en": "Breeding lab",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Campaign\\UI\\CampaignGreenhouseView.cs:141"
+      ]
+    },
+    {
+      "key": "t_53e2db70167f",
+      "zh": "未选择",
+      "en": "Not selected",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Campaign\\UI\\CampaignGreenhouseView.cs:1"
+      ]
+    },
+    {
+      "key": "t_4953b840c565",
+      "zh": "父本：{0}\n母本：{1}\n使用上方名册切换甲虫，再设为亲本。\n需同种异性成虫；母本基因从右侧入槽。",
+      "en": "Father: {0}\nMother: {1}\nSelect a beetle in the roster, then set it as a parent.\nSame-species adult pair required; maternal genes enter from the right.",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Campaign\\UI\\CampaignGreenhouseView.cs:142"
+      ]
+    },
+    {
+      "key": "t_af71e311c86e",
+      "zh": "将当前甲虫设为亲本",
+      "en": "Set selected beetle as parent",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Campaign\\UI\\CampaignGreenhouseView.cs:143"
+      ]
+    },
+    {
+      "key": "t_deb9276ae136",
+      "zh": "配种 100 G · 1 个后代",
+      "en": "Breed 100 G · 1 offspring",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Campaign\\UI\\CampaignGreenhouseView.cs:144"
+      ]
+    },
+    {
+      "key": "t_5d484cbcde38",
+      "zh": "虫舍与养殖环境",
+      "en": "Greenhouse and habitats",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Campaign\\UI\\CampaignGreenhouseView.cs:150"
+      ]
+    },
+    {
+      "key": "t_6781c70b5de4",
+      "zh": "入住 {0}/{1}  ·  回程预留 {2}\n最大容量 20 格",
+      "en": "Residents {0}/{1}  ·  Reserved {2}\nMaximum capacity: 20",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Campaign\\UI\\CampaignGreenhouseView.cs:151"
+      ]
+    },
+    {
+      "key": "t_80fb011f27c4",
+      "zh": "扩建虫舍  {0} G",
+      "en": "Expand greenhouse  {0} G",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Campaign\\UI\\CampaignGreenhouseView.cs:152"
+      ]
+    },
+    {
+      "key": "t_c93d1908be31",
+      "zh": "虫舍已满级",
+      "en": "Fully expanded",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Campaign\\UI\\CampaignGreenhouseView.cs:152"
+      ]
+    },
+    {
+      "key": "t_d0a6776f75bc",
+      "zh": "尚未选择甲虫",
+      "en": "No beetle selected",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Campaign\\UI\\CampaignGreenhouseView.cs:153"
+      ]
+    },
+    {
+      "key": "t_91e42983bee1",
+      "zh": "当前环境：{0}",
+      "en": "Habitat: {0}",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Campaign\\UI\\CampaignGreenhouseView.cs:153"
+      ]
+    },
+    {
+      "key": "t_c4c00e842b5a",
+      "zh": "清理死亡甲虫栏位",
+      "en": "Clear deceased beetle slot",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Campaign\\UI\\CampaignGreenhouseView.cs:154"
+      ]
+    },
+    {
+      "key": "t_c7a44cfe8beb",
+      "zh": "更换当前甲虫的环境",
+      "en": "Change selected beetle habitat",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Campaign\\UI\\CampaignGreenhouseView.cs:154"
+      ]
+    },
+    {
+      "key": "t_a631dc7b4f95",
+      "zh": "虫舍小账本",
+      "en": "Greenhouse ledger",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Campaign\\UI\\CampaignGreenhouseView.cs:155"
+      ]
+    },
+    {
+      "key": "t_c9d4ede1fcb1",
+      "zh": "帮工一周 +150 G",
+      "en": "Work one week +150 G",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Campaign\\UI\\CampaignGreenhouseView.cs:156"
+      ]
+    },
+    {
+      "key": "t_cb51d6c3ba31",
+      "zh": "保存当前日记",
+      "en": "Save journal",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Campaign\\UI\\CampaignGreenhouseView.cs:157"
+      ]
+    },
+    {
+      "key": "t_97c6d1afd1f7",
+      "zh": "重载物种 / 环境配置",
+      "en": "Reload species / habitats",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Campaign\\UI\\CampaignGreenhouseView.cs:158"
+      ]
+    },
+    {
+      "key": "t_302e0524f528",
+      "zh": "选择养殖环境",
+      "en": "Choose habitat",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Campaign\\UI\\CampaignGreenhouseView.cs:162"
+      ]
+    },
+    {
+      "key": "t_23fdcb8987ee",
+      "zh": "{0}  {1}°C / {2}% RH\n每周恢复 {3} 心",
+      "en": "{0}  {1}°C / {2}% RH\nRestores {3} hearts per week",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Campaign\\UI\\CampaignGreenhouseView.cs:166"
+      ]
+    },
+    {
+      "key": "t_11d024154013",
+      "zh": "返回",
+      "en": "Back",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Campaign\\UI\\CampaignGreenhouseView.cs:168",
+        "Assets\\BeetleArena\\Runtime\\Campaign\\UI\\CampaignMarketDialogs.cs:38",
+        "Assets\\BeetleArena\\Runtime\\Campaign\\UI\\CampaignMarketDialogs.cs:52",
+        "Assets\\BeetleArena\\Runtime\\Campaign\\UI\\CampaignMenuView.cs:113"
+      ]
+    },
+    {
+      "key": "t_f5f18cc8c38e",
+      "zh": "捕虫队 · 远方有新的朋友",
+      "en": "Catching squad / New friends await",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Campaign\\UI\\CampaignGreenhouseView.cs:172"
+      ]
+    },
+    {
+      "key": "t_ba13d43089e8",
+      "zh": "与市场独立的派遣中心。每队基础带回2只；金币和道具出发时扣除。回程自动入住温室。",
+      "en": "Each squad brings back 2 beetles by default. Coins and supplies are spent on departure; returning beetles enter your greenhouse.",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Campaign\\UI\\CampaignGreenhouseView.cs:172"
+      ]
+    },
+    {
+      "key": "t_0ab0fa76fb2c",
+      "zh": "3星",
+      "en": "3-star",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Campaign\\UI\\CampaignGreenhouseView.cs:1"
+      ]
+    },
+    {
+      "key": "t_d48e032221eb",
+      "zh": "2星",
+      "en": "2-star",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Campaign\\UI\\CampaignGreenhouseView.cs:1"
+      ]
+    },
+    {
+      "key": "t_33e21b5777e4",
+      "zh": "{0}–{1} mm  ·  {2} 周  ·  {3} G\n{4}\n稀有 {5}  /  {6} {7}",
+      "en": "{0}–{1} mm  ·  {2} wk  ·  {3} G\n{4}\nRare {5}  /  {6} {7}",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Campaign\\UI\\CampaignGreenhouseView.cs:178"
+      ]
+    },
+    {
+      "key": "t_c8d1e488db4f",
+      "zh": "派遣捕虫队",
+      "en": "Send catching squad",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Campaign\\UI\\CampaignGreenhouseView.cs:179"
+      ]
+    },
+    {
+      "key": "t_4c4e1dc4178f",
+      "zh": "需赢得 Lv.{0} 联赛",
+      "en": "Win the Lv.{0} league first",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Campaign\\UI\\CampaignGreenhouseView.cs:179"
+      ]
+    },
+    {
+      "key": "t_58edaf0080a2",
+      "zh": " / 科学家许可",
+      "en": " / Scientist permit",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Campaign\\UI\\CampaignGreenhouseView.cs:179"
+      ]
+    },
+    {
+      "key": "t_61952912741c",
+      "zh": "出发前打包",
+      "en": "Pack for departure",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Campaign\\UI\\CampaignGreenhouseView.cs:181"
+      ]
+    },
+    {
+      "key": "t_e252f9ae8e36",
+      "zh": "{0} 发酵树液蜜 · 数量+2 · 库存 {1}",
+      "en": "{0} Fermented sap · +2 beetles · Stock {1}",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Campaign\\UI\\CampaignGreenhouseView.cs:182"
+      ]
+    },
+    {
+      "key": "t_6483809972ed",
+      "zh": "{0} 紫外灯 · 大型率+25% · 库存 {1}",
+      "en": "{0} UV lamp · +25% large chance · Stock {1}",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Campaign\\UI\\CampaignGreenhouseView.cs:183"
+      ]
+    },
+    {
+      "key": "t_2289e81b8e91",
+      "zh": "道具在市场采购。派出队伍占用预留容量。",
+      "en": "Buy supplies at the market. Squads reserve greenhouse slots.",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Campaign\\UI\\CampaignGreenhouseView.cs:184"
+      ]
+    },
+    {
+      "key": "t_d81bba313d25",
+      "zh": "携带紫外灯",
+      "en": "UV lamp packed",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Campaign\\UI\\CampaignGreenhouseView.cs:1"
+      ]
+    },
+    {
+      "key": "t_2c86f97c0fcf",
+      "zh": "轻装出发",
+      "en": "Travel light",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Campaign\\UI\\CampaignGreenhouseView.cs:1"
+      ]
+    },
+    {
+      "key": "t_4f340c3b3221",
+      "zh": "第 {0} 周回程 · 剩余 {1} 周\n预留 {2} 格  {3}",
+      "en": "Returns week {0} · {1} wk remaining\n{2} slots reserved  {3}",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Campaign\\UI\\CampaignGreenhouseView.cs:185"
+      ]
+    },
+    {
+      "key": "t_cc2498342d4a",
+      "zh": "暂时没有远行的队伍。\n选好栖息地，让探险开始吧！",
+      "en": "No squads away.\nChoose a habitat and start exploring!",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Campaign\\UI\\CampaignGreenhouseView.cs:186"
+      ]
+    },
+    {
+      "key": "t_27feab20a421",
+      "zh": "五级联赛 · 从树桩走向王座",
+      "en": "Leagues / From the stump to the throne",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Campaign\\UI\\CampaignLeagueView.cs:12"
+      ]
+    },
+    {
+      "key": "t_3a1eea62b720",
+      "zh": "体长决定参赛级别。默认 {0} 连胜夺冠，战败重置赛季进度；已有战斗系统负责胜负。",
+      "en": "Length sets the league tier. Win {0} in a row to become champion; a loss resets the season streak.",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Campaign\\UI\\CampaignLeagueView.cs:12"
+      ]
+    },
+    {
+      "key": "t_291b26511f43",
+      "zh": "{0}–{1} mm（上限不含）\n报名 {2} G  /  胜场 {3} G  /  冠军 {4} G",
+      "en": "{0}–{1} mm (upper bound excluded)\nEntry {2} G / Win {3} G / Title {4} G",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Campaign\\UI\\CampaignLeagueView.cs:17"
+      ]
+    },
+    {
+      "key": "t_c8c9ce89c3de",
+      "zh": "未完成赛事 · 报名费已支付",
+      "en": "Unfinished match · Entry fee paid",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Campaign\\UI\\CampaignLeagueView.cs:21"
+      ]
+    },
+    {
+      "key": "t_e58f414f101f",
+      "zh": "{0} 对阵 林间挑战者\n可继续同一场比赛，或弃权按失败结算。",
+      "en": "{0} vs. Woodland challenger\nResume this match or forfeit.",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Campaign\\UI\\CampaignLeagueView.cs:22"
+      ]
+    },
+    {
+      "key": "t_93b581201fd0",
+      "zh": "继续比赛",
+      "en": "Resume match",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Campaign\\UI\\CampaignLeagueView.cs:23"
+      ]
+    },
+    {
+      "key": "t_15a8ef2fb530",
+      "zh": "弃权",
+      "en": "Forfeit",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Campaign\\UI\\CampaignLeagueView.cs:23"
+      ]
+    },
+    {
+      "key": "t_6d5f8bfbc671",
+      "zh": "弃权按落败结算，报名费不退还。",
+      "en": "Forfeit counts as a loss. Entry fees are not refunded.",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Campaign\\UI\\CampaignLeagueView.cs:23"
+      ]
+    },
+    {
+      "key": "t_e1a9ce2a930d",
+      "zh": "健康 {0}/{1}  ·  饱食 {2}%\n赛季 {3}/{4}  ·  身价 {5} G",
+      "en": "Health {0}/{1} · Nutrition {2}%\nSeason {3}/{4} · Value {5} G",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Campaign\\UI\\CampaignLeagueView.cs:29"
+      ]
+    },
+    {
+      "key": "t_873f9ce576a5",
+      "zh": "报名  {0} G",
+      "en": "Enter  {0} G",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Campaign\\UI\\CampaignLeagueView.cs:30"
+      ]
+    },
+    {
+      "key": "t_405c6d7c3ba6",
+      "zh": "冠军荣耀 · 今夜为你举牌",
+      "en": "Champion auction / Your moment in the spotlight",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Campaign\\UI\\CampaignLeagueView.cs:35"
+      ]
+    },
+    {
+      "key": "t_41e5ef8faf0a",
+      "zh": "只有联赛总冠军可以入场。5–8轮竞价；成交价为冠军当前身价的2–4.5倍，冠军首配权仅可出售一次。",
+      "en": "League champions only. Bidding lasts 5–8 rounds; sales reach 2–4.5× current value. First breeding rights can be sold once.",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Campaign\\UI\\CampaignLeagueView.cs:35"
+      ]
+    },
+    {
+      "key": "t_606980e3452f",
+      "zh": "已出售",
+      "en": "Sold",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Campaign\\UI\\CampaignLeagueView.cs:1"
+      ]
+    },
+    {
+      "key": "t_2cf04e1e00a8",
+      "zh": "可出售",
+      "en": "Available",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Campaign\\UI\\CampaignLeagueView.cs:1"
+      ]
+    },
+    {
+      "key": "t_fdc4f311b1a2",
+      "zh": "冠军身价 {0} G\n{1}  ·  首配权 {2}",
+      "en": "Champion value {0} G\n{1} · First breeding rights: {2}",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Campaign\\UI\\CampaignLeagueView.cs:42"
+      ]
+    },
+    {
+      "key": "t_45e49348a576",
+      "zh": "拍卖冠军本体",
+      "en": "Auction champion",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Campaign\\UI\\CampaignLeagueView.cs:43"
+      ]
+    },
+    {
+      "key": "t_5d4bb66ba672",
+      "zh": "本体成交后会离开温室，并获得持续血统分红。开始拍卖？",
+      "en": "The champion leaves after sale and earns ongoing bloodline royalties. Start auction?",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Campaign\\UI\\CampaignLeagueView.cs:43"
+      ]
+    },
+    {
+      "key": "t_0d7483b17854",
+      "zh": "只拍卖一次首配权",
+      "en": "Auction first breeding rights",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Campaign\\UI\\CampaignLeagueView.cs:44"
+      ]
+    },
+    {
+      "key": "t_0c41a490d5c8",
+      "zh": "红毯还在等你。\n先带一只甲虫赢下联赛总冠军吧！",
+      "en": "The red carpet awaits.\nWin a league championship first!",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Campaign\\UI\\CampaignLeagueView.cs:46"
+      ]
+    },
+    {
+      "key": "t_a3715455a1e7",
+      "zh": "去联赛",
+      "en": "Visit leagues",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Campaign\\UI\\CampaignLeagueView.cs:46"
+      ]
+    },
+    {
+      "key": "t_f524bab8263e",
+      "zh": "冠军首配权",
+      "en": "First breeding rights",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Campaign\\UI\\CampaignLeagueView.cs:51"
+      ]
+    },
+    {
+      "key": "t_2ebce01f6ae7",
+      "zh": "冠军本体",
+      "en": "Champion beetle",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Campaign\\UI\\CampaignLeagueView.cs:51",
+        "Assets\\BeetleArena\\Runtime\\Campaign\\UI\\CampaignLeagueView.cs:1"
+      ]
+    },
+    {
+      "key": "t_adf9f01e9923",
+      "zh": "等待第一位买家",
+      "en": "Waiting for first bidder",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Campaign\\UI\\CampaignLeagueView.cs:1"
+      ]
+    },
+    {
+      "key": "t_3e76a5b9de63",
+      "zh": "第 {0} / {1} 轮\n\n{2}\n当前举牌  {3} G",
+      "en": "Round {0} / {1}\n\n{2}\nCurrent bid  {3} G",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Campaign\\UI\\CampaignLeagueView.cs:52"
+      ]
+    },
+    {
+      "key": "t_0918a6d01fcd",
+      "zh": "下一轮举牌",
+      "en": "Next bid",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Campaign\\UI\\CampaignLeagueView.cs:53"
+      ]
+    },
+    {
+      "key": "t_d96f3f300ac3",
+      "zh": "落槌成交",
+      "en": "Close sale",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Campaign\\UI\\CampaignLeagueView.cs:53"
+      ]
+    },
+    {
+      "key": "t_134bfb525301",
+      "zh": "历代标王名人堂",
+      "en": "Auction hall of fame",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Campaign\\UI\\CampaignLeagueView.cs:55"
+      ]
+    },
+    {
+      "key": "t_7193c72cb547",
+      "zh": "每份血统每周参与1次模拟NPC赛事，分红为该级胜场奖10%。",
+      "en": "Each bloodline enters one simulated NPC match weekly; royalties are 10% of that tier’s win reward.",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Campaign\\UI\\CampaignLeagueView.cs:55"
+      ]
+    },
+    {
+      "key": "t_2583a8da0f68",
+      "zh": "首配权",
+      "en": "Breeding rights",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Campaign\\UI\\CampaignLeagueView.cs:1"
+      ]
+    },
+    {
+      "key": "t_efe7fa99ca27",
+      "zh": "第 {0} 周 · {1} · {2} G\n累计血统分红 {3} G  /  {4}",
+      "en": "Week {0} · {1} · {2} G\nTotal royalties {3} G / {4}",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Campaign\\UI\\CampaignLeagueView.cs:59"
+      ]
+    },
+    {
+      "key": "t_15e5a32a9448",
+      "zh": "倍速 ",
+      "en": "Speed ",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Campaign\\UI\\CampaignLeagueView.cs:68"
+      ]
+    },
+    {
+      "key": "t_c7d1925fd5af",
+      "zh": "镜头",
+      "en": "Camera",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Campaign\\UI\\CampaignLeagueView.cs:68"
+      ]
+    },
+    {
+      "key": "t_ea4706ed6933",
+      "zh": "继续联赛",
+      "en": "Continue league",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Campaign\\UI\\CampaignLeagueView.cs:73"
+      ]
+    },
+    {
+      "key": "t_a16a961d27aa",
+      "zh": "MM月dd日\nHH:mm",
+      "en": "MM/dd\nHH:mm",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Campaign\\UI\\CampaignLocalClock.cs:13"
+      ]
+    },
+    {
+      "key": "t_1eb681f8a3e4",
+      "zh": "商品详细参数档案 - Windows 信息",
+      "en": "Item specifications - Information",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Campaign\\UI\\CampaignMarketDialogs.cs:13"
+      ]
+    },
+    {
+      "key": "t_32bc1fe9f838",
+      "zh": "所属类别：",
+      "en": "Category:",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Campaign\\UI\\CampaignMarketDialogs.cs:16"
+      ]
+    },
+    {
+      "key": "t_49a814a77a3b",
+      "zh": "种类品名：",
+      "en": "Species:",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Campaign\\UI\\CampaignMarketDialogs.cs:16"
+      ]
+    },
+    {
+      "key": "t_12de0fe88001",
+      "zh": "尺寸规格：",
+      "en": "Size:",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Campaign\\UI\\CampaignMarketDialogs.cs:16"
+      ]
+    },
+    {
+      "key": "t_dbd6f8a14c11",
+      "zh": "参数属性：",
+      "en": "Details:",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Campaign\\UI\\CampaignMarketDialogs.cs:16"
+      ]
+    },
+    {
+      "key": "t_0d351248961d",
+      "zh": "核准价格：",
+      "en": "Price:",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Campaign\\UI\\CampaignMarketDialogs.cs:16"
+      ]
+    },
+    {
+      "key": "t_160505f12626",
+      "zh": "请先在温室选择健康成虫，清空食盆并解除挂牌。",
+      "en": "Select a healthy adult, empty its food dish and remove its listing first.",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Campaign\\UI\\CampaignMarketDialogs.cs:22"
+      ]
+    },
+    {
+      "key": "t_4d0b4688c787",
+      "zh": "取消",
+      "en": "Cancel",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Campaign\\UI\\CampaignMarketDialogs.cs:24",
+        "Assets\\BeetleArena\\Runtime\\Campaign\\UI\\CampaignView.cs:217"
+      ]
+    },
+    {
+      "key": "t_6b46afaa3baf",
+      "zh": "发表转让帖 - 选择挂牌甲虫",
+      "en": "New sale post - Choose a beetle",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Campaign\\UI\\CampaignMarketDialogs.cs:28"
+      ]
+    },
+    {
+      "key": "t_459380d0af61",
+      "zh": "挂牌展柜 {0}/{1} · 报价锁定到本周末，成交前可以撤回。",
+      "en": "Listings {0}/{1} · Offers last until week end; withdraw before selling.",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Campaign\\UI\\CampaignMarketDialogs.cs:29"
+      ]
+    },
+    {
+      "key": "t_39e18aa96cfa",
+      "zh": "{0}   {1} mm  /  {2} 心",
+      "en": "{0}   {1} mm  /  {2} hearts",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Campaign\\UI\\CampaignMarketDialogs.cs:35"
+      ]
+    },
+    {
+      "key": "t_b87b4b7854e8",
+      "zh": "健康成虫 · 可挂牌",
+      "en": "Healthy adult · Can list",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Campaign\\UI\\CampaignMarketDialogs.cs:35"
+      ]
+    },
+    {
+      "key": "t_a6c0d247c2a9",
+      "zh": "当前状态不可挂牌",
+      "en": "Cannot list in current condition",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Campaign\\UI\\CampaignMarketDialogs.cs:35"
+      ]
+    },
+    {
+      "key": "t_8d23565949a2",
+      "zh": "挂牌",
+      "en": "List",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Campaign\\UI\\CampaignMarketDialogs.cs:36"
+      ]
+    },
+    {
+      "key": "t_bdce56b386fc",
+      "zh": "当前没有可选择的甲虫。",
+      "en": "No beetles available to select.",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Campaign\\UI\\CampaignMarketDialogs.cs:38"
+      ]
+    },
+    {
+      "key": "t_2978acbfcc0e",
+      "zh": "转让帖 - 本周收购报价",
+      "en": "Sale post - This week’s offers",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Campaign\\UI\\CampaignMarketDialogs.cs:43"
+      ]
+    },
+    {
+      "key": "t_73be6351d94e",
+      "zh": "{0}  {1}mm · 参考身价 {2} G",
+      "en": "{0}  {1}mm · Estimated value {2} G",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Campaign\\UI\\CampaignMarketDialogs.cs:43"
+      ]
+    },
+    {
+      "key": "t_55b6fd008d17",
+      "zh": "本周有效",
+      "en": "Valid this week",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Campaign\\UI\\CampaignMarketDialogs.cs:49"
+      ]
+    },
+    {
+      "key": "t_5f354c999e87",
+      "zh": " · 附赠母虫",
+      "en": " · Bonus female",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Campaign\\UI\\CampaignMarketDialogs.cs:49"
+      ]
+    },
+    {
+      "key": "t_612ef3934781",
+      "zh": " · 解锁配方",
+      "en": " · Unlocks recipe",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Campaign\\UI\\CampaignMarketDialogs.cs:49"
+      ]
+    },
+    {
+      "key": "t_9b3624340d5c",
+      "zh": " · 附带许可",
+      "en": " · Includes permit",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Campaign\\UI\\CampaignMarketDialogs.cs:49"
+      ]
+    },
+    {
+      "key": "t_a61744ae678e",
+      "zh": "接受报价",
+      "en": "Accept offer",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Campaign\\UI\\CampaignMarketDialogs.cs:50"
+      ]
+    },
+    {
+      "key": "t_cd5c0b0d0d25",
+      "zh": "出售 {0} 给{1}，收到 {2} G？",
+      "en": "Sell {0} to {1} for {2} G?",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Campaign\\UI\\CampaignMarketDialogs.cs:50"
+      ]
+    },
+    {
+      "key": "t_2c8736d16bda",
+      "zh": "撤回挂牌",
+      "en": "Withdraw listing",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Campaign\\UI\\CampaignMarketDialogs.cs:52"
+      ]
+    },
+    {
+      "key": "t_e3cafdda54ac",
+      "zh": "周末 · 神秘蛹盲拍",
+      "en": "Weekend · Mystery pupa auction",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Campaign\\UI\\CampaignMarketDialogs.cs:56"
+      ]
+    },
+    {
+      "key": "t_55c8c0782f30",
+      "zh": "起拍 150 G，共三轮加价。\n落槌前物种保密，退出不扣金币，每场仅可参加一次。",
+      "en": "Starts at 150 G, with three bids.\nSpecies is hidden until sold. Leaving costs nothing; one entry per event.",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Campaign\\UI\\CampaignMarketDialogs.cs:59"
+      ]
+    },
+    {
+      "key": "t_ad8484778452",
+      "zh": "进入本周拍卖",
+      "en": "Enter this week’s auction",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Campaign\\UI\\CampaignMarketDialogs.cs:60"
+      ]
+    },
+    {
+      "key": "t_b12e43cf194c",
+      "zh": "当前 {0} G  ·  第 {1}/3 轮",
+      "en": "Current bid {0} G · Round {1}/3",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Campaign\\UI\\CampaignMarketDialogs.cs:64"
+      ]
+    },
+    {
+      "key": "t_23b0292b9921",
+      "zh": "再举牌加价 50–149 G，第三轮成交。\n退出不扣金币，本周将无法再次参加。",
+      "en": "Each bid adds 50–149 G; sold on the third round.\nLeaving costs nothing, but you cannot re-enter this week.",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Campaign\\UI\\CampaignMarketDialogs.cs:64"
+      ]
+    },
+    {
+      "key": "t_fe0ed0659ba9",
+      "zh": "举牌",
+      "en": "Bid",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Campaign\\UI\\CampaignMarketDialogs.cs:65"
+      ]
+    },
+    {
+      "key": "t_a0a4708f1854",
+      "zh": "退出盲拍",
+      "en": "Leave auction",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Campaign\\UI\\CampaignMarketDialogs.cs:65"
+      ]
+    },
+    {
+      "key": "t_51daeffe4774",
+      "zh": "关闭窗口",
+      "en": "Close window",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Campaign\\UI\\CampaignMarketDialogs.cs:67"
+      ]
+    },
+    {
+      "key": "t_693f518fc185",
+      "zh": "请选择整体背景四季主题：",
+      "en": "Choose a seasonal theme:",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Campaign\\UI\\CampaignMarketDialogs.cs:74"
+      ]
+    },
+    {
+      "key": "t_90669a637619",
+      "zh": "春季主题 · 生机绿意 (绿色背景)",
+      "en": "Spring · Fresh green",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Campaign\\UI\\CampaignMarketDialogs.cs:75"
+      ]
+    },
+    {
+      "key": "t_eadf741585a2",
+      "zh": "夏季主题 · 暖阳炽金 (黄色背景)",
+      "en": "Summer · Warm gold",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Campaign\\UI\\CampaignMarketDialogs.cs:75"
+      ]
+    },
+    {
+      "key": "t_0d2847b9e38c",
+      "zh": "秋季主题 · 落叶枫红 (落叶背景)",
+      "en": "Autumn · Maple red",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Campaign\\UI\\CampaignMarketDialogs.cs:75"
+      ]
+    },
+    {
+      "key": "t_7f8d7bd24163",
+      "zh": "冬季主题 · 纯白霜雪 (白色背景)",
+      "en": "Winter · Frost white",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Campaign\\UI\\CampaignMarketDialogs.cs:75"
+      ]
+    },
+    {
+      "key": "t_4a2d9abae149",
+      "zh": "色彩模式 (明暗)：",
+      "en": "Color mode:",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Campaign\\UI\\CampaignMarketDialogs.cs:77"
+      ]
+    },
+    {
+      "key": "t_18c43deba084",
+      "zh": "明亮浅色模式 (Light)",
+      "en": "Light mode",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Campaign\\UI\\CampaignMarketDialogs.cs:78"
+      ]
+    },
+    {
+      "key": "t_f4015d0c2b2e",
+      "zh": "经典暗色模式 (Dark)",
+      "en": "Dark mode",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Campaign\\UI\\CampaignMarketDialogs.cs:79"
+      ]
+    },
+    {
+      "key": "t_0e0d851a5ba4",
+      "zh": "系统使用说明与四季养殖指南 - Windows 帮助",
+      "en": "Store and seasonal care guide - Help",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Campaign\\UI\\CampaignMarketDialogs.cs:83"
+      ]
+    },
+    {
+      "key": "t_b4aed68d6a46",
+      "zh": "甲虫商店 (BEETLE STORE 2003) 系统操作说明",
+      "en": "BEETLE STORE 2003 - User guide",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Campaign\\UI\\CampaignMarketDialogs.cs:84"
+      ]
+    },
+    {
+      "key": "t_ae1263ef0d12",
+      "zh": "1. 甲虫商店\n左侧按单类浏览；右侧档案显示实际现货、规格和价格。现货与收购报价每周刷新。本月热搜物种的收购价有加成。\n\n2. 养殖用品\n生态箱与景观在温室配置；食物可购买并投喂当前选择的成虫。树液蜜、紫外灯为捕虫队消耗道具。\n\n3. 交易 BBS\n发表转让帖会将自己的健康成虫挂牌。打开帖子查看各买家的真实报价，接受后完成出售；成交前可撤回。双数周开放三轮神秘蛹盲拍。\n\n4. 四季主题与明暗模式\n主题菜单选择四季配色；Alt+T 打开菜单，Alt+M 切换明暗，Alt+H 打开帮助。主题只改变界面外观，实际养殖环境在温室调整。",
+      "en": "1. Beetle store\nBrowse categories on the left. Cards show real stock, sizes and prices. Stock and offers refresh weekly; trending species receive a buying-price bonus.\n\n2. Care supplies\nConfigure terrariums in the greenhouse. Buy food for the selected adult. Sap and UV lamps are single-use expedition supplies.\n\n3. Trading BBS\nList healthy adults, inspect buyer offers and accept a sale. Withdraw before selling. Mystery pupa auctions open on even weeks for three bidding rounds.\n\n4. Themes and display\nChoose a seasonal palette. Alt+T: themes; Alt+M: light/dark; Alt+H: help. Themes change appearance only; configure the actual habitat in the greenhouse.",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Campaign\\UI\\CampaignMarketDialogs.cs:85"
+      ]
+    },
+    {
+      "key": "t_e9431803664d",
+      "zh": "翻倒请及时扶正；成虫投喂红薯或水果，幼虫选择饲料瓶。",
+      "en": "Help overturned beetles promptly. Feed adults potato or fruit; choose feed bottles for larvae.",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Campaign\\UI\\CampaignMarketDialogs.cs:86"
+      ]
+    },
+    {
+      "key": "t_f3e6a1192cfe",
+      "zh": "确定(O)",
+      "en": "OK (O)",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Campaign\\UI\\CampaignMarketDialogs.cs:86"
+      ]
+    },
+    {
+      "key": "t_2d90d2457439",
+      "zh": "兜虫及其他活体",
+      "en": "Rhinoceros & other beetles",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Campaign\\UI\\CampaignMarketView.cs:18"
+      ]
+    },
+    {
+      "key": "t_efa6f5c13680",
+      "zh": "锹甲总科活体",
+      "en": "Stag beetles",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Campaign\\UI\\CampaignMarketView.cs:18"
+      ]
+    },
+    {
+      "key": "t_14a8b04ecb04",
+      "zh": "饲育容器 (生态箱/设备)",
+      "en": "Terrariums & equipment",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Campaign\\UI\\CampaignMarketView.cs:18"
+      ]
+    },
+    {
+      "key": "t_5d05660c632d",
+      "zh": "景观造景 (环境配置)",
+      "en": "Habitat decorations",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Campaign\\UI\\CampaignMarketView.cs:18"
+      ]
+    },
+    {
+      "key": "t_68fa546ede57",
+      "zh": "甲虫食物 (红薯/水果)",
+      "en": "Beetle food (potato/fruit)",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Campaign\\UI\\CampaignMarketView.cs:18"
+      ]
+    },
+    {
+      "key": "t_5c34e85a984f",
+      "zh": "确定订购",
+      "en": "Order",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Campaign\\UI\\CampaignMarketView.cs:21"
+      ]
+    },
+    {
+      "key": "t_ecfe7762e21c",
+      "zh": "甲虫秘境 2003 - 四季甲虫商店与集市 [",
+      "en": "BUG DUEL 2003 - Seasonal beetle store & market [",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Campaign\\UI\\CampaignMarketView.cs:30"
+      ]
+    },
+    {
+      "key": "t_26e1dcefb08f",
+      "zh": "主题(T) ▼",
+      "en": "Theme (T) ▼",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Campaign\\UI\\CampaignMarketView.cs:33"
+      ]
+    },
+    {
+      "key": "t_471222c04ed4",
+      "zh": "明暗(M)",
+      "en": "Mode (M)",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Campaign\\UI\\CampaignMarketView.cs:34"
+      ]
+    },
+    {
+      "key": "t_711b8fd0ec36",
+      "zh": "帮助(H)",
+      "en": "Help (H)",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Campaign\\UI\\CampaignMarketView.cs:35"
+      ]
+    },
+    {
+      "key": "t_c8f3af7ed3da",
+      "zh": "下一周(N)",
+      "en": "Next week (N)",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Campaign\\UI\\CampaignMarketView.cs:37"
+      ]
+    },
+    {
+      "key": "t_abad4ae23e09",
+      "zh": "暗色",
+      "en": "dark",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Campaign\\UI\\CampaignMarketView.cs:1"
+      ]
+    },
+    {
+      "key": "t_5d0c6da6a2d5",
+      "zh": "明亮",
+      "en": "light",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Campaign\\UI\\CampaignMarketView.cs:1"
+      ]
+    },
+    {
+      "key": "t_b913e616e8b8",
+      "zh": "第 {0} 周  |  {1} G  |  当前主题: {2} · {3}模式",
+      "en": "Week {0} | {1} G | Theme: {2} · {3}",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Campaign\\UI\\CampaignMarketView.cs:38"
+      ]
+    },
+    {
+      "key": "t_59017e9b1040",
+      "zh": "甲虫商店 (自营与用品)",
+      "en": "Beetle store & supplies",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Campaign\\UI\\CampaignMarketView.cs:41"
+      ]
+    },
+    {
+      "key": "t_b4f3a6c84cd1",
+      "zh": "5大分类",
+      "en": "5 types",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Campaign\\UI\\CampaignMarketView.cs:41"
+      ]
+    },
+    {
+      "key": "t_5d540c0a855e",
+      "zh": "甲虫市场 (交易 BBS)",
+      "en": "Beetle market (BBS)",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Campaign\\UI\\CampaignMarketView.cs:42"
+      ]
+    },
+    {
+      "key": "t_61005a454f3f",
+      "zh": "{0} 帖",
+      "en": "{0} posts",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Campaign\\UI\\CampaignMarketView.cs:42"
+      ]
+    },
+    {
+      "key": "t_0cd620af8285",
+      "zh": "甲虫与用品单类目录",
+      "en": "Beetles and supplies",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Campaign\\UI\\CampaignMarketView.cs:79"
+      ]
+    },
+    {
+      "key": "t_64f28c76db49",
+      "zh": "[5大分类]",
+      "en": "[5 types]",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Campaign\\UI\\CampaignMarketView.cs:79"
+      ]
+    },
+    {
+      "key": "t_dda0e8a27d55",
+      "zh": "气温逐渐转暖，保持环境清洁。\n检查养殖箱湿度，为成虫放置红薯或水果；幼虫使用对应饲料瓶。",
+      "en": "As temperatures rise, keep the habitat clean.\nCheck humidity. Offer potato or fruit to adults and suitable feed to larvae.",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Campaign\\UI\\CampaignMarketView.cs:88"
+      ]
+    },
+    {
+      "key": "t_a601c6036089",
+      "zh": "高温期注意遮阴通风，检查温湿度。及时更换水果，观察甲虫是否正常取食。",
+      "en": "Provide shade and ventilation in hot weather. Check temperature and humidity, replace fruit and watch feeding.",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Campaign\\UI\\CampaignMarketView.cs:88"
+      ]
+    },
+    {
+      "key": "t_029c015a0a1c",
+      "zh": "温差加大，保持箱内环境稳定。\n留意新成虫状态，提供适量食物与攀爬支撑。",
+      "en": "Keep the habitat stable as temperatures vary.\nCheck new adults; provide food and climbing supports.",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Campaign\\UI\\CampaignMarketView.cs:88"
+      ]
+    },
+    {
+      "key": "t_15fe043e82c1",
+      "zh": "保持养殖箱温湿度稳定。\n观察进食与活动状态，发现翻倒及时扶正。",
+      "en": "Keep terrarium temperature and humidity stable.\nWatch feeding and activity; help overturned beetles promptly.",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Campaign\\UI\\CampaignMarketView.cs:88"
+      ]
+    },
+    {
+      "key": "t_59104c97469f",
+      "zh": "甲虫养殖贴士：",
+      "en": " care tips:",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Campaign\\UI\\CampaignMarketView.cs:89"
+      ]
+    },
+    {
+      "key": "t_2ab8e7df2b76",
+      "zh": "当前类别：",
+      "en": "Category: ",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Campaign\\UI\\CampaignMarketView.cs:94"
+      ]
+    },
+    {
+      "key": "t_1d11de413299",
+      "zh": "类目商品: {0} 件 (单类浏览)",
+      "en": "{0} items in this category",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Campaign\\UI\\CampaignMarketView.cs:94"
+      ]
+    },
+    {
+      "key": "t_18a023964a83",
+      "zh": "本周该分类暂无现货",
+      "en": "No stock in this category this week",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Campaign\\UI\\CampaignMarketView.cs:102"
+      ]
+    },
+    {
+      "key": "t_31dac3dca9bd",
+      "zh": "现货每周刷新。可先查看其他分类，\n或派遣捕虫队寻找新的甲虫。",
+      "en": "Stock refreshes weekly. Browse other categories\nor send a squad to find new beetles.",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Campaign\\UI\\CampaignMarketView.cs:102"
+      ]
+    },
+    {
+      "key": "t_98b0c8702f75",
+      "zh": "查看捕虫队",
+      "en": "Catching squads",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Campaign\\UI\\CampaignMarketView.cs:102"
+      ]
+    },
+    {
+      "key": "t_66296cf10840",
+      "zh": "锹",
+      "en": "stag",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Campaign\\UI\\CampaignMarketView.cs:113"
+      ]
+    },
+    {
+      "key": "t_c2bfd77f9420",
+      "zh": "雌虫",
+      "en": "Female",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Campaign\\UI\\CampaignMarketView.cs:114",
+        "Assets\\BeetleArena\\Runtime\\Campaign\\UI\\CampaignMarketView.cs:1"
+      ]
+    },
+    {
+      "key": "t_5ce034c707e0",
+      "zh": "雄虫",
+      "en": "Male",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Campaign\\UI\\CampaignMarketView.cs:114",
+        "Assets\\BeetleArena\\Runtime\\Campaign\\UI\\CampaignMarketView.cs:1"
+      ]
+    },
+    {
+      "key": "t_46ff4063e395",
+      "zh": "雌",
+      "en": "Female",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Campaign\\UI\\CampaignMarketView.cs:1",
+        "Assets\\BeetleArena\\Runtime\\Campaign\\UI\\CampaignView.cs:1"
+      ]
+    },
+    {
+      "key": "t_8c5744d0f6d8",
+      "zh": "雄",
+      "en": "Male",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Campaign\\UI\\CampaignMarketView.cs:1",
+        "Assets\\BeetleArena\\Runtime\\Campaign\\UI\\CampaignView.cs:1"
+      ]
+    },
+    {
+      "key": "t_1cc59b322b15",
+      "zh": "成虫活体 · 健康 ",
+      "en": "Live adult · Health ",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Campaign\\UI\\CampaignMarketView.cs:114"
+      ]
+    },
+    {
+      "key": "t_481e547b1aa5",
+      "zh": "心",
+      "en": " hearts",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Campaign\\UI\\CampaignMarketView.cs:114"
+      ]
+    },
+    {
+      "key": "t_0ac3f5bcb5b7",
+      "zh": "饲育容器",
+      "en": "Terrariums",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Campaign\\UI\\CampaignMarketView.cs:121"
+      ]
+    },
+    {
+      "key": "t_5409b961a3aa",
+      "zh": "景观造景",
+      "en": "Decorations",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Campaign\\UI\\CampaignMarketView.cs:121"
+      ]
+    },
+    {
+      "key": "t_cd2174955c17",
+      "zh": "养殖环境配置",
+      "en": "Habitat setup",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Campaign\\UI\\CampaignMarketView.cs:121"
+      ]
+    },
+    {
+      "key": "t_cec77aa4a7a3",
+      "zh": "环境配套景观",
+      "en": "Habitat decor",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Campaign\\UI\\CampaignMarketView.cs:121"
+      ]
+    },
+    {
+      "key": "t_000263ceb544",
+      "zh": "每周恢复 {0} 心",
+      "en": "Restores {0} hearts / week",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Campaign\\UI\\CampaignMarketView.cs:121"
+      ]
+    },
+    {
+      "key": "t_55c138c92bd9",
+      "zh": "温室内配置",
+      "en": "Configure in greenhouse",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Campaign\\UI\\CampaignMarketView.cs:121"
+      ]
+    },
+    {
+      "key": "t_56432b76be4d",
+      "zh": "前往温室配置",
+      "en": "Configure habitat",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Campaign\\UI\\CampaignMarketView.cs:121"
+      ]
+    },
+    {
+      "key": "t_56a740d7a449",
+      "zh": "捕虫设备",
+      "en": "Catching equipment",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Campaign\\UI\\CampaignMarketView.cs:123"
+      ]
+    },
+    {
+      "key": "t_7946db1b5e6e",
+      "zh": "高功率紫外灯",
+      "en": "High-power UV lamp",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Campaign\\UI\\CampaignMarketView.cs:123"
+      ]
+    },
+    {
+      "key": "t_563e1fb2297f",
+      "zh": "一次性捕虫道具",
+      "en": "Single-use expedition supply",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Campaign\\UI\\CampaignMarketView.cs:123",
+        "Assets\\BeetleArena\\Runtime\\Campaign\\UI\\CampaignMarketView.cs:132"
+      ]
+    },
+    {
+      "key": "t_af55899836ec",
+      "zh": "当前库存 {0} 盏",
+      "en": "Stock: {0} lamps",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Campaign\\UI\\CampaignMarketView.cs:123"
+      ]
+    },
+    {
+      "key": "t_956efa3fc8e6",
+      "zh": "派遣时大型率 +25%",
+      "en": "+25% large chance on expeditions",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Campaign\\UI\\CampaignMarketView.cs:123"
+      ]
+    },
+    {
+      "key": "t_a8cab1fafdab",
+      "zh": "红薯",
+      "en": "Sweet potato",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Campaign\\UI\\CampaignMarketView.cs:127",
+        "Assets\\BeetleArena\\Domain\\Campaign\\CampaignSession.cs:57"
+      ]
+    },
+    {
+      "key": "t_bc098b15118c",
+      "zh": "香蕉",
+      "en": "Banana",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Campaign\\UI\\CampaignMarketView.cs:127",
+        "Assets\\BeetleArena\\Domain\\Campaign\\CampaignSession.cs:57"
+      ]
+    },
+    {
+      "key": "t_b38d961e7096",
+      "zh": "苹果",
+      "en": "Apple",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Campaign\\UI\\CampaignMarketView.cs:127",
+        "Assets\\BeetleArena\\Domain\\Campaign\\CampaignSession.cs:57"
+      ]
+    },
+    {
+      "key": "t_16e6ce1cc2b2",
+      "zh": "甲虫食物",
+      "en": "Beetle food",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Campaign\\UI\\CampaignMarketView.cs:130"
+      ]
+    },
+    {
+      "key": "t_a2dd962fcb11",
+      "zh": " · 成虫单次喂食",
+      "en": " · One adult serving",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Campaign\\UI\\CampaignMarketView.cs:130"
+      ]
+    },
+    {
+      "key": "t_87eb7e678fc5",
+      "zh": "成虫食物",
+      "en": "Adult food",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Campaign\\UI\\CampaignMarketView.cs:130"
+      ]
+    },
+    {
+      "key": "t_daa795480290",
+      "zh": "一份 / 投入当前甲虫食盆",
+      "en": "1 serving / Selected beetle’s dish",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Campaign\\UI\\CampaignMarketView.cs:130"
+      ]
+    },
+    {
+      "key": "t_6071444a9177",
+      "zh": "请先在温室选择甲虫",
+      "en": "Select a beetle in the greenhouse first",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Campaign\\UI\\CampaignMarketView.cs:130"
+      ]
+    },
+    {
+      "key": "t_23ef9f06bac9",
+      "zh": "当前：",
+      "en": "Selected: ",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Campaign\\UI\\CampaignMarketView.cs:130"
+      ]
+    },
+    {
+      "key": "t_5262b86ac29e",
+      "zh": "购买并投喂",
+      "en": "Buy & feed",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Campaign\\UI\\CampaignMarketView.cs:130"
+      ]
+    },
+    {
+      "key": "t_b179a2a4d8c9",
+      "zh": "捕虫诱饵",
+      "en": "Catching bait",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Campaign\\UI\\CampaignMarketView.cs:132"
+      ]
+    },
+    {
+      "key": "t_5c9570b55d4e",
+      "zh": "发酵树液蜜",
+      "en": "Fermented tree sap",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Campaign\\UI\\CampaignMarketView.cs:132"
+      ]
+    },
+    {
+      "key": "t_9728484d4129",
+      "zh": "当前库存 {0} 份",
+      "en": "Stock: {0} servings",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Campaign\\UI\\CampaignMarketView.cs:132"
+      ]
+    },
+    {
+      "key": "t_40cd09f60284",
+      "zh": "派遣时带回数量 +2",
+      "en": "+2 beetles per expedition",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Campaign\\UI\\CampaignMarketView.cs:132"
+      ]
+    },
+    {
+      "key": "t_058f47af541c",
+      "zh": "种类：",
+      "en": "Species:",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Campaign\\UI\\CampaignMarketView.cs:142"
+      ]
+    },
+    {
+      "key": "t_42599b14422b",
+      "zh": "规格：",
+      "en": "Size:",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Campaign\\UI\\CampaignMarketView.cs:142"
+      ]
+    },
+    {
+      "key": "t_a5293d7b4613",
+      "zh": "参数：",
+      "en": "Details:",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Campaign\\UI\\CampaignMarketView.cs:142"
+      ]
+    },
+    {
+      "key": "t_14be7be2bd2c",
+      "zh": "零售单价：",
+      "en": "Price:",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Campaign\\UI\\CampaignMarketView.cs:143"
+      ]
+    },
+    {
+      "key": "t_5055fa28ec87",
+      "zh": "查看参数档案...",
+      "en": "View details...",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Campaign\\UI\\CampaignMarketView.cs:143"
+      ]
+    },
+    {
+      "key": "t_9a1d685ab40a",
+      "zh": "全国甲虫集市与活体转让牌 (BBS 板块)",
+      "en": "Beetle market & live sales (BBS)",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Campaign\\UI\\CampaignMarketView.cs:148"
+      ]
+    },
+    {
+      "key": "t_5fb8a1b868c4",
+      "zh": "挂牌展柜 {0}/{1}",
+      "en": "Listings {0}/{1}",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Campaign\\UI\\CampaignMarketView.cs:148"
+      ]
+    },
+    {
+      "key": "t_b1542e8e625d",
+      "zh": "+ 发表转让帖",
+      "en": "+ New sale post",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Campaign\\UI\\CampaignMarketView.cs:149"
+      ]
+    },
+    {
+      "key": "t_a5f40c892d52",
+      "zh": "扩展展柜 {0} G",
+      "en": "Expand cabinet {0} G",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Campaign\\UI\\CampaignMarketView.cs:149"
+      ]
+    },
+    {
+      "key": "t_4247128ca882",
+      "zh": "展柜已满级",
+      "en": "Cabinet fully expanded",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Campaign\\UI\\CampaignMarketView.cs:149",
+        "Assets\\BeetleArena\\Domain\\Campaign\\CampaignMarket.cs:27"
+      ]
+    },
+    {
+      "key": "t_750afd1f0ce0",
+      "zh": "性质",
+      "en": "Type",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Campaign\\UI\\CampaignMarketView.cs:150"
+      ]
+    },
+    {
+      "key": "t_cf32e34a2bae",
+      "zh": "转让甲虫 / 本周拍卖",
+      "en": "Beetle sales / Weekly auction",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Campaign\\UI\\CampaignMarketView.cs:150"
+      ]
+    },
+    {
+      "key": "t_b1f6c0b534ad",
+      "zh": "出虫玩家",
+      "en": "Seller",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Campaign\\UI\\CampaignMarketView.cs:150"
+      ]
+    },
+    {
+      "key": "t_62e951a692ff",
+      "zh": "状态",
+      "en": "Status",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Campaign\\UI\\CampaignMarketView.cs:150"
+      ]
+    },
+    {
+      "key": "t_17cab9867d1d",
+      "zh": "报价 / 出价",
+      "en": "Offer / Bid",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Campaign\\UI\\CampaignMarketView.cs:150"
+      ]
+    },
+    {
+      "key": "t_f3ea6d345e2a",
+      "zh": "操作",
+      "en": "Action",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Campaign\\UI\\CampaignMarketView.cs:150"
+      ]
+    },
+    {
+      "key": "t_b5ef6dd0cb4e",
+      "zh": "[拍卖中]",
+      "en": "[Auction]",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Campaign\\UI\\CampaignMarketView.cs:152"
+      ]
+    },
+    {
+      "key": "t_5d7988b08c7e",
+      "zh": "【周末盲拍】神秘蛹 · 三轮举牌后揭晓物种",
+      "en": "[Mystery auction] Pupa · Species revealed after three bids",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Campaign\\UI\\CampaignMarketView.cs:153"
+      ]
+    },
+    {
+      "key": "t_ea6510d6e96a",
+      "zh": "双数周开放，每场仅参加一次；退出不扣金币。",
+      "en": "Even weeks only; one entry per event. Leaving costs nothing.",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Campaign\\UI\\CampaignMarketView.cs:153"
+      ]
+    },
+    {
+      "key": "t_3d39879f82bb",
+      "zh": "第 {0}/3 轮 · 下一次加价 50–149 G，第三轮成交。",
+      "en": "Round {0}/3 · Next bid adds 50–149 G; sold on round three.",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Campaign\\UI\\CampaignMarketView.cs:153"
+      ]
+    },
+    {
+      "key": "t_8fb9ac367326",
+      "zh": "集市拍卖员",
+      "en": "Auctioneer",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Campaign\\UI\\CampaignMarketView.cs:153"
+      ]
+    },
+    {
+      "key": "t_88b7370eb787",
+      "zh": "本周开放",
+      "en": "Open this week",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Campaign\\UI\\CampaignMarketView.cs:153"
+      ]
+    },
+    {
+      "key": "t_aa25498a81b5",
+      "zh": "下周开放",
+      "en": "Opens next week",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Campaign\\UI\\CampaignMarketView.cs:153"
+      ]
+    },
+    {
+      "key": "t_d858956670a8",
+      "zh": "竞拍进行中",
+      "en": "Bidding",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Campaign\\UI\\CampaignMarketView.cs:153"
+      ]
+    },
+    {
+      "key": "t_eb872cf514ad",
+      "zh": "进入拍卖",
+      "en": "Enter auction",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Campaign\\UI\\CampaignMarketView.cs:153"
+      ]
+    },
+    {
+      "key": "t_942166ac6136",
+      "zh": "继续举牌",
+      "en": "Continue bidding",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Campaign\\UI\\CampaignMarketView.cs:153"
+      ]
+    },
+    {
+      "key": "t_6a23a90ab0f9",
+      "zh": "[活体转让]",
+      "en": "[For sale]",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Campaign\\UI\\CampaignMarketView.cs:156"
+      ]
+    },
+    {
+      "key": "t_a069c698ad6c",
+      "zh": "【挂牌】{0}  {1}mm {2}",
+      "en": "[Listed] {0}  {1}mm {2}",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Campaign\\UI\\CampaignMarketView.cs:157"
+      ]
+    },
+    {
+      "key": "t_0f89813055df",
+      "zh": "{0}   ·   {1} 条有效报价",
+      "en": "{0} · {1} active offers",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Campaign\\UI\\CampaignMarketView.cs:157"
+      ]
+    },
+    {
+      "key": "t_e2e5d69623a0",
+      "zh": "我的温室",
+      "en": "My greenhouse",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Campaign\\UI\\CampaignMarketView.cs:157"
+      ]
+    },
+    {
+      "key": "t_7c73a23a753b",
+      "zh": "本周挂牌",
+      "en": "Listed this week",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Campaign\\UI\\CampaignMarketView.cs:157"
+      ]
+    },
+    {
+      "key": "t_7f09ef098a7b",
+      "zh": "查看 / 成交",
+      "en": "View / Sell",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Campaign\\UI\\CampaignMarketView.cs:157"
+      ]
+    },
+    {
+      "key": "t_da19307f7838",
+      "zh": "还没有转让帖。选择一只健康成虫，点击右上角「发表转让帖」开始挂牌。",
+      "en": "No sale posts yet. Select a healthy adult and choose “New sale post” above.",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Campaign\\UI\\CampaignMarketView.cs:159"
+      ]
+    },
+    {
+      "key": "t_b4a6080bb96f",
+      "zh": "BUG DUEL  ·  甲虫秘境",
+      "en": "BUG DUEL · Beetle Sanctuary",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Campaign\\UI\\CampaignMenuView.cs:17"
+      ]
+    },
+    {
+      "key": "t_6e85c6f5e5a8",
+      "zh": "甲虫决斗 · 虫舍日记",
+      "en": "Beetle duels / Greenhouse journal",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Campaign\\UI\\CampaignMenuView.cs:19"
+      ]
+    },
+    {
+      "key": "t_5a23726267ec",
+      "zh": "Start  /  开始",
+      "en": "Start",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Campaign\\UI\\CampaignMenuView.cs:21"
+      ]
+    },
+    {
+      "key": "t_f8139f90034b",
+      "zh": "Setting  /  设置",
+      "en": "Settings",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Campaign\\UI\\CampaignMenuView.cs:22"
+      ]
+    },
+    {
+      "key": "t_d275cbd2dc10",
+      "zh": "Introduction  /  游玩指南",
+      "en": "How to play",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Campaign\\UI\\CampaignMenuView.cs:23"
+      ]
+    },
+    {
+      "key": "t_fa34cb39e09c",
+      "zh": "Exit  /  退出",
+      "en": "Exit",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Campaign\\UI\\CampaignMenuView.cs:24"
+      ]
+    },
+    {
+      "key": "t_8d2245d6b2ba",
+      "zh": "保存当前进度并退出游戏？",
+      "en": "Save progress and exit?",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Campaign\\UI\\CampaignMenuView.cs:24"
+      ]
+    },
+    {
+      "key": "t_0c58d6ddaf8a",
+      "zh": "离线世界  |  ",
+      "en": "Offline world | ",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Campaign\\UI\\CampaignMenuView.cs:25"
+      ]
+    },
+    {
+      "key": "t_377e27bca667",
+      "zh": "虫舍日记 / 选择存档",
+      "en": "Your greenhouse / Save slots",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Campaign\\UI\\CampaignMenuView.cs:31"
+      ]
+    },
+    {
+      "key": "t_b4ed1bce5020",
+      "zh": "1个自动槽 + 3个手动槽。点击空槽新建存档，或读取已有旅程。",
+      "en": "One auto slot and three manual slots. Create a save in an empty slot or load a journey.",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Campaign\\UI\\CampaignMenuView.cs:32"
+      ]
+    },
+    {
+      "key": "t_46cf6bd66b72",
+      "zh": "新建存档",
+      "en": "Create save",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Campaign\\UI\\CampaignMenuView.cs:40"
+      ]
+    },
+    {
+      "key": "t_bb69ec347c0d",
+      "zh": "在此空槽开始新的旅程？已有手动存档保留，后续自动保存会记录新旅程。",
+      "en": "Start a new journey here? Existing manual saves remain; future auto saves will record the new journey.",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Campaign\\UI\\CampaignMenuView.cs:43"
+      ]
+    },
+    {
+      "key": "t_263a73363a44",
+      "zh": "第 {0} 周  ·  {1} G\n栏位 {2}/{3}\n最高联赛 Lv.{4}\n体长纪录 {5} mm\n{6}",
+      "en": "Week {0} · {1} G\nResidents {2}/{3}\nHighest league Lv.{4}\nLength record {5} mm\n{6}",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Campaign\\UI\\CampaignMenuView.cs:51"
+      ]
+    },
+    {
+      "key": "t_bf5293107da0",
+      "zh": "存档不可读\n",
+      "en": "Unreadable save\n",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Campaign\\UI\\CampaignMenuView.cs:52"
+      ]
+    },
+    {
+      "key": "t_b6b97ac60d5d",
+      "zh": "读取",
+      "en": "Load",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Campaign\\UI\\CampaignMenuView.cs:53"
+      ]
+    },
+    {
+      "key": "t_a26056298a08",
+      "zh": "覆盖",
+      "en": "Overwrite",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Campaign\\UI\\CampaignMenuView.cs:54"
+      ]
+    },
+    {
+      "key": "t_56c3eeee33dd",
+      "zh": "覆盖此槽位的存档？",
+      "en": "Overwrite this save slot?",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Campaign\\UI\\CampaignMenuView.cs:54"
+      ]
+    },
+    {
+      "key": "t_3755f56f2f83",
+      "zh": "删除",
+      "en": "Delete",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Campaign\\UI\\CampaignMenuView.cs:55"
+      ]
+    },
+    {
+      "key": "t_bc94cd462369",
+      "zh": "永久删除此槽位及备份？",
+      "en": "Permanently delete this slot and its backup?",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Campaign\\UI\\CampaignMenuView.cs:55"
+      ]
+    },
+    {
+      "key": "t_5be43b4906a0",
+      "zh": "返回主菜单",
+      "en": "Main menu",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Campaign\\UI\\CampaignMenuView.cs:57"
+      ]
+    },
+    {
+      "key": "t_d912318ed73e",
+      "zh": "从小虫舍到世界虫王",
+      "en": "From a tiny greenhouse to the throne",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Campaign\\UI\\CampaignMenuView.cs:61"
+      ]
+    },
+    {
+      "key": "t_273e2aa700ee",
+      "zh": "01  捕虫 / 买虫",
+      "en": "01  Collect",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Campaign\\UI\\CampaignMenuView.cs:62"
+      ]
+    },
+    {
+      "key": "t_aa44ead89d40",
+      "zh": "02  喂养 / 冲体长",
+      "en": "02  Care",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Campaign\\UI\\CampaignMenuView.cs:62"
+      ]
+    },
+    {
+      "key": "t_de749cc41b7b",
+      "zh": "03  联赛 / 拍卖",
+      "en": "03  Compete",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Campaign\\UI\\CampaignMenuView.cs:62"
+      ]
+    },
+    {
+      "key": "t_c393e12bd000",
+      "zh": "派遣队伍去四大栖息地。\n在市场买虫、竞拍神秘蛹。\n别忘了为回程预留栏位。",
+      "en": "Send squads to four habitats.\nBuy beetles or bid on mystery pupae.\nReserve slots for returning squads.",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Campaign\\UI\\CampaignMenuView.cs:63"
+      ]
+    },
+    {
+      "key": "t_3b461fcda9cf",
+      "zh": "红薯和水果补充饱食与健康。\n幼虫选饲料瓶和温控方案。\n甲虫翻不过身时，要及时帮忙！",
+      "en": "Potato and fruit restore nutrition and health.\nChoose feed and temperature for larvae.\nHelp beetles that cannot turn upright!",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Campaign\\UI\\CampaignMenuView.cs:63"
+      ]
+    },
+    {
+      "key": "t_3f2fbf348ccb",
+      "zh": "体长决定联赛级别。\n三连胜夺冠，身价大涨！\n卖冠军或首配权，收血统分红。",
+      "en": "Length sets the league tier.\nThree straight wins earn a title!\nSell champions or rights for royalties.",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Campaign\\UI\\CampaignMenuView.cs:63"
+      ]
+    },
+    {
+      "key": "t_2a598c234cce",
+      "zh": "出发吧！",
+      "en": "Let's go!",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Campaign\\UI\\CampaignMenuView.cs:66"
+      ]
+    },
+    {
+      "key": "t_8f6e58235cb8",
+      "zh": "界面语言 / Language",
+      "en": "Language / 界面语言",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Campaign\\UI\\CampaignMenuView.cs:74"
+      ]
+    },
+    {
+      "key": "t_93659150d0e5",
+      "zh": "简体中文",
+      "en": "简体中文",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Campaign\\UI\\CampaignMenuView.cs:74"
+      ]
+    },
+    {
+      "key": "t_a8f1ba082f91",
+      "zh": "定时自动保存（交易即时保存）",
+      "en": "Auto save (trades save instantly)",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Campaign\\UI\\CampaignMenuView.cs:75"
+      ]
+    },
+    {
+      "key": "t_79d4219ed5ff",
+      "zh": "默认战斗速度",
+      "en": "Default battle speed",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Campaign\\UI\\CampaignMenuView.cs:76"
+      ]
+    },
+    {
+      "key": "t_727700ac20db",
+      "zh": "经典窗口主题",
+      "en": "Classic window theme",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Campaign\\UI\\CampaignMenuView.cs:77"
+      ]
+    },
+    {
+      "key": "t_eae2ab7cdbb8",
+      "zh": "明暗模式",
+      "en": "Display mode",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Campaign\\UI\\CampaignMenuView.cs:78"
+      ]
+    },
+    {
+      "key": "t_25fbdced4aa6",
+      "zh": "经典暗色",
+      "en": "Classic dark",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Campaign\\UI\\CampaignMenuView.cs:78"
+      ]
+    },
+    {
+      "key": "t_6c92651ea2ec",
+      "zh": "明亮浅色",
+      "en": "Bright light",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Campaign\\UI\\CampaignMenuView.cs:78"
+      ]
+    },
+    {
+      "key": "t_5b292b448fd7",
+      "zh": "主音量",
+      "en": "Master volume",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Campaign\\UI\\CampaignMenuView.cs:82"
+      ]
+    },
+    {
+      "key": "t_afb3c40c3929",
+      "zh": "音乐",
+      "en": "Music",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Campaign\\UI\\CampaignMenuView.cs:83"
+      ]
+    },
+    {
+      "key": "t_95acd71d7596",
+      "zh": "自然环境",
+      "en": "Nature ambience",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Campaign\\UI\\CampaignMenuView.cs:84"
+      ]
+    },
+    {
+      "key": "t_e49ba6a7e4cb",
+      "zh": "甲壳碰撞 ASMR",
+      "en": "Shell impact ASMR",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Campaign\\UI\\CampaignMenuView.cs:85"
+      ]
+    },
+    {
+      "key": "t_cde9b52b2395",
+      "zh": "分辨率",
+      "en": "Resolution",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Campaign\\UI\\CampaignMenuView.cs:90"
+      ]
+    },
+    {
+      "key": "t_0ffef14560f1",
+      "zh": "窗口模式",
+      "en": "Window mode",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Campaign\\UI\\CampaignMenuView.cs:91"
+      ]
+    },
+    {
+      "key": "t_a70a15135c37",
+      "zh": "窗口",
+      "en": "Windowed",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Campaign\\UI\\CampaignMenuView.cs:91"
+      ]
+    },
+    {
+      "key": "t_2a0936486d4a",
+      "zh": "无边框全屏",
+      "en": "Borderless full screen",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Campaign\\UI\\CampaignMenuView.cs:91"
+      ]
+    },
+    {
+      "key": "t_69ef2bde53a4",
+      "zh": "独占全屏",
+      "en": "Exclusive full screen",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Campaign\\UI\\CampaignMenuView.cs:91"
+      ]
+    },
+    {
+      "key": "t_283124825337",
+      "zh": "帧率 / VSync",
+      "en": "Frame rate / VSync",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Campaign\\UI\\CampaignMenuView.cs:92"
+      ]
+    },
+    {
+      "key": "t_11e66e01eacd",
+      "zh": "微距景深",
+      "en": "Macro depth of field",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Campaign\\UI\\CampaignMenuView.cs:93"
+      ]
+    },
+    {
+      "key": "t_256783b7d4ea",
+      "zh": "开启",
+      "en": "On",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Campaign\\UI\\CampaignMenuView.cs:93"
+      ]
+    },
+    {
+      "key": "t_6c14bd7f6f9e",
+      "zh": "关闭",
+      "en": "Off",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Campaign\\UI\\CampaignMenuView.cs:93"
+      ]
+    },
+    {
+      "key": "t_33f16b9c8cb0",
+      "zh": "经营页转场",
+      "en": "Management transitions",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Campaign\\UI\\CampaignMenuView.cs:94"
+      ]
+    },
+    {
+      "key": "t_a3bf43bdf6dc",
+      "zh": "黑屏淡入淡出",
+      "en": "Fade through black",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Campaign\\UI\\CampaignMenuView.cs:94"
+      ]
+    },
+    {
+      "key": "t_6342da1b4536",
+      "zh": "电视开幕",
+      "en": "TV opening",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Campaign\\UI\\CampaignMenuView.cs:94"
+      ]
+    },
+    {
+      "key": "t_5866fa5e0447",
+      "zh": "主菜单、存档页切出时使用黑屏淡入淡出。",
+      "en": "Leaving the menu or save screen uses a fade through black.",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Campaign\\UI\\CampaignMenuView.cs:99"
+      ]
+    },
+    {
+      "key": "t_2178a56fe6ba",
+      "zh": "键鼠 / Xbox / PlayStation / Switch 控制器\n界面导航使用方向键、摇杆、确认与取消；下方可重映射经营快捷键。",
+      "en": "Keyboard / Xbox / PlayStation / Switch\nNavigate with arrows or stick, confirm and cancel. Remap management shortcuts below.",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Campaign\\UI\\CampaignMenuView.cs:103"
+      ]
+    },
+    {
+      "key": "t_582ad188e060",
+      "zh": "返回 / 关闭",
+      "en": "Back / Close",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Campaign\\UI\\CampaignMenuView.cs:104"
+      ]
+    },
+    {
+      "key": "t_c72907b3f636",
+      "zh": "下一周",
+      "en": "Next week",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Campaign\\UI\\CampaignMenuView.cs:104"
+      ]
+    },
+    {
+      "key": "t_d55a3ae60fb8",
+      "zh": "帮助翻身",
+      "en": "Help upright",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Campaign\\UI\\CampaignMenuView.cs:104"
+      ]
+    },
+    {
+      "key": "t_480b5f5e8e89",
+      "zh": "恢复默认按键",
+      "en": "Reset key bindings",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Campaign\\UI\\CampaignMenuView.cs:110"
+      ]
+    },
+    {
+      "key": "t_381b0769ef29",
+      "zh": "保存并关闭",
+      "en": "Save & close",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Campaign\\UI\\CampaignMenuView.cs:112"
+      ]
+    },
+    {
+      "key": "t_ed4a82fe7343",
+      "zh": "请按下新的按键或手柄按钮\nEsc 取消",
+      "en": "Press a new key or controller button\nEsc to cancel",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Campaign\\UI\\CampaignMenuView.cs:123"
+      ]
+    },
+    {
+      "key": "t_0cd6bd95395d",
+      "zh": "春季·生机绿意",
+      "en": "Spring · Fresh green",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Campaign\\UI\\CampaignRetroTheme.cs:34"
+      ]
+    },
+    {
+      "key": "t_6a63bf71e98f",
+      "zh": "夏季·暖阳炽金",
+      "en": "Summer · Warm gold",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Campaign\\UI\\CampaignRetroTheme.cs:34"
+      ]
+    },
+    {
+      "key": "t_6cb2fff3bc51",
+      "zh": "秋季·落叶枫红",
+      "en": "Autumn · Maple red",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Campaign\\UI\\CampaignRetroTheme.cs:34"
+      ]
+    },
+    {
+      "key": "t_5835a19136bc",
+      "zh": "冬季·纯白霜雪",
+      "en": "Winter · Frost white",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Campaign\\UI\\CampaignRetroTheme.cs:34"
+      ]
+    },
+    {
+      "key": "t_62b44ce9bc1d",
+      "zh": "返回主菜单？当前进度会自动保存。",
+      "en": "Return to the main menu? Progress will be saved.",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Campaign\\UI\\CampaignView.cs:103"
+      ]
+    },
+    {
+      "key": "t_83919c9f2f7c",
+      "zh": "BUG DUEL  /  虫舍日记",
+      "en": "BUG DUEL / Greenhouse journal",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Campaign\\UI\\CampaignView.cs:155"
+      ]
+    },
+    {
+      "key": "t_8b57920cec05",
+      "zh": "温室",
+      "en": "Greenhouse",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Campaign\\UI\\CampaignView.cs:157"
+      ]
+    },
+    {
+      "key": "t_8112901ecd4e",
+      "zh": "主菜单",
+      "en": "Menu",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Campaign\\UI\\CampaignView.cs:161"
+      ]
+    },
+    {
+      "key": "t_d845dc1ed7ab",
+      "zh": "第 {0} 周    ·    {1} G    ·    温室 {2}+{3}/{4}    ·    口碑 {5}",
+      "en": "Week {0} · {1} G · Greenhouse {2}+{3}/{4} · Reputation {5}",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Campaign\\UI\\CampaignView.cs:167"
+      ]
+    },
+    {
+      "key": "t_b09e14b56a64",
+      "zh": "翻身求助！已挣扎 {0} 秒",
+      "en": "Help me upright! Struggling for {0}s",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Campaign\\UI\\CampaignView.cs:214"
+      ]
+    },
+    {
+      "key": "t_f4f2ad38b087",
+      "zh": "等待选择饲料瓶",
+      "en": "Choose a feed bottle",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Campaign\\UI\\CampaignView.cs:214"
+      ]
+    },
+    {
+      "key": "t_80b289a025d4",
+      "zh": "第 {0} 周出栏",
+      "en": "Matures in week {0}",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Campaign\\UI\\CampaignView.cs:214"
+      ]
+    },
+    {
+      "key": "t_e78c7b245c32",
+      "zh": "正在挂牌",
+      "en": "Listed for sale",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Campaign\\UI\\CampaignView.cs:214"
+      ]
+    },
+    {
+      "key": "t_00bfda94c69a",
+      "zh": "成虫 · 状态安稳",
+      "en": "Adult · Stable",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Campaign\\UI\\CampaignView.cs:214"
+      ]
+    },
+    {
+      "key": "t_72077749f794",
+      "zh": "无",
+      "en": "None",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Campaign\\UI\\CampaignView.cs:1"
+      ]
+    },
+    {
+      "key": "t_2ec45e944827",
+      "zh": "{0}  {1}/{2} 心    饱食 {3}%\n{4}\n{5}   ·   {6}   ·   {7} mm\n身价 {8} G   借种参考费 {9} G\n基因  {10}\n突变  {11}   ·   胜场 {12} / 连胜 {13}",
+      "en": "{0} {1}/{2} hearts · Nutrition {3}%\n{4}\n{5} · {6} · {7} mm\nValue {8} G · Stud fee estimate {9} G\nGenes {10}\nMutation {11} · Wins {12} / Streak {13}",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Campaign\\UI\\CampaignView.cs:215"
+      ]
+    },
+    {
+      "key": "t_f526c89937e1",
+      "zh": "确定",
+      "en": "OK",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Campaign\\UI\\CampaignView.cs:217"
+      ]
+    },
+    {
+      "key": "t_6c4e52619f44",
+      "zh": "欢迎来到小小虫舍。先照顾甲虫，再去试试新秀联赛。",
+      "en": "Welcome to your greenhouse. Care for your beetles, then try the rookie league.",
+      "sites": [
+        "Assets\\BeetleArena\\Domain\\Campaign\\CampaignData.cs:17"
+      ]
+    },
+    {
+      "key": "t_9c461a6e5436",
+      "zh": "不支持的内容版本",
+      "en": "Unsupported content version",
+      "sites": [
+        "Assets\\BeetleArena\\Domain\\Campaign\\CampaignData.cs:70"
+      ]
+    },
+    {
+      "key": "t_65cc5fdee727",
+      "zh": "内容表缺少必需分类",
+      "en": "Required content categories are missing",
+      "sites": [
+        "Assets\\BeetleArena\\Domain\\Campaign\\CampaignData.cs:73"
+      ]
+    },
+    {
+      "key": "t_22257cea1101",
+      "zh": "内容表必须保留初始物种 red、初始环境 woodland 和至少一个初始捕虫地点",
+      "en": "Content must retain species red, habitat woodland and an initial catching area.",
+      "sites": [
+        "Assets\\BeetleArena\\Domain\\Campaign\\CampaignData.cs:75"
+      ]
+    },
+    {
+      "key": "t_799c64f1b645",
+      "zh": "物种参数无效",
+      "en": "Invalid species parameters",
+      "sites": [
+        "Assets\\BeetleArena\\Domain\\Campaign\\CampaignData.cs:78"
+      ]
+    },
+    {
+      "key": "t_415daa31470b",
+      "zh": "捕虫表参数无效",
+      "en": "Invalid catching parameters",
+      "sites": [
+        "Assets\\BeetleArena\\Domain\\Campaign\\CampaignData.cs:82"
+      ]
+    },
+    {
+      "key": "t_27e227b379bd",
+      "zh": "环境参数无效",
+      "en": "Invalid habitat parameters",
+      "sites": [
+        "Assets\\BeetleArena\\Domain\\Campaign\\CampaignData.cs:85"
+      ]
+    },
+    {
+      "key": "t_08104956751c",
+      "zh": "饲料参数无效",
+      "en": "Invalid feed parameters",
+      "sites": [
+        "Assets\\BeetleArena\\Domain\\Campaign\\CampaignData.cs:89"
+      ]
+    },
+    {
+      "key": "t_4e7dc42dd8b3",
+      "zh": "联赛分级不连续或奖励无效",
+      "en": "Invalid league ranges or rewards",
+      "sites": [
+        "Assets\\BeetleArena\\Domain\\Campaign\\CampaignData.cs:94"
+      ]
+    },
+    {
+      "key": "t_b8601b79c5da",
+      "zh": "经营配置无效",
+      "en": "Invalid management settings",
+      "sites": [
+        "Assets\\BeetleArena\\Domain\\Campaign\\CampaignData.cs:97"
+      ]
+    },
+    {
+      "key": "t_46a3d44c1c59",
+      "zh": "内容表为空",
+      "en": "Empty content table",
+      "sites": [
+        "Assets\\BeetleArena\\Domain\\Campaign\\CampaignData.cs:100"
+      ]
+    },
+    {
+      "key": "t_3ff73d425493",
+      "zh": "内容 ID 重复或为空",
+      "en": "Duplicate or empty content ID",
+      "sites": [
+        "Assets\\BeetleArena\\Domain\\Campaign\\CampaignData.cs:100"
+      ]
+    },
+    {
+      "key": "t_b4c03b8af93f",
+      "zh": "独角仙",
+      "en": "Japanese rhinoceros beetle",
+      "sites": [
+        "Assets\\BeetleArena\\Domain\\Campaign\\CampaignData.cs:104"
+      ]
+    },
+    {
+      "key": "t_0b2fc6f318ce",
+      "zh": "本土扁锹",
+      "en": "Lesser stag beetle",
+      "sites": [
+        "Assets\\BeetleArena\\Domain\\Campaign\\CampaignData.cs:104"
+      ]
+    },
+    {
+      "key": "t_df4143bc3565",
+      "zh": "鸡冠细身赤锹",
+      "en": "Crested red stag beetle",
+      "sites": [
+        "Assets\\BeetleArena\\Domain\\Campaign\\CampaignData.cs:104"
+      ]
+    },
+    {
+      "key": "t_7abf288c1cc0",
+      "zh": "日本大锹",
+      "en": "Japanese giant stag beetle",
+      "sites": [
+        "Assets\\BeetleArena\\Domain\\Campaign\\CampaignData.cs:105"
+      ]
+    },
+    {
+      "key": "t_17d1c0fa6a21",
+      "zh": "澳洲彩虹锹甲",
+      "en": "Rainbow stag beetle",
+      "sites": [
+        "Assets\\BeetleArena\\Domain\\Campaign\\CampaignData.cs:105"
+      ]
+    },
+    {
+      "key": "t_7676bcac9bf0",
+      "zh": "巴拉望巨扁锹",
+      "en": "Palawan giant stag beetle",
+      "sites": [
+        "Assets\\BeetleArena\\Domain\\Campaign\\CampaignData.cs:106"
+      ]
+    },
+    {
+      "key": "t_204f7143c98d",
+      "zh": "长颈鹿锯锹",
+      "en": "Giraffe stag beetle",
+      "sites": [
+        "Assets\\BeetleArena\\Domain\\Campaign\\CampaignData.cs:106"
+      ]
+    },
+    {
+      "key": "t_8b7c14f4e56c",
+      "zh": "高卡萨斯大兜",
+      "en": "Caucasus beetle",
+      "sites": [
+        "Assets\\BeetleArena\\Domain\\Campaign\\CampaignData.cs:106"
+      ]
+    },
+    {
+      "key": "t_18bae03f3e04",
+      "zh": "赫克力士长戟大兜",
+      "en": "Hercules beetle",
+      "sites": [
+        "Assets\\BeetleArena\\Domain\\Campaign\\CampaignData.cs:107"
+      ]
+    },
+    {
+      "key": "t_316da65af942",
+      "zh": "亚克提恩象兜",
+      "en": "Actaeon elephant beetle",
+      "sites": [
+        "Assets\\BeetleArena\\Domain\\Campaign\\CampaignData.cs:107"
+      ]
+    },
+    {
+      "key": "t_520930b1f941",
+      "zh": "战神象兜",
+      "en": "Mars elephant beetle",
+      "sites": [
+        "Assets\\BeetleArena\\Domain\\Campaign\\CampaignData.cs:107"
+      ]
+    },
+    {
+      "key": "t_64d44eae0168",
+      "zh": "大王花金龟",
+      "en": "Goliath beetle",
+      "sites": [
+        "Assets\\BeetleArena\\Domain\\Campaign\\CampaignData.cs:107"
+      ]
+    },
+    {
+      "key": "t_2d9607cbd8bc",
+      "zh": "夏日郊野栎木林",
+      "en": "Summer oak woodland",
+      "sites": [
+        "Assets\\BeetleArena\\Domain\\Campaign\\CampaignData.cs:109"
+      ]
+    },
+    {
+      "key": "t_1fd82f76a8a5",
+      "zh": "迷雾高山朽木林",
+      "en": "Misty mountain deadwood",
+      "sites": [
+        "Assets\\BeetleArena\\Domain\\Campaign\\CampaignData.cs:110"
+      ]
+    },
+    {
+      "key": "t_b35811e0e61d",
+      "zh": "东南亚季风群岛",
+      "en": "Southeast Asian monsoon islands",
+      "sites": [
+        "Assets\\BeetleArena\\Domain\\Campaign\\CampaignData.cs:111"
+      ]
+    },
+    {
+      "key": "t_ed3a05ecb39a",
+      "zh": "亚马逊赤道禁猎区",
+      "en": "Amazon equatorial reserve",
+      "sites": [
+        "Assets\\BeetleArena\\Domain\\Campaign\\CampaignData.cs:112"
+      ]
+    },
+    {
+      "key": "t_2f42478d222e",
+      "zh": "林地生态箱",
+      "en": "Woodland terrarium",
+      "sites": [
+        "Assets\\BeetleArena\\Domain\\Campaign\\CampaignData.cs:113"
+      ]
+    },
+    {
+      "key": "t_04d42e28d8ec",
+      "zh": "湿润朽木箱",
+      "en": "Damp deadwood terrarium",
+      "sites": [
+        "Assets\\BeetleArena\\Domain\\Campaign\\CampaignData.cs:113"
+      ]
+    },
+    {
+      "key": "t_2575f605c5af",
+      "zh": "安静恢复箱",
+      "en": "Quiet recovery terrarium",
+      "sites": [
+        "Assets\\BeetleArena\\Domain\\Campaign\\CampaignData.cs:113"
+      ]
+    },
+    {
+      "key": "t_68430a92cfc9",
+      "zh": "绿标安全瓶",
+      "en": "Green safe-feed bottle",
+      "sites": [
+        "Assets\\BeetleArena\\Domain\\Campaign\\CampaignData.cs:114"
+      ]
+    },
+    {
+      "key": "t_2ef0808d4df6",
+      "zh": "黄标催肥瓶",
+      "en": "Yellow growth-feed bottle",
+      "sites": [
+        "Assets\\BeetleArena\\Domain\\Campaign\\CampaignData.cs:114"
+      ]
+    },
+    {
+      "key": "t_6bcb8bc25a56",
+      "zh": "紫标突变瓶",
+      "en": "Purple mutation-feed bottle",
+      "sites": [
+        "Assets\\BeetleArena\\Domain\\Campaign\\CampaignData.cs:114"
+      ]
+    },
+    {
+      "key": "t_403924c641da",
+      "zh": "新秀微型树桩赛",
+      "en": "Rookie stump league",
+      "sites": [
+        "Assets\\BeetleArena\\Domain\\Campaign\\CampaignData.cs:115"
+      ]
+    },
+    {
+      "key": "t_59b9eeb606cb",
+      "zh": "轻量级林间联赛",
+      "en": "Lightweight woodland league",
+      "sites": [
+        "Assets\\BeetleArena\\Domain\\Campaign\\CampaignData.cs:115"
+      ]
+    },
+    {
+      "key": "t_f9e8a3e56328",
+      "zh": "中量级栎木杯",
+      "en": "Middleweight oak cup",
+      "sites": [
+        "Assets\\BeetleArena\\Domain\\Campaign\\CampaignData.cs:115"
+      ]
+    },
+    {
+      "key": "t_57ac47c193cf",
+      "zh": "重量级雨林大师赛",
+      "en": "Heavyweight rainforest masters",
+      "sites": [
+        "Assets\\BeetleArena\\Domain\\Campaign\\CampaignData.cs:115"
+      ]
+    },
+    {
+      "key": "t_56a1f4a94f44",
+      "zh": "巨神级树液王座赛",
+      "en": "Titan sap-throne league",
+      "sites": [
+        "Assets\\BeetleArena\\Domain\\Campaign\\CampaignData.cs:115"
+      ]
+    },
+    {
+      "key": "t_60ecc49c70bc",
+      "zh": "巨型",
+      "en": "Giant",
+      "sites": [
+        "Assets\\BeetleArena\\Domain\\Campaign\\CampaignGenetics.cs:9",
+        "Assets\\BeetleArena\\Domain\\Campaign\\CampaignGenetics.cs:25",
+        "Assets\\BeetleArena\\Domain\\Campaign\\CampaignGenetics.cs:26"
+      ]
+    },
+    {
+      "key": "t_a5a1e6e84bf1",
+      "zh": "极太巨剪",
+      "en": "Massive pincers",
+      "sites": [
+        "Assets\\BeetleArena\\Domain\\Campaign\\CampaignGenetics.cs:26"
+      ]
+    },
+    {
+      "key": "t_d3570b4b9933",
+      "zh": "传奇亚种",
+      "en": "Legendary subspecies",
+      "sites": [
+        "Assets\\BeetleArena\\Domain\\Campaign\\CampaignGenetics.cs:40",
+        "Assets\\BeetleArena\\Domain\\Campaign\\CampaignSession.cs:150"
+      ]
+    },
+    {
+      "key": "t_de83dcc40353",
+      "zh": "稀缺亚种",
+      "en": "Rare subspecies",
+      "sites": [
+        "Assets\\BeetleArena\\Domain\\Campaign\\CampaignGenetics.cs:40",
+        "Assets\\BeetleArena\\Domain\\Campaign\\CampaignSession.cs:150"
+      ]
+    },
+    {
+      "key": "t_5ac29d94c8cc",
+      "zh": "请先完成当前赛事或拍卖",
+      "en": "Finish the current match or auction first",
+      "sites": [
+        "Assets\\BeetleArena\\Domain\\Campaign\\CampaignLeague.cs:10",
+        "Assets\\BeetleArena\\Domain\\Campaign\\CampaignSession.cs:125"
+      ]
+    },
+    {
+      "key": "t_112a8020f9e1",
+      "zh": "林间挑战者",
+      "en": "Woodland challenger",
+      "sites": [
+        "Assets\\BeetleArena\\Domain\\Campaign\\CampaignLeague.cs:15"
+      ]
+    },
+    {
+      "key": "t_d21a034191c8",
+      "zh": "报名成功：",
+      "en": "Entered: ",
+      "sites": [
+        "Assets\\BeetleArena\\Domain\\Campaign\\CampaignLeague.cs:17"
+      ]
+    },
+    {
+      "key": "t_c37ded9c2b57",
+      "zh": "。赛事已保存，中途退出可继续或弃权。",
+      "en": ". Match saved; resume or forfeit if you leave.",
+      "sites": [
+        "Assets\\BeetleArena\\Domain\\Campaign\\CampaignLeague.cs:17"
+      ]
+    },
+    {
+      "key": "t_f311eed5218f",
+      "zh": "赛事已结算或记录不匹配",
+      "en": "Match already settled or record mismatch",
+      "sites": [
+        "Assets\\BeetleArena\\Domain\\Campaign\\CampaignLeague.cs:21",
+        "Assets\\BeetleArena\\Domain\\Campaign\\CampaignLeague.cs:40"
+      ]
+    },
+    {
+      "key": "t_63eea9920fcf",
+      "zh": "比赛落败，身价-8%，保留初始身价80%的底价。休息好再来！",
+      "en": "Defeat: value -8%, with a floor of 80% of initial value. Rest and try again!",
+      "sites": [
+        "Assets\\BeetleArena\\Domain\\Campaign\\CampaignLeague.cs:24"
+      ]
+    },
+    {
+      "key": "t_02296a94f4f6",
+      "zh": "胜利！奖金 ",
+      "en": "Victory! Prize ",
+      "sites": [
+        "Assets\\BeetleArena\\Domain\\Campaign\\CampaignLeague.cs:26"
+      ]
+    },
+    {
+      "key": "t_1a7c09bc7435",
+      "zh": " G；赛季进度 ",
+      "en": " G; season progress ",
+      "sites": [
+        "Assets\\BeetleArena\\Domain\\Campaign\\CampaignLeague.cs:26"
+      ]
+    },
+    {
+      "key": "t_ac9a9266861b",
+      "zh": "。身价 ",
+      "en": ". Value ",
+      "sites": [
+        "Assets\\BeetleArena\\Domain\\Campaign\\CampaignLeague.cs:26"
+      ]
+    },
+    {
+      "key": "t_8293d6816f7f",
+      "zh": "联赛总冠军！奖励 ",
+      "en": "League champion! Reward ",
+      "sites": [
+        "Assets\\BeetleArena\\Domain\\Campaign\\CampaignLeague.cs:35"
+      ]
+    },
+    {
+      "key": "t_9f0c6e7d7019",
+      "zh": "身价×2.5，同腹弟妹底价×2，冠军拍卖已解锁！",
+      "en": "Value ×2.5; siblings’ minimum value ×2. Champion auctions unlocked!",
+      "sites": [
+        "Assets\\BeetleArena\\Domain\\Campaign\\CampaignLeague.cs:35"
+      ]
+    },
+    {
+      "key": "t_a808fe820813",
+      "zh": "卫冕成功，获得赛季奖金！",
+      "en": "Title defended! Season prize awarded.",
+      "sites": [
+        "Assets\\BeetleArena\\Domain\\Campaign\\CampaignLeague.cs:35"
+      ]
+    },
+    {
+      "key": "t_da189356ac95",
+      "zh": "没有未完成赛事",
+      "en": "No unfinished match",
+      "sites": [
+        "Assets\\BeetleArena\\Domain\\Campaign\\CampaignLeague.cs:37"
+      ]
+    },
+    {
+      "key": "t_f1b4681a4801",
+      "zh": "时间到，双方平局。身价、连胜与赛季进度保留，本场不发胜场奖，报名费已消耗。",
+      "en": "Time up: a draw. Value, streak and season progress are kept. No win prize; entry fee is spent.",
+      "sites": [
+        "Assets\\BeetleArena\\Domain\\Campaign\\CampaignLeague.cs:42"
+      ]
+    },
+    {
+      "key": "t_56243e3bf8c6",
+      "zh": "请先完成当前活动",
+      "en": "Finish the current activity first",
+      "sites": [
+        "Assets\\BeetleArena\\Domain\\Campaign\\CampaignLeague.cs:46"
+      ]
+    },
+    {
+      "key": "t_04b6d1448ef2",
+      "zh": "仅限联赛总冠军入场",
+      "en": "League champions only",
+      "sites": [
+        "Assets\\BeetleArena\\Domain\\Campaign\\CampaignLeague.cs:46"
+      ]
+    },
+    {
+      "key": "t_a6c21cc4a5b9",
+      "zh": "首配权已拍卖过，可以拍卖冠军本体",
+      "en": "First breeding rights already sold; you can auction the champion itself",
+      "sites": [
+        "Assets\\BeetleArena\\Domain\\Campaign\\CampaignLeague.cs:47"
+      ]
+    },
+    {
+      "key": "t_6f403b0739ea",
+      "zh": "财阀代表",
+      "en": "Consortium representative",
+      "sites": [
+        "Assets\\BeetleArena\\Domain\\Campaign\\CampaignLeague.cs:48"
+      ]
+    },
+    {
+      "key": "t_6af78049a309",
+      "zh": "冠军首配权专场开始，冠军留在温室。",
+      "en": "Breeding-rights auction started. Your champion stays in the greenhouse.",
+      "sites": [
+        "Assets\\BeetleArena\\Domain\\Campaign\\CampaignLeague.cs:49"
+      ]
+    },
+    {
+      "key": "t_eed62495da2e",
+      "zh": "冠军本体拍卖开始，成交后将离开温室。",
+      "en": "Champion auction started. The champion will leave after sale.",
+      "sites": [
+        "Assets\\BeetleArena\\Domain\\Campaign\\CampaignLeague.cs:49"
+      ]
+    },
+    {
+      "key": "t_2d245845150c",
+      "zh": "竞拍已经结束",
+      "en": "Bidding has ended",
+      "sites": [
+        "Assets\\BeetleArena\\Domain\\Campaign\\CampaignLeague.cs:53"
+      ]
+    },
+    {
+      "key": "t_994b75a5694e",
+      "zh": "琥珀财团",
+      "en": "Amber Consortium",
+      "sites": [
+        "Assets\\BeetleArena\\Domain\\Campaign\\CampaignLeague.cs:55"
+      ]
+    },
+    {
+      "key": "t_aa7b61cb3855",
+      "zh": "栎木俱乐部总裁",
+      "en": "Oak Club president",
+      "sites": [
+        "Assets\\BeetleArena\\Domain\\Campaign\\CampaignLeague.cs:55"
+      ]
+    },
+    {
+      "key": "t_4a00810001b6",
+      "zh": "金翅收藏家",
+      "en": "Golden-wing collector",
+      "sites": [
+        "Assets\\BeetleArena\\Domain\\Campaign\\CampaignLeague.cs:55"
+      ]
+    },
+    {
+      "key": "t_894412b6f568",
+      "zh": "世界虫王基金",
+      "en": "World Beetle Champion Fund",
+      "sites": [
+        "Assets\\BeetleArena\\Domain\\Campaign\\CampaignLeague.cs:55"
+      ]
+    },
+    {
+      "key": "t_62f843b34c24",
+      "zh": " 举牌 ",
+      "en": " bids ",
+      "sites": [
+        "Assets\\BeetleArena\\Domain\\Campaign\\CampaignLeague.cs:56"
+      ]
+    },
+    {
+      "key": "t_a53284de1cbe",
+      "zh": " G！（第 ",
+      "en": " G! (round ",
+      "sites": [
+        "Assets\\BeetleArena\\Domain\\Campaign\\CampaignLeague.cs:56"
+      ]
+    },
+    {
+      "key": "t_7e8830d05453",
+      "zh": " 轮）",
+      "en": ")",
+      "sites": [
+        "Assets\\BeetleArena\\Domain\\Campaign\\CampaignLeague.cs:56"
+      ]
+    },
+    {
+      "key": "t_eab4e9d1b073",
+      "zh": "请完成所有举牌轮次",
+      "en": "Finish all bidding rounds first",
+      "sites": [
+        "Assets\\BeetleArena\\Domain\\Campaign\\CampaignLeague.cs:60"
+      ]
+    },
+    {
+      "key": "t_7f3fa6c0003b",
+      "zh": "落槌！",
+      "en": "Sold! ",
+      "sites": [
+        "Assets\\BeetleArena\\Domain\\Campaign\\CampaignLeague.cs:63"
+      ]
+    },
+    {
+      "key": "t_918e2e49898a",
+      "zh": " G。已入名人堂；血统每周参加一次NPC赛事，胜场奖金的10%作为分红。",
+      "en": " G. Added to the hall of fame; the bloodline earns 10% of win prizes from weekly NPC matches.",
+      "sites": [
+        "Assets\\BeetleArena\\Domain\\Campaign\\CampaignLeague.cs:63"
+      ]
+    },
+    {
+      "key": "t_c2749afc801f",
+      "zh": "本周现货已售出",
+      "en": "This week’s stock is sold out",
+      "sites": [
+        "Assets\\BeetleArena\\Domain\\Campaign\\CampaignMarket.cs:23"
+      ]
+    },
+    {
+      "key": "t_ac8a0435f86f",
+      "zh": "欢迎 ",
+      "en": "Welcome ",
+      "sites": [
+        "Assets\\BeetleArena\\Domain\\Campaign\\CampaignMarket.cs:24"
+      ]
+    },
+    {
+      "key": "t_4fedc42d2ea3",
+      "zh": " 入住温室！",
+      "en": " to the greenhouse!",
+      "sites": [
+        "Assets\\BeetleArena\\Domain\\Campaign\\CampaignMarket.cs:24"
+      ]
+    },
+    {
+      "key": "t_acccb5bdd5a1",
+      "zh": "已购入高功率紫外灯（一次性）",
+      "en": "Bought a high-power UV lamp (single use)",
+      "sites": [
+        "Assets\\BeetleArena\\Domain\\Campaign\\CampaignMarket.cs:26"
+      ]
+    },
+    {
+      "key": "t_c6020ccd296c",
+      "zh": "已购入发酵树液蜜（一次性）",
+      "en": "Bought fermented tree sap (single use)",
+      "sites": [
+        "Assets\\BeetleArena\\Domain\\Campaign\\CampaignMarket.cs:26"
+      ]
+    },
+    {
+      "key": "t_a1f4620c721c",
+      "zh": "挂牌展柜扩展到6格",
+      "en": "Listing cabinet expanded to 6 slots",
+      "sites": [
+        "Assets\\BeetleArena\\Domain\\Campaign\\CampaignMarket.cs:27"
+      ]
+    },
+    {
+      "key": "t_221162bf58fd",
+      "zh": "挂牌展柜已满",
+      "en": "Listing cabinet is full",
+      "sites": [
+        "Assets\\BeetleArena\\Domain\\Campaign\\CampaignMarket.cs:30"
+      ]
+    },
+    {
+      "key": "t_90cd0ec9f53b",
+      "zh": "挂牌成功。报价锁定到本周末，成交前可以撤回。",
+      "en": "Listed. Offers last until week end; withdraw any time before selling.",
+      "sites": [
+        "Assets\\BeetleArena\\Domain\\Campaign\\CampaignMarket.cs:31"
+      ]
+    },
+    {
+      "key": "t_282c0326ca34",
+      "zh": "尚未挂牌",
+      "en": "Not listed",
+      "sites": [
+        "Assets\\BeetleArena\\Domain\\Campaign\\CampaignMarket.cs:33"
+      ]
+    },
+    {
+      "key": "t_3a5ba8f4bdf0",
+      "zh": "已撤回挂牌",
+      "en": "Listing withdrawn",
+      "sites": [
+        "Assets\\BeetleArena\\Domain\\Campaign\\CampaignMarket.cs:33"
+      ]
+    },
+    {
+      "key": "t_c3b1124c177f",
+      "zh": "狂热小学生",
+      "en": "Enthusiastic schoolchild",
+      "sites": [
+        "Assets\\BeetleArena\\Domain\\Campaign\\CampaignMarket.cs:43",
+        "Assets\\BeetleArena\\Domain\\Campaign\\CampaignMarket.cs:54"
+      ]
+    },
+    {
+      "key": "t_5679b3536eec",
+      "zh": "职业俱乐部球探",
+      "en": "Professional club scout",
+      "sites": [
+        "Assets\\BeetleArena\\Domain\\Campaign\\CampaignMarket.cs:44"
+      ]
+    },
+    {
+      "key": "t_0bf102bd5671",
+      "zh": "猎奇变异大富豪",
+      "en": "Eccentric mutation collector",
+      "sites": [
+        "Assets\\BeetleArena\\Domain\\Campaign\\CampaignMarket.cs:45"
+      ]
+    },
+    {
+      "key": "t_c7bf32f25cfa",
+      "zh": "名门育种老匠人",
+      "en": "Veteran breeder",
+      "sites": [
+        "Assets\\BeetleArena\\Domain\\Campaign\\CampaignMarket.cs:47"
+      ]
+    },
+    {
+      "key": "t_9a717fc6a57c",
+      "zh": "亚种",
+      "en": "Subspecies",
+      "sites": [
+        "Assets\\BeetleArena\\Domain\\Campaign\\CampaignMarket.cs:48"
+      ]
+    },
+    {
+      "key": "t_2e61e53a18cf",
+      "zh": "昆虫学科学家",
+      "en": "Entomologist",
+      "sites": [
+        "Assets\\BeetleArena\\Domain\\Campaign\\CampaignMarket.cs:48"
+      ]
+    },
+    {
+      "key": "t_7154ddd09095",
+      "zh": "报价已失效",
+      "en": "Offer expired",
+      "sites": [
+        "Assets\\BeetleArena\\Domain\\Campaign\\CampaignMarket.cs:52"
+      ]
+    },
+    {
+      "key": "t_9a197412ca22",
+      "zh": "甲虫无法成交",
+      "en": "This beetle cannot be sold",
+      "sites": [
+        "Assets\\BeetleArena\\Domain\\Campaign\\CampaignMarket.cs:53"
+      ]
+    },
+    {
+      "key": "t_da574f1f13de",
+      "zh": "成交 ",
+      "en": "Sold for ",
+      "sites": [
+        "Assets\\BeetleArena\\Domain\\Campaign\\CampaignMarket.cs:58"
+      ]
+    },
+    {
+      "key": "t_cf053ab29abc",
+      "zh": " G！买家：",
+      "en": " G! Buyer: ",
+      "sites": [
+        "Assets\\BeetleArena\\Domain\\Campaign\\CampaignMarket.cs:58"
+      ]
+    },
+    {
+      "key": "t_85d0670bd026",
+      "zh": "，附赠高纯度母虫。",
+      "en": ", with a pure-bred female bonus.",
+      "sites": [
+        "Assets\\BeetleArena\\Domain\\Campaign\\CampaignMarket.cs:58"
+      ]
+    },
+    {
+      "key": "t_af130c7abb08",
+      "zh": "解锁菌瓶配方：此后绿瓶体长+5%。",
+      "en": "Feed recipe unlocked: green bottles now grant +5% length.",
+      "sites": [
+        "Assets\\BeetleArena\\Domain\\Campaign\\CampaignMarket.cs:58"
+      ]
+    },
+    {
+      "key": "t_bd3fa14c3dd1",
+      "zh": "禁猎区许可证与突变合成图谱已解锁。",
+      "en": "Reserve permit and mutation guide unlocked.",
+      "sites": [
+        "Assets\\BeetleArena\\Domain\\Campaign\\CampaignMarket.cs:58"
+      ]
+    },
+    {
+      "key": "t_903b863bf971",
+      "zh": "周末盲盒拍卖每逢双数周开放",
+      "en": "Mystery auctions open on even weeks",
+      "sites": [
+        "Assets\\BeetleArena\\Domain\\Campaign\\CampaignMarket.cs:62"
+      ]
+    },
+    {
+      "key": "t_0a594eb89740",
+      "zh": "本周拍卖已参加",
+      "en": "Already entered this week’s auction",
+      "sites": [
+        "Assets\\BeetleArena\\Domain\\Campaign\\CampaignMarket.cs:62"
+      ]
+    },
+    {
+      "key": "t_9ee5ca61f4b3",
+      "zh": "神秘蛹",
+      "en": "Mystery pupa",
+      "sites": [
+        "Assets\\BeetleArena\\Domain\\Campaign\\CampaignMarket.cs:64"
+      ]
+    },
+    {
+      "key": "t_5f4059493037",
+      "zh": "拍卖开场！每次举牌加价，三轮后揭晓蛹的物种。可以随时退出。",
+      "en": "Auction begins! Each bid raises the price; the species is revealed after three rounds. Leave at any time.",
+      "sites": [
+        "Assets\\BeetleArena\\Domain\\Campaign\\CampaignMarket.cs:65"
+      ]
+    },
+    {
+      "key": "t_3226b7d9f0c1",
+      "zh": "拍卖未开始",
+      "en": "Auction has not started",
+      "sites": [
+        "Assets\\BeetleArena\\Domain\\Campaign\\CampaignMarket.cs:69"
+      ]
+    },
+    {
+      "key": "t_3be29b4b73a4",
+      "zh": "金币不足以继续举牌",
+      "en": "Not enough coins to bid again",
+      "sites": [
+        "Assets\\BeetleArena\\Domain\\Campaign\\CampaignMarket.cs:69"
+      ]
+    },
+    {
+      "key": "t_19ba10130d82",
+      "zh": "落槌 ",
+      "en": "Sold for ",
+      "sites": [
+        "Assets\\BeetleArena\\Domain\\Campaign\\CampaignMarket.cs:70"
+      ]
+    },
+    {
+      "key": "t_848e382e3455",
+      "zh": " G！这是一只 ",
+      "en": " G! This is a ",
+      "sites": [
+        "Assets\\BeetleArena\\Domain\\Campaign\\CampaignMarket.cs:70"
+      ]
+    },
+    {
+      "key": "t_b2dc55e32e11",
+      "zh": " 蛹，请去温室选择养成方案。",
+      "en": " pupa. Choose a growth plan in the greenhouse.",
+      "sites": [
+        "Assets\\BeetleArena\\Domain\\Campaign\\CampaignMarket.cs:70"
+      ]
+    },
+    {
+      "key": "t_4dba57d8c809",
+      "zh": "NPC加价了，再举一次牌？当前 ",
+      "en": "An NPC raised the bid. Bid again? Current price: ",
+      "sites": [
+        "Assets\\BeetleArena\\Domain\\Campaign\\CampaignMarket.cs:71"
+      ]
+    },
+    {
+      "key": "t_042cd500defb",
+      "zh": "没有进行中的盲拍",
+      "en": "No mystery auction in progress",
+      "sites": [
+        "Assets\\BeetleArena\\Domain\\Campaign\\CampaignMarket.cs:73"
+      ]
+    },
+    {
+      "key": "t_0612f79cb43c",
+      "zh": "已退出本周盲拍，未扣金币。",
+      "en": "Left this week’s auction. No coins spent.",
+      "sites": [
+        "Assets\\BeetleArena\\Domain\\Campaign\\CampaignMarket.cs:73"
+      ]
+    },
+    {
+      "key": "t_f4bd286faf8c",
+      "zh": "这只甲虫已离开温室",
+      "en": "This beetle has left the greenhouse",
+      "sites": [
+        "Assets\\BeetleArena\\Domain\\Campaign\\CampaignSession.cs:14"
+      ]
+    },
+    {
+      "key": "t_768ce2f2c2a1",
+      "zh": "金币不足",
+      "en": "Not enough coins",
+      "sites": [
+        "Assets\\BeetleArena\\Domain\\Campaign\\CampaignSession.cs:17"
+      ]
+    },
+    {
+      "key": "t_a41951ad746e",
+      "zh": "金额无效",
+      "en": "Invalid amount",
+      "sites": [
+        "Assets\\BeetleArena\\Domain\\Campaign\\CampaignSession.cs:18"
+      ]
+    },
+    {
+      "key": "t_0234defbf95d",
+      "zh": "温室已满（包含捕虫队预留栏位）",
+      "en": "Greenhouse full (including reserved squad slots)",
+      "sites": [
+        "Assets\\BeetleArena\\Domain\\Campaign\\CampaignSession.cs:19"
+      ]
+    },
+    {
+      "key": "t_69880e762d17",
+      "zh": "这只甲虫已死亡，请先清理栏位",
+      "en": "This beetle has died; clear its slot first",
+      "sites": [
+        "Assets\\BeetleArena\\Domain\\Campaign\\CampaignSession.cs:20"
+      ]
+    },
+    {
+      "key": "t_f7ea22d73273",
+      "zh": "甲虫正在挂牌、参赛或拍卖",
+      "en": "This beetle is listed, competing or at auction",
+      "sites": [
+        "Assets\\BeetleArena\\Domain\\Campaign\\CampaignSession.cs:20"
+      ]
+    },
+    {
+      "key": "t_a2623eabea88",
+      "zh": "需要健康、未翻身的成虫（至少3心与40饱食）",
+      "en": "A healthy upright adult is required (at least 3 hearts and 40 nutrition)",
+      "sites": [
+        "Assets\\BeetleArena\\Domain\\Campaign\\CampaignSession.cs:21"
+      ]
+    },
+    {
+      "key": "t_d54b110bf841",
+      "zh": "小栗子",
+      "en": "Chestnut",
+      "sites": [
+        "Assets\\BeetleArena\\Domain\\Campaign\\CampaignSession.cs:29"
+      ]
+    },
+    {
+      "key": "t_654da643411b",
+      "zh": "蜜桃",
+      "en": "Peach",
+      "sites": [
+        "Assets\\BeetleArena\\Domain\\Campaign\\CampaignSession.cs:30"
+      ]
+    },
+    {
+      "key": "t_2c13bf687cad",
+      "zh": "温室已经是20格",
+      "en": "Greenhouse already has 20 slots",
+      "sites": [
+        "Assets\\BeetleArena\\Domain\\Campaign\\CampaignSession.cs:49"
+      ]
+    },
+    {
+      "key": "t_f5355326641c",
+      "zh": "温室扩建完成！现在有 ",
+      "en": "Greenhouse expanded! Capacity: ",
+      "sites": [
+        "Assets\\BeetleArena\\Domain\\Campaign\\CampaignSession.cs:50"
+      ]
+    },
+    {
+      "key": "t_a35efae36e59",
+      "zh": " 个栏位。",
+      "en": " slots.",
+      "sites": [
+        "Assets\\BeetleArena\\Domain\\Campaign\\CampaignSession.cs:50",
+        "Assets\\BeetleArena\\Domain\\Campaign\\CampaignSession.cs:121"
+      ]
+    },
+    {
+      "key": "t_f431aefb2710",
+      "zh": "先帮助甲虫翻身；幼虫使用饲料瓶",
+      "en": "Help the beetle upright first; larvae need feed bottles",
+      "sites": [
+        "Assets\\BeetleArena\\Domain\\Campaign\\CampaignSession.cs:54"
+      ]
+    },
+    {
+      "key": "t_c24e8a161911",
+      "zh": "食物不存在",
+      "en": "Food not found",
+      "sites": [
+        "Assets\\BeetleArena\\Domain\\Campaign\\CampaignSession.cs:54"
+      ]
+    },
+    {
+      "key": "t_3adc57df4ddb",
+      "zh": "食盆里还有食物，请等它吃完",
+      "en": "Food remains in the dish; wait until it is eaten",
+      "sites": [
+        "Assets\\BeetleArena\\Domain\\Campaign\\CampaignSession.cs:55"
+      ]
+    },
+    {
+      "key": "t_4714ab51a324",
+      "zh": "已放下",
+      "en": "Food placed: ",
+      "sites": [
+        "Assets\\BeetleArena\\Domain\\Campaign\\CampaignSession.cs:57"
+      ]
+    },
+    {
+      "key": "t_c59990fe316a",
+      "zh": "会走过去进食。",
+      "en": " will approach and eat.",
+      "sites": [
+        "Assets\\BeetleArena\\Domain\\Campaign\\CampaignSession.cs:57"
+      ]
+    },
+    {
+      "key": "t_9ade73aec3de",
+      "zh": "这份食物当前不能结算",
+      "en": "This meal cannot be completed right now",
+      "sites": [
+        "Assets\\BeetleArena\\Domain\\Campaign\\CampaignSession.cs:62"
+      ]
+    },
+    {
+      "key": "t_c084893acec6",
+      "zh": "吃好了，正在清理触角。",
+      "en": " has finished eating and is grooming.",
+      "sites": [
+        "Assets\\BeetleArena\\Domain\\Campaign\\CampaignSession.cs:64"
+      ]
+    },
+    {
+      "key": "t_3ccfe0ab3a78",
+      "zh": "它已经站稳啦",
+      "en": "Already standing firmly",
+      "sites": [
+        "Assets\\BeetleArena\\Domain\\Campaign\\CampaignSession.cs:68"
+      ]
+    },
+    {
+      "key": "t_ed5c979be257",
+      "zh": "轻轻扶正了 ",
+      "en": "Gently helped ",
+      "sites": [
+        "Assets\\BeetleArena\\Domain\\Campaign\\CampaignSession.cs:68"
+      ]
+    },
+    {
+      "key": "t_15ca871bb90c",
+      "zh": "。记得补充食物和休息。",
+      "en": " upright. Provide food and rest.",
+      "sites": [
+        "Assets\\BeetleArena\\Domain\\Campaign\\CampaignSession.cs:68"
+      ]
+    },
+    {
+      "key": "t_2e6133eb4853",
+      "zh": "已移入 ",
+      "en": "Moved to ",
+      "sites": [
+        "Assets\\BeetleArena\\Domain\\Campaign\\CampaignSession.cs:70"
+      ]
+    },
+    {
+      "key": "t_58973ebac8f4",
+      "zh": "只有死亡甲虫可以清理；健康甲虫请在市场交易",
+      "en": "Only deceased beetles can be cleared; sell healthy beetles at the market",
+      "sites": [
+        "Assets\\BeetleArena\\Domain\\Campaign\\CampaignSession.cs:71"
+      ]
+    },
+    {
+      "key": "t_12de0102aa51",
+      "zh": "已清理栏位，留下了一份小小的纪念。",
+      "en": "Slot cleared, leaving a small remembrance.",
+      "sites": [
+        "Assets\\BeetleArena\\Domain\\Campaign\\CampaignSession.cs:71"
+      ]
+    },
+    {
+      "key": "t_a84c20b533ab",
+      "zh": " 翻不过身了！请到温室帮忙（60秒后开始受伤）。",
+      "en": " cannot turn upright! Help in the greenhouse (injury begins after 60s).",
+      "sites": [
+        "Assets\\BeetleArena\\Domain\\Campaign\\CampaignSession.cs:82"
+      ]
+    },
+    {
+      "key": "t_2f82dcecf5e9",
+      "zh": " 因长时间无法翻身而死亡。",
+      "en": " died after being unable to turn upright for too long.",
+      "sites": [
+        "Assets\\BeetleArena\\Domain\\Campaign\\CampaignSession.cs:88"
+      ]
+    },
+    {
+      "key": "t_0e2003fdc30b",
+      "zh": "成虫体长已定型，饲料瓶用于幼虫",
+      "en": "Adult length is fixed; feed bottles are for larvae",
+      "sites": [
+        "Assets\\BeetleArena\\Domain\\Campaign\\CampaignSession.cs:94"
+      ]
+    },
+    {
+      "key": "t_dde2467876c4",
+      "zh": "养成方案无效",
+      "en": "Invalid growth plan",
+      "sites": [
+        "Assets\\BeetleArena\\Domain\\Campaign\\CampaignSession.cs:94"
+      ]
+    },
+    {
+      "key": "t_5dd8dd153289",
+      "zh": "已选好本次养成方案",
+      "en": "Growth plan already selected",
+      "sites": [
+        "Assets\\BeetleArena\\Domain\\Campaign\\CampaignSession.cs:95"
+      ]
+    },
+    {
+      "key": "t_63b2197be8fb",
+      "zh": "养成开始，第 ",
+      "en": "Growth started; matures in week ",
+      "sites": [
+        "Assets\\BeetleArena\\Domain\\Campaign\\CampaignSession.cs:97"
+      ]
+    },
+    {
+      "key": "t_d82e2695e8fd",
+      "zh": " 周出栏。幼虫会自动获得瓶内食物。",
+      "en": ". Larvae feed automatically from the bottle.",
+      "sites": [
+        "Assets\\BeetleArena\\Domain\\Campaign\\CampaignSession.cs:97"
+      ]
+    },
+    {
+      "key": "t_72cae2dec86e",
+      "zh": "需要同物种的雄虫与雌虫",
+      "en": "A male and female of the same species are required",
+      "sites": [
+        "Assets\\BeetleArena\\Domain\\Campaign\\CampaignSession.cs:102"
+      ]
+    },
+    {
+      "key": "t_394fd520ca46",
+      "zh": "亲本需要休息到下一周",
+      "en": "Parents must rest until next week",
+      "sites": [
+        "Assets\\BeetleArena\\Domain\\Campaign\\CampaignSession.cs:103"
+      ]
+    },
+    {
+      "key": "t_5e705591a003",
+      "zh": "近亲世代已达到健康极限，请换血",
+      "en": "Inbreeding has reached the health limit; use an unrelated line",
+      "sites": [
+        "Assets\\BeetleArena\\Domain\\Campaign\\CampaignSession.cs:105"
+      ]
+    },
+    {
+      "key": "t_0253d4103c0c",
+      "zh": "幼虫",
+      "en": " larva",
+      "sites": [
+        "Assets\\BeetleArena\\Domain\\Campaign\\CampaignSession.cs:112"
+      ]
+    },
+    {
+      "key": "t_adb1f737916e",
+      "zh": "近亲后代诞生：健康上限 ",
+      "en": "Inbred offspring born: health cap ",
+      "sites": [
+        "Assets\\BeetleArena\\Domain\\Campaign\\CampaignSession.cs:114"
+      ]
+    },
+    {
+      "key": "t_29e9d5f1fa79",
+      "zh": " 心，请选择饲料与温控。",
+      "en": " hearts. Choose feed and temperature.",
+      "sites": [
+        "Assets\\BeetleArena\\Domain\\Campaign\\CampaignSession.cs:114"
+      ]
+    },
+    {
+      "key": "t_74779a54cb99",
+      "zh": "换血成功：5心上限，体长额外+5%。请选择饲料与温控。",
+      "en": "Outcross successful: 5-heart cap and +5% length. Choose feed and temperature.",
+      "sites": [
+        "Assets\\BeetleArena\\Domain\\Campaign\\CampaignSession.cs:114"
+      ]
+    },
+    {
+      "key": "t_3bf8bac66e1c",
+      "zh": "栖息地尚未解锁",
+      "en": "Habitat not unlocked",
+      "sites": [
+        "Assets\\BeetleArena\\Domain\\Campaign\\CampaignSession.cs:119"
+      ]
+    },
+    {
+      "key": "t_cb7c6dd59ecd",
+      "zh": "需要先在市场购买发酵树液",
+      "en": "Buy fermented tree sap at the market first",
+      "sites": [
+        "Assets\\BeetleArena\\Domain\\Campaign\\CampaignSession.cs:119"
+      ]
+    },
+    {
+      "key": "t_a32caf5396c8",
+      "zh": "需要先购买紫外灯",
+      "en": "Buy a UV lamp first",
+      "sites": [
+        "Assets\\BeetleArena\\Domain\\Campaign\\CampaignSession.cs:119"
+      ]
+    },
+    {
+      "key": "t_e584a352226f",
+      "zh": "捕虫队出发！已预留 ",
+      "en": "Squad departed! Reserved ",
+      "sites": [
+        "Assets\\BeetleArena\\Domain\\Campaign\\CampaignSession.cs:121"
+      ]
+    },
+    {
+      "key": "t_ce132fde96e7",
+      "zh": "还有甲虫在挣扎，先帮它翻身再快进一周",
+      "en": "A beetle is still struggling. Help it upright before advancing the week.",
+      "sites": [
+        "Assets\\BeetleArena\\Domain\\Campaign\\CampaignSession.cs:125"
+      ]
+    },
+    {
+      "key": "t_558b5c2f39a0",
+      "zh": "白眼",
+      "en": "White eyes",
+      "sites": [
+        "Assets\\BeetleArena\\Domain\\Campaign\\CampaignSession.cs:137",
+        "Assets\\BeetleArena\\Domain\\Campaign\\CampaignSession.cs:150"
+      ]
+    },
+    {
+      "key": "t_82a013f40112",
+      "zh": "三叉角",
+      "en": "Trident horn",
+      "sites": [
+        "Assets\\BeetleArena\\Domain\\Campaign\\CampaignSession.cs:137"
+      ]
+    },
+    {
+      "key": "t_a67c0c99d7d1",
+      "zh": "稀有色",
+      "en": "Rare color",
+      "sites": [
+        "Assets\\BeetleArena\\Domain\\Campaign\\CampaignSession.cs:150"
+      ]
+    },
+    {
+      "key": "t_f495347d6acf",
+      "zh": "第 ",
+      "en": "Week ",
+      "sites": [
+        "Assets\\BeetleArena\\Domain\\Campaign\\CampaignSession.cs:158"
+      ]
+    },
+    {
+      "key": "t_a4041219709e",
+      "zh": " 周：出栏 ",
+      "en": ": matured ",
+      "sites": [
+        "Assets\\BeetleArena\\Domain\\Campaign\\CampaignSession.cs:158"
+      ]
+    },
+    {
+      "key": "t_1a29ccea33a1",
+      "zh": " 只，捕回 ",
+      "en": ", caught ",
+      "sites": [
+        "Assets\\BeetleArena\\Domain\\Campaign\\CampaignSession.cs:158"
+      ]
+    },
+    {
+      "key": "t_1ea20edc0780",
+      "zh": " 只，血统分红 ",
+      "en": ", bloodline royalties ",
+      "sites": [
+        "Assets\\BeetleArena\\Domain\\Campaign\\CampaignSession.cs:158"
+      ]
+    },
+    {
+      "key": "t_816ed40d9399",
+      "zh": "虫舍帮工收入150 G。",
+      "en": "Greenhouse work earned 150 G.",
+      "sites": [
+        "Assets\\BeetleArena\\Domain\\Campaign\\CampaignSession.cs:158"
+      ]
+    },
+    {
+      "key": "t_3ee80aaaf334",
+      "zh": "记得给成虫添食。",
+      "en": "Remember to feed adults.",
+      "sites": [
+        "Assets\\BeetleArena\\Domain\\Campaign\\CampaignSession.cs:158"
+      ]
+    },
+    {
+      "key": "t_258e0869143d",
+      "zh": "存档主数据无效",
+      "en": "Invalid save data",
+      "sites": [
+        "Assets\\BeetleArena\\Domain\\Campaign\\CampaignSession.cs:163"
+      ]
+    },
+    {
+      "key": "t_4a8c26bf90fa",
+      "zh": "存档集合缺失",
+      "en": "Save collections are missing",
+      "sites": [
+        "Assets\\BeetleArena\\Domain\\Campaign\\CampaignSession.cs:164"
+      ]
+    },
+    {
+      "key": "t_d6195f36f2a3",
+      "zh": "名人堂数据无效",
+      "en": "Invalid hall-of-fame data",
+      "sites": [
+        "Assets\\BeetleArena\\Domain\\Campaign\\CampaignSession.cs:167"
+      ]
+    },
+    {
+      "key": "t_b3d3272ac81d",
+      "zh": "甲虫 ID 重复或缺失",
+      "en": "Duplicate or missing beetle ID",
+      "sites": [
+        "Assets\\BeetleArena\\Domain\\Campaign\\CampaignSession.cs:170"
+      ]
+    },
+    {
+      "key": "t_3b99d931bf18",
+      "zh": "基因或血统数据无效",
+      "en": "Invalid gene or lineage data",
+      "sites": [
+        "Assets\\BeetleArena\\Domain\\Campaign\\CampaignSession.cs:171"
+      ]
+    },
+    {
+      "key": "t_30aecfa655e0",
+      "zh": "待进食记录无效",
+      "en": "Invalid pending meal record",
+      "sites": [
+        "Assets\\BeetleArena\\Domain\\Campaign\\CampaignSession.cs:172"
+      ]
+    },
+    {
+      "key": "t_121f294fc3c3",
+      "zh": "甲虫数值无效",
+      "en": "Invalid beetle values",
+      "sites": [
+        "Assets\\BeetleArena\\Domain\\Campaign\\CampaignSession.cs:173"
+      ]
+    },
+    {
+      "key": "t_380c1289ffe3",
+      "zh": "捕虫队数据无效",
+      "en": "Invalid expedition data",
+      "sites": [
+        "Assets\\BeetleArena\\Domain\\Campaign\\CampaignSession.cs:175"
+      ]
+    },
+    {
+      "key": "t_6b03c382bd36",
+      "zh": "报价数据无效",
+      "en": "Invalid offer data",
+      "sites": [
+        "Assets\\BeetleArena\\Domain\\Campaign\\CampaignSession.cs:176"
+      ]
+    },
+    {
+      "key": "t_5bef1d5aa870",
+      "zh": "库存或展柜数据无效",
+      "en": "Invalid stock or cabinet data",
+      "sites": [
+        "Assets\\BeetleArena\\Domain\\Campaign\\CampaignSession.cs:177"
+      ]
+    },
+    {
+      "key": "t_3d3b4cd3a9e3",
+      "zh": "盲拍记录无效",
+      "en": "Invalid mystery auction record",
+      "sites": [
+        "Assets\\BeetleArena\\Domain\\Campaign\\CampaignSession.cs:178"
+      ]
+    },
+    {
+      "key": "t_79cfe05c952f",
+      "zh": "赛事预订无效",
+      "en": "Invalid match reservation",
+      "sites": [
+        "Assets\\BeetleArena\\Domain\\Campaign\\CampaignSession.cs:179"
+      ]
+    },
+    {
+      "key": "t_a7c96d04abdc",
+      "zh": "拍卖数据无效",
+      "en": "Invalid auction data",
+      "sites": [
+        "Assets\\BeetleArena\\Domain\\Campaign\\CampaignSession.cs:180"
+      ]
+    },
+    {
+      "key": "t_9b461b67dcd9",
+      "zh": "擂台：",
+      "en": "Arena: ",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Presentation\\BeetleArenaHud.cs:106"
+      ]
+    },
+    {
+      "key": "t_d414ba330063",
+      "zh": "  [T]\n切换并重开",
+      "en": "  [T]\nSwitch and restart",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Presentation\\BeetleArenaHud.cs:106"
+      ]
+    },
+    {
+      "key": "t_c40ee88ef7db",
+      "zh": "视角：",
+      "en": "View: ",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Presentation\\BeetleArenaHud.cs:107"
+      ]
+    },
+    {
+      "key": "t_55f0682e8092",
+      "zh": "击败慢镜头：",
+      "en": "Defeat slow motion: ",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Presentation\\BeetleArenaHud.cs:108"
+      ]
+    },
+    {
+      "key": "t_b4217093bce3",
+      "zh": "开",
+      "en": "On",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Presentation\\BeetleArenaHud.cs:108"
+      ]
+    },
+    {
+      "key": "t_a3332f1c9467",
+      "zh": "关",
+      "en": "Off",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Presentation\\BeetleArenaHud.cs:108"
+      ]
+    },
+    {
+      "key": "t_fc0be6e6bb2e",
+      "zh": "{0}   加油恢复中 · {1}s",
+      "en": "{0}   Cheer recharging · {1}s",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Presentation\\BeetleArenaHud.cs:118"
+      ]
+    },
+    {
+      "key": "t_4bacdc78bd85",
+      "zh": "{0}   为{1}加油",
+      "en": "{0}   Cheer for {1}",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Presentation\\BeetleArenaHud.cs:118"
+      ]
+    },
+    {
+      "key": "t_12c9601b8d08",
+      "zh": "第 {0} 场  ·  已结束",
+      "en": "Match {0} · Finished",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Presentation\\BeetleArenaHud.cs:124"
+      ]
+    },
+    {
+      "key": "t_6ed0e7f9e151",
+      "zh": "第 {0} 场  ·  剩余 {1}:{2}",
+      "en": "Match {0} · Remaining {1}:{2}",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Presentation\\BeetleArenaHud.cs:125"
+      ]
+    },
+    {
+      "key": "t_0c66c822b013",
+      "zh": "继续  [空格]",
+      "en": "Resume [Space]",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Presentation\\BeetleArenaHud.cs:127"
+      ]
+    },
+    {
+      "key": "t_438e38054d18",
+      "zh": "暂停  [空格]",
+      "en": "Pause [Space]",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Presentation\\BeetleArenaHud.cs:127"
+      ]
+    },
+    {
+      "key": "t_bf10df37e7eb",
+      "zh": "本场平局",
+      "en": "Match drawn",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Presentation\\BeetleArenaHud.cs:132"
+      ]
+    },
+    {
+      "key": "t_beec80ba8e81",
+      "zh": "{0} 获胜",
+      "en": "{0} wins",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Presentation\\BeetleArenaHud.cs:132"
+      ]
+    },
+    {
+      "key": "t_2f60adbfae45",
+      "zh": "观察暂停",
+      "en": "Observation paused",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Presentation\\BeetleArenaHud.cs:135"
+      ]
+    },
+    {
+      "key": "t_c3b43489f137",
+      "zh": "准备  {0}",
+      "en": "Ready {0}",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Presentation\\BeetleArenaHud.cs:135"
+      ]
+    },
+    {
+      "key": "t_843e6e29b33b",
+      "zh": "落台判定中",
+      "en": "Checking fall",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Presentation\\BeetleArenaHud.cs:135"
+      ]
+    },
+    {
+      "key": "t_e0789ecc9970",
+      "zh": "本场结束",
+      "en": "Match finished",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Presentation\\BeetleArenaHud.cs:135"
+      ]
+    },
+    {
+      "key": "t_612525de8e69",
+      "zh": "激烈交锋",
+      "en": "Fierce clash",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Presentation\\BeetleArenaHud.cs:136"
+      ]
+    },
+    {
+      "key": "t_38cdfe5e8941",
+      "zh": "拉开恢复",
+      "en": "Disengaging to recover",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Presentation\\BeetleArenaHud.cs:136"
+      ]
+    },
+    {
+      "key": "t_56920f24829c",
+      "zh": "轻触试探",
+      "en": "Testing the opponent",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Presentation\\BeetleArenaHud.cs:136"
+      ]
+    },
+    {
+      "key": "t_b750d7a0cb4d",
+      "zh": "触角 / 角尖试探",
+      "en": "Antenna / Horn-tip probing",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Presentation\\BeetleArenaHud.cs:146",
+        "Assets\\BeetleArena\\Editor\\Setup\\BeetleArenaSceneBuilder.cs:240"
+      ]
+    },
+    {
+      "key": "t_5aee55f028bb",
+      "zh": "轻触角尖 / 试探短推",
+      "en": "Horn-tip contact / Short push",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Presentation\\BeetleArenaHud.cs:147"
+      ]
+    },
+    {
+      "key": "t_436cd69cc9ab",
+      "zh": "收角 / 拉开半步",
+      "en": "Withdrawing horn / Stepping back",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Presentation\\BeetleArenaHud.cs:148"
+      ]
+    },
+    {
+      "key": "t_6b63c2e9d61f",
+      "zh": "后足撑地 / 蓄力",
+      "en": "Bracing hind legs / Winding up",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Presentation\\BeetleArenaHud.cs:149"
+      ]
+    },
+    {
+      "key": "t_0089605cbfcf",
+      "zh": "猛烈冲顶",
+      "en": "Charging hard",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Presentation\\BeetleArenaHud.cs:150"
+      ]
+    },
+    {
+      "key": "t_eb09b33f9129",
+      "zh": "顶角僵持 / 持续发力",
+      "en": "Horns locked / Pushing",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Presentation\\BeetleArenaHud.cs:151"
+      ]
+    },
+    {
+      "key": "t_43d44255913e",
+      "zh": "接近对手",
+      "en": "Approaching opponent",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Presentation\\BeetleArenaHud.cs:152"
+      ]
+    },
+    {
+      "key": "t_a3eec704f247",
+      "zh": "侧移寻找入角位置",
+      "en": "Sidestepping for leverage",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Presentation\\BeetleArenaHud.cs:153"
+      ]
+    },
+    {
+      "key": "t_05e91a41cf13",
+      "zh": "压低头部",
+      "en": "Lowering head",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Presentation\\BeetleArenaHud.cs:154"
+      ]
+    },
+    {
+      "key": "t_f56729943927",
+      "zh": "短促推顶",
+      "en": "Short shove",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Presentation\\BeetleArenaHud.cs:155"
+      ]
+    },
+    {
+      "key": "t_0faf877e4a97",
+      "zh": "入角到腹下",
+      "en": "Sliding horn underneath",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Presentation\\BeetleArenaHud.cs:156"
+      ]
+    },
+    {
+      "key": "t_82dc76e7915f",
+      "zh": "低头寻找承重点",
+      "en": "Seeking a support point",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Presentation\\BeetleArenaHud.cs:157"
+      ]
+    },
+    {
+      "key": "t_ac6458c94049",
+      "zh": "角下托举 / 扭转",
+      "en": "Lifting / Twisting",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Presentation\\BeetleArenaHud.cs:158"
+      ]
+    },
+    {
+      "key": "t_5f7448bf02d3",
+      "zh": "被撬起 / 失去抓地",
+      "en": "Being lifted / Losing grip",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Presentation\\BeetleArenaHud.cs:159"
+      ]
+    },
+    {
+      "key": "t_81ef403258d7",
+      "zh": "收角 / 后撤脱离",
+      "en": "Withdrawing horn / Disengaging",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Presentation\\BeetleArenaHud.cs:160"
+      ]
+    },
+    {
+      "key": "t_c5311b5a5613",
+      "zh": "猛挑 / 甩离台面",
+      "en": "Tossing off the arena",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Presentation\\BeetleArenaHud.cs:161"
+      ]
+    },
+    {
+      "key": "t_a0c1fc21610a",
+      "zh": "被挑飞 / 空中挣扎",
+      "en": "Airborne / Struggling",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Presentation\\BeetleArenaHud.cs:162"
+      ]
+    },
+    {
+      "key": "t_0e0b2708b1b8",
+      "zh": "六足撑地",
+      "en": "Bracing all six legs",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Presentation\\BeetleArenaHud.cs:163"
+      ]
+    },
+    {
+      "key": "t_9f1d6190d1dc",
+      "zh": "调整呼吸与重心",
+      "en": "Recovering balance and breath",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Presentation\\BeetleArenaHud.cs:164"
+      ]
+    },
+    {
+      "key": "t_417f64c94d9d",
+      "zh": "疲劳退让",
+      "en": "Retreating from fatigue",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Presentation\\BeetleArenaHud.cs:165"
+      ]
+    },
+    {
+      "key": "t_db7f6dc5870e",
+      "zh": "挣扎恢复支撑",
+      "en": "Struggling for support",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Presentation\\BeetleArenaHud.cs:166"
+      ]
+    },
+    {
+      "key": "t_b1c836cbb402",
+      "zh": "失去台面支撑",
+      "en": "Losing arena support",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Presentation\\BeetleArenaHud.cs:167"
+      ]
+    },
+    {
+      "key": "t_5511d55ebac3",
+      "zh": "已落台",
+      "en": "Fallen from the arena",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Presentation\\BeetleArenaHud.cs:168"
+      ]
+    },
+    {
+      "key": "t_c90537843231",
+      "zh": "停止对抗 / 撑地恢复",
+      "en": "No longer fighting / Recovering",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Presentation\\BeetleArenaHud.cs:169"
+      ]
+    },
+    {
+      "key": "t_83302ca3acd0",
+      "zh": "守住擂台",
+      "en": "Holding the arena",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Presentation\\BeetleArenaHud.cs:170"
+      ]
+    },
+    {
+      "key": "t_68901912845f",
+      "zh": "\n<size=14>营养 +",
+      "en": "\n<size=14>Nutrition +",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Presentation\\BeetleHusbandryHud.cs:90"
+      ]
+    },
+    {
+      "key": "t_efaa9bc746a6",
+      "zh": " · 水分 +",
+      "en": " · Hydration +",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Presentation\\BeetleHusbandryHud.cs:90"
+      ]
+    },
+    {
+      "key": "t_a6d2d81467b9",
+      "zh": "健康  {0} / 100\n营养  {1} / 100\n水分  {2} / 100\n压力  {3} / 100",
+      "en": "Health {0} / 100\nNutrition {1} / 100\nHydration {2} / 100\nStress {3} / 100",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Presentation\\BeetleHusbandryHud.cs:105"
+      ]
+    },
+    {
+      "key": "t_6b160105c82b",
+      "zh": "已死亡 · 停止活动",
+      "en": "Dead · No activity",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Presentation\\BeetleHusbandryHud.cs:107"
+      ]
+    },
+    {
+      "key": "t_0a41efee7e83",
+      "zh": "持续挣扎 · 需要扶正",
+      "en": "Struggling · Help upright",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Presentation\\BeetleHusbandryHud.cs:107"
+      ]
+    },
+    {
+      "key": "t_76e2434979d5",
+      "zh": "姿态正常 · 可以照料",
+      "en": "Upright · Ready for care",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Presentation\\BeetleHusbandryHud.cs:107"
+      ]
+    },
+    {
+      "key": "t_c9c5f376b4a8",
+      "zh": "健康已经耗尽，喂食或扶正不能复活。",
+      "en": "Health is depleted. Feeding or rescue cannot revive it.",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Presentation\\BeetleHusbandryHud.cs:109"
+      ]
+    },
+    {
+      "key": "t_90a10212d360",
+      "zh": "救助宽限剩余 {0} 秒\n请先帮它翻身，再喂食。",
+      "en": "Rescue grace: {0}s remaining\nHelp it upright before feeding.",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Presentation\\BeetleHusbandryHud.cs:113"
+      ]
+    },
+    {
+      "key": "t_640b55967096",
+      "zh": "挣扎正在消耗健康！\n立即扶正可停止翻倒损伤。",
+      "en": "Struggling is draining health!\nHelp upright to stop the damage.",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Presentation\\BeetleHusbandryHud.cs:113"
+      ]
+    },
+    {
+      "key": "t_f3f07e74ae78",
+      "zh": "红薯、水果和果冻补充不同营养。\n翻倒时先扶正，再安排进食。",
+      "en": "Potato, fruit and jelly provide different nutrients.\nHelp overturned beetles upright before feeding.",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Presentation\\BeetleHusbandryHud.cs:115"
+      ]
+    },
+    {
+      "key": "t_0b18b87a2286",
+      "zh": "继续养殖",
+      "en": "Resume care",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Presentation\\BeetleHusbandryHud.cs:118"
+      ]
+    },
+    {
+      "key": "t_ad612664bf27",
+      "zh": "暂停养殖",
+      "en": "Pause care",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Presentation\\BeetleHusbandryHud.cs:118",
+        "Assets\\BeetleArena\\Editor\\Setup\\BeetleHusbandrySceneBuilder.cs:206"
+      ]
+    },
+    {
+      "key": "t_25617f9696cb",
+      "zh": "需要救助！",
+      "en": "Rescue needed!",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Presentation\\BeetleHusbandryHud.cs:136"
+      ]
+    },
+    {
+      "key": "t_f78d037abccd",
+      "zh": "正常",
+      "en": "Normal",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Presentation\\BeetleHusbandryHud.cs:136"
+      ]
+    },
+    {
+      "key": "t_34caa1d63696",
+      "zh": "甲角 · 林间擂台",
+      "en": "BEETLE DUEL · Woodland arena",
+      "sites": [
+        "Assets\\BeetleArena\\Editor\\Setup\\BeetleArenaSceneBuilder.cs:220"
+      ]
+    },
+    {
+      "key": "t_fcea14c17a83",
+      "zh": "FOREST DUEL  /  自主格斗观察席",
+      "en": "FOREST DUEL / Autonomous combat",
+      "sites": [
+        "Assets\\BeetleArena\\Editor\\Setup\\BeetleArenaSceneBuilder.cs:221"
+      ]
+    },
+    {
+      "key": "t_b481d6b462ba",
+      "zh": "第 01 场 · 体型差不超过 8%",
+      "en": "Match 01 · Size difference within 8%",
+      "sites": [
+        "Assets\\BeetleArena\\Editor\\Setup\\BeetleArenaSceneBuilder.cs:223"
+      ]
+    },
+    {
+      "key": "t_d538e603d630",
+      "zh": "01 / 琥珀",
+      "en": "01 / Amber",
+      "sites": [
+        "Assets\\BeetleArena\\Editor\\Setup\\BeetleArenaSceneBuilder.cs:234"
+      ]
+    },
+    {
+      "key": "t_7eee79fdef52",
+      "zh": "02 / 墨甲",
+      "en": "02 / Ink",
+      "sites": [
+        "Assets\\BeetleArena\\Editor\\Setup\\BeetleArenaSceneBuilder.cs:234"
+      ]
+    },
+    {
+      "key": "t_159e66b7622c",
+      "zh": "体长 55.0 mm    体重 8.0 g",
+      "en": "Length 55.0 mm · Mass 8.0 g",
+      "sites": [
+        "Assets\\BeetleArena\\Editor\\Setup\\BeetleArenaSceneBuilder.cs:235"
+      ]
+    },
+    {
+      "key": "t_47dcba26ea3d",
+      "zh": "体力 100%",
+      "en": "Stamina 100%",
+      "sites": [
+        "Assets\\BeetleArena\\Editor\\Setup\\BeetleArenaSceneBuilder.cs:236"
+      ]
+    },
+    {
+      "key": "t_606894898a0f",
+      "zh": "抓地 / 稳定 100%",
+      "en": "Grip / Stability 100%",
+      "sites": [
+        "Assets\\BeetleArena\\Editor\\Setup\\BeetleArenaSceneBuilder.cs:237"
+      ]
+    },
+    {
+      "key": "t_9c095625a777",
+      "zh": "Q   为琥珀加油",
+      "en": "Q   Cheer for Amber",
+      "sites": [
+        "Assets\\BeetleArena\\Editor\\Setup\\BeetleArenaSceneBuilder.cs:241"
+      ]
+    },
+    {
+      "key": "t_93e74306e7fb",
+      "zh": "E   为墨甲加油",
+      "en": "E   Cheer for Ink",
+      "sites": [
+        "Assets\\BeetleArena\\Editor\\Setup\\BeetleArenaSceneBuilder.cs:241"
+      ]
+    },
+    {
+      "key": "t_f69ef18e8348",
+      "zh": "准备 3",
+      "en": "Ready 3",
+      "sites": [
+        "Assets\\BeetleArena\\Editor\\Setup\\BeetleArenaSceneBuilder.cs:246"
+      ]
+    },
+    {
+      "key": "t_b81ef0f4196c",
+      "zh": "触角试探 · 即将开始",
+      "en": "Antenna probing · Starting soon",
+      "sites": [
+        "Assets\\BeetleArena\\Editor\\Setup\\BeetleArenaSceneBuilder.cs:247",
+        "Assets\\BeetleArena\\Runtime\\Actors\\BeetleMatchController.cs:68",
+        "Assets\\BeetleArena\\Runtime\\Actors\\BeetleMatchController.cs:163"
+      ]
+    },
+    {
+      "key": "t_b93606518ac6",
+      "zh": "只有落台分胜负 · 时间到双方平局\n单局含开场与击败展示不超过 3 分钟（暂停除外）",
+      "en": "Only a fall decides victory · Time limit means a draw\nEach round lasts up to 3 minutes, excluding pauses",
+      "sites": [
+        "Assets\\BeetleArena\\Editor\\Setup\\BeetleArenaSceneBuilder.cs:248"
+      ]
+    },
+    {
+      "key": "t_86d2cfab466e",
+      "zh": "暂停 [空格]",
+      "en": "Pause [Space]",
+      "sites": [
+        "Assets\\BeetleArena\\Editor\\Setup\\BeetleArenaSceneBuilder.cs:249"
+      ]
+    },
+    {
+      "key": "t_f9f5062b3975",
+      "zh": "MATCH RESULT  /  本场结算",
+      "en": "MATCH RESULT",
+      "sites": [
+        "Assets\\BeetleArena\\Editor\\Setup\\BeetleArenaSceneBuilder.cs:254"
+      ]
+    },
+    {
+      "key": "t_779ee7e19330",
+      "zh": "琥珀 获胜",
+      "en": "Amber wins",
+      "sites": [
+        "Assets\\BeetleArena\\Editor\\Setup\\BeetleArenaSceneBuilder.cs:255"
+      ]
+    },
+    {
+      "key": "t_679ea23515a9",
+      "zh": "原阵容再战",
+      "en": "Rematch same pair",
+      "sites": [
+        "Assets\\BeetleArena\\Editor\\Setup\\BeetleArenaSceneBuilder.cs:256"
+      ]
+    },
+    {
+      "key": "t_ae0535af94bc",
+      "zh": "下一场 · 随机配对",
+      "en": "Next match · Random pair",
+      "sites": [
+        "Assets\\BeetleArena\\Editor\\Setup\\BeetleArenaSceneBuilder.cs:258"
+      ]
+    },
+    {
+      "key": "t_fd306199ce8e",
+      "zh": "甲角 · 林间养殖室",
+      "en": "BEETLE NURSERY · Woodland",
+      "sites": [
+        "Assets\\BeetleArena\\Editor\\Setup\\BeetleHusbandrySceneBuilder.cs:204"
+      ]
+    },
+    {
+      "key": "t_5a90b05a4700",
+      "zh": "BEETLE NURSERY  /  照料 · 生长 · 观察",
+      "en": "BEETLE NURSERY / Care · Growth · Observation",
+      "sites": [
+        "Assets\\BeetleArena\\Editor\\Setup\\BeetleHusbandrySceneBuilder.cs:205"
+      ]
+    },
+    {
+      "key": "t_fadf24dbc5a9",
+      "zh": "保存",
+      "en": "Save",
+      "sites": [
+        "Assets\\BeetleArena\\Editor\\Setup\\BeetleHusbandrySceneBuilder.cs:207"
+      ]
+    },
+    {
+      "key": "t_e86c7cc37ad7",
+      "zh": "更新内容",
+      "en": "Reload content",
+      "sites": [
+        "Assets\\BeetleArena\\Editor\\Setup\\BeetleHusbandrySceneBuilder.cs:208"
+      ]
+    },
+    {
+      "key": "t_40f620c9c417",
+      "zh": "我的甲虫",
+      "en": "My beetles",
+      "sites": [
+        "Assets\\BeetleArena\\Editor\\Setup\\BeetleHusbandrySceneBuilder.cs:211"
+      ]
+    },
+    {
+      "key": "t_421241484adc",
+      "zh": "选择个体查看与照料",
+      "en": "Select a beetle to observe and care for",
+      "sites": [
+        "Assets\\BeetleArena\\Editor\\Setup\\BeetleHusbandrySceneBuilder.cs:212"
+      ]
+    },
+    {
+      "key": "t_1f618932769a",
+      "zh": "返回林间擂台",
+      "en": "Return to arena",
+      "sites": [
+        "Assets\\BeetleArena\\Editor\\Setup\\BeetleHusbandrySceneBuilder.cs:214"
+      ]
+    },
+    {
+      "key": "t_4896afd7e5e9",
+      "zh": "等待选择个体",
+      "en": "Waiting for selection",
+      "sites": [
+        "Assets\\BeetleArena\\Editor\\Setup\\BeetleHusbandrySceneBuilder.cs:218"
+      ]
+    },
+    {
+      "key": "t_56c111ab8329",
+      "zh": "健康 · 营养 · 体力",
+      "en": "Health · Nutrition · Stamina",
+      "sites": [
+        "Assets\\BeetleArena\\Editor\\Setup\\BeetleHusbandrySceneBuilder.cs:220"
+      ]
+    },
+    {
+      "key": "t_89e6d8240036",
+      "zh": "个体档案",
+      "en": "Individual profile",
+      "sites": [
+        "Assets\\BeetleArena\\Editor\\Setup\\BeetleHusbandrySceneBuilder.cs:221"
+      ]
+    },
+    {
+      "key": "t_cc93405b6ac1",
+      "zh": "喂食与照料",
+      "en": "Feeding and care",
+      "sites": [
+        "Assets\\BeetleArena\\Editor\\Setup\\BeetleHusbandrySceneBuilder.cs:222"
+      ]
+    },
+    {
+      "key": "t_0aeec75f43a4",
+      "zh": "帮它翻身",
+      "en": "Help upright",
+      "sites": [
+        "Assets\\BeetleArena\\Editor\\Setup\\BeetleHusbandrySceneBuilder.cs:228"
+      ]
+    },
+    {
+      "key": "t_55908fb1fcd8",
+      "zh": "观察甲虫，留意翻倒与健康变化。",
+      "en": "Observe your beetles. Watch for overturning and health changes.",
+      "sites": [
+        "Assets\\BeetleArena\\Editor\\Setup\\BeetleHusbandrySceneBuilder.cs:229"
+      ]
+    },
+    {
+      "key": "t_38df32d4f9a9",
+      "zh": "饲养环境",
+      "en": "Habitat",
+      "sites": [
+        "Assets\\BeetleArena\\Editor\\Setup\\BeetleHusbandrySceneBuilder.cs:233"
+      ]
+    },
+    {
+      "key": "t_e5d75b3f2580",
+      "zh": "选择适合当前阶段的环境",
+      "en": "Choose a habitat suitable for this life stage",
+      "sites": [
+        "Assets\\BeetleArena\\Editor\\Setup\\BeetleHusbandrySceneBuilder.cs:234"
+      ]
+    },
+    {
+      "key": "t_221ee0cc9460",
+      "zh": "选项",
+      "en": "Option",
+      "sites": [
+        "Assets\\BeetleArena\\Editor\\Setup\\BeetleHusbandrySceneBuilder.cs:236"
+      ]
+    },
+    {
+      "key": "t_0a1b1375e6cc",
+      "zh": "养殖 [B]",
+      "en": "Nursery [B]",
+      "sites": [
+        "Assets\\BeetleArena\\Editor\\Setup\\BeetleHusbandrySceneBuilder.cs:282"
+      ]
+    },
+    {
+      "key": "t_a75ee674d36c",
+      "zh": "平地木桩",
+      "en": "Flat stump",
+      "sites": [
+        "Assets\\BeetleArena\\Runtime\\Actors\\BeetleMatchController.cs:25"
+      ]
+    },
+    {
+      "key": "t_2305ee3ca36f",
+      "zh": "游戏",
+      "en": "Game",
+      "sites": [
+        "Presentation vocabulary"
+      ]
+    },
+    {
+      "key": "t_461189f186ab",
+      "zh": "音频",
+      "en": "Audio",
+      "sites": [
+        "Presentation vocabulary"
+      ]
+    },
+    {
+      "key": "t_fa4e33b69853",
+      "zh": "视频",
+      "en": "Video",
+      "sites": [
+        "Presentation vocabulary"
+      ]
+    },
+    {
+      "key": "t_22382630ef61",
+      "zh": "控制",
+      "en": "Controls",
+      "sites": [
+        "Presentation vocabulary"
+      ]
+    },
+    {
+      "key": "t_58ecc8701f82",
+      "zh": "春季",
+      "en": "Spring",
+      "sites": [
+        "Presentation vocabulary"
+      ]
+    },
+    {
+      "key": "t_76e4fbe256a1",
+      "zh": "夏季",
+      "en": "Summer",
+      "sites": [
+        "Presentation vocabulary"
+      ]
+    },
+    {
+      "key": "t_ce4e99b18366",
+      "zh": "秋季",
+      "en": "Autumn",
+      "sites": [
+        "Presentation vocabulary"
+      ]
+    },
+    {
+      "key": "t_c63d5b746712",
+      "zh": "冬季",
+      "en": "Winter",
+      "sites": [
+        "Presentation vocabulary"
+      ]
+    },
+    {
+      "key": "t_84c5d7ae2753",
+      "zh": "琥珀",
+      "en": "Amber",
+      "sites": [
+        "Presentation vocabulary"
+      ]
+    },
+    {
+      "key": "t_b9decc076730",
+      "zh": "墨甲",
+      "en": "Ink",
+      "sites": [
+        "Presentation vocabulary"
+      ]
+    },
+    {
+      "key": "t_8cb9cf68a4da",
+      "zh": "全景",
+      "en": "Overview",
+      "sites": [
+        "Presentation vocabulary"
+      ]
+    },
+    {
+      "key": "t_c919e20cb64a",
+      "zh": "跟随",
+      "en": "Follow",
+      "sites": [
+        "Presentation vocabulary"
+      ]
+    },
+    {
+      "key": "t_455874267770",
+      "zh": "低角度",
+      "en": "Low angle",
+      "sites": [
+        "Presentation vocabulary"
+      ]
+    },
+    {
+      "key": "t_00a9a6b2eea3",
+      "zh": "自动存档",
+      "en": "AUTO SAVE",
+      "sites": [
+        "Presentation vocabulary"
+      ]
+    },
+    {
+      "key": "t_11a2e50fb94b",
+      "zh": "手动存档 {0}",
+      "en": "JOURNAL 0{0}",
+      "sites": [
+        "Presentation vocabulary"
+      ]
+    },
+    {
+      "key": "t_dd3b53772a06",
+      "zh": "时间到 · 双方平局",
+      "en": "Time limit · Draw",
+      "sites": [
+        "Combat commentary / camera labels"
+      ]
+    },
+    {
+      "key": "t_c9154aa71af5",
+      "zh": "倒地 5 秒未能翻正",
+      "en": "Unable to turn upright for 5 seconds",
+      "sites": [
+        "Combat commentary / camera labels"
+      ]
+    },
+    {
+      "key": "t_b55164d87363",
+      "zh": "落台判定",
+      "en": "Fall from arena",
+      "sites": [
+        "Combat commentary / camera labels"
+      ]
+    },
+    {
+      "key": "t_f219a4eda963",
+      "zh": "得到鼓励，重新发力",
+      "en": " is encouraged and pushes again",
+      "sites": [
+        "Combat commentary / camera labels"
+      ]
+    },
+    {
+      "key": "t_4b1d6c8e69d2",
+      "zh": "比赛开始 · 双方正在试探",
+      "en": "Match begins · Both beetles are probing",
+      "sites": [
+        "Combat commentary / camera labels"
+      ]
+    },
+    {
+      "key": "t_9fbb0669444e",
+      "zh": "掉下擂台",
+      "en": " falls from the arena",
+      "sites": [
+        "Combat commentary / camera labels"
+      ]
+    },
+    {
+      "key": "t_7a37fe405578",
+      "zh": "轻触试探 · 短推即收",
+      "en": " probes with a brief push",
+      "sites": [
+        "Combat commentary / camera labels"
+      ]
+    },
+    {
+      "key": "t_eb86ea363eea",
+      "zh": "蓄力冲顶！争夺顶角支点",
+      "en": " charges for horn leverage!",
+      "sites": [
+        "Combat commentary / camera labels"
+      ]
+    },
+    {
+      "key": "t_0418b864fa45",
+      "zh": "短促推顶 · ",
+      "en": " shoves briefly · ",
+      "sites": [
+        "Combat commentary / camera labels"
+      ]
+    },
+    {
+      "key": "t_f4cdbbb29821",
+      "zh": "对手后滑",
+      "en": "Opponent slides back",
+      "sites": [
+        "Combat commentary / camera labels"
+      ]
+    },
+    {
+      "key": "t_4dc93bb5dcf7",
+      "zh": "双方角力",
+      "en": "Both beetles push",
+      "sites": [
+        "Combat commentary / camera labels"
+      ]
+    },
+    {
+      "key": "t_0e1abfae7f12",
+      "zh": " · 接触发力",
+      "en": " · Contact push",
+      "sites": [
+        "Combat commentary / camera labels"
+      ]
+    },
+    {
+      "key": "t_f0336461d6d6",
+      "zh": "撑足抵住，头角未形成有效托举",
+      "en": " braces its legs and blocks the lift",
+      "sites": [
+        "Combat commentary / camera labels"
+      ]
+    },
+    {
+      "key": "t_979e0a5065f5",
+      "zh": "角下托举，撬起前身并扭开抓地",
+      "en": " lifts and twists the opponent off its footing",
+      "sites": [
+        "Combat commentary / camera labels"
+      ]
+    },
+    {
+      "key": "t_759c9c248df9",
+      "zh": "失去台面支撑！",
+      "en": " loses support!",
+      "sites": [
+        "Combat commentary / camera labels"
+      ]
+    },
+    {
+      "key": "t_900604932e36",
+      "zh": "落回台面，重新撑起身体",
+      "en": " lands and regains support",
+      "sites": [
+        "Combat commentary / camera labels"
+      ]
+    },
+    {
+      "key": "t_b61e9eb11217",
+      "zh": "获胜",
+      "en": " wins",
+      "sites": [
+        "Combat commentary / camera labels"
+      ]
+    },
+    {
+      "key": "t_ba429a76bb95",
+      "zh": "琥珀上方",
+      "en": "Above Amber",
+      "sites": [
+        "Combat commentary / camera labels"
+      ]
+    },
+    {
+      "key": "t_9ac3f741a32e",
+      "zh": "墨甲上方",
+      "en": "Above Ink",
+      "sites": [
+        "Combat commentary / camera labels"
+      ]
+    },
+    {
+      "key": "t_9ed29e7bf383",
+      "zh": "斜坡木桩",
+      "en": "Sloped stump",
+      "sites": [
+        "Combat commentary / camera labels"
+      ]
+    },
+    {
+      "key": "t_37e297fb9f41",
+      "zh": "凹槽木桩",
+      "en": "Grooved stump",
+      "sites": [
+        "Combat commentary / camera labels"
+      ]
+    },
+    {
+      "key": "t_ab52d9faf73d",
+      "zh": "低抛",
+      "en": "Low toss",
+      "sites": [
+        "Combat commentary / camera labels"
+      ]
+    },
+    {
+      "key": "t_d916f66d4586",
+      "zh": "高抛",
+      "en": "High toss",
+      "sites": [
+        "Combat commentary / camera labels"
+      ]
+    },
+    {
+      "key": "t_6db3fecd630d",
+      "zh": "躲闪",
+      "en": "Dodge",
+      "sites": [
+        "Combat commentary / camera labels"
+      ]
+    },
+    {
+      "key": "t_e72b062c3eab",
+      "zh": "头角上挑",
+      "en": "Horn lift",
+      "sites": [
+        "Combat commentary / camera labels"
+      ]
+    },
+    {
+      "key": "t_79cc871ca992",
+      "zh": "开始",
+      "en": "Start",
+      "sites": [
+        "Assets/BeetleArena/Runtime/Campaign/UI/CampaignMenuView.cs"
+      ]
+    },
+    {
+      "key": "t_8eb28f90b9c0",
+      "zh": "游玩指南",
+      "en": "How to play",
+      "sites": [
+        "Assets/BeetleArena/Runtime/Campaign/UI/CampaignMenuView.cs"
+      ]
+    },
+    {
+      "key": "t_feecb1e6adec",
+      "zh": "退出",
+      "en": "Exit",
+      "sites": [
+        "Assets/BeetleArena/Runtime/Campaign/UI/CampaignMenuView.cs"
+      ]
+    },
+    {
+      "key": "t_74c31ee24367",
+      "zh": "需赢得 Lv.{0} 联赛{1}",
+      "en": "Win the Lv.{0} league{1}",
+      "sites": [
+        "Assets/BeetleArena/Runtime/Campaign/UI/CampaignGreenhouseView.cs"
+      ]
+    },
+    {
+      "key": "t_cfb2a002142a",
+      "zh": "虫舍管理员",
+      "en": "Greenhouse keeper",
+      "sites": [
+        "CampaignMailbox / inventory delivery UI"
+      ]
+    },
+    {
+      "key": "t_12fe904b0faf",
+      "zh": "甲虫商店",
+      "en": "Beetle store",
+      "sites": [
+        "CampaignMailbox / inventory delivery UI"
+      ]
+    },
+    {
+      "key": "t_2470a92aa00c",
+      "zh": "养殖用品店",
+      "en": "Supply store",
+      "sites": [
+        "CampaignMailbox / inventory delivery UI"
+      ]
+    },
+    {
+      "key": "t_b884f6b81296",
+      "zh": "交易市场",
+      "en": "Trading market",
+      "sites": [
+        "CampaignMailbox / inventory delivery UI"
+      ]
+    },
+    {
+      "key": "t_e21a693147aa",
+      "zh": "虫舍来信与使用指引。这里的联系人仅用于游戏内邮件。",
+      "en": "Greenhouse news and guidance. These contacts are for in-game mail only.",
+      "sites": [
+        "CampaignMailbox / inventory delivery UI"
+      ]
+    },
+    {
+      "key": "t_2efb99c4084d",
+      "zh": "负责甲虫现货订单。活体领取后暂存在仓库，再安排入住温室。",
+      "en": "Ships beetle orders. Claim live deliveries into storage, then move them into your greenhouse.",
+      "sites": [
+        "CampaignMailbox / inventory delivery UI"
+      ]
+    },
+    {
+      "key": "t_9259e699659b",
+      "zh": "配送红薯、水果、捕虫道具和展柜扩展包。",
+      "en": "Ships sweet potatoes, fruit, expedition supplies and display expansion kits.",
+      "sites": [
+        "CampaignMailbox / inventory delivery UI"
+      ]
+    },
+    {
+      "key": "t_5d5595a79d33",
+      "zh": "负责神秘蛹盲拍成交后的附件配送。",
+      "en": "Ships mystery pupae after a successful auction.",
+      "sites": [
+        "CampaignMailbox / inventory delivery UI"
+      ]
+    },
+    {
+      "key": "t_6b9ce304caaa",
+      "zh": "负责市场交易的实物赠礼配送。",
+      "en": "Ships physical bonus gifts from market trades.",
+      "sites": [
+        "CampaignMailbox / inventory delivery UI"
+      ]
+    },
+    {
+      "key": "t_1811925fa7ec",
+      "zh": "展柜扩展包",
+      "en": "Display expansion kit",
+      "sites": [
+        "CampaignMailbox / inventory delivery UI"
+      ]
+    },
+    {
+      "key": "t_c461f2ee2200",
+      "zh": "欢迎使用虫舍邮箱",
+      "en": "Welcome to your mailbox",
+      "sites": [
+        "CampaignMailbox / inventory delivery UI"
+      ]
+    },
+    {
+      "key": "t_6f784ce7200e",
+      "zh": "市场购买的甲虫、食物和道具会通过邮件送达。\n\n打开邮件领取附件后，物品才会加入仓库。食物从仓库投喂，活体从仓库安排入住温室。\n\n邮件可以移入已删除并恢复；带有未领取附件的邮件不能永久删除。",
+      "en": "Market purchases arrive by mail: beetles, food and supplies.\n\nClaim attachments to add them to storage. Feed stored food to your beetles, and move stored live beetles into the greenhouse.\n\nDeleted mail can be restored. Mail with unclaimed attachments cannot be permanently deleted.",
+      "sites": [
+        "CampaignMailbox / inventory delivery UI"
+      ]
+    },
+    {
+      "key": "t_748d7f9e4780",
+      "zh": "感谢光临，订单已完成。请领取下方附件，物品会存入仓库，不会自动使用。",
+      "en": "Thank you for your order. Claim the attachments below to add them to storage. Items are not used automatically.",
+      "sites": [
+        "CampaignMailbox / inventory delivery UI"
+      ]
+    },
+    {
+      "key": "t_6a5e02e8f7c3",
+      "zh": "活体配送 · ",
+      "en": "Live delivery · ",
+      "sites": [
+        "CampaignMailbox / inventory delivery UI"
+      ]
+    },
+    {
+      "key": "t_0928591904b4",
+      "zh": "订单配送 · ",
+      "en": "Order delivery · ",
+      "sites": [
+        "CampaignMailbox / inventory delivery UI"
+      ]
+    },
+    {
+      "key": "t_d8bb3eaa3205",
+      "zh": "{0}已发送至邮箱，请领取附件。",
+      "en": "{0} has arrived in your mailbox. Claim the attachment.",
+      "sites": [
+        "CampaignMailbox / inventory delivery UI"
+      ]
+    },
+    {
+      "key": "t_286687d94bad",
+      "zh": "邮件不存在",
+      "en": "Mail not found",
+      "sites": [
+        "CampaignMailbox / inventory delivery UI"
+      ]
+    },
+    {
+      "key": "t_a1964bd91fe9",
+      "zh": "邮件已移至已删除，可随时恢复。",
+      "en": "Moved to Deleted. You can restore this message.",
+      "sites": [
+        "CampaignMailbox / inventory delivery UI"
+      ]
+    },
+    {
+      "key": "t_6b39c0e32536",
+      "zh": "邮件已恢复到收件箱。",
+      "en": "Message restored to Inbox.",
+      "sites": [
+        "CampaignMailbox / inventory delivery UI"
+      ]
+    },
+    {
+      "key": "t_bef84652c27b",
+      "zh": "请先将邮件移至已删除",
+      "en": "Move this message to Deleted first.",
+      "sites": [
+        "CampaignMailbox / inventory delivery UI"
+      ]
+    },
+    {
+      "key": "t_a8285b1be4ba",
+      "zh": "请先恢复邮件并领取附件",
+      "en": "Restore the message and claim its attachments first.",
+      "sites": [
+        "CampaignMailbox / inventory delivery UI"
+      ]
+    },
+    {
+      "key": "t_a58171bf8bdb",
+      "zh": "邮件已永久删除。",
+      "en": "Message permanently deleted.",
+      "sites": [
+        "CampaignMailbox / inventory delivery UI"
+      ]
+    },
+    {
+      "key": "t_6177eeb6a889",
+      "zh": "请先恢复邮件再领取附件",
+      "en": "Restore this message before claiming attachments.",
+      "sites": [
+        "CampaignMailbox / inventory delivery UI"
+      ]
+    },
+    {
+      "key": "t_1a894424944d",
+      "zh": "附件已领取或邮件没有附件",
+      "en": "Attachments already claimed, or this message has no attachments.",
+      "sites": [
+        "CampaignMailbox / inventory delivery UI"
+      ]
+    },
+    {
+      "key": "t_2214cdfc37f6",
+      "zh": "附件数量无效",
+      "en": "Invalid attachment quantity",
+      "sites": [
+        "CampaignMailbox / inventory delivery UI"
+      ]
+    },
+    {
+      "key": "t_bd4b7bb3cd37",
+      "zh": "活体附件无效",
+      "en": "Invalid live attachment",
+      "sites": [
+        "CampaignMailbox / inventory delivery UI"
+      ]
+    },
+    {
+      "key": "t_fc32ade7af5f",
+      "zh": "仓库物品或数量无效",
+      "en": "Invalid storage item or quantity",
+      "sites": [
+        "CampaignMailbox / inventory delivery UI"
+      ]
+    },
+    {
+      "key": "t_fea4ed6c4cd1",
+      "zh": "{0}已加入仓库",
+      "en": "{0} added to storage",
+      "sites": [
+        "CampaignMailbox / inventory delivery UI"
+      ]
+    },
+    {
+      "key": "t_84cc2897a7cd",
+      "zh": "仓库没有{0}，请先从邮箱领取。",
+      "en": "No {0} in storage. Claim it from your mailbox first.",
+      "sites": [
+        "CampaignMailbox / inventory delivery UI"
+      ]
+    },
+    {
+      "key": "t_7f4c50b46e1a",
+      "zh": "仓库中没有这只甲虫",
+      "en": "This beetle is not in storage.",
+      "sites": [
+        "CampaignMailbox / inventory delivery UI"
+      ]
+    },
+    {
+      "key": "t_5946534cf002",
+      "zh": "{0}已从仓库入住温室。",
+      "en": "{0} moved from storage into the greenhouse.",
+      "sites": [
+        "CampaignMailbox / inventory delivery UI"
+      ]
+    },
+    {
+      "key": "t_f246efc80f66",
+      "zh": "邮箱或仓库数据缺失",
+      "en": "Missing mailbox or storage data",
+      "sites": [
+        "CampaignMailbox / inventory delivery UI"
+      ]
+    },
+    {
+      "key": "t_256074f8253c",
+      "zh": "邮件数据无效",
+      "en": "Invalid mail data",
+      "sites": [
+        "CampaignMailbox / inventory delivery UI"
+      ]
+    },
+    {
+      "key": "t_9e3266073a1c",
+      "zh": "邮件附件无效",
+      "en": "Invalid attachment data",
+      "sites": [
+        "CampaignMailbox / inventory delivery UI"
+      ]
+    },
+    {
+      "key": "t_1c2afad83563",
+      "zh": "附件内容无效",
+      "en": "Invalid attachment contents",
+      "sites": [
+        "CampaignMailbox / inventory delivery UI"
+      ]
+    },
+    {
+      "key": "t_96d342bbc7c6",
+      "zh": "仓库记录无效",
+      "en": "Invalid inventory record",
+      "sites": [
+        "CampaignMailbox / inventory delivery UI"
+      ]
+    },
+    {
+      "key": "t_defcd09be638",
+      "zh": "展柜已升级或扩展包已购买，请检查邮箱和仓库",
+      "en": "Display already upgraded or kit already purchased. Check your mailbox and storage.",
+      "sites": [
+        "CampaignMailbox / inventory delivery UI"
+      ]
+    },
+    {
+      "key": "t_9e651c1f8cf1",
+      "zh": "，附赠母虫已发送至邮箱。",
+      "en": ". The bonus female beetle has been sent to your mailbox.",
+      "sites": [
+        "CampaignMailbox / inventory delivery UI"
+      ]
+    },
+    {
+      "key": "t_55823c0ee774",
+      "zh": "蛹",
+      "en": " pupa",
+      "sites": [
+        "CampaignMailbox / inventory delivery UI"
+      ]
+    },
+    {
+      "key": "t_b1ef9105903f",
+      "zh": "虫舍邮箱 - BUG DUEL MAIL",
+      "en": "Greenhouse Mail - BUG DUEL MAIL",
+      "sites": [
+        "CampaignMailbox / inventory delivery UI"
+      ]
+    },
+    {
+      "key": "t_cd83e6e100dd",
+      "zh": "收件箱",
+      "en": "Inbox",
+      "sites": [
+        "CampaignMailbox / inventory delivery UI"
+      ]
+    },
+    {
+      "key": "t_e9cbae6eada4",
+      "zh": "未读邮件",
+      "en": "Unread",
+      "sites": [
+        "CampaignMailbox / inventory delivery UI"
+      ]
+    },
+    {
+      "key": "t_80b7a5290b23",
+      "zh": "待领取",
+      "en": "Attachments",
+      "sites": [
+        "CampaignMailbox / inventory delivery UI"
+      ]
+    },
+    {
+      "key": "t_fb5fe1e266c6",
+      "zh": "已删除",
+      "en": "Deleted",
+      "sites": [
+        "CampaignMailbox / inventory delivery UI"
+      ]
+    },
+    {
+      "key": "t_2425bd4bc11b",
+      "zh": "联系人",
+      "en": "Contacts",
+      "sites": [
+        "CampaignMailbox / inventory delivery UI"
+      ]
+    },
+    {
+      "key": "t_47f538c63f96",
+      "zh": "打开仓库",
+      "en": "Open storage",
+      "sites": [
+        "CampaignMailbox / inventory delivery UI"
+      ]
+    },
+    {
+      "key": "t_eacf189f7451",
+      "zh": "未读 {0} 封  ·  待领取 {1} 封",
+      "en": "Unread: {0}  ·  Unclaimed: {1}",
+      "sites": [
+        "CampaignMailbox / inventory delivery UI"
+      ]
+    },
+    {
+      "key": "t_b25fe23fc478",
+      "zh": "邮件列表 · {0} 封",
+      "en": "Messages · {0}",
+      "sites": [
+        "CampaignMailbox / inventory delivery UI"
+      ]
+    },
+    {
+      "key": "t_93bdc504d508",
+      "zh": " · 第 {0} 周",
+      "en": " · Week {0}",
+      "sites": [
+        "CampaignMailbox / inventory delivery UI"
+      ]
+    },
+    {
+      "key": "t_41d96c558677",
+      "zh": "查看 · 有附件",
+      "en": "Open · Attachment",
+      "sites": [
+        "CampaignMailbox / inventory delivery UI"
+      ]
+    },
+    {
+      "key": "t_0dabb770d4c3",
+      "zh": "查看邮件",
+      "en": "Open message",
+      "sites": [
+        "CampaignMailbox / inventory delivery UI"
+      ]
+    },
+    {
+      "key": "t_30fbc8778e7c",
+      "zh": "这个文件夹还没有邮件。",
+      "en": "No messages in this folder.",
+      "sites": [
+        "CampaignMailbox / inventory delivery UI"
+      ]
+    },
+    {
+      "key": "t_63693c46b9ab",
+      "zh": "选择一封邮件",
+      "en": "Select a message",
+      "sites": [
+        "CampaignMailbox / inventory delivery UI"
+      ]
+    },
+    {
+      "key": "t_435553147488",
+      "zh": "左侧选择邮件，右侧查看正文与附件。\n市场购买的商品会发送到这里。",
+      "en": "Select a message on the left to read it and claim attachments.\nYour market purchases arrive here.",
+      "sites": [
+        "CampaignMailbox / inventory delivery UI"
+      ]
+    },
+    {
+      "key": "t_bfeb88196e5f",
+      "zh": "发件人：{0}  <{1}>\n收件人：我的虫舍    ·    第 {2} 周",
+      "en": "From: {0}  <{1}>\nTo: My greenhouse    ·    Week {2}",
+      "sites": [
+        "CampaignMailbox / inventory delivery UI"
+      ]
+    },
+    {
+      "key": "t_43ed390c37e3",
+      "zh": "已领取 · 附件已存入仓库",
+      "en": "Claimed · Added to storage",
+      "sites": [
+        "CampaignMailbox / inventory delivery UI"
+      ]
+    },
+    {
+      "key": "t_51064d7604b0",
+      "zh": "活体附件 · 领取后从仓库安排入住温室",
+      "en": "Live attachment · Claim into storage, then move into the greenhouse",
+      "sites": [
+        "CampaignMailbox / inventory delivery UI"
+      ]
+    },
+    {
+      "key": "t_9acad19a2adb",
+      "zh": "物品附件 · 领取后存入仓库",
+      "en": "Item attachment · Claim to add to storage",
+      "sites": [
+        "CampaignMailbox / inventory delivery UI"
+      ]
+    },
+    {
+      "key": "t_5ef41633eaa4",
+      "zh": "这封邮件没有附件。",
+      "en": "This message has no attachments.",
+      "sites": [
+        "CampaignMailbox / inventory delivery UI"
+      ]
+    },
+    {
+      "key": "t_34bee675bd7c",
+      "zh": "恢复到收件箱",
+      "en": "Restore to Inbox",
+      "sites": [
+        "CampaignMailbox / inventory delivery UI"
+      ]
+    },
+    {
+      "key": "t_a7fadbe126d2",
+      "zh": "永久删除",
+      "en": "Delete permanently",
+      "sites": [
+        "CampaignMailbox / inventory delivery UI"
+      ]
+    },
+    {
+      "key": "t_32f6ae8e7976",
+      "zh": "未领取的附件受保护：恢复邮件后即可领取。",
+      "en": "Unclaimed attachments are protected. Restore this message to claim them.",
+      "sites": [
+        "CampaignMailbox / inventory delivery UI"
+      ]
+    },
+    {
+      "key": "t_22fe2aa1bee9",
+      "zh": "附件已领取",
+      "en": "Attachments claimed",
+      "sites": [
+        "CampaignMailbox / inventory delivery UI"
+      ]
+    },
+    {
+      "key": "t_ebac01f84848",
+      "zh": "领取全部附件",
+      "en": "Claim all attachments",
+      "sites": [
+        "CampaignMailbox / inventory delivery UI"
+      ]
+    },
+    {
+      "key": "t_4c862066b364",
+      "zh": "删除邮件",
+      "en": "Delete message",
+      "sites": [
+        "CampaignMailbox / inventory delivery UI"
+      ]
+    },
+    {
+      "key": "t_9070cb0eb695",
+      "zh": "通讯录",
+      "en": "Address book",
+      "sites": [
+        "CampaignMailbox / inventory delivery UI"
+      ]
+    },
+    {
+      "key": "t_eb66ccd14590",
+      "zh": "往来邮件：{0} 封",
+      "en": "Messages from this contact: {0}",
+      "sites": [
+        "CampaignMailbox / inventory delivery UI"
+      ]
+    },
+    {
+      "key": "t_700ade5433ac",
+      "zh": "查看往来邮件",
+      "en": "View messages",
+      "sites": [
+        "CampaignMailbox / inventory delivery UI"
+      ]
+    },
+    {
+      "key": "t_50064783bc53",
+      "zh": "虫舍仓库 - BUG DUEL STORAGE",
+      "en": "Greenhouse Storage - BUG DUEL STORAGE",
+      "sites": [
+        "CampaignMailbox / inventory delivery UI"
+      ]
+    },
+    {
+      "key": "t_178c329e2385",
+      "zh": "已领取的物品",
+      "en": "Items in storage",
+      "sites": [
+        "CampaignMailbox / inventory delivery UI"
+      ]
+    },
+    {
+      "key": "t_54ca8b061ad0",
+      "zh": "打开邮箱",
+      "en": "Open mailbox",
+      "sites": [
+        "CampaignMailbox / inventory delivery UI"
+      ]
+    },
+    {
+      "key": "t_2811113b65bf",
+      "zh": "食物可投喂当前甲虫；捕虫道具在派遣时使用。暂存活体入住温室后才开始养殖。",
+      "en": "Feed stored food to the selected beetle; use supplies when dispatching squads. Stored live beetles enter care when moved into the greenhouse.",
+      "sites": [
+        "CampaignMailbox / inventory delivery UI"
+      ]
+    },
+    {
+      "key": "t_e2ca686dc242",
+      "zh": "当前甲虫：",
+      "en": "Selected beetle: ",
+      "sites": [
+        "CampaignMailbox / inventory delivery UI"
+      ]
+    },
+    {
+      "key": "t_4ca36663b2bf",
+      "zh": "安装后，交易展柜从 3 格扩展到 6 格。",
+      "en": "Install to expand the trading display from 3 slots to 6.",
+      "sites": [
+        "CampaignMailbox / inventory delivery UI"
+      ]
+    },
+    {
+      "key": "t_01e348ae8e06",
+      "zh": "捕虫队出发时可选择消耗此道具。",
+      "en": "Choose this consumable when dispatching a catching squad.",
+      "sites": [
+        "CampaignMailbox / inventory delivery UI"
+      ]
+    },
+    {
+      "key": "t_e8ba0e8b101b",
+      "zh": "投喂当前甲虫",
+      "en": "Feed selected beetle",
+      "sites": [
+        "CampaignMailbox / inventory delivery UI"
+      ]
+    },
+    {
+      "key": "t_49e60f42670a",
+      "zh": "安装展柜扩展包",
+      "en": "Install expansion kit",
+      "sites": [
+        "CampaignMailbox / inventory delivery UI"
+      ]
+    },
+    {
+      "key": "t_6077f849a890",
+      "zh": "前往派遣",
+      "en": "Open expeditions",
+      "sites": [
+        "CampaignMailbox / inventory delivery UI"
+      ]
+    },
+    {
+      "key": "t_7a3244d67d41",
+      "zh": "活体暂存 · {0} · {1}",
+      "en": "Live storage · {0} · {1}",
+      "sites": [
+        "CampaignMailbox / inventory delivery UI"
+      ]
+    },
+    {
+      "key": "t_39dd0f00c649",
+      "zh": "安排入住温室",
+      "en": "Move to greenhouse",
+      "sites": [
+        "CampaignMailbox / inventory delivery UI"
+      ]
+    },
+    {
+      "key": "t_90c945712100",
+      "zh": "温室栏位不足",
+      "en": "Greenhouse full",
+      "sites": [
+        "CampaignMailbox / inventory delivery UI"
+      ]
+    },
+    {
+      "key": "t_d9abc7c5bdbc",
+      "zh": "仓库暂时为空。请先在邮箱领取市场订单附件。",
+      "en": "Storage is empty. Claim market order attachments in your mailbox first.",
+      "sites": [
+        "CampaignMailbox / inventory delivery UI"
+      ]
+    },
+    {
+      "key": "t_c73f8219ba2b",
+      "zh": "邮箱 ({0})",
+      "en": "Mail ({0})",
+      "sites": [
+        "CampaignMailbox / inventory delivery UI"
+      ]
+    },
+    {
+      "key": "t_9ed627bcf63d",
+      "zh": "邮箱",
+      "en": "Mailbox",
+      "sites": [
+        "CampaignMailbox / inventory delivery UI"
+      ]
+    },
+    {
+      "key": "t_55914e1c50df",
+      "zh": "仓库",
+      "en": "Storage",
+      "sites": [
+        "CampaignMailbox / inventory delivery UI"
+      ]
+    },
+    {
+      "key": "t_af5d9d9657de",
+      "zh": "购买后先在邮箱领取；投喂只消耗仓库库存。",
+      "en": "Claim purchases in your mailbox; feeding uses stored food.",
+      "sites": [
+        "CampaignMailbox / inventory delivery UI"
+      ]
+    },
+    {
+      "key": "t_91df9415042f",
+      "zh": "一份 / 通过邮箱领取",
+      "en": "One portion / Delivered by mail",
+      "sites": [
+        "CampaignMailbox / inventory delivery UI"
+      ]
+    },
+    {
+      "key": "t_737f87a3ae94",
+      "zh": "仓库库存 {0} 份",
+      "en": "In storage: {0}",
+      "sites": [
+        "CampaignMailbox / inventory delivery UI"
+      ]
+    },
+    {
+      "key": "t_d861480dd6f4",
+      "zh": "购买并寄送",
+      "en": "Buy and send",
+      "sites": [
+        "CampaignMailbox / inventory delivery UI"
+      ]
+    },
+    {
+      "key": "t_89c20e9ac88f",
+      "zh": "展柜扩展包 {0} G",
+      "en": "Display kit {0} G",
+      "sites": [
+        "CampaignMailbox / inventory delivery UI"
+      ]
+    },
+    {
+      "key": "t_6c2ff8e08f91",
+      "zh": "订单将寄送至邮箱，领取后加入仓库。",
+      "en": "Orders arrive by mail. Claim attachments to add them to storage.",
+      "sites": [
+        "CampaignMailbox / inventory delivery UI"
+      ]
+    },
+    {
+      "key": "t_22c9a2e278b3",
+      "zh": "1. 甲虫商店\n左侧按单类浏览，右侧查看现货和价格。所有付费商品购买后会寄送至邮箱，领取后加入仓库。\n\n2. 邮箱与仓库\n温室和市场均可打开邮箱。食物领取后再投喂；活体从仓库安排入住温室。树液蜜和紫外灯领取后可用于派遣。展柜扩展包领取后在仓库安装。\n\n3. 交易 BBS\n自己的健康成虫可以挂牌出售。双数周开放神秘蛹盲拍，成交后的蛹也通过邮箱领取。生态箱和景观仍是免费的温室配置入口。\n\n4. 四季主题\nAlt+T 切换主题菜单，Alt+M 切换明暗，Alt+H 打开帮助。",
+      "en": "1. Beetle store\nBrowse categories and inspect stock and prices. All paid purchases arrive by mail; claim them into storage.\n\n2. Mailbox and storage\nOpen mail from the greenhouse or market. Feed claimed food; move stored beetles into the greenhouse. Claimed sap and lamps can be used on expeditions. Install display kits from storage.\n\n3. Trading BBS\nList healthy adults for sale. Mystery pupa auctions open on even weeks and deliver by mail. Habitat and scenery cards remain free greenhouse configuration shortcuts.\n\n4. Seasonal themes\nAlt+T opens themes, Alt+M switches light/dark, Alt+H opens help.",
+      "sites": [
+        "CampaignMailbox / inventory delivery UI"
+      ]
+    },
+    {
+      "key": "t_17c0a8a0881b",
+      "zh": "{0} · 第 {1} 周",
+      "en": "{0} · Week {1}",
+      "sites": [
+        "CampaignMailbox / inventory delivery UI"
+      ]
+    }
+  ]
+}

@@ -33,11 +33,18 @@ public static class CampaignIridescenceValidation
             if (!EditorSceneManager.SaveScene(original, TemporaryScene, true)) throw new IOException("Cannot create validation scene copy.");
             var scene = EditorSceneManager.OpenScene(TemporaryScene, OpenSceneMode.Single);
             var specimens = Object.FindObjectsByType<CampaignSpecimen>(FindObjectsSortMode.None).OrderBy(x => x.phase).ToArray();
-            var shells = specimens.SelectMany(x => x.rig.shellRenderers).ToArray();
-            Check(specimens.Length == 2 && shells.Length == 6, "two menu beetles / six shell surfaces", report);
-            Check(shells.All(x => x.sharedMaterials.All(m => m.shader.name == CampaignIridescenceSetup.ShaderName)), "only designated shells receive the effect", report);
+            var body = specimens.SelectMany(x => x.rig.model.GetComponentsInChildren<Renderer>(true)).ToArray();
+            var shells = body.Where(CampaignIridescenceSetup.IsIridescentSurface).ToArray();
+            Check(specimens.Length == 1 && shells.Length > 3, "one menu beetle / iridescent body", report);
+            Check(body.Count(CampaignIridescenceSetup.IsEye) == 2 && body.Where(CampaignIridescenceSetup.IsEye)
+                .All(x => x.sharedMaterials.All(m => m.shader.name == BeetleArenaToonSetup.ShaderName)), "both eyes retain original toon materials", report);
+            Check(body.Any(CampaignIridescenceSetup.IsHorn) && body.Where(CampaignIridescenceSetup.IsHorn)
+                .All(x => x.sharedMaterials.All(m => m.shader.name == BeetleArenaToonSetup.ShaderName)), "horns retain original materials", report);
+            Check(body.Any(CampaignIridescenceSetup.IsLeg) && body.Where(CampaignIridescenceSetup.IsLeg)
+                .All(x => x.sharedMaterials.All(m => AssetDatabase.GetAssetPath(m).StartsWith(CampaignIridescenceSetup.Folder + "/Leg-"))), "legs use independent darker materials", report);
+            Check(shells.All(x => x.sharedMaterials.All(m => m.shader.name == CampaignIridescenceSetup.ShaderName)), "all non-eye/non-horn body surfaces receive the effect: " + shells.Length, report);
             var other = scene.GetRootGameObjects().SelectMany(x => x.GetComponentsInChildren<Renderer>(true)).Except(shells);
-            Check(other.All(x => x.sharedMaterials.All(m => !m || m.shader.name == BeetleArenaToonSetup.ShaderName)), "legs and background retain toon materials", report);
+            Check(other.All(x => x.sharedMaterials.All(m => !m || m.shader.name == BeetleArenaToonSetup.ShaderName)), "eyes, horns and background retain toon materials", report);
             var source = shells.SelectMany(x => x.sharedMaterials).Distinct().ToArray();
             copies = source.Select(x => new Material(x)).ToArray();
             foreach (var renderer in shells)
@@ -46,7 +53,6 @@ public static class CampaignIridescenceValidation
                 Check(copies.All(x => x.FindPass(name) >= 0), "render pass " + name, report);
             var camera = Object.FindFirstObjectByType<CampaignBackdrop>().sceneCamera;
             Capture(camera, "MenuWorld.png");
-            specimens[1].gameObject.SetActive(false);
             var bounds = specimens[0].rig.shellRenderers[0].bounds;
             foreach (var renderer in specimens[0].rig.shellRenderers) bounds.Encapsulate(renderer.bounds);
             Vector3 focus = bounds.center;
@@ -66,11 +72,14 @@ public static class CampaignIridescenceValidation
             int metallic = Difference(full, Capture(camera, "WithoutMetal.png"));
             Restore(copies, source);
             // Material copies only: leave the user's menu colors intact.
-            foreach (var material in copies)
+            for (int i = 0; i < copies.Length; i++)
             {
+                var material = copies[i];
+                material.SetFloat("_RampOffset", .42f);
+                material.SetFloat("_AngleShift", .1f);
                 material.SetFloat("_HueShift", 0);
                 material.SetFloat("_Saturation", 1.5f);
-                material.SetFloat("_Brightness", 1.05f);
+                material.SetFloat("_Brightness", source[i].GetFloat("_Brightness") * 1.05f);
             }
             Capture(camera, "Green.png");
             foreach (var material in copies) material.SetFloat("_HueShift", 120);

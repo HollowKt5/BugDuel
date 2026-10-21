@@ -11,23 +11,29 @@ namespace BeetleArena.Campaign
     {
         void DrawMenu()
         {
-            Label(root,"BUG",85,65,650,150,90,accent);
-            Label(root,"DUEL",85,190,650,150,90,accent);
-            Label(root,L("甲虫决斗 · 小小虫舍，大大梦想","Tiny beetles. Grand ambitions."),90,350,640,50,25);
-            Btn(root,"Start  /  开始",90,435,380,64,()=>app.Go(CampaignPage.Saves));
-            Btn(root,"Setting  /  设置",90,515,380,64,OpenSettings);
-            Btn(root,"Introduction  /  游玩指南",90,595,380,64,OpenIntro);
-            Btn(root,"Exit  /  退出",90,675,380,64,()=>Confirm(L("保存当前进度并退出游戏？","Save progress and exit?"),()=>{if(Session==null||app.SaveSlot(0))Application.Quit();}));
-            Label(root,"OFFLINE  •  COLLECT  •  CARE  •  COMPETE",92,775,850,30,18,muted);
+            var window=Panel(root,64,140,510,602);
+            var title=Panel(window,3,3,504,28);title.GetComponent<UI.Image>().color=CampaignRetroTheme.Frame;
+            Component<RetroBevel>(title).Configure(0,Color.clear,Color.clear,true,CampaignRetroTheme.TitleTop,CampaignRetroTheme.TitleBottom);
+            Label(title,"BUG DUEL  ·  甲虫秘境",8,3,480,22,15,Color.white);
+            Label(window,"BUG COMBAT",28,63,460,72,52,accent);
+            Label(window,L("甲虫决斗 · 虫舍日记","Beetle duels / Greenhouse journal"),30,147,450,32,23);
+            Label(window,"COLLECT  /  CARE  /  COMPETE",30,186,450,26,16,muted);
+            Btn(window,"开始",30,240,450,53,()=>app.Go(CampaignPage.Saves));
+            Btn(window,"设置",30,307,450,53,OpenSettings);
+            Btn(window,"游玩指南",30,374,450,53,OpenIntro);
+            Btn(window,"退出",30,441,450,53,()=>Confirm(L("保存当前进度并退出游戏？","Save progress and exit?"),()=>{if(Session==null||app.SaveSlot(0))Application.Quit();}));
+            Label(window,"离线世界  |  "+CampaignRetroTheme.SeasonName,30,518,450,28,15,muted);
+            notice=Label(window,"",30,552,450,38,14,muted);
         }
         void DrawSaves()
         {
+            Panel(root,32,28,1536,795);
             Label(root,L("虫舍日记 / 选择存档","Your greenhouse / Save slots"),45,45,1200,60,38);
             Label(root,L("1个自动槽 + 3个手动槽。点击空槽新建存档，或读取已有旅程。","One auto slot and three manual slots. Create a save in an empty slot or load a journey."),48,120,1480,45,21,muted);
             for(int slot=0;slot<4;slot++)
             {
                 int index=slot;var p=Panel(root,40+slot*390,205,365,540);
-                Label(p,slot==0?"AUTO SAVE":$"JOURNAL 0{slot}",22,20,320,32,23,accent);
+                Label(p,slot==0?"自动存档":$"手动存档 {slot}",22,20,320,32,23,accent);
                 CampaignSave save=null;string error=null;try{save=app.ReadSlot(slot);}catch(Exception e){error=e.Message;}
                 if(save==null && error==null)
                 {
@@ -56,19 +62,25 @@ namespace BeetleArena.Campaign
             string[] titles={"01  捕虫 / 买虫","02  喂养 / 冲体长","03  联赛 / 拍卖"};
             string[] bodies={"派遣队伍去四大栖息地。\n在市场买虫、竞拍神秘蛹。\n别忘了为回程预留栏位。","红薯和水果补充饱食与健康。\n幼虫选饲料瓶和温控方案。\n甲虫翻不过身时，要及时帮忙！","体长决定联赛级别。\n三连胜夺冠，身价大涨！\n卖冠军或首配权，收血统分红。"};
             string[] en={"Send squads to four habitats.\nBuy beetles or bid on mystery pupae.\nReserve room for the returning squad.","Feed adults and help overturned beetles.\nChoose feed and temperature for larvae.\nBreed stronger genes and rare colors.","Length decides the league tier.\nThree wins in a row earn a championship.\nAuction champions or breeding rights."};
-            for(int i=0;i<3;i++){var c=Panel(p,30+i*470,110,450,310,true);Label(c,app.Preferences.language==0?titles[i]:new[]{"01  Collect","02  Care","03  Compete"}[i],24,25,400,50,29,accent);Label(c,L(bodies[i],en[i]),24,100,400,190,24);}
+            for(int i=0;i<3;i++){var c=Panel(p,30+i*470,110,450,310,true);Label(c,titles[i],24,25,400,50,29,accent);Label(c,L(bodies[i],en[i]),24,100,400,190,24);}
             Btn(p,L("出发吧！","Let's go!"),520,450,410,55,CloseModal);SelectFirst(p);
         }
         void OpenSettings()
         {
             var p=OpenModal(1050,700);settingsOpen=true;Label(p,L("设置","Settings"),30,25,850,50,36);
-            string[] tabs={"Game","Audio","Video","Controls"};for(int i=0;i<4;i++){int tab=i;Btn(p,tabs[i],30+i*250,95,235,48,()=>{settingsTab=tab;OpenSettings();},settingsTab!=i);}
+            string[] tabs={"游戏","音频","视频","控制"};for(int i=0;i<4;i++){int tab=i;Btn(p,tabs[i],30+i*250,95,235,48,()=>{settingsTab=tab;OpenSettings();},settingsTab!=i);}
             if(settingsTab==0)
             {
-                SettingRow(p,"界面语言 / Language",190,app.Preferences.language==0?"简体中文":"English (navigation)",()=>{app.Preferences.language=1-app.Preferences.language;OpenSettings();});
+                SettingRow(p,"界面语言 / Language",190,CampaignLocalization.English?"English":"简体中文",()=>
+                {
+                    app.Preferences.language=CampaignLocalization.English?0:1;
+                    CampaignLocalization.Select(app.Preferences.language);app.SavePreferences();
+                    QueueRefresh();OpenSettings();
+                });
                 SettingRow(p,"定时自动保存（交易即时保存）",265,app.Preferences.autoSaveSeconds+" s",()=>{int[] values={30,60,180,300};app.Preferences.autoSaveSeconds=values[(Array.IndexOf(values,app.Preferences.autoSaveSeconds)+1)%4];OpenSettings();});
                 SettingRow(p,"默认战斗速度",340,app.Preferences.battleSpeed+"×",()=>{app.Preferences.battleSpeed=app.Preferences.battleSpeed==1?2:app.Preferences.battleSpeed==2?4:1;OpenSettings();});
-                Label(p,"经营数据随交易、报名、结算即时存档。\n定时保存负责翻身状态等持续变化；离线不会继续扣健康。",40,445,960,110,22,muted);
+                SettingRow(p,"经典窗口主题",415,CampaignRetroTheme.SeasonName,()=>{CampaignRetroTheme.SetSeason((CampaignRetroTheme.Season+1)%4);QueueRefresh();OpenSettings();});
+                SettingRow(p,"明暗模式",490,CampaignRetroTheme.Dark?"经典暗色":"明亮浅色",()=>{CampaignRetroTheme.SetMode(!CampaignRetroTheme.Dark);QueueRefresh();OpenSettings();});
             }
             else if(settingsTab==1)
             {

@@ -33,20 +33,24 @@ Material:
         m_Offset: {x: 0, y: 0}
     m_Ints: []
     m_Floats:
-    - _AnglePower: 1
-    - _AngleShift: -0.62
+    - _AnglePower: 0.7
+    - _AngleShift: 0.3
+    - _Brightness: 1
     - _CoatSmoothness: 0.88
-    - _CoatStrength: 0.65
+    - _CoatStrength: 0.18
     - _DetailStrength: 0.12
     - _FilmScale: 1.2
     - _FilmVariation: 0.045
+    - _HueShift: 0
     - _Iridescence: 1
-    - _Metallic: 0.94
+    - _MetalFinishVersion: 1
+    - _Metallic: 1
     - _OutlineWidth: 0.85
-    - _RampOffset: 0.72
+    - _RampOffset: 0.32
     - _RampRow: 0.5
+    - _ReflectanceLift: 0.65
     - _Saturation: 1.15
-    - _Smoothness: 0.78
+    - _Smoothness: 0.88
     m_Colors:
     - _BaseColor: {r: 1, g: 1, b: 1, a: 1}
     - _OutlineColor: {r: 0.018, g: 0.028, b: 0.022, a: 1}

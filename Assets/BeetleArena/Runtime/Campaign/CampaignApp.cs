@@ -66,6 +66,7 @@ namespace BeetleArena.Campaign
                 if(File.Exists(path))Preferences=JsonUtility.FromJson<CampaignPreferences>(File.ReadAllText(path)) ?? new CampaignPreferences();
             }
             catch(Exception e) { Message="配置读取失败，使用内置设置："+e.Message; }
+            CampaignLocalization.Initialize(Preferences.language);
             Controls=new InputActionMap("Campaign");
             Controls.AddAction("Back",InputActionType.Button,"<Keyboard>/escape").AddBinding("<Gamepad>/buttonEast");
             Controls.AddAction("NextWeek",InputActionType.Button,"<Keyboard>/n").AddBinding("<Gamepad>/rightShoulder");
@@ -228,7 +229,18 @@ namespace BeetleArena.Campaign
         {
             var view=FindFirstObjectByType<CampaignBackdrop>(); if(!view || !view.Frame || SceneManager.GetActiveScene().name!=SceneName(CampaignPage.Greenhouse))return;
             var rt=RenderTexture.GetTemporary(320,180,0); var old=RenderTexture.active; Texture2D tex=null;
-            try { Graphics.Blit(view.Frame,rt); RenderTexture.active=rt; tex=new Texture2D(320,180,TextureFormat.RGB24,false); tex.ReadPixels(new Rect(0,0,320,180),0,0); tex.Apply(); latestThumbnail=Convert.ToBase64String(tex.EncodeToJPG(65)); }
+            try
+            {
+                // The observation viewport is narrower than the save thumbnail. Fit it
+                // with side bars instead of stretching the beetle back to 16:9.
+                RenderTexture.active=rt;GL.Clear(false,true,Color.black);
+                float fit=Mathf.Min(320f/view.Frame.width,180f/view.Frame.height);
+                float w=view.Frame.width*fit,h=view.Frame.height*fit;
+                GL.PushMatrix();
+                try { GL.LoadPixelMatrix(0,320,180,0);Graphics.DrawTexture(new Rect((320-w)*.5f,(180-h)*.5f,w,h),view.Frame); }
+                finally { GL.PopMatrix(); }
+                tex=new Texture2D(320,180,TextureFormat.RGB24,false);tex.ReadPixels(new Rect(0,0,320,180),0,0);tex.Apply();latestThumbnail=Convert.ToBase64String(tex.EncodeToJPG(65));
+            }
             finally { RenderTexture.active=old; RenderTexture.ReleaseTemporary(rt); if(tex)Destroy(tex); }
         }
         public void ApplyPreferences()

@@ -17,7 +17,8 @@ namespace BeetleArena
         readonly Dictionary<string, UnityEngine.UI.Button> individuals = new Dictionary<string, UnityEngine.UI.Button>();
         readonly Dictionary<string, UnityEngine.UI.Button> foods = new Dictionary<string, UnityEngine.UI.Button>();
         readonly Dictionary<string, UnityEngine.UI.Button> habitats = new Dictionary<string, UnityEngine.UI.Button>();
-        readonly Color normal = new Color(.16f, .23f, .19f), selected = new Color(.30f, .43f, .30f);
+        Color normal => Campaign.CampaignRetroTheme.Button;
+        Color selected => Campaign.CampaignRetroTheme.Dark?new Color(.2f,.32f,.45f):new Color(.75f,.85f,1);
         int contentVersion = -1, rosterCount = -1;
         bool bound;
 
@@ -25,6 +26,7 @@ namespace BeetleArena
         public void Bind()
         {
             if (bound || !controller) return;
+            Campaign.CampaignRetroTheme.ApplyHierarchy(transform);
             controller.Changed += Refresh;
             helpButton.onClick.AddListener(Help);
             pauseButton.onClick.AddListener(Pause);
@@ -101,7 +103,7 @@ namespace BeetleArena
             bool occupied = session.IsOccupied(selectedIndividual.Id);
             selectedName.text = selectedIndividual.DisplayName + "  <size=17>" + species.DisplayName + "</size>";
             conditionText.text = $"健康  {selectedIndividual.Condition.Health:0} / 100\n营养  {selectedIndividual.Condition.Nutrition:0} / 100\n水分  {selectedIndividual.Condition.Hydration:0} / 100\n压力  {selectedIndividual.Condition.Stress:0} / 100";
-            statusText.color = dead || selectedIndividual.IsOverturned ? new Color(1, .64f, .40f) : new Color(.76f, .89f, .68f);
+            statusText.color = dead || selectedIndividual.IsOverturned ? Campaign.CampaignRetroTheme.Price : Campaign.CampaignRetroTheme.Ink;
             statusText.text = dead ? "已死亡 · 停止活动" : selectedIndividual.IsOverturned ? "持续挣扎 · 需要扶正" : "姿态正常 · 可以照料";
             string detail;
             if (dead) detail = "健康已经耗尽，喂食或扶正不能复活。";

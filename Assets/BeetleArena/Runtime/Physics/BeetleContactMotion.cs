@@ -24,6 +24,7 @@ namespace BeetleArena
             for(int i=0;i<bones.Length;i++)origin[i]=new BeetleLocalPose(bones[i]);
         }
         public void Propose() { for(int i=0;i<bones.Length;i++)proposed[i]=new BeetleLocalPose(bones[i]); }
+        public void Restore() { for(int i=0;i<bones.Length;i++)origin[i].Apply(bones[i]); }
         public void Apply(float fraction)
         {
             for(int i=0;i<bones.Length;i++)

@@ -37,6 +37,8 @@ namespace BeetleArena.Campaign
             if(!save.hasPupaAuction)save.state.pupaAuction=null;
             if(save.state.beetles!=null)foreach(var b in save.state.beetles)RestoreMeal(b);
             if(save.state.stock!=null)foreach(var b in save.state.stock)RestoreMeal(b);
+            if(save.state.storedBeetles!=null)foreach(var b in save.state.storedBeetles)RestoreMeal(b);
+            if(save.state.mail!=null)foreach(var m in save.state.mail)if(m?.attachments!=null)foreach(var a in m.attachments)if(a?.beetles!=null)foreach(var b in a.beetles)RestoreMeal(b);
             RestoreMeal(save.state.battle?.opponent);RestoreMeal(save.state.pupaAuction?.beetle);
             new CampaignSession(save.state,save.catalog).Validate(); return save;
         }

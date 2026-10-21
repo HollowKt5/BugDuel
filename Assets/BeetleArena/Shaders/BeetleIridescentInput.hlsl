@@ -12,7 +12,7 @@ CBUFFER_START(UnityPerMaterial)
     float _Metallic, _Smoothness, _CoatStrength, _CoatSmoothness;
     float _Iridescence, _RampOffset, _AngleShift, _AnglePower, _RampRow;
     float _FilmVariation, _FilmScale, _Saturation, _DetailStrength, _OutlineWidth;
-    float _HueShift, _Brightness;
+    float _HueShift, _Brightness, _ReflectanceLift, _MetalFinishVersion;
 CBUFFER_END
 TEXTURE2D(_BaseMap); SAMPLER(sampler_BaseMap);
 TEXTURE2D(_IridescenceRamp); SAMPLER(sampler_IridescenceRamp);
@@ -62,6 +62,11 @@ half3 ShellReflectance(ShellVaryings input, half3 normal, half3 view)
     float u = saturate(_RampOffset + grazing * _AngleShift + variation * _FilmVariation);
     // The supplied JPEG has dark margins: sample only its central colored strip.
     half3 ramp = SAMPLE_TEXTURE2D(_IridescenceRamp, sampler_IridescenceRamp, float2(u, _RampRow)).rgb;
+    // The photographed ramp contains baked darkness. Recover a useful metal F0 without
+    // whitening its hue; the actual light/dark pattern still comes entirely from lighting.
+    half peak = max(ramp.r, max(ramp.g, ramp.b));
+    half recoveredPeak = lerp(peak, max(peak, 0.72h), _ReflectanceLift);
+    ramp *= recoveredPeak / max(peak, 0.001h);
     half luminance = dot(ramp, half3(0.2126, 0.7152, 0.0722));
     ramp = saturate(lerp(luminance.xxx, ramp, _Saturation));
     // Rotate the whole palette without losing angle-dependent color differences.

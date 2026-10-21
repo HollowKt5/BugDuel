@@ -10,7 +10,7 @@ namespace BeetleArena.Campaign
     {
         TMP_Text label;
         long minute=-1;
-        public static string Format(DateTime time) => time.ToString("MM月dd日\nHH:mm",CultureInfo.InvariantCulture);
+        public static string Format(DateTime time) => time.ToString(CampaignLocalization.English?"MM/dd\nHH:mm":"MM月dd日\nHH:mm",CultureInfo.InvariantCulture);
         public void Bind(TMP_Text target) { label=target;minute=-1;Update(); }
         void Update()
         {

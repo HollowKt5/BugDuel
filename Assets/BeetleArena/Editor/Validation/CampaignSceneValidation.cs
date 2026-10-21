@@ -42,7 +42,7 @@ public static class CampaignSceneValidation
                     if(renderer is MeshRenderer || renderer is SkinnedMeshRenderer)
                         foreach(var material in renderer.sharedMaterials)if(material)
                         {
-                            string expected=page==CampaignPage.MainMenu&&CampaignIridescenceSetup.IsShell(renderer)
+                            string expected=page==CampaignPage.MainMenu&&CampaignIridescenceSetup.IsIridescentSurface(renderer)
                                 ? CampaignIridescenceSetup.ShaderName : BeetleArenaToonSetup.ShaderName;
                             Check(material.shader.name==expected,"world material: "+page+"/"+renderer.name);
                         }

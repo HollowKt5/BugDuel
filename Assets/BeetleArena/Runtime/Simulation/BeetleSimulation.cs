@@ -412,7 +412,7 @@ namespace BeetleArena
             float targetHeading = Mathf.Atan2(toward.x, toward.y) * Mathf.Rad2Deg;
             // 蓄力和发力时降低转向速度，让攻击有承诺时间，避免冲顶过程中瞬间追踪侧方目标。
             float turn = b.Committed ? .32f : BeetleRecoveryPolicy.IsRest(b.Action) ? .45f : 1f;
-            if (b.ContactReleaseRemaining > 0)
+            if (b.ContactReleaseRemaining > 0 || b.Action == BeetleAction.Disengage)
                 turn = 0;
             b.Heading = Mathf.MoveTowardsAngle(b.Heading, targetHeading, Settings.turnSpeed * b.Traits.agility * turn * dt);
             // 恢复有明确出口：到达体力目标/单段上限，或对手正在近距离发力。

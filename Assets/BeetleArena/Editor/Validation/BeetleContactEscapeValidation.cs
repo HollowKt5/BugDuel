@@ -157,5 +157,24 @@ public static class BeetleContactEscapeValidation
             }
         }
         report.AppendLine("PASS: 8 head retry cases are identical, preserve yaw and do not pull back a head raised beyond the yield limit.");
+        for (int i = 0; i < 2; i++)
+        foreach (float pitch in new[] { -60f, 16f, 34f, 40f })
+        {
+            var animator = fixture.Match.actors[i].animator;
+            var origin = Quaternion.Euler(pitch, 12, 0);
+            pitchField.SetValue(animator, pitch);
+            animator.headPivot.localRotation = origin;
+            bool changed = animator.TryLowerHeadForRetreat(4);
+            var first = animator.headPivot.localRotation;
+            animator.headPivot.localRotation = origin;
+            animator.TryLowerHeadForRetreat(4);
+            float expected = pitch >= 35 ? pitch : Mathf.Min(35, pitch + 4);
+            if (changed != (pitch < 35) ||
+                Mathf.Abs((float)pitchField.GetValue(animator) - pitch) > .0001f ||
+                1 - Mathf.Abs(Quaternion.Dot(first, animator.headPivot.localRotation)) > .000001f ||
+                1 - Mathf.Abs(Quaternion.Dot(first, Quaternion.Euler(expected, 12, 0))) > .000001f)
+                throw new Exception($"Unsafe neck retreat trial: actor={i}, pitch={pitch}");
+        }
+        report.AppendLine("PASS: 8 neck retreat trials preserve yaw/caches, repeat identically and respect the downward angle limit.");
     }
 }

@@ -1,6 +1,6 @@
 {
     "name": "BeetleArena.Editor",
-    "references": ["BugDuel.Domain", "BeetleArena.Runtime", "Unity.InputSystem", "Unity.TextMeshPro", "UnityEngine.UI", "Unity.RenderPipelines.Universal.Runtime", "Unity.RenderPipelines.Core.Runtime"],
+    "references": ["BugDuel.Domain", "BeetleArena.Runtime", "Unity.InputSystem", "Unity.TextMeshPro", "UnityEngine.UI", "Unity.RenderPipelines.Universal.Runtime", "Unity.RenderPipelines.Core.Runtime", "Unity.Localization", "Unity.Localization.Editor", "Unity.Addressables", "Unity.Addressables.Editor", "Unity.ResourceManager"],
     "includePlatforms": ["Editor"],
     "autoReferenced": true
 }

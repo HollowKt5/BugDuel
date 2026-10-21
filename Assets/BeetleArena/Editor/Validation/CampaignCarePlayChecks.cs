@@ -23,7 +23,7 @@ public static class CampaignCarePlayChecks
         check(Vector2.Distance(before,resident.Motor.Position)>.005f,"autonomous walking moves the actual specimen");
         yield return capture("02a-CareWalking");
         long coins=app.Session.State.coins;
-        app.Execute(s=>s.Feed(id,1));yield return Idle(app);
+        app.Execute(s=>{CampaignMailboxValidation.SupplyFood(s,1);s.Feed(id,1);});yield return Idle(app);
         yield return Until(()=>resident.Brain.State==CareState.Eating,"feeding arrival");
         check(GameObject.Find("CareFood")&&resident.Motor.AtGoal,"food is visible and eating starts only at the food spot");
         yield return Seconds(.35f);yield return capture("02b-CareEating");
@@ -51,7 +51,7 @@ public static class CampaignCarePlayChecks
         app.Select(id);yield return null;
         check(resident.Brain.State==CareState.Grooming,"actual meal completion enters grooming");
         yield return Seconds(.35f);yield return capture("02c-CareGrooming");
-        app.Execute(s=>s.Feed(id,2));yield return Idle(app);
+        app.Execute(s=>{CampaignMailboxValidation.SupplyFood(s,2);s.Feed(id,2);});yield return Idle(app);
         yield return Until(()=>resident.Brain.State==CareState.Eating,"second meal starts");
         string mealId=app.Session.Beetle(id).meal.id;
         app.Execute(s=>{s.Beetle(id).overturned=true;s.Beetle(id).overturnSeconds=0;});yield return Idle(app);

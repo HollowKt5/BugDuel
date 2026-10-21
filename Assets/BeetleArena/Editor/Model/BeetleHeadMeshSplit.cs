@@ -68,6 +68,28 @@ public static class BeetleHeadMeshSplit
         }
         return result;
     }
+    /// <summary>Partition a rigid part by measured forward/height planes, retaining source surface and UVs.</summary>
+    public static void SplitHorn(Mesh source, float forwardCut, float heightCut, out Mesh shell, out Mesh horn)
+    {
+        if (!source || source.subMeshCount != 1) throw new ArgumentException("Expected one source surface.");
+        var p = source.vertices; var n = source.normals; var uv = source.uv;
+        var uv2 = source.uv2; var t = source.tangents; var c = source.colors;
+        var data = new Vertex[p.Length];
+        for (int i = 0; i < p.Length; i++) data[i] = new Vertex { p = p[i], n = n[i], uv = uv[i],
+            uv2 = uv2.Length == p.Length ? uv2[i] : Vector2.zero,
+            tangent = t.Length == p.Length ? t[i] : Vector4.zero, color = c.Length == p.Length ? c[i] : Color.white };
+        var shellOut = new Output(); var hornOut = new Output(); var triangles = source.triangles;
+        for (int i = 0; i < triangles.Length; i += 3)
+        {
+            var face = new List<Vertex> { data[triangles[i]], data[triangles[i + 1]], data[triangles[i + 2]] };
+            shellOut.Polygon(Clip(face, 2, 1, forwardCut, false));
+            var front = Clip(face, 2, 1, forwardCut, true);
+            shellOut.Polygon(Clip(front, 1, 1, heightCut, false));
+            hornOut.Polygon(Clip(front, 1, 1, heightCut, true));
+        }
+        shell = shellOut.Mesh(source.name + " shell", uv2.Length == p.Length, c.Length == p.Length, t.Length == p.Length);
+        horn = hornOut.Mesh(source.name + " horn", uv2.Length == p.Length, c.Length == p.Length, t.Length == p.Length);
+    }
     public static void Split(Mesh source, int side, out Mesh antenna, out Mesh mouth)
     {
         if(!source || (side!=-1 && side!=1) || source.subMeshCount!=1)throw new ArgumentException("Review this model's head split inputs/submeshes.");

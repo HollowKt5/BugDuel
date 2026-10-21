@@ -37,14 +37,18 @@ namespace BeetleArena.Campaign
         int settingsTab,feedChoice=1,climateChoice=1;
         bool withSap,withLamp;
         string parentMale,parentFemale;
-        Color ink=new Color(.93f,.96f,.9f),muted=new Color(.66f,.77f,.69f),accent=new Color(.76f,.91f,.48f);
+        Color ink,muted,accent;
+        CampaignObservationCamera observation;
+        Vector2 lastCanvasSize;
         CampaignSession Session=>app.Session;
         CampaignState State=>Session.State;
-        public string L(string zh,string en)=>app.Preferences.language==0?zh:en;
+        // Existing callers retain their source text; the centralized language tables own translations.
+        public string L(string zh,string en)=>zh;
 
         void Start()
         {
             app=CampaignApp.Ensure();
+            var retroFont=Resources.Load<TMP_FontAsset>("RetroUiFont");if(retroFont)font=retroFont;
             if(page!=CampaignPage.MainMenu && page!=CampaignPage.Saves && Session==null) { app.Go(CampaignPage.MainMenu);return; }
             CreateRounded();
             var go=new GameObject("CampaignCanvas",typeof(RectTransform),typeof(Canvas),typeof(UI.CanvasScaler),typeof(UI.GraphicRaycaster)); go.transform.SetParent(transform,false);
@@ -54,10 +58,17 @@ namespace BeetleArena.Campaign
             {
                 var background=Rect("World",canvas,0,0,1600,900); Stretch(background);
                 backdrop.output=background.gameObject.AddComponent<UI.RawImage>(); backdrop.output.raycastTarget=false; backdrop.output.texture=backdrop.Frame;
+                if(page==CampaignPage.Arena)BeetleCombatCrt.Attach(backdrop.output);
+                if(page==CampaignPage.Greenhouse)
+                {
+                    backdrop.SetViewport(new Rect(1f/3f,0,2f/3f,1));
+                    observation=CampaignObservationCamera.Ensure(backdrop);
+                }
                 backdrop.SetUiFocus(page==CampaignPage.Saves || page==CampaignPage.Catching || page==CampaignPage.Market || page==CampaignPage.League || page==CampaignPage.Auction);
             }
             if(!EventSystem.current) { var e=new GameObject("CampaignEvents",typeof(EventSystem),typeof(InputSystemUIInputModule)); e.GetComponent<InputSystemUIInputModule>().AssignDefaultActions(); }
             app.Changed+=QueueRefresh;
+            CampaignLocalization.Changed+=QueueRefresh;
             if(leagueBridge) leagueBridge.Finished+=QueueRefresh;
             Rebuild();
         }
@@ -76,18 +87,21 @@ namespace BeetleArena.Campaign
         void Update()
         {
             if(!app || !canvas) return;
+            if(mailboxNotice)CampaignLocalization.Bind(mailboxNotice,app.Message);
+            if(lastCanvasSize!=canvas.rect.size) { lastCanvasSize=canvas.rect.size;QueueRefresh(); }
             if(pageInteraction)pageInteraction.interactable=!app.Busy&&!modal;
             if(refreshQueued && !modal && !app.Busy) { refreshQueued=false;Rebuild(); }
-            if(notice) notice.text=app.Message.Length>0?app.Message:Session?.State.notice??"";
+            if(notice) CampaignLocalization.Bind(notice,app.Message.Length>0?app.Message:Session?.State.notice??"");
             careLabelClock+=Time.unscaledDeltaTime;
             if(careLabel && Session!=null && careLabelClock>=.25f)
             {
                 careLabelClock=0;
-                var b=State.beetles.Find(x=>x.id==State.selectedId); if(b!=null) careLabel.text=Details(b);
+                var b=State.beetles.Find(x=>x.id==State.selectedId); if(b!=null) CampaignLocalization.Bind(careLabel,Details(b));
                 if(!careController)careController=FindFirstObjectByType<CampaignCareController>();
-                if(behaviorLabel&&b!=null)behaviorLabel.text=careController?careController.Describe(b.id):"观察中";
+                if(behaviorLabel&&b!=null)CampaignLocalization.Bind(behaviorLabel,careController?careController.Describe(b.id):"观察中");
             }
             if(app.Busy || rebind!=null) return;
+            if(page==CampaignPage.Market && !modal && HandleMarketShortcuts())return;
             if(app.Controls["Back"].WasPressedThisFrame())
             { if(modal) CloseModal(); else if(page!=CampaignPage.MainMenu) Confirm("返回主菜单？当前进度会自动保存。",()=>{if(Session!=null)app.SaveSlot(0);app.Go(CampaignPage.MainMenu);}); }
             if(app.Controls["NextWeek"].WasPressedThisFrame()) app.Manage(page,"NextWeek");
@@ -95,16 +109,21 @@ namespace BeetleArena.Campaign
         }
         void Rebuild()
         {
+            ink=CampaignRetroTheme.Ink;muted=CampaignRetroTheme.Muted;accent=CampaignRetroTheme.Accent;
             var selected=EventSystem.current?EventSystem.current.currentSelectedGameObject:null;
             if(!root)
             {
                 root=Rect("Page",canvas,0,0,1600,900); CenterFrame(root);
                 pageInteraction=root.gameObject.AddComponent<CanvasGroup>();
             }
+            if(page==CampaignPage.Greenhouse)
+            { root.anchorMin=Vector2.zero;root.anchorMax=new Vector2(1f/3f,1);root.pivot=new Vector2(0,1);root.offsetMin=root.offsetMax=Vector2.zero;Canvas.ForceUpdateCanvases(); }
             foreach(var t in thumbnails) if(t) Destroy(t); thumbnails.Clear(); careLabel=null;behaviorLabel=null;
             tree.Begin();
             if(page==CampaignPage.Arena) { DrawArena(); EndRefresh(selected); return; }
-            if(page==CampaignPage.MainMenu) DrawMenu();
+            if(page==CampaignPage.Market) { DrawMarket();EndRefresh(selected);return; }
+            if(page==CampaignPage.Greenhouse) { DrawGreenhouse();EndRefresh(selected);return; }
+            if(page==CampaignPage.MainMenu) { DrawMenu();EndRefresh(selected);return; }
             else if(page==CampaignPage.Saves) DrawSaves();
             else
             {
@@ -134,6 +153,7 @@ namespace BeetleArena.Campaign
         }
         void Navigation()
         {
+            Panel(root,32,100,1536,720);
             var nav=Panel(root,32,24,1536,64);
             Label(nav,"BUG DUEL  /  虫舍日记",22,18,280,36,23,accent);
             var pages=new[]{CampaignPage.Greenhouse,CampaignPage.Catching,CampaignPage.Market,CampaignPage.League,CampaignPage.Auction};
@@ -165,17 +185,20 @@ namespace BeetleArena.Campaign
         static void CenterFrame(RectTransform rt) { rt.anchorMin=rt.anchorMax=rt.pivot=new Vector2(.5f,.5f);rt.anchoredPosition=Vector2.zero;rt.sizeDelta=new Vector2(1600,900); }
         RectTransform Panel(Transform parent,float x,float y,float w,float h,bool clear=false)
         {
-            var rt=Rect("Surface",parent,x,y,w,h);var im=Component<UI.Image>(rt); im.sprite=rounded;im.type=UI.Image.Type.Sliced;im.pixelsPerUnitMultiplier=clear?2:1.3f;im.material=null;
-            im.color=clear?new Color(.16f,.25f,.2f,1):new Color(.065f,.12f,.09f,1);return rt;
+            var rt=Rect("Surface",parent,x,y,w,h);var im=Component<UI.Image>(rt);im.sprite=null;im.type=UI.Image.Type.Simple;im.material=null;
+            im.color=clear?CampaignRetroTheme.Button:CampaignRetroTheme.Window;
+            Component<RetroBevel>(rt).Configure(clear?2:1,CampaignRetroTheme.LightEdge,CampaignRetroTheme.DarkEdge);return rt;
         }
         TMP_Text Label(Transform parent,string text,float x,float y,float w,float h,int size=22,Color? color=null)
         {
-            var rt=Rect("Text",parent,x,y,w,h);var t=Component<TextMeshProUGUI>(rt);t.font=font;t.text=text;t.fontSize=size;t.color=color??ink;t.textWrappingMode=TextWrappingModes.Normal;t.overflowMode=TextOverflowModes.Ellipsis;t.raycastTarget=false;return t;
+            var rt=Rect("Text",parent,x,y,w,h);var t=Component<TextMeshProUGUI>(rt);t.font=font;t.fontSize=size;t.color=color??ink;t.textWrappingMode=TextWrappingModes.Normal;t.overflowMode=TextOverflowModes.Ellipsis;t.raycastTarget=false;
+            t.enableAutoSizing=CampaignLocalization.English;t.fontSizeMin=Mathf.Min(size,Mathf.Max(9,size*.75f));t.fontSizeMax=size;
+            CampaignLocalization.Bind(t,text);return t;
         }
         UI.Button Btn(Transform parent,string text,float x,float y,float w,float h,Action action,bool enabled=true)
         {
             var rt=Panel(parent,x,y,w,h,true);rt.name=text;var b=Component<UI.Button>(rt);b.onClick.RemoveAllListeners();b.targetGraphic=rt.GetComponent<UI.Image>();b.interactable=enabled;
-            var colors=b.colors;colors.normalColor=Color.white;colors.highlightedColor=new Color(1.2f,1.3f,1.1f);colors.pressedColor=new Color(.7f,.9f,.55f);colors.disabledColor=new Color(.6f,.6f,.6f,1);b.colors=colors;
+            var colors=b.colors;colors.normalColor=Color.white;colors.highlightedColor=CampaignRetroTheme.Hex(0xe3ebfa);colors.selectedColor=colors.highlightedColor;colors.pressedColor=CampaignRetroTheme.Hex(0xc4d5f2);colors.disabledColor=new Color(.75f,.75f,.75f,1);b.colors=colors;
             var label=Label(rt,text,10,0,w-20,h,19,enabled?ink:muted);label.alignment=TextAlignmentOptions.Center;b.onClick.AddListener(()=>{if(app.Busy || (modal&&!rt.IsChildOf(modal)))return;action();});return b;
         }
         sealed class Flow { public RectTransform content; public float y,width; }
@@ -199,14 +222,19 @@ namespace BeetleArena.Campaign
         void Confirm(string text,Action action) { var p=OpenModal(670,290);Label(p,text,32,32,606,140,25);Btn(p,"确定",32,205,290,52,()=>{CloseModal();action();});Btn(p,"取消",340,205,290,52,CloseModal); }
         RectTransform OpenModal(float w,float h)
         {
+            ink=CampaignRetroTheme.Ink;muted=CampaignRetroTheme.Muted;accent=CampaignRetroTheme.Accent;
             CloseModal(); focusBeforeModal=EventSystem.current?EventSystem.current.currentSelectedGameObject:null;
             app.Modal=true;if(pageInteraction){pageInteraction.interactable=false;pageInteraction.blocksRaycasts=false;}
             if(EventSystem.current)EventSystem.current.SetSelectedGameObject(null);
-            modal=Rect("Modal",canvas,0,0,1600,900);CenterFrame(modal);var dim=modal.gameObject.AddComponent<UI.Image>();dim.color=new Color(.025f,.055f,.047f,1);
-            var panel=Panel(modal,(1600-w)/2,(900-h)/2,w,h);panel.GetComponent<UI.Image>().pixelsPerUnitMultiplier=1;return panel;
+            modal=Rect("Modal",canvas,0,0,1600,900);CenterFrame(modal);var dim=modal.gameObject.AddComponent<UI.Image>();dim.color=CampaignRetroTheme.Dark?CampaignRetroTheme.Hex(0x111820):CampaignRetroTheme.Hex(0x85958b);
+            var panel=Panel(modal,(1600-w)/2,(900-h)/2,w,h);
+            var title=Panel(panel,3,3,w-6,18);title.GetComponent<UI.Image>().color=CampaignRetroTheme.Frame;
+            Component<RetroBevel>(title).Configure(0,Color.clear,Color.clear,true,CampaignRetroTheme.TitleTop,CampaignRetroTheme.TitleBottom);
+            return panel;
         }
         void CloseModal()
         {
+            storageOverlay=0;mailboxNotice=null;
             closingModal=true;
             var operation=rebind;rebind=null;operation?.Cancel();operation?.Dispose();
             if(settingsOpen && app){settingsOpen=false;app.SavePreferences();}
@@ -225,6 +253,7 @@ namespace BeetleArena.Campaign
         }
         void OnDestroy()
         {
+            CampaignLocalization.Changed-=QueueRefresh;
             if(app)app.Changed-=QueueRefresh;if(leagueBridge)leagueBridge.Finished-=QueueRefresh;CloseModal();
             if(rounded)Destroy(rounded);if(roundTexture)Destroy(roundTexture);foreach(var t in thumbnails)if(t)Destroy(t);
         }

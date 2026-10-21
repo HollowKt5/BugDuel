@@ -9,8 +9,8 @@ namespace BugDuel.Campaign
     {
         public CampaignState State { get; }
         public CampaignCatalog Catalog { get; }
-        public CampaignSession(CampaignState state, CampaignCatalog catalog) { State = state; Catalog = catalog; }
-        public int Reserved => State.expeditions.Sum(e => e.count) + (State.pupaAuction == null ? 0 : 1);
+        public CampaignSession(CampaignState state, CampaignCatalog catalog) { State = state; Catalog = catalog; UpgradeMailbox(); }
+        public int Reserved => State.expeditions.Sum(e => e.count);
         public CampaignBeetle Beetle(string id) => State.beetles.FirstOrDefault(x => x.id == id) ?? throw new InvalidOperationException("这只甲虫已离开温室");
         public double Roll() { uint x = State.random; x ^= x << 13; x ^= x >> 17; x ^= x << 5; State.random = x == 0 ? 18273u : x; return State.random / ((double)uint.MaxValue + 1); }
         public string Id() => Guid.NewGuid().ToString("N");
@@ -53,7 +53,7 @@ namespace BugDuel.Campaign
         {
             var b = Beetle(id); Available(b); Require(b.Adult(State.week) && !b.overturned, "先帮助甲虫翻身；幼虫使用饲料瓶"); Require(food >= 0 && food <= 2, "食物不存在");
             Require(b.meal == null,"食盆里还有食物，请等它吃完");
-            Spend(food == 0 ? 15 : 20); b.meal = new CampaignMeal { id=Id(), food=food }; b.hasMeal=true;
+            ConsumeItem(CampaignItems.Food(food)); b.meal = new CampaignMeal { id=Id(), food=food }; b.hasMeal=true;
             Tell("已放下" + new[] { "红薯", "香蕉", "苹果" }[food] + "，" + b.name + "会走过去进食。");
         }
         public void CompleteMeal(string id,string mealId)
@@ -162,10 +162,10 @@ namespace BugDuel.Campaign
             Catalog.Validate();
             Require(State != null && State.schema == 1 && State.week > 0 && State.week < 1000000 && State.random != 0 && (State.capacity == 6 || State.capacity == 12 || State.capacity == 20) && (State.cabinet == 3 || State.cabinet == 6) && State.highestLeague >= 0 && State.highestLeague <= 5 && State.coins >= 0 && State.coins <= CampaignEconomy.Maximum,"存档主数据无效");
             Require(State.beetles != null && State.expeditions != null && State.offers != null && State.stock != null && State.hall != null,"存档集合缺失"); Space(0);
-            var ids = new HashSet<string>();
+            ValidateMailbox();var ids = new HashSet<string>();
             Catalog.Species(State.trendSpecies);
             foreach (var h in State.hall) { Catalog.Species(h.speciesId); Require(Finite(h.length,1,1000) && h.price > 0 && h.price <= CampaignEconomy.Maximum && h.royalties >= 0,"名人堂数据无效"); }
-            foreach (var b in State.beetles.Concat(State.stock).Concat(State.battle == null ? new CampaignBeetle[0] : new[]{State.battle.opponent}).Concat(State.pupaAuction == null ? new CampaignBeetle[0] : new[]{State.pupaAuction.beetle}))
+            foreach (var b in State.beetles.Concat(State.stock).Concat(State.storedBeetles).Concat(MailBeetles()).Concat(State.battle == null ? new CampaignBeetle[0] : new[]{State.battle.opponent}).Concat(State.pupaAuction == null ? new CampaignBeetle[0] : new[]{State.pupaAuction.beetle}))
             {
                 Require(b != null && !string.IsNullOrEmpty(b.id) && ids.Add(b.id),"甲虫 ID 重复或缺失"); Catalog.Species(b.speciesId); Catalog.Housing(b.habitat);
                 Require(b.genes != null && b.genes.Count > 0 && b.genes.Count <= 5 && b.genes.All(g => g != null && CampaignGenetics.GeneIds.Contains(g.id) && g.stars >= 1 && g.stars <= 3) && b.ancestors != null,"基因或血统数据无效");

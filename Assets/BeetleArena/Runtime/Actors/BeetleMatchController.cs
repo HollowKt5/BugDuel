@@ -106,6 +106,7 @@ namespace BeetleArena
                 return;
             }
             hud.Bind(this);
+            BeetleCombatDisplay.Install(spectatorCamera.GetComponent<Camera>());
             // 应用可在 Awake 中交付已预订的比赛；Unity Start 不能重置其场地或再次抽局。
             if (Simulation != null) return;
             settings.Validate();

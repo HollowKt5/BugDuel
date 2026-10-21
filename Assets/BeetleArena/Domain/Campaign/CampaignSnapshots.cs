@@ -11,6 +11,10 @@ namespace BugDuel.Campaign
             var copy = s.ShallowCopy();
             copy.beetles = s.beetles.Select(Copy).ToList();
             copy.stock = s.stock.Select(Copy).ToList();
+            copy.storedBeetles=s.storedBeetles.Select(Copy).ToList();
+            copy.inventory=s.inventory.Select(x=>new CampaignInventoryStack {itemId=x.itemId,quantity=x.quantity}).ToList();
+            copy.mail=s.mail.Select(m=>new CampaignMail {id=m.id,senderId=m.senderId,subject=m.subject,body=m.body,week=m.week,read=m.read,deleted=m.deleted,claimed=m.claimed,
+                attachments=m.attachments.Select(a=>new CampaignAttachment {itemId=a.itemId,name=a.name,quantity=a.quantity,beetles=a.beetles.Select(Copy).ToList()}).ToList()}).ToList();
             copy.expeditions = s.expeditions.Select(x => new Expedition { id=x.id, habitat=x.habitat, dueWeek=x.dueWeek, count=x.count, large=x.large }).ToList();
             copy.offers = s.offers.Select(x => new MarketOffer { id=x.id, beetleId=x.beetleId, buyer=x.buyer, price=x.price, week=x.week, femaleBonus=x.femaleBonus, recipe=x.recipe, permit=x.permit }).ToList();
             copy.hall = s.hall.Select(x => new HallRecord { name=x.name, speciesId=x.speciesId, mutation=x.mutation, length=x.length, price=x.price, week=x.week, rights=x.rights, royalties=x.royalties }).ToList();

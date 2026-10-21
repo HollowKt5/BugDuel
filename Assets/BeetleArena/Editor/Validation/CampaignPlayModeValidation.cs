@@ -127,8 +127,8 @@ public sealed class CampaignAcceptanceDriver : MonoBehaviour
         var view=FindFirstObjectByType<CampaignView>();var backdrop=view.backdrop;
         Check(backdrop.UiFocused==focused&&backdrop.output.texture&&
             (focused?backdrop.output.texture!=backdrop.Frame:backdrop.output.texture==backdrop.Frame),"background focus policy: "+view.page);
-        var targets=Resources.FindObjectsOfTypeAll<RenderTexture>().Where(t=>t.name=="Campaign focused background"||t.name=="Campaign focus scratch").ToArray();
-        Check(targets.Length==(focused?2:0)&&targets.All(t=>t.width<=320&&t.depth==0),"bounded background targets, no stale page allocations: "+view.page);
+        var targets=Resources.FindObjectsOfTypeAll<RenderTexture>().Where(t=>t.name=="Campaign focused background"||t.name=="Campaign focus scratch"||t.name=="Campaign focus prefilter").ToArray();
+        Check(targets.Length==(focused?3:0)&&targets.All(t=>t.width<=(t.name=="Campaign focus prefilter"?640:320)&&t.depth==0),"bounded background targets, no stale page allocations: "+view.page);
         if(!inspectPixels)return;
         float sharp=BackgroundEdges(backdrop.Frame),soft=BackgroundEdges((RenderTexture)backdrop.output.texture);
         File.AppendAllText(Output+"/BackgroundFocus.txt",view.page+": clean edges="+sharp+", blurred edges="+soft+"\n");
@@ -294,13 +294,13 @@ public sealed class CampaignAcceptanceDriver : MonoBehaviour
         string temp=app.SlotPath(0)+".tmp";
         using(var locked=new FileStream(temp,FileMode.Create,FileAccess.ReadWrite,FileShare.None))
         {
-            Check(app.Execute(s=>s.Feed(id,0)),"accept transaction while disk failure is injected");
+            Check(app.Execute(s=>{CampaignMailboxValidation.SupplyFood(s,0);s.Feed(id,0);}),"accept transaction while disk failure is injected");
             Check(!app.Execute(s=>s.Feed(id,0)),"reject overlapping transaction");
             yield return Idle();
             Check(app.Session==before&&app.Session.State.coins==coins&&app.Message.Contains("未提交"),"disk failure rolls back memory, currency and items");
         }
         if(File.Exists(temp))File.Delete(temp);
-        app.Execute(s=>s.Feed(id,0));yield return Idle();Check(app.Session.State.coins==coins-15,"transaction succeeds after disk recovery");
+        app.Execute(s=>{CampaignMailboxValidation.SupplyFood(s,0);s.Feed(id,0);});yield return Idle();Check(app.Session.State.coins==coins-15,"transaction succeeds after disk recovery");
         Click("配种 100 G · 1个后代");yield return Idle();
         var child=app.Session.State.beetles.Last();string childId=child.id;
         Check(app.Session.State.beetles.Count==3&&!child.Adult(app.Session.State.week),"breeding through greenhouse UI");
@@ -331,7 +331,7 @@ public sealed class CampaignAcceptanceDriver : MonoBehaviour
         app.ReloadContent();yield return Idle();Check(app.Session==before,"hot update rejects removal of an occupied environment");
         File.WriteAllText(app.ContentPath,JsonUtility.ToJson(app.Session.Catalog));
         app.Go((CampaignPage)999);yield return null;Check(!app.Busy,"invalid transition leaves input and fade usable");
-        app.Execute(s=>{s.House(id,"recovery");s.Feed(id,0);s.State.random=1987;});yield return Idle();
+        app.Execute(s=>{s.House(id,"recovery");CampaignMailboxValidation.SupplyFood(s,0);s.Feed(id,0);s.State.random=1987;});yield return Idle();
         yield return Wait(()=>!app.Busy&&app.Session.Beetle(id).meal==null,"pre-match meal completes");
         app.Select(id);app.Go(CampaignPage.League);yield return Page(CampaignPage.League);BackgroundFocus(true);
         var entry=FindObjectsByType<Button>(FindObjectsSortMode.None).Where(b=>b.name.StartsWith("报名  ")).OrderBy(b=>b.transform.parent.GetSiblingIndex()).First();

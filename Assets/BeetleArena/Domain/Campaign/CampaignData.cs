@@ -14,6 +14,10 @@ namespace BugDuel.Campaign
         public uint random = 18273;
         public bool scientistPermit, feedRecipe, mutationRecipe;
         public int sap, lamp;
+        public int mailboxVersion;
+        public List<CampaignMail> mail = new List<CampaignMail>();
+        public List<CampaignInventoryStack> inventory = new List<CampaignInventoryStack>();
+        public List<CampaignBeetle> storedBeetles = new List<CampaignBeetle>();
         public string selectedId, notice = "欢迎来到小小虫舍。先照顾甲虫，再去试试新秀联赛。";
         public List<CampaignBeetle> beetles = new List<CampaignBeetle>();
         public List<Expedition> expeditions = new List<Expedition>();

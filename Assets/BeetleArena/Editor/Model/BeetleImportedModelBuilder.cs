@@ -131,6 +131,7 @@ public static class BeetleImportedModelBuilder
         collisions.Add(Capsule("Thoracic horn", anim.bodyPivot, Point(new Vector3(-.10f,.695f,0)), Point(new Vector3(-.145f,.766f,0)), .105f));
         anim.shellRenderers = renderers.Where(r => r.name == "tripo_part_0" || r.name == "tripo_part_12" || r.name == "tripo_part_3").ToArray();
         var contacts = root.AddComponent<BeetleContactRig>(); contacts.shapes = collisions.ToArray(); contacts.surfaces = renderers.ToArray();
+        BeetleHornBindingUpgrade.Configure(anim);
         var rb = root.AddComponent<Rigidbody>(); rb.isKinematic = true; rb.useGravity = false;
         rb.collisionDetectionMode = CollisionDetectionMode.ContinuousSpeculative;
         return actor;

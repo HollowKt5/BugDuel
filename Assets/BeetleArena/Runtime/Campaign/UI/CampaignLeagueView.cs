@@ -62,10 +62,9 @@ namespace BeetleArena.Campaign
         void DrawArena()
         {
             if(!leagueBridge) return;
-            var left=Panel(root,30,24,460,44,true);var right=Panel(root,1110,24,460,44,true);
-            leagueBridge.playerLabel=Label(left,"",12,3,435,38,16);leagueBridge.opponentLabel=Label(right,"",12,3,435,38,16);
-            leagueBridge.playerBar=Bar(left,120,25,315,new Color(.35f,.82f,.48f));leagueBridge.opponentBar=Bar(right,120,25,315,new Color(.35f,.82f,.48f));
-            leagueBridge.playerStructure=Bar(left,120,35,315,new Color(.42f,.76f,.96f));leagueBridge.opponentStructure=Bar(right,120,35,315,new Color(.42f,.76f,.96f));
+            var left=Rect("Player stamina",root,30,24,460,48);var right=Rect("Opponent stamina",root,1110,24,460,48);
+            leagueBridge.playerLabel=Label(left,"",0,0,460,28,20,Color.white);leagueBridge.opponentLabel=Label(right,"",0,0,460,28,20,Color.white);
+            leagueBridge.playerBar=Bar(left,0,36,460,new Color(.35f,.82f,.48f));leagueBridge.opponentBar=Bar(right,0,36,460,new Color(.35f,.82f,.48f));
             Btn(root,"倍速 "+leagueBridge.Speed+"×",1260,815,145,48,()=>{leagueBridge.CycleSpeed();QueueRefresh();});Btn(root,"镜头",1420,815,145,48,leagueBridge.CycleCamera);
             if(leagueBridge.IsFinished)
             {

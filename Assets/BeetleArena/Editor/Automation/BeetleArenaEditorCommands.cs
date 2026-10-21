@@ -16,9 +16,10 @@ using UnityEngine.SceneManagement;
 public static class BeetleArenaEditorCommands
 {
     // id 用于匹配响应，action 选择固定命令，seconds 仅供快速推进使用；没有执行任意代码的入口。
-    [Serializable] class Request { public string id, action; public float seconds; }
+    [Serializable] class Request { public string id, action; public float seconds; public int count; }
     // 最多约每 0.4 秒轮询一次；编译或资源刷新期间暂不处理请求。
     static double nextPoll;
+    static UnityEditor.PackageManager.Requests.AddRequest localeInstall;
     // 从 Application.dataPath 的上级取得当前工程根目录，不依赖启动进程的工作目录。
     static string Root => Directory.GetParent(Application.dataPath).FullName;
     // 请求放在 Temp；执行前删除请求文件，避免域重载后重复执行同一动作。
@@ -62,6 +63,21 @@ public static class BeetleArenaEditorCommands
     {
         switch (request.action)
         {
+            case "mailbox-data": CampaignMailboxValidation.Run(); return File.ReadAllText("Artifacts/Mailbox/Data.txt");
+            case "mailbox-play": CampaignMailboxValidation.RunPlay(); return "Mailbox UI and transaction checks started with isolated saves.";
+            case "localization-install": localeInstall=UnityEditor.PackageManager.Client.Add("com.unity.localization"); return "Localization package installation requested.";
+            case "localization-install-status": return localeInstall==null?"No request retained (check packages-lock after domain reload).":localeInstall.Status+" "+localeInstall.Error?.message;
+            case "localization-setup": CampaignLocalizationSetup.Apply(); return File.ReadAllText("Artifacts/Localization/Setup.txt");
+            case "localization-validate": RetroPresentationValidation.RunBilingual(); return "Bilingual presentation checks started using isolated saves.";
+            case "crt-steady": BeetleCombatCrtSetup.ApplySteadyPreset(); return "Steady CRT screen preset saved; lens curvature preserved.";
+            case "crt-screen-preview": return BeetleCombatCrtSetup.PreviewSteadyScreen();
+            case "retro-setup": CampaignRetroFontSetup.Apply();return "Retro font and CRT profile ready.";
+            case "retro-validate": RetroPresentationValidation.Run();return "Retro presentation check started; see Artifacts/RetroUi/Result.txt.";
+            case "cleanup-generated-audit": return BeetleGeneratedAssetCleanup.Run(false);
+            case "cleanup-generated-apply": return BeetleGeneratedAssetCleanup.Run(true);
+            case "horn-inspect": BeetleHornBindingValidation.Inspect(); return File.ReadAllText("Artifacts/HornBinding/Inspection.txt");
+            case "horn-upgrade": BeetleHornBindingUpgrade.Apply(); return "Horn anatomy bindings upgraded.";
+            case "horn-validate": BeetleHornBindingValidation.Run(); return File.ReadAllText("Artifacts/HornBinding/Validation.txt");
             case "menu-iridescence": CampaignIridescenceSetup.Apply(); return "Menu iridescent shell installed.";
             case "menu-iridescence-validate": CampaignIridescenceValidation.Run(); return File.ReadAllText("Artifacts/IridescentShell/Validation.txt");
             case "care-behavior": CareBehaviorValidation.Run(); return File.ReadAllText("Artifacts/Campaign/Care/Contracts.txt");
@@ -97,6 +113,11 @@ public static class BeetleArenaEditorCommands
             case "combat-upgrade": BeetleCombatUpgrade.Apply(); return "Combat refinements saved.";
             case "validate-escape": BeetleContactEscapeValidation.Run(); return File.ReadAllText("Artifacts/DeadlockFix/CapturedReplay.txt");
             case "validate-stalls": BeetleStallValidation.Run(); return File.ReadAllText("Artifacts/DeadlockFix/NaturalRounds.txt");
+            case "validate-underbody": BeetleUnderbodyEscapeValidation.Run(); return File.ReadAllText("Artifacts/UnderbodyEscape/Report.txt");
+            case "seed-sweep": return BeetleSeedSweepValidation.Start(Mathf.RoundToInt(request.seconds), request.count > 0 ? request.count : 48);
+            case "seed-diagnose": BeetleSeedLockDiagnosis.Run(request.seconds > 0); return "Seed lock diagnosis saved.";
+            case "seed-case": return BeetleSeedSweepValidation.Start(Mathf.RoundToInt(request.seconds), 1);
+            case "seed-sweep-stop": BeetleSeedSweepValidation.Stop(); return "Seed sweep stopped.";
             case "refresh": AssetDatabase.Refresh(); return "Refresh requested.";
             // 只更新游戏材质；渲染验证在临时场景副本中进行。
             case "apply-toon": BeetleArenaToonSetup.Apply(); return "Toon materials saved.";

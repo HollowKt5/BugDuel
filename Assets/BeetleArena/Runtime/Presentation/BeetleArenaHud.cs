@@ -35,6 +35,8 @@ namespace BeetleArena
         public void Bind(BeetleMatchController controller)
         {
             Unbind(); match = controller;
+            Campaign.CampaignRetroTheme.ApplyHierarchy(transform);
+            SimplifyFighterCards();
             fighters[0].cheerButton.onClick.AddListener(CheerAmber);
             fighters[1].cheerButton.onClick.AddListener(CheerInk);
             pauseButton.onClick.AddListener(Pause);
@@ -43,6 +45,29 @@ namespace BeetleArena
             if (arenaButton) arenaButton.onClick.AddListener(SwitchArena);
             if (viewButton) viewButton.onClick.AddListener(CycleView);
             if (slowMotionButton) slowMotionButton.onClick.AddListener(ToggleSlowMotion);
+        }
+        // Keep existing serialized references valid while reducing each fighter card to name + stamina.
+        void SimplifyFighterCards()
+        {
+            foreach (var ui in fighters)
+            {
+                var card = ui.name.transform.parent;
+                if (card.TryGetComponent<UnityEngine.UI.Image>(out var background)) background.enabled = false;
+                if (card.TryGetComponent<Campaign.RetroBevel>(out var bevel)) bevel.enabled = false;
+                ui.name.color = Color.white;
+                ui.measurements.gameObject.SetActive(false);
+                ui.action.gameObject.SetActive(false);
+                ui.staminaText.gameObject.SetActive(false);
+                ui.footingText.gameObject.SetActive(false);
+                ui.footingFill.transform.parent.gameObject.SetActive(false);
+                var track = (RectTransform)ui.staminaFill.transform.parent;
+                track.anchoredPosition = new Vector2(20, -60);
+                track.sizeDelta = new Vector2(310, 7);
+                ui.staminaFill.rectTransform.sizeDelta = track.sizeDelta;
+                if (track.TryGetComponent<UnityEngine.UI.Image>(out var trackImage)) trackImage.color = new Color(.32f, .36f, .34f);
+                if (track.TryGetComponent<Campaign.RetroBevel>(out var trackBevel)) trackBevel.enabled = false;
+            }
+            if (traitTexts != null) foreach (var text in traitTexts) if (text) text.gameObject.SetActive(false);
         }
         // 按钮适配方法使用固定选手索引；这里只传递请求，资格由控制器和模拟检查。
         void CheerAmber() => match.Cheer(0);
@@ -84,18 +109,8 @@ namespace BeetleArena
             for (int i = 0; i < 2; i++)
             {
                 var b = sim.Fighters[i]; var ui = fighters[i];
-                ui.name.text = $"{i + 1:00}  /  {sim.FighterName(i)}";
-                ui.measurements.text = $"体长 {b.Traits.lengthMm:F1} mm    体重 {b.Traits.massGrams:F1} g";
-                if (traitTexts != null && i < traitTexts.Length && traitTexts[i])
-                    traitTexts[i].text = $"好斗 {b.Traits.aggressionScore:F0}   体长 {b.Traits.lengthScore:F0}   角长 {b.Traits.hornScore:F0}   敏捷 {b.Traits.agilityScore:F0}\n角长 {b.Traits.hornLengthMm:F1} mm   " +
-                        (b.Entrant == null ? $"总分 {b.Traits.TotalScore:F0}/400 · {b.Traits.QualityBand}" : "养成个体");
-                ui.action.text = (b.Action == BeetleAction.Module && b.Motion.Active ? b.Motion.Active.DisplayName : ActionName(b.Action))
-                    + (b.CheerRemaining > 0 ? "  ·  斗志提升" : "");
+                ui.name.text = sim.FighterName(i);
                 ui.staminaFill.fillAmount = b.Stamina01;
-                // 把平衡与台面足部支撑相乘呈现综合稳定程度；不是物理求解器测出的摩擦力。
-                ui.footingFill.fillAmount = b.Balance * b.Footing;
-                ui.staminaText.text = $"体力 {Mathf.RoundToInt(b.Stamina01 * 100)}%";
-                ui.footingText.text = $"抓地 / 稳定  {Mathf.RoundToInt(b.Balance * b.Footing * 100)}%";
                 // 按钮可点击状态同时考虑比赛阶段、暂停、冷却和腾空/落台；模拟层仍会二次检查。
                 bool canCheer = sim.Phase == MatchPhase.Fighting && !match.IsPaused && b.CheerCooldown <= 0 && !b.Airborne && !b.HasFallen;
                 ui.cheerButton.interactable = canCheer;
@@ -116,11 +131,11 @@ namespace BeetleArena
             resultPanel.SetActive(finished && !match.IsDefeatSlowMotion);
             resultText.text = (sim.Winner < 0 ? "本场平局" : $"{sim.FighterName(sim.Winner)} 获胜") + "\n<size=20>" + sim.ResultDescription + "</size>";
             nextButton.interactable = rematchButton.interactable = finished && match.CanRequestNextMatch;
-            // 显示外层交锋阶段；个体当前动作显示在选手卡上，两者可能因动作衔接暂时不同。
+            // 显示外层交锋阶段；选手区只呈现名字与体力。
             phaseText.text = match.IsPaused ? "观察暂停" : sim.Phase == MatchPhase.Countdown ? $"准备  {Mathf.CeilToInt(sim.Countdown)}" : sim.Phase == MatchPhase.Resolving ? "落台判定中" : finished ? "本场结束" :
                 sim.Exchange == ExchangePhase.Clash ? "激烈交锋" : sim.Exchange == ExchangePhase.Recovery ? "拉开恢复" : "轻触试探";
             phaseText.color = sim.Phase == MatchPhase.Fighting && sim.Exchange == ExchangePhase.Clash && !match.IsPaused
-                ? new Color(1f, .48f, .23f) : new Color(.85f, .85f, .74f);
+                ? new Color(1f,.7f,.3f) : Color.white;
         }
 
         // 动作枚举到中文标签的映射；新增动作时同步维护此处和字体字形资源。

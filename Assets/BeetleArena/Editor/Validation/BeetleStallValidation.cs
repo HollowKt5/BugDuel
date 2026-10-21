@@ -99,7 +99,7 @@ public static class BeetleStallValidation
         }
         report.AppendLine($"arena={arena}, seed={seed}, duration={sim.Elapsed:F2}, result={sim.ResultReason}, " +
             $"longestNoProgress={longestNoProgress:F2}s, longestBlocked={longestBlocked:F2}s, " +
-            $"overlap={penetration:F6}, budgetExcess={budgetExcess:F6}, " +
+            $"overlap={penetration:F6}, budgetExcess={budgetExcess:F6}, retreats={match.Contacts.ContactRetreatSteps}, " +
             $"pushStarts={pushStarts}, falsePushStarts={falsePushStarts}, " +
             $"forelegHits={sim.Fighters[0].ForelegHits + sim.Fighters[1].ForelegHits}");
         File.WriteAllText("Artifacts/DeadlockFix/NaturalRounds.txt", report.ToString());
