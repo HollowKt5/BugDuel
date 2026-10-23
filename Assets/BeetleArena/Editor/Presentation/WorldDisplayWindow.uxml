@@ -1,0 +1,30 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements">
+  <ui:Style src="WorldDisplayWindow.uss" />
+  <ui:ScrollView class="display-tool">
+    <ui:Label text="BugDuel · 场景画面" class="title" />
+    <ui:Label text="每个场景独立配置。效果只应用于世界画面，文字、按钮与 HUD 保持清晰。" class="hint" />
+    <ui:DropdownField name="scene" label="目标场景" />
+    <ui:Label name="scene-path" class="path" />
+    <ui:VisualElement class="row">
+      <ui:Button name="active" text="选择当前场景" />
+      <ui:Button name="refresh" text="刷新场景 / Shader" />
+    </ui:VisualElement>
+    <ui:VisualElement class="section">
+      <ui:DropdownField name="shader" label="画面 Shader" />
+      <uie:ObjectField name="material" label="画面材质（可选）" />
+      <ui:Label text="Shader 参数直接在材质 Inspector 中调整。Pixel Size 控制颗粒大小，Color Levels 控制每个原 RGB 通道的色阶数，Dither Strength 控制抖动强度。柔和版默认 3px / 16级 / 0.5；细密版默认 1px / 6级 / 1。强度为 0 时仅保留像素化。" class="hint" />
+      <ui:Label name="shader-path" class="path" />
+      <ui:Label text="新画面 Shader：使用 _MainTex 读取世界纹理，兼容 uGUI，并在 SubShader Tags 中声明 BugDuelScreenEffect=True；刷新后会自动列入。模型材质及内部多通道模糊不列入。" class="hint" />
+      <ui:VisualElement class="row">
+        <ui:Button name="apply" text="应用到此场景并保存" />
+        <ui:Button name="clean" text="此场景恢复原画" />
+      </ui:VisualElement>
+      <ui:VisualElement class="row">
+        <ui:Button name="inspect-material" text="打开材质 Inspector" />
+        <ui:Button name="inspect-profile" text="查看场景配置资产" />
+      </ui:VisualElement>
+    </ui:VisualElement>
+    <ui:Label text="应用会保存项目配置，并清除本机此场景的游戏内覆盖。其他场景不变。进入 Play 后在 Game 视图查看；运行中应用立即生效。Ctrl+Z 可撤销项目配置。" class="hint section" />
+    <ui:Label name="status" class="status" />
+  </ui:ScrollView>
+</ui:UXML>

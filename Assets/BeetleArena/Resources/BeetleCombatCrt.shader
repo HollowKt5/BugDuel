@@ -16,7 +16,7 @@ Shader "BugDuel/Combat CRT"
     }
     SubShader
     {
-        Tags { "Queue"="Transparent" "RenderType"="Transparent" "IgnoreProjector"="True" }
+        Tags { "Queue"="Transparent" "RenderType"="Transparent" "IgnoreProjector"="True" "BugDuelScreenEffect"="True" }
         Stencil { Ref [_Stencil] Comp [_StencilComp] Pass [_StencilOp] ReadMask [_StencilReadMask] WriteMask [_StencilWriteMask] }
         Cull Off ZWrite Off ZTest [unity_GUIZTestMode]
         Blend SrcAlpha OneMinusSrcAlpha

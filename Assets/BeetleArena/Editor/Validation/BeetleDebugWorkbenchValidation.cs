@@ -18,6 +18,35 @@ public static class BeetleDebugWorkbenchValidation
         var graph=new BeetleDebugGraph(match);var root=graph.Write(match.Simulation);
         return new JObject{{"root",root},{"nodes",graph.Nodes}};
     }
+    static bool SameCrossSceneState(JObject expected,JObject actual,ref double queryError)
+    {
+        // A fresh PhysX scene can differ by float roundoff in ClosestPoint. Bound only
+        // the four derived foreleg-query values; RNG, decisions and all physics stay exact.
+        var expectedNodes=(JArray)expected["nodes"];var actualNodes=(JArray)actual["nodes"];
+        if(expectedNodes.Count!=actualNodes.Count)return false;
+        for(int i=0;i<expectedNodes.Count;i++)
+        {
+            if(expectedNodes[i]["type"].Type!=JTokenType.String ||
+                (string)expectedNodes[i]["type"]!=typeof(BeetleMotionRuntime).FullName)continue;
+            const string context="BeetleArena.BeetleMotionRuntime/<Context>k__BackingField";
+            var e=expectedNodes[i]["fields"][context]["fields"];var a=actualNodes[i]["fields"][context]["fields"];
+            double queryErrorLocal=0;
+            bool Near(JToken left,JToken right)
+            {
+                if(JToken.DeepEquals(left,right))return true;
+                double error=Math.Abs((double)left["value"]-(double)right["value"]);
+                queryErrorLocal=Math.Max(queryErrorLocal,error);return error<=1e-6;
+            }
+            const string distance="BeetleArena.BeetleMotionContext/ForelegTargetDistance";
+            const string aim="BeetleArena.BeetleMotionContext/ForelegAimCorrection";
+            if(!Near(e[distance],a[distance]))return false;
+            foreach(string axis in new[]{"x","y","z"})
+                if(!Near(e[aim]["fields"]["UnityEngine.Vector3/"+axis],a[aim]["fields"]["UnityEngine.Vector3/"+axis]))return false;
+            queryError=Math.Max(queryError,queryErrorLocal);
+            a[distance]=e[distance].DeepClone();a[aim]=e[aim].DeepClone();
+        }
+        return JToken.DeepEquals(expected,actual);
+    }
     [MenuItem("Tools/Beetle Arena/Validate Debug Workbench")]
     public static void Run()
     {
@@ -34,6 +63,8 @@ public static class BeetleDebugWorkbenchValidation
                 // 在非整数插值姿态保存，确认不会把显示帧的姿态误当下一固定步权威起点。
                 match.EditorSetPaused(false);match.Present(.37f,match.Simulation.MotionTime,.007f);match.EditorSetPaused(true);
                 var snapshot=BeetleDebugSnapshot.Capture(match);
+                var capsuleSizes=match.actors.SelectMany(a=>a.GetComponentsInChildren<CapsuleCollider>(true))
+                    .Select(c=>new Vector2(c.radius,c.height)).ToArray();
                 string path=Path.Combine(artifact,"validation-arena-"+arena+".json");BeetleDebugSnapshot.Save(match,path);
                 var expected=new JObject[60];
                 BeetleDebugWorkbenchService.SetRecording(false);
@@ -50,8 +81,14 @@ public static class BeetleDebugWorkbenchValidation
                 // 文件恢复到新建的另一套实例，验证场景对象路径映射与共享引用。
                 BeetleDebugWorkbenchService.CreateSandbox(71,arena);match=BeetleDebugWorkbenchService.Match;
                 BeetleDebugWorkbenchService.LoadCase(path);
-                for(int step=0;step<10;step++){match.EditorStep();Require(JToken.DeepEquals(expected[step],SimulationGraph(match)),"Cross-scene restore differs at tick="+step);}
-                report.AppendLine("PASS arena="+arena+": file restored into fresh scene/actors, continued 10 steps identically.");
+                var restoredCapsules=match.actors.SelectMany(a=>a.GetComponentsInChildren<CapsuleCollider>(true)).ToArray();
+                Require(restoredCapsules.Length==capsuleSizes.Length,"Snapshot collider topology changed");
+                for(int i=0;i<restoredCapsules.Length;i++)
+                    Require(restoredCapsules[i].radius==capsuleSizes[i].x && restoredCapsules[i].height==capsuleSizes[i].y,
+                        "Cross-scene restore retained destination capsule dimensions: "+restoredCapsules[i].name);
+                double maxQueryError=0;
+                for(int step=0;step<10;step++){match.EditorStep();Require(SameCrossSceneState(expected[step],SimulationGraph(match),ref maxQueryError),"Cross-scene restore differs at tick="+step);}
+                report.AppendLine("PASS arena="+arena+": native capsule dimensions match; 10 steps exact RNG/decisions/physics, foreleg query error="+maxQueryError.ToString("E3")+" (limit 1e-6).");
                 // 失败前置检查不得改写当前模拟。
                 var before=SimulationGraph(match);var broken=(JObject)snapshot.DeepClone();broken["fingerprint"]="invalid";
                 bool rejected=false;try{BeetleDebugSnapshot.Restore(match,broken);}catch(InvalidOperationException){rejected=true;}

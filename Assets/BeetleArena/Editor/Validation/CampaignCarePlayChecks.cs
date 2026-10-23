@@ -1,4 +1,5 @@
 using System;
+using CampaignSpecimen=BeetleArena.Campaign.CampaignSpecimen;
 using System.Collections;
 using System.IO;
 using BugDuel.Campaign;

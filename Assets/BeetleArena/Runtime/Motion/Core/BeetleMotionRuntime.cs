@@ -8,8 +8,9 @@ namespace BeetleArena
     public sealed class BeetleMotionRuntime
     {
         readonly Dictionary<BeetleMotionModule, float> readyAt = new Dictionary<BeetleMotionModule, float>();
-        // 每步刷新注册表一次，去空/去重保留原顺序；脚端/触角采样不再重复扫描完整配置。
+        // 配置引用变化时才重建有序注册表；保留运行中原位编辑数组的能力。
         readonly List<BeetleMotionModule> modules = new List<BeetleMotionModule>(8);
+        BeetleMotionModule[] moduleConfiguration = Array.Empty<BeetleMotionModule>();
         public BeetleMotionModule Active { get; private set; }
         public BeetleMotionContext Context { get; private set; }
         public float Elapsed { get; private set; }
@@ -17,6 +18,7 @@ namespace BeetleArena
         public int Starts { get; private set; }
         public int Hits { get; private set; }
         public float ForelegSide { get; private set; }
+        public bool ContactConfirmedAtStart { get; private set; }
         float activeDuration;
         public float Duration => activeDuration;
         bool hitUsed;
@@ -26,13 +28,24 @@ namespace BeetleArena
 
         public void Refresh(BeetleSimulation sim, BeetleState self)
         {
-            modules.Clear();
             var configured = self.Entrant != null && self.Entrant.OverridesMotionModules
                 ? self.Entrant.ConfiguredModules : sim.Settings.motionModules;
-            if (configured != null)
-                for (int i = 0; i < configured.Length; i++)
-                    if (configured[i] && !modules.Contains(configured[i])) modules.Add(configured[i]);
+            RefreshModules(configured ?? Array.Empty<BeetleMotionModule>());
             Context = new BeetleMotionContext(sim, self);
+        }
+        void RefreshModules(BeetleMotionModule[] configured)
+        {
+            bool changed = moduleConfiguration.Length != configured.Length;
+            for (int i = 0; !changed && i < configured.Length; i++)
+                changed = !ReferenceEquals(moduleConfiguration[i], configured[i]);
+            if (!changed) return;
+
+            if (moduleConfiguration.Length != configured.Length)
+                moduleConfiguration = new BeetleMotionModule[configured.Length];
+            Array.Copy(configured, moduleConfiguration, configured.Length);
+            modules.Clear();
+            for (int i = 0; i < configured.Length; i++)
+                if (configured[i] && !modules.Contains(configured[i])) modules.Add(configured[i]);
         }
         bool Listed(BeetleMotionModule module)
         {
@@ -81,6 +94,7 @@ namespace BeetleArena
         bool Start(BeetleMotionModule module)
         {
             ForelegSide = Context.ForelegSide;
+            ContactConfirmedAtStart = Context.OpponentContactConfirmed;
             Active = module; activeDuration = Mathf.Clamp(module.duration / Mathf.Max(.5f, Context.Tempo), .25f, 3);
             Elapsed = 0; hitUsed = false; Starts++;
             readyAt[module] = Context.SimulationTime + activeDuration + Mathf.Max(.2f, module.cooldown);
@@ -91,7 +105,7 @@ namespace BeetleArena
         public void Cancel()
         {
             if (Active) { previousModule = Active; previousEnd = Context.SimulationTime; }
-            Active = null; Elapsed = 0; hitUsed = false;
+            Active = null; Elapsed = 0; hitUsed = false; ContactConfirmedAtStart = false;
         }
         public bool CanHit => Active && !hitUsed;
         public void MarkHit() { if (CanHit) { hitUsed = true; Hits++; } }

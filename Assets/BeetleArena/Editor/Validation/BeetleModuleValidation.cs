@@ -5,7 +5,6 @@ using System.Reflection;
 using System.Text;
 using BeetleArena;
 using UnityEditor;
-using UnityEditor.SceneManagement;
 using UnityEngine;
 
 /// <summary>模块独立性、真实接触与长时间活体反馈验证。临时场景/配置均不污染用户资产。</summary>
@@ -25,6 +24,7 @@ public static class BeetleModuleValidation
             var match = fixture.Match;
             var configured = settings.motionModules;
             Contracts(settings, report);
+            RegistryChanges(settings, report);
             foreach (var module in configured.Where(m => m && m.Channel == BeetleMotionChannel.Combat))
             {
                 int hits = 0;
@@ -66,20 +66,62 @@ public static class BeetleModuleValidation
             s.motionModules = new[] { module }; sim = new BeetleSimulation(s, 11); a = sim.Fighters[0];
             Require(a.Motion.TryStart(.5f), "Interrupted module fixture could not start");
             typeof(BeetleSimulation).GetMethod("SetAction", BindingFlags.NonPublic | BindingFlags.Instance)
-                .Invoke(sim, new object[] { a, BeetleAction.Stagger, .5f });
+                .Invoke(sim, new object[] { a, BeetleAction.Stagger, .5f, nameof(Contracts), 0 });
             Require(!a.Motion.HasActive, "State interruption leaves module pose active");
             report.AppendLine("PASS: new-type registration, null/duplicate references, per-actor isolation, disable/remove/empty-list fallback.");
         }
         finally { s.motionModules = original; UnityEngine.Object.DestroyImmediate(module); }
     }
+    static void RegistryChanges(BeetleMatchSettings settings, StringBuilder report)
+    {
+        var original = settings.motionModules;
+        var first = ScriptableObject.CreateInstance<BeetleModuleValidationProbe>();
+        var second = ScriptableObject.CreateInstance<BeetleModuleValidationProbe>();
+        try
+        {
+            settings.motionModules = new BeetleMotionModule[] { first, second };
+            var sim = new BeetleSimulation(settings, 19);
+            var a = sim.Fighters[0]; var b = sim.Fighters[1];
+            // Same array, different order: authored edits must remain visible without a restart.
+            settings.motionModules[0] = second; settings.motionModules[1] = first;
+            a.Motion.Refresh(sim, a);
+            Require(a.Motion.TryStart(0) && a.Motion.Active == second, "In-place reorder retained stale priority");
+            a.Motion.MarkHit(); a.Motion.Tick(.1f); a.Velocity = new Vector2(.3f, .4f);
+            for (int i = 0; i < 100; i++) a.Motion.Refresh(sim, a);
+            Require(a.Motion.Active == second && a.Motion.Starts == 1 && a.Motion.Hits == 1 &&
+                Mathf.Abs(a.Motion.Elapsed - .1f) < 1e-6f && Mathf.Abs(a.Motion.Context.Speed - .5f) < 1e-6f,
+                "Unchanged registry reset action state or stopped refreshing context");
+            settings.motionModules[0] = null;
+            a.Motion.Refresh(sim, a); a.Motion.Tick(.02f);
+            Require(!a.Motion.HasActive, "In-place removal kept the active module");
+            settings.motionModules[1] = second;
+            b.Motion.Refresh(sim, b);
+            Require(b.Motion.TryStart(0) && b.Motion.Active == second, "Same-length replacement was ignored");
+            UnityEngine.Object.DestroyImmediate(second);
+            b.Motion.Refresh(sim, b); b.Motion.Tick(.02f);
+            Require(!b.Motion.HasActive && !b.Motion.TryStart(0), "Destroyed cached asset remained usable");
+            settings.motionModules = null;
+            a.Motion.Refresh(sim, a);
+            Require(!a.Motion.TryStart(0), "Null configuration invented a module");
+            report.AppendLine("PASS: in-place reorder/removal/replacement, unchanged-list action/context continuity, destroyed asset cancellation and null fallback.");
+        }
+        finally
+        {
+            settings.motionModules = original;
+            UnityEngine.Object.DestroyImmediate(first);
+            if (second) UnityEngine.Object.DestroyImmediate(second);
+        }
+    }
+
     static int Combat(BeetleMatchController match, BeetleMotionModule module, int variant, StringBuilder report)
     {
         match.settings.motionModules = new[] { module };
         match.SelectArena(variant == 2 ? 1 : 0); match.StartMatch(71);
         var sim = match.Simulation;
         while (sim.Phase == MatchPhase.Countdown) sim.Step(.02f);
-        typeof(BeetleSimulation).GetField("<Exchange>k__BackingField", BindingFlags.NonPublic | BindingFlags.Instance).SetValue(sim, ExchangePhase.Clash);
         var a = sim.Fighters[0]; var b = sim.Fighters[1];
+        // Modules read the individual's phase; the simulation's aggregate Exchange is HUD-only.
+        a.CombatPhase = ExchangePhase.Clash;
         float gap = variant == 1 ? 3.1f : 3.65f;
         a.Position = new Vector2(-gap * .5f, 0); b.Position = new Vector2(gap * .5f, 0);
         a.Heading = 90; b.Heading = variant == 1 ? 30 : -90;
@@ -91,7 +133,7 @@ public static class BeetleModuleValidation
         a.TouchingOpponent = true; a.Motion.Refresh(sim, a);
         bool started = a.Motion.TryStart(.2f);
         if (!started) { report.AppendLine($"{module.name}, variant={variant}: geometry not eligible"); return 0; }
-        a.Action = BeetleAction.Module; a.ActionDuration = module.duration; a.ActionTime = 0;
+        a.Action = BeetleAction.Module; a.ActionDuration = a.Motion.Duration; a.ActionTime = 0;
         float maxOverlap = 0, excess = 0, feet = 0, headAngle = 0;
         Quaternion startHead = match.actors[0].animator.headPivot.localRotation;
         for (int tick = 0; tick < 100; tick++)
@@ -122,24 +164,41 @@ public static class BeetleModuleValidation
         while (sim.Phase == MatchPhase.Countdown) sim.Step(.02f);
         var b = sim.Fighters[1]; b.Position = new Vector2(8, 0); b.Height = -1; b.HasFallen = b.Airborne = true; b.Action = BeetleAction.Defeated;
         for (int i = 0; i < 2; i++) match.actors[i].Bind(sim.Fighters[i], match.settings, match.ActiveSurface);
-        float[] travel = new float[2]; float[] head = new float[2];
+        float[] footSpan = new float[2], head = new float[2], antenna = new float[2];
+        var footStart = match.actors.Select(a => new Vector3[a.animator.legs.Length]).ToArray();
+        var antennaStart = match.actors.Select(a => new Quaternion[a.animator.antennae.Length]).ToArray();
         var headStart = new Quaternion[2];
         for (int tick = 0; tick < 750; tick++)
         {
             foreach (var a in match.actors) a.BeforeStep();
-            Vector3[] foot = match.actors.Select(a => a.animator.legs[0].lastFoot - a.transform.position).ToArray();
             sim.Step(.02f);
-            if (tick == 400) for (int i = 0; i < 2; i++) headStart[i] = match.actors[i].animator.headPivot.localRotation;
-            if (tick > 400)
+            if (tick >= 400)
                 for (int i = 0; i < 2; i++)
                 {
-                    travel[i] += Vector3.Distance(foot[i], match.actors[i].animator.legs[0].lastFoot - match.actors[i].transform.position);
-                    // Quaternion.Angle 对极小单步角差有近似零门槛，比较窗口内姿态变化而非累加这些零值。
-                    head[i] = Mathf.Max(head[i], Quaternion.Angle(headStart[i], match.actors[i].animator.headPivot.localRotation));
+                    var actor = match.actors[i]; var anim = actor.animator;
+                    if (tick == 400) headStart[i] = anim.headPivot.localRotation;
+                    head[i] = Mathf.Max(head[i], Quaternion.Angle(headStart[i], anim.headPivot.localRotation));
+                    // Support adjustment rotates among six legs; one fixed foreleg may remain planted.
+                    // Measure excursion, not accumulated numerical jitter, and remove root motion.
+                    for (int leg = 0; leg < anim.legs.Length; leg++)
+                    {
+                        Vector3 point = actor.transform.InverseTransformPoint(anim.legs[leg].lastFoot);
+                        if (tick == 400) footStart[i][leg] = point;
+                        footSpan[i] = Mathf.Max(footSpan[i], Vector3.Distance(footStart[i][leg], point));
+                    }
+                    for (int feeler = 0; feeler < anim.antennae.Length; feeler++)
+                    {
+                        var rotation = anim.antennae[feeler].localRotation;
+                        if (tick == 400) antennaStart[i][feeler] = rotation;
+                        antenna[i] = Mathf.Max(antenna[i], Quaternion.Angle(antennaStart[i][feeler], rotation));
+                    }
                 }
         }
-        report.AppendLine($"post-finish 8..15s: winnerFoot={travel[0]:F3}, loserFoot={travel[1]:F3}, winnerHead={head[0]:F2}, loserHead={head[1]:F2}, clock={sim.MotionTime:F2}, elapsed={sim.Elapsed:F2}");
-        Require(sim.Phase == MatchPhase.Finished && sim.Winner == 0 && travel.All(t => t > .08f) && head.All(t => t > 2), "Winner or loser remains statue after recovery");
+        report.AppendLine($"post-finish 8..15s: winnerFootSpan={footSpan[0]:F3}, loserFootSpan={footSpan[1]:F3}, winnerHead={head[0]:F2}, loserHead={head[1]:F2}, winnerAntenna={antenna[0]:F2}, loserAntenna={antenna[1]:F2}, clock={sim.MotionTime:F2}, elapsed={sim.Elapsed:F2}");
+        Require(sim.Phase == MatchPhase.Finished && sim.Winner == 0, "Post-finish activity fixture did not settle its expected result");
+        for (int i = 0; i < 2; i++)
+            Require(head[i] > 2 && (footSpan[i] > .04f || antenna[i] > 3),
+                (i == 0 ? "Winner" : "Loser") + " lacks visible post-finish head and limb/antenna activity");
     }
     static void Capture(BeetleMatchController match, string name)
     {

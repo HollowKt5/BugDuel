@@ -9,9 +9,9 @@ namespace BeetleArena
     /// <summary>传给模块的值快照。没有 State、Transform、随机源或求解器引用，模块不能反写比赛。</summary>
     public readonly struct BeetleMotionContext
     {
-        public readonly float Time, SimulationTime, Speed, Size, Stamina, Footing, Balance, Distance, Facing, Side, FloorTime, Impact;
+        public readonly float Time, SimulationTime, Speed, Stamina, Footing, Balance, Distance, Facing, Side, FloorTime, Impact;
         public readonly bool Fighting, Grounded, Fallen, OnFloor, Touching, OpponentAirborne, Committed, ForebodyRaised, CatchingBalance;
-        public readonly bool OpponentContactConfirmed;
+        public readonly bool OpponentContactConfirmed, ContactConfirmedAtStart;
         public readonly BeetleIntent Intent;
         public readonly float Burst;
         public readonly float Tempo, Drive, LiftStyle, Lateral, ForelegSide, RearSupport, ForelegTargetDistance;
@@ -30,7 +30,6 @@ namespace BeetleArena
             Lateral = b.Traits.lateralPreference;
             Time = sim.MotionTime * Tempo + b.Index * .83f;
             Speed = b.Velocity.magnitude;
-            Size = b.Traits.size;
             SimulationTime = sim.MotionTime;
             Stamina = b.Stamina01;
             Footing = b.Footing;
@@ -46,6 +45,7 @@ namespace BeetleArena
             OnFloor = b.Fall.OnFloor;
             Touching = b.TouchingOpponent;
             OpponentContactConfirmed = sim.ContactSolver is IBeetlePairContacts pair && pair.HasOpponentContact(b.Index);
+            ContactConfirmedAtStart = b.Motion.ContactConfirmedAtStart;
             OpponentAirborne = other.Airborne || other.HasFallen;
             Committed = b.Committed;
             Action = b.Action;

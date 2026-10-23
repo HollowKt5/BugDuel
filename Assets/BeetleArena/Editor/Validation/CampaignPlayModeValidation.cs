@@ -5,11 +5,9 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using TMPro;
-using BeetleArena;
 using BeetleArena.Campaign;
 using BugDuel.Campaign;
 using UnityEditor;
-using UnityEditor.SceneManagement;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.InputSystem;
@@ -17,43 +15,17 @@ using UnityEngine.InputSystem.LowLevel;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
-// Runs against actual campaign scenes and the existing combat driver, with disposable player data.
-[InitializeOnLoad]
+// Compatibility entry point. Current acceptance lives in CampaignEndToEndValidation.
 public static class CampaignPlayModeValidation
 {
-    const string Key="BugDuel.CampaignAcceptance";
-    public const string Output="Artifacts/Campaign/Acceptance";
-    static CampaignPlayModeValidation()
-    {
-        string path=SessionState.GetString(Key,"");
-        if(path.Length>0)CampaignApp.StorageOverride=path;
-        EditorApplication.playModeStateChanged+=OnPlay;
-    }
+    public const string Output=CampaignEndToEndValidation.Output;
     [MenuItem("Tools/Beetle Arena/Validate Campaign Play Flow")]
-    public static void Run()
-    {
-        if(EditorApplication.isPlaying)throw new InvalidOperationException("Stop the current game before acceptance.");
-        for(int i=0;i<SceneManager.sceneCount;i++)if(SceneManager.GetSceneAt(i).isDirty)throw new InvalidOperationException("Save the current scene before acceptance.");
-        Directory.CreateDirectory(Output);
-        File.WriteAllText(Output+"/BackgroundFocus.txt","");
-        string path=Path.GetFullPath(Output+"/Save-"+DateTime.Now.ToString("yyyyMMdd-HHmmss"));
-        SessionState.SetString(Key,path);CampaignApp.StorageOverride=path;
-        File.WriteAllText(Output+"/Result.txt","RUNNING\nIsolated saves: "+path+"\n");
-        EditorSceneManager.playModeStartScene=AssetDatabase.LoadAssetAtPath<SceneAsset>("Assets/Scenes/Campaign/CampaignMainMenu.unity");
-        EditorWindow.GetWindow(Type.GetType("UnityEditor.GameView,UnityEditor")).Show();
-        EditorApplication.isPlaying=true;
-    }
-    static void OnPlay(PlayModeStateChange state)
-    {
-        if(SessionState.GetString(Key,"").Length==0)return;
-        if(state==PlayModeStateChange.EnteredPlayMode)
-        {
-            var go=new GameObject("Campaign acceptance");UnityEngine.Object.DontDestroyOnLoad(go);go.AddComponent<CampaignAcceptanceDriver>();
-        }
-        if(state==PlayModeStateChange.EnteredEditMode) { SessionState.EraseString(Key);CampaignApp.StorageOverride=null; }
-    }
+    public static void Run()=>CampaignEndToEndValidation.Run();
 }
 
+// Historical driver and its contact/background helpers are retained as diagnostic
+// reference only. No menu, command or Play-mode callback starts this obsolete flow;
+// its old UI assumptions and results must not be used as current acceptance evidence.
 public sealed class CampaignAcceptanceDriver : MonoBehaviour
 {
     CampaignApp app;
@@ -62,7 +34,7 @@ public sealed class CampaignAcceptanceDriver : MonoBehaviour
     readonly List<string> checks=new List<string>();
     readonly List<string> errors=new List<string>();
     readonly CareContactMonitor contact=new CareContactMonitor();
-    const string Output=CampaignPlayModeValidation.Output;
+    const string Output="Artifacts/Campaign/Acceptance";
     void Start()
     {
         Application.runInBackground=true;
@@ -99,6 +71,11 @@ public sealed class CampaignAcceptanceDriver : MonoBehaviour
         if(settle) { yield return null;yield return null; }
     }
     IEnumerator Idle() => Wait(()=>app&&!app.Busy,"pending transaction/transition");
+    IEnumerator CompleteNewGameNaming()
+    {
+        yield return Wait(()=>app.Modal&&FindFirstObjectByType<TMP_InputField>(),"new journey name input");
+        FindFirstObjectByType<TMP_InputField>().text="验收玩家";Click("开始旅程");
+    }
     IEnumerator Page(CampaignPage page) => Wait(()=>app&&!app.Busy&&SceneManager.GetActiveScene().name==CampaignApp.SceneName(page),"scene "+page);
     Button Button(string name) => FindObjectsByType<Button>(FindObjectsSortMode.None).FirstOrDefault(b=>b.gameObject.activeInHierarchy&&b.name==name) ?? throw new InvalidOperationException("Missing button: "+name);
     void Click(string name)
@@ -250,23 +227,25 @@ public sealed class CampaignAcceptanceDriver : MonoBehaviour
         string newTemp=app.SlotPath(1)+".tmp";
         using(var locked=new FileStream(newTemp,FileMode.Create,FileAccess.ReadWrite,FileShare.None))
         {
-            Click(CreateButton(1));yield return Idle();
+            Click(CreateButton(1));yield return CompleteNewGameNaming();yield return Idle();
             Check(app.Session==null&&!File.Exists(app.SlotPath(1))&&SceneManager.GetActiveScene().name==CampaignApp.SceneName(CampaignPage.Saves),"failed create keeps the slot empty and stays on saves");
+            Click("取消");yield return null;
         }
         if(File.Exists(newTemp))File.Delete(newTemp);
-        Click(CreateButton(0));yield return Page(CampaignPage.Greenhouse);BackgroundFocus(false);
+        Click(CreateButton(0));yield return CompleteNewGameNaming();yield return Page(CampaignPage.Greenhouse);BackgroundFocus(false);
         Check(app.ReadSlot(0)?.state.beetles.Count==2,"empty auto slot creates a durable new game");
         app.Go(CampaignPage.Saves);yield return Page(CampaignPage.Saves);
         var original=app.Session;string priorAuto=File.ReadAllText(app.SlotPath(0));
         Click(CreateButton(1));yield return null;Click("取消");yield return null;
         Check(app.Session==original&&!File.Exists(app.SlotPath(1)),"cancel new journey preserves the current game and empty slot");
-        Click(CreateButton(1));yield return null;Click("确定");yield return Page(CampaignPage.Greenhouse);
+        Click(CreateButton(1));yield return null;Click("确定");yield return CompleteNewGameNaming();yield return Page(CampaignPage.Greenhouse);
         Check(app.Session.State.beetles.Count==2,"new game through save-slot UI");
         Check(app.ReadSlot(1)?.state.selectedId==app.Session.State.selectedId&&File.ReadAllText(app.SlotPath(0))==priorAuto,"new game is durable in the chosen manual slot before subsequent autosaves");
-        original=app.Session;app.NewGame(1);yield return null;
+        original=app.Session;app.NewGame(1,"验收玩家");yield return null;
         Check(app.Session==original&&!app.Busy,"occupied slots cannot be silently replaced by create");
-        var clock=FindFirstObjectByType<CampaignLocalClock>();
-        Check(clock&&clock.GetComponent<TMP_Text>().text==CampaignLocalClock.Format(DateTime.Now)&&CampaignLocalClock.Format(new DateTime(2026,10,19,23,5,0))=="10月19日\n23:05","upper-right local date and 24-hour clock");
+        var clock=FindFirstObjectByType<CampaignCalendarReadout>();
+        var calendar=app.Session.State.clock;
+        Check(clock&&clock.GetComponentInChildren<TMP_Text>().text.Contains($"第 {calendar.Year} 年 · {calendar.Month:00} 月 · {calendar.Day:00} 日"),"upper-right calendar shows the save's game date");
         string id=app.Session.State.selectedId;long coins=app.Session.State.coins;
         var button=Button("红薯 15 G");int identity=button.GetInstanceID();
         EventSystem.current.SetSelectedGameObject(button.gameObject);yield return null;
@@ -301,12 +280,20 @@ public sealed class CampaignAcceptanceDriver : MonoBehaviour
         }
         if(File.Exists(temp))File.Delete(temp);
         app.Execute(s=>{CampaignMailboxValidation.SupplyFood(s,0);s.Feed(id,0);});yield return Idle();Check(app.Session.State.coins==coins-15,"transaction succeeds after disk recovery");
-        Click("配种 100 G · 1个后代");yield return Idle();
+        // This is a UI flow fixture. Default lifecycle durations are covered independently.
+        var originalLifeRules=app.Session.State.lifeRules.Copy();
+        app.Execute(s=>s.ConfigureLifeRules(new CampaignLifeRules {eggDays=1,larva1Days=1,larva2Days=1,larva3Days=3,prepupaDays=1,pupaDays=1,dormantDays=1,adultDays=180}));yield return Idle();
+        Click("育种");yield return null;yield return null;
+        Click("配种 100 G · 1 个后代");yield return Idle();
         var child=app.Session.State.beetles.Last();string childId=child.id;
-        Check(app.Session.State.beetles.Count==3&&!child.Adult(app.Session.State.week),"breeding through greenhouse UI");
-        Click("暖气 2周 ×0.88");yield return null;Click("开始养成");yield return Idle();
-        yield return Key(UnityEngine.InputSystem.Key.N);yield return Idle();yield return Key(UnityEngine.InputSystem.Key.N);yield return Idle();
-        Check(app.Session.Beetle(childId).Adult(app.Session.State.week),"larva grows to adult across two weeks");
+        Check(app.Session.State.beetles.Count==3&&child.stage==CampaignLifeStage.Egg,"breeding through greenhouse UI produces an egg");
+        Click("日常照料");yield return null;yield return null;
+        Click("偏暖\n体型 ×0.88");yield return null;yield return null;Click("选用营养与温控方案");yield return Idle();
+        yield return Key(UnityEngine.InputSystem.Key.N);yield return Idle();
+        Check(!app.Session.Beetle(childId).Adult(app.Session.State.week),"short lifecycle fixture still completes dormancy before adult activity");
+        yield return Key(UnityEngine.InputSystem.Key.N);yield return Idle();
+        Check(app.Session.Beetle(childId).Adult(app.Session.State.week),"egg reaches active adulthood across two weeks in the explicit short lifecycle fixture");
+        app.Execute(s=>s.ConfigureLifeRules(originalLifeRules));yield return Idle();
         app.Go(CampaignPage.Catching);yield return Page(CampaignPage.Catching);BackgroundFocus(true);Click("派遣捕虫队");yield return Idle();
         Check(app.Session.Reserved==2,"expedition reserves capacity");yield return Key(UnityEngine.InputSystem.Key.N);yield return Idle();
         Check(app.Session.State.expeditions.Count==0&&app.Session.State.beetles.Count==5,"expedition returns into reserved slots");
@@ -357,7 +344,7 @@ public sealed class CampaignAcceptanceDriver : MonoBehaviour
         if(keyboard!=null)InputSystem.RemoveDevice(keyboard);
         if(originalInput)InputSystem.settings=originalInput;if(acceptanceInput)Destroy(acceptanceInput);
         Application.logMessageReceived-=Log;
-        File.AppendAllText(Output+"/Result.txt",(failure==null?"COMPLETE PASS":"FAILED "+failure)+"\n"+string.Join("\n",errors));
+        File.AppendAllText(Output+"/Result.txt",(failure==null?"HISTORICAL DIAGNOSTIC COMPLETE (not current acceptance)":"HISTORICAL DIAGNOSTIC FAILED "+failure)+"\n"+string.Join("\n",errors));
         EditorApplication.isPlaying=false;
     }
 }

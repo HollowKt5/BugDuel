@@ -27,6 +27,9 @@ namespace BugDuel.Domain
             return value;
         }
 
+        // Display text can be cleaned; identities and foreign keys must retain exact spelling.
+        internal static string DisplayText(string value, string name) => Text(value?.Trim(), name);
+
         internal static double Range(double value, double minimum, double maximum, string name)
         {
             if (double.IsNaN(value) || double.IsInfinity(value) || value < minimum || value > maximum)
@@ -157,7 +160,7 @@ namespace BugDuel.Domain
             bool combatEnabled = true, CareProfile care = null, LifecycleProfile lifecycle = null, BreedingProfile breeding = null)
         {
             Id = DomainGuard.Id(id, nameof(id));
-            DisplayName = DomainGuard.Text(displayName, nameof(displayName));
+            DisplayName = DomainGuard.DisplayText(displayName, nameof(displayName));
             AdultLengthMm = (float)DomainGuard.Range(adultLengthMm, 0.01, 10000, nameof(adultLengthMm));
             AdultMassGrams = (float)DomainGuard.Range(adultMassGrams, 0.001, 10000, nameof(adultMassGrams));
             CombatEnabled = combatEnabled;
@@ -166,20 +169,6 @@ namespace BugDuel.Domain
             Breeding = breeding ?? new BreedingProfile();
         }
 
-        /// <summary>Detect authoring changes that need an explicit save/configuration migration.</summary>
-        public bool HasSameConfiguration(SpeciesDefinition other) => other != null && Id == other.Id && DisplayName == other.DisplayName &&
-            AdultLengthMm == other.AdultLengthMm && AdultMassGrams == other.AdultMassGrams && CombatEnabled == other.CombatEnabled &&
-            Lifecycle.EggDays == other.Lifecycle.EggDays && Lifecycle.LarvaDays == other.Lifecycle.LarvaDays &&
-            Lifecycle.PupaDays == other.Lifecycle.PupaDays && Lifecycle.AdultDays == other.Lifecycle.AdultDays &&
-            Care.MinimumTemperature == other.Care.MinimumTemperature && Care.MaximumTemperature == other.Care.MaximumTemperature &&
-            Care.MinimumHumidity == other.Care.MinimumHumidity && Care.MaximumHumidity == other.Care.MaximumHumidity &&
-            Care.NutritionLossPerDay == other.Care.NutritionLossPerDay && Care.HydrationLossPerDay == other.Care.HydrationLossPerDay &&
-            Care.RecoveryPerDay == other.Care.RecoveryPerDay && Care.StressChangePerDay == other.Care.StressChangePerDay &&
-            Care.HealthLossPerDay == other.Care.HealthLossPerDay && Care.LarvalFoods == other.Care.LarvalFoods && Care.AdultFoods == other.Care.AdultFoods &&
-            Care.OverturnedGraceDays == other.Care.OverturnedGraceDays && Care.OverturnedHealthLossPerDay == other.Care.OverturnedHealthLossPerDay &&
-            Breeding.ClutchSize == other.Breeding.ClutchSize && Breeding.CooldownDays == other.Breeding.CooldownDays &&
-            Breeding.MinimumHealth == other.Breeding.MinimumHealth && Breeding.MinimumNutrition == other.Breeding.MinimumNutrition &&
-            Breeding.MaximumStress == other.Breeding.MaximumStress && Breeding.TraitVariation == other.Breeding.TraitVariation;
     }
 
     public sealed class SpeciesCatalog

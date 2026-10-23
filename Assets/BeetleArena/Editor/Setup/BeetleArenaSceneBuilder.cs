@@ -246,7 +246,7 @@ public static class BeetleArenaSceneBuilder
         hud.phaseText = Label("Match phase", root, "准备 3", new Vector2(.5f, 0), new Vector2(0, 133), new Vector2(500, 30), 19, new Color(.93f, .79f, .47f), TextAlignmentOptions.Center);
         hud.eventText = Label("Commentary", root, "触角试探 · 即将开始", new Vector2(.5f, 0), new Vector2(0, 99), new Vector2(700, 33), 21, Color.white, TextAlignmentOptions.Center);
         Label("Rules", root, "只有落台分胜负 · 时间到双方平局\n单局含开场与击败展示不超过 3 分钟（暂停除外）", new Vector2(.5f, 0), new Vector2(0, 48), new Vector2(700, 47), 15, new Color(.73f, .78f, .69f), TextAlignmentOptions.Center);
-        hud.pauseButton = Button("Pause observation", root, new Vector2(1, .5f), new Vector2(-34, 0), new Vector2(138, 38), new Color(.20f, .28f, .23f), "暂停 [空格]", out hud.pauseText);
+        hud.pauseButton = Button("Pause observation", root, new Vector2(1, .5f), new Vector2(-34, 0), new Vector2(230, 38), new Color(.20f, .28f, .23f), "暂停 [空格]", out hud.pauseText);
         hud.pauseButton.GetComponent<RectTransform>().pivot = new Vector2(1, .5f);
         hud.pauseText.color = new Color(.90f, .92f, .82f);
         var result = Panel("Match result", root, new Vector2(.5f, .48f), Vector2.zero, new Vector2(500, 245), new Color(.04f, .065f, .05f, .98f));

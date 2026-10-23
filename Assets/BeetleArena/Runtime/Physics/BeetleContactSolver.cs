@@ -169,6 +169,25 @@ namespace BeetleArena
                     if (hadAccepted)
                         foreach (var m in retreatFallback) m.Begin();
                     accepted = false;
+                    // A hooked horn may need a small neck movement before either root can
+                    // retreat. Test these cheap joint-only routes before the full root/leg
+                    // search; rejected trials do not write animation or foot caches.
+                    for (int candidate = 0; candidate < 2 && !accepted; candidate++)
+                    {
+                        int index = (Mathf.FloorToInt(sim.MotionTime / .8f) + candidate) % 2;
+                        var state = sim.Fighters[index];
+                        if (state.Airborne || state.HasFallen || state.IsOverturned || state.ContactBlockedSeconds < .3f ||
+                            hornSupport.Active(sim) || state.Lift.Supported || actors[index].animator.IsRighting)
+                            continue;
+                        for (int direction = 0; direction < 3 && !accepted; direction++)
+                            accepted = TryHeadBeforeRetreat(index, direction, sim, dt, out contact);
+                        if (accepted)
+                        {
+                            AcceptedMotionFraction = .02f;
+                            ContactRetreatSteps++;
+                            ContactHeadRetreatSteps++;
+                        }
+                    }
                     // A valid root retreat can be rejected solely by the new articulated pose.
                     // Retry from the accepted joints, one animal at a time, through the same
                     // penetration and distance limits. No collider is disabled and no teleport occurs.
@@ -348,6 +367,29 @@ namespace BeetleArena
                 ContactFrames++;
         }
 
+        bool TryHeadBeforeRetreat(int index, int direction, BeetleSimulation sim, float dt, out bool contact)
+        {
+            contact = false;
+            for (int i = 0; i < 2; i++)
+            {
+                motion[i].Apply(0);
+                sim.Fighters[i].Velocity = proposedVelocity[i];
+            }
+            var animator = actors[index].animator;
+            Quaternion before = animator.headPivot.localRotation;
+            float limit = Mathf.Min(4, 200 * dt);
+            bool changed = direction == 0 ? animator.TryLowerHeadForRetreat(limit) :
+                animator.TryTurnHeadForRetreat(direction == 1 ? limit : -limit);
+            if (!changed) return false;
+            Physics.SyncTransforms();
+            Cache();
+            contact = Constrain(sim, true, true);
+            float turn = Quaternion.Angle(before, animator.headPivot.localRotation);
+            // This is only a pose proposal. Failed trials leave the animation caches
+            // untouched; AcceptSolvedPose publishes the accepted joint at the end of Solve.
+            return MotionAccepted() && turn > .1f && turn <= limit + .01f;
+        }
+
         // 只能对最终接受的姿态结算摩擦；试算与碰撞回退不得提前消耗动量。
         void ResolveLandingContact(int index, BeetleSimulation sim, float dt)
         {
@@ -372,8 +414,6 @@ namespace BeetleArena
         bool TryLandingContact(BeetleContactRig rig, bool forestOnly, float floorHeight, out Vector3 contactNormal)
         {
             contactNormal = Vector3.up;
-            if (arena == null)
-                return false;
             foreach (var surface in arena)
             {
                 if (!surface || !surface.enabled || !surface.gameObject.activeInHierarchy || forestOnly &&
@@ -1139,18 +1179,20 @@ namespace BeetleArena
         // 用于防止关节动作插入台面；平移后由 ContactRig 同步平移缓存包围盒。
         bool ResolveArena(BeetleContactRig rig)
         {
-            if (arena == null)
-                return false;
             bool moved = false;
             for (int iteration = 0; iteration < 16; iteration++)
             {
                 Vector3 correction = Vector3.zero;
                 float deepest = 0;
                 foreach (var surface in arena)
+                {
+                    // Collider can be disabled or destroyed after this solver is constructed.
+                    // Check once per surface, not again for every beetle part.
+                    if (!surface || !surface.enabled || !surface.gameObject.activeInHierarchy)
+                        continue;
                     for (int i = 0; i < rig.shapes.Length; i++)
                     {
-                        if (!surface || !surface.enabled || !surface.gameObject.activeInHierarchy ||
-                            !rig.bounds[i].Intersects(surface.bounds))
+                        if (!rig.bounds[i].Intersects(surface.bounds))
                             continue;
                         var c = rig.shapes[i];
                         rig.shapeTransforms[i].GetPositionAndRotation(out var position, out var rotation);
@@ -1169,6 +1211,7 @@ namespace BeetleArena
                                 correction = Vector3.up * ((depth + skin) / normal.y);
                         }
                     }
+                }
 
                 if (deepest < .0005f)
                     break;
@@ -1191,10 +1234,12 @@ namespace BeetleArena
                 LastWorstContact = "between beetles";
             foreach (var rig in rigs)
                 foreach (var surface in arena)
+                {
+                    if (!surface || !surface.enabled || !surface.gameObject.activeInHierarchy)
+                        continue;
                     for (int i = 0; i < rig.shapes.Length; i++)
                     {
-                        if (!surface || !surface.enabled || !surface.gameObject.activeInHierarchy ||
-                            !rig.bounds[i].Intersects(surface.bounds))
+                        if (!rig.bounds[i].Intersects(surface.bounds))
                             continue;
                         var shape = rig.shapes[i];
                         rig.shapeTransforms[i].GetPositionAndRotation(out var position, out var rotation);
@@ -1207,6 +1252,7 @@ namespace BeetleArena
                                 LastWorstContact = shape.name + " against " + surface.name;
                         }
                     }
+                }
 
             return depth;
         }

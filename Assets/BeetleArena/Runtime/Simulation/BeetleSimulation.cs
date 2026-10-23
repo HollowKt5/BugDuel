@@ -435,7 +435,7 @@ namespace BeetleArena
                         if (b.TouchingOpponent && BeetleTactics.CanCommit(b, 22, .3f))
                             SetAction(b, BeetleAction.ShoveWindup, DecisionRange(b, .18f, .28f) / b.Traits.tempo);
                         else
-                            Decide(b, opponent, distance, facing, edge, threatened);
+                            Decide(b, distance, facing, edge, threatened);
                         break;
                     case BeetleAction.ChargeWindup:
                         SetAction(b, BeetleAction.Charge, .48f);
@@ -482,7 +482,7 @@ namespace BeetleArena
                         SetAction(b, BeetleAction.Brace, .5f);
                         break;
                     default:
-                        Decide(b, opponent, distance, facing, edge, threatened);
+                        Decide(b, distance, facing, edge, threatened);
                         break;
                 }
             }
@@ -505,7 +505,7 @@ namespace BeetleArena
                     desiredVelocity[b.Index] = toward * speed * Mathf.Clamp01((facing + .1f) / .8f);
                     staminaCost = 1.5f;
                     if (distance < EngagementDistance && b.DecisionTime <= 0)
-                        Decide(b, opponent, distance, facing, edge, threatened);
+                        Decide(b, distance, facing, edge, threatened);
                     break;
                 case BeetleAction.Circle:
                     Vector2 tangent = new Vector2(-toward.y, toward.x) * b.CircleDirection;
@@ -601,7 +601,7 @@ namespace BeetleArena
 
         // 按优先级选择下一动作：个体短恢复/威胁响应 → 调整朝向/距离 → 防守 → 试探或进攻。
         // 一个 choice 会参与多个顺序分支；各阈值不是相互独立的攻击概率。
-        void Decide(BeetleState b, BeetleState opponent, float distance, float facing, float edge, bool threatened)
+        void Decide(BeetleState b, float distance, float facing, float edge, bool threatened)
         {
             // 限制接近过程中提前重选动作的频率，避免每个模拟步都改变主意。
             b.DecisionTime = DecisionRange(b, .18f, .36f) / b.Traits.tempo;
@@ -616,7 +616,7 @@ namespace BeetleArena
                 return;
             }
 
-            if (!view.CanPressRecovery && BeetleRecoveryPolicy.WantsRest(b, Settings, b.CombatPhase == ExchangePhase.Recovery, threatened))
+            if (!view.CanPressRecovery && BeetleRecoveryPolicy.WantsRest(b, b.CombatPhase == ExchangePhase.Recovery, threatened))
             {
 #if UNITY_EDITOR
                 BeetleDebugHooks.Choose(this, b.Index, false, -1, "recovery-requested");
@@ -771,7 +771,7 @@ namespace BeetleArena
             defender.ImpactVisual = Mathf.Clamp01(impulse * .35f);
             attacker.Contacts++;
             defender.Contacts++;
-            ScoreContact(attacker, defender, hit.probe ? .22f : hit.charge ? 1.25f : .85f);
+            ScoreContact(attacker, hit.probe ? .22f : hit.charge ? 1.25f : .85f);
             BeetleEnergyPolicy.ReceiveContact(attacker, defender, hit.probe ? .18f : hit.charge ? 1 : .65f);
             if (hit.probe)
             {
@@ -839,7 +839,7 @@ namespace BeetleArena
                 b.Contacts++;
                 a.Motion.MarkHit();
                 a.AttackApplied = true;
-                ScoreContact(a, b, Mathf.Clamp(force, .55f, 1.2f));
+                ScoreContact(a, Mathf.Clamp(force, .55f, 1.2f));
                 if (sample.Contact == BeetleMotionContact.Foreleg)
                     a.ForelegHits++;
                 b.Stamina = Mathf.Max(0, b.Stamina - force * 1.5f);
@@ -914,7 +914,7 @@ namespace BeetleArena
             attacker.Velocity *= .2f;
             attacker.Contacts++;
             defender.Contacts++;
-            ScoreContact(attacker, defender, 1.35f);
+            ScoreContact(attacker, 1.35f);
             SetAction(attacker, BeetleAction.Lifting, lift.StrokeDuration + .35f);
             SetAction(defender, BeetleAction.Lifted, lift.StrokeDuration + .35f);
             Raise(FighterName(attacker.Index) + "角下托举，撬起前身并扭开抓地", attacker.Index, .85f);
@@ -1236,7 +1236,7 @@ namespace BeetleArena
             }
         }
 
-        void ScoreContact(BeetleState attacker, BeetleState defender, float points)
+        void ScoreContact(BeetleState attacker, float points)
         {
             attacker.AttackScore += points;
             attacker.FailedAttacks = 0;

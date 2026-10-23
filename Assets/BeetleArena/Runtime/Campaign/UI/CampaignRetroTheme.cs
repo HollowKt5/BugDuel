@@ -1,3 +1,4 @@
+using BugDuel.Campaign;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
@@ -7,13 +8,14 @@ namespace BeetleArena.Campaign
     /// <summary>Presentation-only palette shared by the campaign windows and existing combat HUD.</summary>
     public static class CampaignRetroTheme
     {
-        const string SeasonKey="BugDuel.Retro.Season", ModeKey="BugDuel.Retro.Dark";
+        const string ModeKey="BugDuel.Retro.Dark";
         public static bool Dark => PlayerPrefs.GetInt(ModeKey,0)!=0;
-        public static int Season => Mathf.Clamp(PlayerPrefs.GetInt(SeasonKey,0),0,3);
-        public static void SetAppearance(int season,bool dark)
-        { PlayerPrefs.SetInt(SeasonKey,Mathf.Clamp(season,0,3));PlayerPrefs.SetInt(ModeKey,dark?1:0);PlayerPrefs.Save(); }
-        public static void SetMode(bool dark)=>SetAppearance(Season,dark);
-        public static void SetSeason(int season)=>SetAppearance(season,Dark);
+        public static int Season => SeasonFor(CampaignApp.Instance?.Session?.State.clock);
+        // Calendar changes and loaded saves already refresh campaign views through App.Changed.
+        // Without a journey, the main menu uses spring; system dates and old theme preferences do not apply.
+        public static int SeasonFor(CampaignClock clock) => clock==null?0:(clock.Month-1)/3;
+        public static void SetMode(bool dark)
+        { PlayerPrefs.SetInt(ModeKey,dark?1:0);PlayerPrefs.Save(); }
         public static Color Hex(uint rgb)=>new Color(((rgb>>16)&255)/255f,((rgb>>8)&255)/255f,(rgb&255)/255f,1);
         static Color Mode(uint light,uint dark)=>Hex(Dark?dark:light);
         public static Color Window=>Mode(0xece9d8,0x1f2327);

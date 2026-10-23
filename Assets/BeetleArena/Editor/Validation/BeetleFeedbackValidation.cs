@@ -5,9 +5,7 @@ using System.Reflection;
 using System.Text;
 using BeetleArena;
 using UnityEditor;
-using UnityEditor.SceneManagement;
 using UnityEngine;
-using UnityEngine.SceneManagement;
 
 public static class BeetleFeedbackValidation
 {
@@ -44,6 +42,7 @@ public static class BeetleFeedbackValidation
             Shot(m,"Settings.png",false);
             ui.closeButton.onClick.Invoke(); Require(!ui.panel.activeSelf,"Settings close failed");
             report.AppendLine("PASS: settings open/close, toggle on/off, immediate clear, suppressed emission, preference reload.");
+            ValidateRematchResult(m,report);
             for(int arena=0;arena<2;arena++)
             {
                 m.SelectArena(arena); m.StartMatch(71); int beforeSounds=m.audioFeedback.PlayedContacts, beforeSparks=sparks.BurstCount;
@@ -85,6 +84,30 @@ public static class BeetleFeedbackValidation
             if(hadPreference) PlayerPrefs.SetInt(HornClashSparks.PreferenceKey,oldPreference); else PlayerPrefs.DeleteKey(HornClashSparks.PreferenceKey);
             PlayerPrefs.Save(); File.WriteAllText(Folder+"/Validation.txt",report.ToString());
         }
+    }
+    static void ValidateRematchResult(BeetleMatchController match,StringBuilder report)
+    {
+        bool slowMotion=match.defeatSlowMotion;
+        try
+        {
+            match.defeatSlowMotion=false;match.StartMatch(71);
+            // This prepares the result UI only; natural contact checks below retain their own matches.
+            typeof(BeetleSimulation).GetMethod("Finish",BindingFlags.Instance|BindingFlags.NonPublic)
+                .Invoke(match.Simulation,new object[]{0,BeetleResultReason.RingOut});
+            match.hud.Refresh();
+            string outgoing=match.hud.resultText.text;
+            Require(outgoing.Contains("获胜") && match.hud.resultPanel.activeSelf && match.hud.rematchButton.IsInteractable(),
+                "Winning result/rematch button fixture is not visible and ready");
+            int round=match.RoundNumber;
+            match.hud.rematchButton.onClick.Invoke();
+            Require(match.RoundNumber==round+1 && match.Simulation.Seed==71 && match.Simulation.Phase==MatchPhase.Countdown,
+                "Rematch button did not start the same-seed countdown");
+            Require(match.hud.resultText.text==outgoing,"Rematch overwrote the outgoing winner with the new countdown result");
+            match.hud.Refresh();match.hud.Refresh();
+            Require(match.hud.resultText.text==outgoing,"Countdown refresh changed the outgoing result text");
+            report.AppendLine("PASS: actual rematch button and repeated countdown refresh preserve the outgoing winner text (edit-mode state check).");
+        }
+        finally { match.defeatSlowMotion=slowMotion;match.StartMatch(71); }
     }
     static void Shot(BeetleMatchController m,string name,bool closeup)
     {

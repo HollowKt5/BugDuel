@@ -1,5 +1,7 @@
 # BugDuel 养殖、物种与内容扩展框架
 
+本文记录早期 `BeetleNursery` 独立养殖原型及可复用底层接口。正式经营流程已经另在 `Scenes/Campaign/` 接入市场、库存、联赛、拍卖、日历与建造；当前入口和功能文件索引见 [README.md](README.md)、[CodeMap.md](CodeMap.md)、[Campaign.md](Campaign.md)。下文的“尚未接入”不代表正式经营流程的现状。
+
 > 根据当前代码核对：2026-10-15。本文说明已经提供的接口、职责与接入约束；示例参数属于游戏调校。
 > 路径均相对于项目根目录。场景、物理与动作细节继续参见 [Intro.md](Intro.md)、[TechnicalGuide.md](TechnicalGuide.md) 和 [MotionModules.md](MotionModules.md)。
 
@@ -31,7 +33,7 @@ Configuration 作者资产 → 不可变领域定义 / 显式战斗标定
 | 食物定义 | `Domain/FoodCatalog.cs` | 稳定食物 ID、显示名称和不可变单份营养/水分定义。 |
 | 应用会话 | `Runtime/Application/BeetleRosterSession.cs` | 个体档案、参赛占用、环境选择、结算账本及事务提交。 |
 | 养殖场景入口 | `Runtime/Application/BeetleHusbandryController.cs` | 场景时间、当前选择、事故命令、读档与保存策略。 |
-| 养殖表现 | `Runtime/Presentation/BeetleHusbandryHud.cs`、`BeetleHusbandryView.cs` | 按钮和状态显示；只读快照播放进食、挣扎、扶正和死亡姿态。 |
+| 养殖表现 | `Runtime/Presentation/UI/BeetleHusbandryHud.cs`、`Runtime/Presentation/Husbandry/BeetleHusbandryView.cs` | 按钮和状态显示；只读快照播放进食、挣扎、扶正和死亡姿态。 |
 | 内容适配 | `Runtime/Application/BeetleContentService.cs` | 内容 DTO、JSON 解析、显式本地文件读取、版本发布。 |
 | 战斗边界 | `Runtime/Integration/BeetleMatchEntrant.cs`、`BeetleMatchResult.cs` | 局前输入快照、胜负确定时的结果快照。 |
 | 持久化 | `Domain/BeetleSaveData.cs`、`Runtime/Persistence/BeetleRosterStore.cs` | 个体 DTO 映射、整个名册 JSON 的校验与原子替换。 |
@@ -44,6 +46,7 @@ Configuration 作者资产 → 不可变领域定义 / 显式战斗标定
 ## 3. 长期个体与养殖 API
 
 `BugDuel.Domain.BeetleIndividual` 的 `Id` 是长期身份，`SpeciesId` 是物种外键；显示名称、选手槽位和资源路径都不能替代它们。
+个体、物种、食物和环境的 `DisplayName` 在构造/恢复时去除首尾空白，保留内部空格并拒绝空白名称；ID、亲缘引用和比赛编号继续精确校验，不自动 Trim 后改变引用关系。
 `BugDuel.Domain.BeetleTraits` 保存 0～1 的力量、防御、速度与耐力潜力；`BeetleArena.BeetleTraits` 则是单局游戏数值。调用处同时使用两个命名空间时应明确类型，不能把两种属性混用。
 `BeetleCondition` 的健康、营养、水分、压力为 0～100；定义和值对象不可变，动态条件只经领域服务替换。`RosterSession` 读取返回副本，外部修改副本不会更新名册。
 
@@ -58,6 +61,9 @@ Configuration 作者资产 → 不可变领域定义 / 显式战斗标定
 | `BeetleSaveMapper.Export / Restore` | 个体与版本化 DTO 互转；还原时检查当前物种、年龄和亲缘数据。 |
 
 生命周期为卵 → 幼虫 → 蛹 → 成虫 → 死亡。推进在阶段结束、营养/水分阈值、救助宽限、恢复与死亡边界分段，支持一次推进跨越多个阶段。
+总龄和阶段龄记录已经经历的时间，不再要求等于当前配置的阶段起点之和。阶段时长热更后，读档和喂食、扶正保留已有阶段与年龄；若当前阶段已经到期，下次显式推进（含 0 天边界结转）才结束该阶段，时间不倒退，也不会在读档时直接死亡。
+翻倒计时在构造/恢复时限制为不大于阶段龄，不再用 `+ 0.000001` 扩张合法上限；负数、NaN/Infinity，以及站立状态带翻倒计时等矛盾记录仍拒绝。
+`BeetleCondition` 统一把有限的健康、营养、水分、压力截断到 0–100；喂食、时间推进、繁殖消耗和赛后恢复直接传计算结果，不再各自 Clamp。NaN/Infinity 仍是错误；内容参数、身份、阶段与亲缘等结构约束继续严格校验，`DomainGuard.Range` 不承担游戏状态饱和运算。
 营养与水分会减少；环境压力、缺乏营养/水分会影响健康；满足条件时可以恢复。死亡为终止状态，不会继续增长年龄或自动复活。
 幼虫和成虫有独立食谱；单份 `FoodPortion` 只能指定一种 `FoodKind`。卵、蛹不能通过成虫食物绕过阶段限制。
 `FoodKind.SweetPotato=32` 扩展原有位标记，旧食物数值保持不变；默认成虫允许水果、果冻和红薯。`FoodCatalog.CreateDefaults()` 提供下表定义，`session.Foods.Definitions` 用于界面列出选项，`session.Feed(individualId, foodId)` 按 ID 饲喂。每份数值是游戏调校，不是现实养殖建议；目前没有食物库存或购买消耗。
@@ -73,6 +79,7 @@ Configuration 作者资产 → 不可变领域定义 / 显式战斗标定
 `CareProfile.OverturnedGraceDays` 默认 `.05`，`OverturnedHealthLossPerDay` 默认 `500`；超过宽限后持续扣健康，环境、缺营养/水分造成的伤害仍可叠加。健康归零后正常进入死亡，保留最后的翻倒姿态和计时，但停止挣扎和计时。死亡不能通过扶正或喂食复活；只有 `HelpRight` 成功才清除活体翻倒状态和计时。
 应用接口为 `session.MarkOverturned(id)` 和 `session.HelpRight(id)`，两者都拒绝参赛占用个体。养殖场景控制器会根据清洁度与拥挤程度产生游戏事故，再发送 `MarkOverturned` 命令；这与战斗模拟的局内倒地状态相互独立。
 繁殖要求同物种、不同的雌雄成虫、正常姿态、合格条件与冷却；拒绝记录中的祖孙和共同祖先组合。`IBreedingRule` 可添加规则，输入为副本；`IRandomSource.NextUnit()` 必须在 `[0,1)`。
+规则评估只建立两份亲本快照，各条规则后恢复其可变状态以防互相污染，规则不得保留快照引用。主动返回拒绝理由属于业务失败；只有随机值本身违反 `[0,1)` 契约才返回 `InvalidRandomSource`，随机实现或规则中的程序异常原样传播，不改写成业务拒绝。
 子代潜力从双亲继承并带配置中的变异，出生阶段为卵。父母消耗和冷却只在全部验证、随机生成成功后提交；ID 全局唯一由应用会话保证。
 未来库存扣除、付费繁殖、离线时间来源应在应用事务层处理，不向领域服务添加 UI、钱包或磁盘访问。
 
@@ -83,6 +90,7 @@ Configuration 作者资产 → 不可变领域定义 / 显式战斗标定
 应用通过 `AvailableHabitats(id)` 列出当前阶段可选环境，`SelectHabitat(id, habitatId)` 保存选择，再由 `AdvanceInSelectedHabitat(id, days)` 推进。
 `AdvanceInHabitat(id, habitatId, days)` 同时校验并记录本次环境；未选择环境或阶段不适合时返回失败。换环境不会立即改变健康、清除救助计时或自行消耗时间。
 推进前计算到首次不兼容阶段的最大天数；超出时整体返回 `RelocationRequired`，不部分消耗时间。可一次跨越连续允许的阶段，精确推进到蜕变边界后保留原选择，下一次推进前迁居。
+阶段热更缩短后，若专用箱中的当前阶段已到期，第一次合法推进仅结转这个零时间阶段边界、返回阶段事件，不消耗请求的照料时间；之后可选择下一阶段的箱子。这样不会卡在“旧箱不能推进、新箱不能入住”的状态。
 
 下面代码可放在已导入 `System`、`System.Collections.Generic`、`BugDuel.Domain` 和 `BeetleArena` 的应用方法中；它只创建内存档案：
 
@@ -155,9 +163,9 @@ catch { session.Cancel(contest.MatchId); throw; }
 ## 7. 存档事务与版本
 
 `session.Export()` 同时导出 `Individuals`、`AppliedMatchIds`、`HabitatSelections`。有活动比赛时禁止导出/还原，避免保存只占用了一半或尚未结算的比赛。
-`session.Restore(data)` 先验证全部个体、账本与环境引用，再一次替换当前名册；错误输入不部分覆盖现有状态。未知物种、未知环境和不兼容生命周期需要显式迁移。
+`session.Restore(data)` 先验证全部个体、账本与环境引用，再一次替换当前名册；错误输入不部分覆盖现有状态。未知物种、未知环境仍需显式迁移。冷却天数用当前上限截断（例如旧档 8 天、新上限 7 天，载入为 7 天），阶段时长调整不再让整个旧档失效；历史年龄与救助计时保持不变。
 `BeetleRosterSaveData.Version` 是容器格式版本，`BeetleSaveData.Version` 是个体格式版本；二者当前均为 1。内容版本属于另一个概念，不能拿存档格式号代替内容修订号。
-个体 DTO 增加 `IsOverturned` 与 `OverturnedDays`，旧 Version 1 档缺少这两个字段时按 `false/0` 还原。检查会拒绝非有限/负计时、正常姿态却有非零翻倒计时、幼体翻倒、超出成虫阶段年龄的计时，以及死亡姿态与生命周期不一致的组合。克隆、保存、读取和内容更新均保留有效的救助状态，不能借此重新获得宽限。
+个体 DTO 增加 `IsOverturned` 与 `OverturnedDays`，旧 Version 1 档缺少这两个字段时按 `false/0` 还原。检查会拒绝非有限/负计时、正常姿态却有非零翻倒计时、幼体翻倒、超出历史阶段年龄的计时，以及死亡阶段与健康值不一致的组合。克隆、保存、读取和内容更新均保留有效的救助状态，不能借此重新获得宽限。
 `BeetleRosterJsonStore` 实现 `IBeetleRosterStore`，构造时必须传入调用方明确提供的绝对文件路径；没有默认 `persistentDataPath`、全局单例或自动覆盖资源的行为。
 保存先做结构校验，再写同目录唯一临时文件并刷新，最后 `File.Replace` 或 `File.Move`；替换失败保留旧档，不通过删除旧档实现降级覆盖。
 加载只返回 DTO，不自动应用到游戏；缺文件、损坏结构和未知格式版本均明确报告。缺失数组、重复个体 ID、重复账本 ID、重复环境绑定或悬空个体引用会被拒绝。
@@ -178,7 +186,7 @@ session.Restore(store.Load());       // 全量验证后提交，不自动启动�
 `BeetleContentExamples.Create()` 提供两种示例甲虫及三个环境的初始内容；[Content/Examples/BeetleContent.v2.json](Content/Examples/BeetleContent.v2.json) 是可直接应用到该初始内容的第2版包。它位于项目内容目录，部署时由应用提供实际路径。请从 `ExportJson()` 模板修改；允许为零的标量字段被省略时会采用 JSON 的零值默认，不继承旧版值。
 `SchemaVersion` 当前导出为 2，新增物种字段 `OverturnedGraceDays` 与 `OverturnedHealthLossPerDay`。读取 Schema 1 时执行明确迁移：救助参数采用 `.05/500`，原默认成虫食谱位值 `17` 升级为 `49` 以加入红薯，其他自定义食谱保持原值。不能因为旧包缺字段就把救助伤害静默设成零；Schema 2 中显式设零则属于作者选择。
 内容 `Version` 必须严格大于当前版本，与 SchemaVersion 分开递增。整个包先构造不可变 `ContentCatalog`，再由 `session.TryUpdateContent` 验证已有档案后发布。
-有活动比赛、移除正在使用的物种、破坏已有年龄/冷却约束、删除仍被选择的环境，或让所选环境不再适合现有活体阶段，都会被拒绝；需先迁居，失败保留原目录和个体。死亡记录可保留原位置。
+有活动比赛、移除正在使用的物种、删除仍被选择的环境，或让所选环境不再适合现有活体阶段，都会被拒绝；需先迁居，失败保留原目录和个体。阶段时长和冷却上限调整按上述兼容策略处理。死亡记录可保留原位置。
 更新养殖范围、食谱、阶段时长、救助参数或繁殖条件仍要通过已有档案兼容检查；这不是允许任意重写旧存档的迁移器。正在救助的累计天数不清零，新的宽限/伤害参数从后续推进起生效。
 养殖界面的内容读取按钮调用 `ReloadContent()`，读取同存档目录的 `beetle-content.json`；它不会重新加载名册，也不会访问网络。启动场景时会先尝试读取该内容文件，再还原名册；失败更新不替换当前有效内容。
 
@@ -216,6 +224,7 @@ if (!update.Success) throw new InvalidOperationException(update.ErrorMessage);
 | 入口 | 覆盖内容 |
 | --- | --- |
 | `BeetleDomainValidation.Run()` | 生命周期、饲喂、繁殖、无效输入、存档与领域隔离。 |
+| `DefensiveProgrammingValidation.Run()` | 本次重构的 10 组定向检查：异常归类与日志、繁殖隔离、旧档清洗、阶段热更、环境迁移、事务与接触数据；报告见 `Artifacts/DefensiveReview/Verification.txt`。 |
 | `BeetleHusbandryInteractionValidation.Run()` | 食物目录、救助宽限与死亡、时间分段一致、扶正边界、占用、存档及内容迁移。 |
 | `BeetleSpeciesIntegrationValidation.Run()` | 物种作者配置、参赛快照、独立属性、模型匹配与结果冻结。 |
 | `BeetleRosterSessionValidation.Run()` | 名册副本、占用、结算幂等、取消、导入导出和应用事务。 |

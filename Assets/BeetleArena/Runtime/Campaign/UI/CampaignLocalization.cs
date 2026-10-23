@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
+using BugDuel.Campaign;
 using TMPro;
 using UnityEngine;
 using UnityEngine.Localization;
@@ -14,7 +15,7 @@ namespace BeetleArena.Campaign
     public static class CampaignLocalization
     {
         public const string TableName="GameText",FontTable="GameFonts";
-        [Serializable] public sealed class Entry { public string key,zh,en; public string[] sites; }
+        [Serializable] public sealed class Entry { public string key,source,zh,en; public string[] sites; }
         [Serializable] public sealed class Catalog { public Entry[] entries; }
         sealed class Pattern { public Entry entry; public Regex regex; public int[] arguments; }
         static Dictionary<string,Entry> entries;
@@ -60,32 +61,41 @@ namespace BeetleArena.Campaign
             if(entries!=null)return;
             var source=Resources.Load<TextAsset>("CampaignLanguagePatterns");
             var all=source?JsonUtility.FromJson<Catalog>(source.text).entries:Array.Empty<Entry>();
-            entries=all.ToDictionary(e=>e.zh);
+            entries=all.ToDictionary(e=>string.IsNullOrEmpty(e.source)?e.zh:e.source,StringComparer.Ordinal);
+            // New UI may already use the clean Chinese wording, while old saves and authored
+            // scenes retain their original source. Both resolve to the same table entry.
+            foreach(var entry in all)if(!entries.ContainsKey(entry.zh))entries.Add(entry.zh,entry);
             var placeholder=new Regex(@"\{(\d+)\}");
-            patterns=all.Where(e=>placeholder.IsMatch(e.zh)).OrderByDescending(e=>placeholder.Replace(e.zh,"").Length)
+            patterns=entries.Where(e=>placeholder.IsMatch(e.Key)).OrderByDescending(e=>placeholder.Replace(e.Key,"").Length)
                 .Select(e=>
                 {
                     var arguments=new List<int>();int offset=0;string regex="\\A";
-                    foreach(Match match in placeholder.Matches(e.zh))
+                    foreach(Match match in placeholder.Matches(e.Key))
                     {
-                        regex+=Regex.Escape(e.zh.Substring(offset,match.Index-offset))+"(.*?)";
+                        regex+=Regex.Escape(e.Key.Substring(offset,match.Index-offset))+"(.*?)";
                         arguments.Add(int.Parse(match.Groups[1].Value));offset=match.Index+match.Length;
                     }
-                    regex+=Regex.Escape(e.zh.Substring(offset))+"\\z";
-                    return new Pattern{entry=e,arguments=arguments.ToArray(),regex=new Regex(regex,RegexOptions.Singleline|RegexOptions.CultureInvariant)};
+                    regex+=Regex.Escape(e.Key.Substring(offset))+"\\z";
+                    return new Pattern{entry=e.Value,arguments=arguments.ToArray(),regex=new Regex(regex,RegexOptions.Singleline|RegexOptions.CultureInvariant)};
                 }).ToArray();
             // Legacy messages are assembled in the domain. Translate only their known display fragments,
             // longest first; neither saved data nor identifiers are changed. Unknown hot-update text is retained.
-            fragments=new Regex(string.Join("|",all.Where(e=>!placeholder.IsMatch(e.zh)).OrderByDescending(e=>e.zh.Length).Select(e=>Regex.Escape(e.zh))),RegexOptions.CultureInvariant);
+            fragments=new Regex(string.Join("|",entries.Keys.Where(e=>!placeholder.IsMatch(e)).OrderByDescending(e=>e.Length).Select(e=>
+                (char.IsLetter(e[0])&&e[0]<128?"(?<![A-Za-z_@./])":"")+Regex.Escape(e)+(char.IsLetter(e[e.Length-1])&&e[e.Length-1]<128?"(?![A-Za-z_@./])":""))),RegexOptions.CultureInvariant);
         }
         public static string Text(string source)
         {
-            if(string.IsNullOrEmpty(source)||!English||!table)return source;
-            EnsurePatterns();
+            if(string.IsNullOrEmpty(source))return source;
             if(cache.TryGetValue(source,out var translated))return translated;
-            translated=Translate(source,0);
+            bool localize=table;
+            if(localize)EnsurePatterns();
+            translated=CampaignDisplayText.Localize(source,text=>localize?Translate(text,0):text);
             if(cache.Count>=1024)cache.Clear();cache[source]=translated;return translated;
         }
+        public static string Literal(string value)=>CampaignDisplayText.Literal(value);
+        public static string Name(CampaignBeetle beetle)=>CampaignDisplayText.Name(beetle);
+        public static string Name(HallRecord record)=>CampaignDisplayText.Name(record);
+        public static string Name(CampaignAttachment attachment)=>CampaignDisplayText.Name(attachment);
         static string Value(Entry entry)=>table.GetEntry(entry.key)?.Value??entry.zh;
         static string Translate(string source,int depth)
         {
@@ -114,13 +124,17 @@ namespace BeetleArena.Campaign
                 {
                     string folder=CampaignApp.StorageOverride??System.IO.Path.Combine(Application.persistentDataPath,"Campaign");
                     string path=System.IO.Path.Combine(folder,"settings.json");
-                    try{if(System.IO.File.Exists(path))language=JsonUtility.FromJson<CampaignPreferences>(System.IO.File.ReadAllText(path)).language;}
-                    catch(System.IO.IOException){ }
+                    try { if(System.IO.File.Exists(path))language=CampaignJson.Read<CampaignPreferences>(path).language; }
+                    catch(Exception error) when(CampaignApp.IsExternalDataFailure(error))
+                    { Debug.LogWarning("语言设置读取失败，使用默认语言：\n"+error); }
+                    catch(Exception error) { Debug.LogException(error); }
                 }
                 Initialize(language);
             }
             foreach(var label in root.GetComponentsInChildren<TMP_Text>(true))
             {
+                var input=label.GetComponentInParent<TMP_InputField>(true);
+                if(input&&(input.textComponent==label||input.placeholder==label))continue;
                 // A second theme pass must not replace the original source with its translation.
                 var binding=label.GetComponent<CampaignLocalizedLabel>();
                 if(binding)binding.Refresh();else Bind(label,label.text);

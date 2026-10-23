@@ -5,7 +5,11 @@ namespace BugDuel.Domain
 {
     public interface IRandomSource { double NextUnit(); }
 
-    /// <summary>Optional additional eligibility policy. Inputs are isolated snapshots. Null means eligible.</summary>
+    /// <summary>
+    /// Optional additional eligibility policy. Inputs are reusable snapshots, reset before each rule;
+    /// do not retain them. Return a rejection reason for a business failure, or null when eligible.
+    /// Unexpected implementation exceptions propagate to the application boundary.
+    /// </summary>
     public interface IBreedingRule
     {
         string RejectionReason(SpeciesDefinition species, BeetleIndividual mother, BeetleIndividual father);
@@ -66,15 +70,18 @@ namespace BugDuel.Domain
                 ids[index] = id;
             }
             if (random == null) return new BreedingResult("MissingRandomSource", "An explicit random source is required.");
-            try
+            if (additionalRules.Length != 0)
             {
+                BeetleIndividual ruleMother = mother.Clone();
+                BeetleIndividual ruleFather = father.Clone();
                 foreach (IBreedingRule rule in additionalRules)
                 {
-                    string rejection = rule.RejectionReason(species, mother.Clone(), father.Clone());
+                    string rejection = rule.RejectionReason(species, ruleMother, ruleFather);
                     if (rejection != null) return new BreedingResult("CustomRuleRejected", rejection);
+                    RestoreRuleSnapshot(ruleMother, mother);
+                    RestoreRuleSnapshot(ruleFather, father);
                 }
             }
-            catch (Exception exception) { return new BreedingResult("CustomRuleFailed", exception.Message); }
             var children = new List<BeetleIndividual>();
             var events = new List<HusbandryEvent>();
             try
@@ -91,7 +98,7 @@ namespace BugDuel.Domain
                     events.Add(new HusbandryEvent(HusbandryEventKind.Born, child));
                 }
             }
-            catch (Exception exception) { return new BreedingResult("InvalidRandomSource", exception.Message); }
+            catch (InvalidRandomValueException exception) { return new BreedingResult("InvalidRandomSource", exception.Message); }
             // Commit only after validation and generation succeed; rejected commands leave both parents unchanged.
             mother.BreedingCooldownDays = profile.CooldownDays;
             father.BreedingCooldownDays = profile.CooldownDays;
@@ -104,15 +111,35 @@ namespace BugDuel.Domain
         private static bool Ready(BeetleIndividual beetle, BreedingProfile profile) => beetle.Condition.Health >= profile.MinimumHealth &&
             beetle.Condition.Nutrition >= profile.MinimumNutrition && beetle.Condition.Hydration >= profile.MinimumNutrition &&
             beetle.Condition.Stress <= profile.MaximumStress && beetle.BreedingCooldownDays == 0;
+
+        // The value objects and identity fields are immutable. Reuse two snapshots while preventing
+        // a rule that calls a domain service from changing the input observed by the next rule.
+        private static void RestoreRuleSnapshot(BeetleIndividual snapshot, BeetleIndividual source)
+        {
+            snapshot.Stage = source.Stage;
+            snapshot.Condition = source.Condition;
+            snapshot.TotalAgeDays = source.TotalAgeDays;
+            snapshot.StageAgeDays = source.StageAgeDays;
+            snapshot.BreedingCooldownDays = source.BreedingCooldownDays;
+            snapshot.IsOverturned = source.IsOverturned;
+            snapshot.OverturnedDays = source.OverturnedDays;
+        }
+
         private static void SpendNutrition(BeetleIndividual beetle) => beetle.Condition = new BeetleCondition(beetle.Condition.Health,
-            Math.Max(0, beetle.Condition.Nutrition - 10), beetle.Condition.Hydration, Math.Min(100, beetle.Condition.Stress + 10));
+            beetle.Condition.Nutrition - 10, beetle.Condition.Hydration, beetle.Condition.Stress + 10);
         private static float Inherit(float first, float second, BreedingProfile profile, IRandomSource random) =>
             DomainGuard.Clamp((first + second) * 0.5 + (Unit(random) * 2 - 1) * profile.TraitVariation, 1);
         private static double Unit(IRandomSource random)
         {
             double value = random.NextUnit();
-            if (double.IsNaN(value) || value < 0 || value >= 1) throw new InvalidOperationException("Random values must be finite and in [0, 1).");
+            if (double.IsNaN(value) || value < 0 || value >= 1) throw new InvalidRandomValueException();
             return value;
+        }
+
+        // This error is raised only by Unit's explicit value check, never by a rule or RNG implementation.
+        private sealed class InvalidRandomValueException : Exception
+        {
+            public InvalidRandomValueException() : base("Random values must be finite and in [0, 1).") { }
         }
     }
 }

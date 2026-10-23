@@ -15,7 +15,7 @@ using UnityEngine.SceneManagement;
 // 只在 Editor 编译；命令文件不是队列，调用者应等当前 id 的响应后再发下一条。
 public static class BeetleArenaEditorCommands
 {
-    // id 用于匹配响应，action 选择固定命令，seconds 仅供快速推进使用；没有执行任意代码的入口。
+    // id 用于匹配响应，action 选择固定命令，seconds 用于时间参数；没有执行任意代码的入口。
     [Serializable] class Request { public string id, action; public float seconds; public int count; }
     // 最多约每 0.4 秒轮询一次；编译或资源刷新期间暂不处理请求。
     static double nextPoll;
@@ -63,6 +63,20 @@ public static class BeetleArenaEditorCommands
     {
         switch (request.action)
         {
+            case "defensive-review": DefensiveProgrammingValidation.Run(); return File.ReadAllText("Artifacts/DefensiveReview/Verification.txt");
+            case "ui-click-settings":
+                var clickProfile = RetroUiAudioSetup.EnsureProfile();
+                if (request.seconds > 0)
+                {
+                    Undo.RecordObject(clickProfile, "Change UI click interval");
+                    clickProfile.reboundMs = Mathf.Clamp(request.seconds * 1000, 0, 150);
+                    EditorUtility.SetDirty(clickProfile);
+                    AssetDatabase.SaveAssetIfDirty(clickProfile);
+                }
+                RetroUiAudioSetup.SelectSettings();
+                return RetroUiAudioSetup.ProfilePath + "; intervalMs=" + clickProfile.Settings.ReboundMs + "; preview=" + RetroUiAudioProfileEditor.CanPreview;
+            case "camera-follow": BeetleCameraValidation.Run(); return File.ReadAllText("Artifacts/Framework/CameraValidation.txt");
+            case "care-enclosure": CareEnclosureValidation.Run(); return File.ReadAllText("Artifacts/Campaign/Care/Enclosure.txt");
             case "mailbox-data": CampaignMailboxValidation.Run(); return File.ReadAllText("Artifacts/Mailbox/Data.txt");
             case "mailbox-play": CampaignMailboxValidation.RunPlay(); return "Mailbox UI and transaction checks started with isolated saves.";
             case "localization-install": localeInstall=UnityEditor.PackageManager.Client.Add("com.unity.localization"); return "Localization package installation requested.";
@@ -93,7 +107,7 @@ public static class BeetleArenaEditorCommands
             case "campaign-data": CampaignDataValidation.Run(); return "Campaign data PASS.";
             case "campaign-scenes": CampaignSceneValidation.Run(); return "Campaign scenes PASS.";
             case "campaign-status": return "Playing="+EditorApplication.isPlaying+"; scene="+SceneManager.GetActiveScene().path+"; dirty="+SceneManager.GetActiveScene().isDirty;
-            case "campaign-play-validation": CampaignPlayModeValidation.Run(); return "Campaign Play acceptance started; see Artifacts/Campaign/Acceptance/Result.txt.";
+            case "campaign-play-validation": CampaignPlayModeValidation.Run(); return "Campaign end-to-end acceptance started; see Artifacts/EndToEnd/Result.txt.";
             case "validate-landing-slide": BeetleThrowValidation.LandingAndEdge(); return File.ReadAllText("Artifacts/LandingSlide/After.txt") + File.ReadAllText("Artifacts/LandingSlide/Edge.txt");
             case "diagnose-replay": BeetleLiftCatchValidation.CompareReplay(); return File.ReadAllText("Artifacts/LiftCatch/Comparison.txt");
             case "replay-natural-throw": BeetleRoundPacingValidation.Preview(); return File.ReadAllText("Artifacts/RoundPacing/Preview.txt");

@@ -6,7 +6,6 @@ using BugDuel.Domain;
 #if UNITY_EDITOR
 using BeetleArena;
 using UnityEditor;
-using UnityEditor.SceneManagement;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 #endif
@@ -251,7 +250,12 @@ public static class BeetleHusbandryInteractionValidation
         reject(d => d.OverturnedDays = double.NaN);
         reject(d => d.OverturnedDays = double.PositiveInfinity);
         reject(d => d.IsOverturned = false);
-        reject(d => d.OverturnedDays = d.StageAgeDays + 1);
+        var oversized = BeetleSaveMapper.Export(original);
+        oversized.OverturnedDays = oversized.StageAgeDays + 1;
+        var normalized = Restore(oversized, species);
+        Near(normalized.OverturnedDays, normalized.StageAgeDays, "Oversized timer did not normalize to stage age");
+        Require(normalized.IsOverturned && oversized.OverturnedDays > oversized.StageAgeDays,
+            "Timer normalization changed posture or the source record");
         var legacy = BeetleSaveMapper.Export(Individual(species));
         legacy.IsOverturned = false; legacy.OverturnedDays = 0;
         Require(!Restore(legacy, species).IsOverturned, "Default old upright save was reinterpreted as overturned");

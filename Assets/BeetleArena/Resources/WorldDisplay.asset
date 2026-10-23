@@ -1,0 +1,87 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b5d124764b74f5d44a22b88320b25237, type: 3}
+  m_Name: WorldDisplay
+  m_EditorClassIdentifier: BeetleArena.Runtime::BeetleArena.WorldDisplayProfile
+  scenes:
+  - sceneName: CampaignMainMenu
+    style: 2
+    pixelSize: 3
+    ditherMaterial: {fileID: 2100000, guid: 5d2150659ede6f34fac9f413c2d0abf9, type: 2}
+    denseDitherMaterial: {fileID: 2100000, guid: dcf54938e2520334d9d20de542601ccb, type: 2}
+    customMaterial: {fileID: 0}
+  - sceneName: CampaignSaves
+    style: 2
+    pixelSize: 3
+    ditherMaterial: {fileID: 2100000, guid: 2f34173447bc1c04295f0d9356c5c380, type: 2}
+    denseDitherMaterial: {fileID: 2100000, guid: dee6d845d6e0bbc498004cbc5ed6aa46, type: 2}
+    customMaterial: {fileID: 0}
+  - sceneName: CampaignGreenhouse
+    style: 2
+    pixelSize: 3
+    ditherMaterial: {fileID: 2100000, guid: 5aa326d42d4ccdc449db9a4149fb365e, type: 2}
+    denseDitherMaterial: {fileID: 2100000, guid: dc45df3ca91331a45afdf809aad2baa7, type: 2}
+    customMaterial: {fileID: 0}
+  - sceneName: CampaignCatching
+    style: 2
+    pixelSize: 3
+    ditherMaterial: {fileID: 2100000, guid: 578c839e1c8aa944f9bd469f7eba6889, type: 2}
+    denseDitherMaterial: {fileID: 2100000, guid: 4ea36137c0596c147b65230c89311e32, type: 2}
+    customMaterial: {fileID: 0}
+  - sceneName: CampaignMarket
+    style: 2
+    pixelSize: 3
+    ditherMaterial: {fileID: 2100000, guid: 2433092f13362a148b63220e313dcfcd, type: 2}
+    denseDitherMaterial: {fileID: 2100000, guid: 6e9596e900dede743a03a3b17fd43181, type: 2}
+    customMaterial: {fileID: 0}
+  - sceneName: CampaignLeague
+    style: 2
+    pixelSize: 3
+    ditherMaterial: {fileID: 2100000, guid: bc2872def26cf8345bc0b8bc375ee458, type: 2}
+    denseDitherMaterial: {fileID: 2100000, guid: 388c9155ac09a2243a8d4c43ac4de80c, type: 2}
+    customMaterial: {fileID: 0}
+  - sceneName: CampaignArena
+    style: 2
+    pixelSize: 3
+    ditherMaterial: {fileID: 2100000, guid: 2d3063e2576da4e47ab2b759daa1a86e, type: 2}
+    denseDitherMaterial: {fileID: 2100000, guid: 7c489988dfd061f43aa8ea18d9cf6638, type: 2}
+    customMaterial: {fileID: 0}
+  - sceneName: CampaignAuction
+    style: 2
+    pixelSize: 3
+    ditherMaterial: {fileID: 2100000, guid: 5c6dbebe467ff5a47a44f55942d67521, type: 2}
+    denseDitherMaterial: {fileID: 2100000, guid: ab25d37d49eb93d42a4544eaadabe3be, type: 2}
+    customMaterial: {fileID: 0}
+  - sceneName: BeetleArena
+    style: 2
+    pixelSize: 3
+    ditherMaterial: {fileID: 2100000, guid: 9a24c49b52c3c5d44917013180f4d9fc, type: 2}
+    denseDitherMaterial: {fileID: 2100000, guid: 0edff7a6c5f66b74f87f5d958e9528fc, type: 2}
+    customMaterial: {fileID: 0}
+  - sceneName: SampleScene
+    style: 2
+    pixelSize: 3
+    ditherMaterial: {fileID: 2100000, guid: 61b10aab12de16443ab85ad424c56a24, type: 2}
+    denseDitherMaterial: {fileID: 2100000, guid: f0fdfc92a90b1ec46a9ab05d6d1e890a, type: 2}
+    customMaterial: {fileID: 0}
+  - sceneName: BeetleNursery
+    style: 2
+    pixelSize: 3
+    ditherMaterial: {fileID: 2100000, guid: 93feac28e93065f499b543e4ccd18fba, type: 2}
+    denseDitherMaterial: {fileID: 2100000, guid: 60cf9fbaf84992849832e73d564f8c09, type: 2}
+    customMaterial: {fileID: 0}
+  - sceneName: CampaignSpecimenRoom
+    style: 2
+    pixelSize: 3
+    ditherMaterial: {fileID: 2100000, guid: a5ebb36ad0ee8aa458a20444a107569a, type: 2}
+    denseDitherMaterial: {fileID: 2100000, guid: 5bf4b5334cd3fec4c864784ebcf86d2d, type: 2}
+    customMaterial: {fileID: 0}

@@ -51,7 +51,13 @@ Assets/BeetleArena/
 │   ├── Rig/             真实模型的骨骼绑定与 IK
 │   ├── Physics/         碰撞查询、接触约束、托举锚点、连续性限制
 │   ├── Environment/     擂台支撑查询、贴地标记
-│   ├── Presentation/    HUD、镜头、接触音效、可关闭火星及设置
+│   ├── Presentation/
+│   │   ├── Display/    画面效果、分场景配置
+│   │   ├── Cameras/    镜头、取景快照
+│   │   ├── UI/         HUD、设置、滑块、导航
+│   │   ├── Audio/      战斗声音、按钮与滑块点击声
+│   │   ├── Husbandry/  养殖姿态、游走、足部与容器空间
+│   │   └── CombatFeedback/ 接触反馈、火星
 │   └── Diagnostics/     独立运行检查
 ├── Editor/
 │   ├── Model/           按当前 FBX 生成骨架、蒙皮和碰撞代理
@@ -105,8 +111,8 @@ Assets/BeetleArena/
 | 托举几何 | `Physics/BeetleHornSupport.cs` | 捕获并跟随真实角部局部锚点；在最终接受姿态上测量抬头、力臂与切向运动，交给撬投计算层。托举是否继续由模拟状态决定。 |
 | 姿态试算 | `Physics/BeetleContactMotion.cs` | 保存安全起点和候选姿态，按比例恢复/推进；求解器分别持有模拟用和显示用实例。与用于固定步插值的 `BeetlePoseBuffer` 分工不同。 |
 | 擂台支撑 | `Environment/BeetleArenaSurface.cs` | 实现地表高度、法线、抓地系数查询；区分可站立的 `supportColliders` 与完整环境 `contactColliders`。 |
-| 展示 | `Presentation/BeetleArenaHud.cs`、`ArenaCamera.cs`、`ArenaAudio.cs`；`Environment/BeetleGroundMarker.cs` | 读取结果并展示；HUD 将按钮请求转交控制器；镜头、声音和贴地标记不参与胜负计算。 |
-| 接触表现 | `Presentation/BeetleContactFeedback.cs`、`ArenaAudio.cs`、`HornClashSparks.cs`、`BeetleFeedbackSettings.cs` | 固定步后只读角部接触；分别输出高阻尼木质合成敲击/刮擦、可关闭的兵器火星；设置开关保存到 PlayerPrefs，不修改比赛参数。 |
+| 展示 | `Presentation/UI/BeetleArenaHud.cs`、`Presentation/Cameras/ArenaCamera.cs`、`Presentation/Audio/ArenaAudio.cs`；`Environment/BeetleGroundMarker.cs` | 读取结果并展示；HUD 将按钮请求转交控制器；镜头、声音和贴地标记不参与胜负计算。 |
+| 接触表现 | `Presentation/CombatFeedback/BeetleContactFeedback.cs`、同目录的 `HornClashSparks.cs`、`Presentation/Audio/ArenaAudio.cs`、`Presentation/UI/BeetleFeedbackSettings.cs` | 固定步后只读角部接触；分别输出高阻尼木质合成敲击/刮擦、可关闭的兵器火星；设置开关保存到 PlayerPrefs，不修改比赛参数。 |
 | 卡通渲染 | `Shaders/BeetleToon.shader`、`Editor/Setup/BeetleArenaToonSetup.cs` | 描边、高光、颜色和阴影的渲染及材质配置，不参与碰撞。 |
 | 资源构建 | `Editor/Model/BeetleImportedModelBuilder.cs`、`Editor/Setup/` | 从模型生成关节、蒙皮副本、碰撞代理和材质，装配游戏场景及擂台。仅在编辑器执行。 |
 | 验证与自动化 | `Editor/Validation/`、`Editor/Automation/`、`Runtime/Diagnostics/ArenaStandaloneSmoke.cs` | 驱动受控场景/对局，检查规则、接触、动作连续性和资源；输出报告，不承担正常对局逻辑。 |

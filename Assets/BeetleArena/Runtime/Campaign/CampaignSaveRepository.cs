@@ -28,9 +28,9 @@ namespace BeetleArena.Campaign
         public CampaignSave Read(int slot)
         {
             string path=SlotPath(slot); if(!File.Exists(path)) return null;
-            if(new FileInfo(path).Length>8000000) throw new IOException("存档过大");
-            var save=JsonUtility.FromJson<CampaignSave>(File.ReadAllText(path));
-            if(save==null || save.version!=1 || save.state==null || save.catalog==null) throw new InvalidDataException("不支持或损坏的存档");
+            if(new FileInfo(path).Length>8000000) throw new CampaignDataException("存档过大");
+            var save=CampaignJson.Read<CampaignSave>(path);
+            if(save.version!=1 || save.state==null || save.catalog==null) throw new CampaignDataException("不支持或损坏的存档");
             // Unity inline serialization does not preserve absent optional objects.
             if(!save.hasBattle)save.state.battle=null;
             if(!save.hasAuction)save.state.auction=null;
@@ -38,7 +38,14 @@ namespace BeetleArena.Campaign
             if(save.state.beetles!=null)foreach(var b in save.state.beetles)RestoreMeal(b);
             if(save.state.stock!=null)foreach(var b in save.state.stock)RestoreMeal(b);
             if(save.state.storedBeetles!=null)foreach(var b in save.state.storedBeetles)RestoreMeal(b);
-            if(save.state.mail!=null)foreach(var m in save.state.mail)if(m?.attachments!=null)foreach(var a in m.attachments)if(a?.beetles!=null)foreach(var b in a.beetles)RestoreMeal(b);
+            if(save.state.specimens!=null)foreach(var s in save.state.specimens)RestoreMeal(s.beetle);
+            if(save.state.specimenStock!=null)foreach(var s in save.state.specimenStock)RestoreMeal(s.beetle);
+            if(save.state.marketAuctions!=null)foreach(var a in save.state.marketAuctions){RestoreMeal(a.Beetle);RestoreMeal(a.Specimen?.beetle);}
+            if(save.state.mail!=null)foreach(var m in save.state.mail)if(m?.attachments!=null)foreach(var a in m.attachments)
+            {
+                if(a?.beetles!=null)foreach(var b in a.beetles)RestoreMeal(b);
+                if(a?.specimens!=null)foreach(var s in a.specimens)RestoreMeal(s.beetle);
+            }
             RestoreMeal(save.state.battle?.opponent);RestoreMeal(save.state.pupaAuction?.beetle);
             new CampaignSession(save.state,save.catalog).Validate(); return save;
         }
@@ -62,6 +69,20 @@ namespace BeetleArena.Campaign
                 if(File.Exists(path))File.Replace(temp,path,path+".bak"); else File.Move(temp,path);
             }
             finally { if(File.Exists(temp))File.Delete(temp); }
+        }
+    }
+
+    // JsonUtility reports malformed external JSON as ArgumentException. Classify it
+    // here, never by catching ArgumentException around a complete game operation.
+    internal static class CampaignJson
+    {
+        public static T Read<T>(string path) where T : class
+        {
+            string json=File.ReadAllText(path);
+            T data;
+            try { data=JsonUtility.FromJson<T>(json); }
+            catch(ArgumentException error) { throw new CampaignDataException("JSON 格式无效",error); }
+            return data ?? throw new CampaignDataException("配置或存档内容为空");
         }
     }
 }

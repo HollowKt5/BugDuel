@@ -11,10 +11,17 @@ public static class CampaignTransitionSetup
     public static void Apply()
     {
         if(EditorApplication.isPlaying)throw new InvalidOperationException("Stop Play before creating the transition profile.");
-        if(AssetDatabase.LoadAssetAtPath<CampaignTransitionProfile>(AssetPath))return;
-        Directory.CreateDirectory(Path.GetDirectoryName(AssetPath));AssetDatabase.Refresh();
-        var profile=ScriptableObject.CreateInstance<CampaignTransitionProfile>();
-        AssetDatabase.CreateAsset(profile,AssetPath);AssetDatabase.SaveAssetIfDirty(profile);
+        var profile=AssetDatabase.LoadAssetAtPath<CampaignTransitionProfile>(AssetPath);
+        if(!profile)
+        {
+            Directory.CreateDirectory(Path.GetDirectoryName(AssetPath));AssetDatabase.Refresh();
+            profile=ScriptableObject.CreateInstance<CampaignTransitionProfile>();AssetDatabase.CreateAsset(profile,AssetPath);
+        }
+        // Upgrade only the previous stock hold; preserve an already authored custom duration.
+        if(Mathf.Approximately(profile.blackHoldDuration,.06f))profile.blackHoldDuration=2.06f;
+        profile.shutterShader=AssetDatabase.LoadAssetAtPath<Shader>("Assets/BeetleArena/Resources/"+CampaignTransitionProfile.ShutterResourceName+".shader");
+        if(!profile.shutterShader)throw new InvalidOperationException("Import the campaign transition shutter shader before applying the profile.");
+        EditorUtility.SetDirty(profile);AssetDatabase.SaveAssetIfDirty(profile);
         Debug.Log("Campaign transition curves: "+AssetPath);
     }
 }

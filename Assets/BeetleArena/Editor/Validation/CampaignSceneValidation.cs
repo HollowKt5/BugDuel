@@ -44,13 +44,14 @@ public static class CampaignSceneValidation
                         {
                             string expected=page==CampaignPage.MainMenu&&CampaignIridescenceSetup.IsIridescentSurface(renderer)
                                 ? CampaignIridescenceSetup.ShaderName : BeetleArenaToonSetup.ShaderName;
-                            Check(material.shader.name==expected,"world material: "+page+"/"+renderer.name);
+                            Check(HusbandryTerrariumSetup.IsTerrariumMaterial(material)||material.shader.name==expected,
+                                "world material: "+page+"/"+renderer.name);
                         }
             }
         }
         Check(!ShaderUtil.ShaderHasError(Shader.Find(BeetleArenaToonSetup.ShaderName)),"toon shader");
         CampaignIridescenceSetup.CheckShader();
-        Debug.Log("Campaign scene contracts PASS: 8 scenes, no missing scripts, one EventSystem each, combat calibration, seven toon worlds.");
+        Debug.Log("Campaign scene contracts PASS: "+Enum.GetValues(typeof(CampaignPage)).Length+" scenes, no missing scripts, one EventSystem each, combat calibration and world bindings.");
         }
         finally { EditorSceneManager.RestoreSceneManagerSetup(setup); }
     }

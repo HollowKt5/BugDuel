@@ -1894,7 +1894,7 @@ GameObject:
   - component: {fileID: 975937784}
   - component: {fileID: 975937783}
   m_Layer: 0
-  m_Name: Campaign Presentation
+  m_Name: AuctionUI
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -1959,7 +1959,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: BeetleArena.Runtime::BeetleArena.Campaign.CampaignView
   page: 7
   font: {fileID: 11400000, guid: cb56b900afe90cd4a816d77087ddfc83, type: 2}
-  glassShader: {fileID: 4800000, guid: cc7a7430389240742abd0bd48922938a, type: 3}
   backdrop: {fileID: 975937785}
   leagueBridge: {fileID: 0}
 --- !u!4 &975937787
@@ -3829,6 +3828,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: BeetleArena.Runtime::BeetleArena.Campaign.CampaignSpecimen
   selected: 0
   rig: {fileID: 1890306699}
+  enclosureFloor: {fileID: 0}
+  lifeStageVisuals: {fileID: 0}
   phase: 0
 --- !u!1 &1901269024
 GameObject:

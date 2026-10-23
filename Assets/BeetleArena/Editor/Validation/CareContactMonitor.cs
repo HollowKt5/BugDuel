@@ -1,5 +1,4 @@
 using System.IO;
-using BeetleArena;
 using BeetleArena.Campaign;
 using BugDuel.Domain;
 using UnityEngine;

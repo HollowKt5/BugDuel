@@ -5,7 +5,6 @@ using System.Reflection;
 using System.Text;
 using BeetleArena;
 using UnityEditor;
-using UnityEditor.SceneManagement;
 using UnityEngine;
 
 /// <summary>撬投回归：真实角部入角、受击者飞行、连续性、有效接触积分及显示独立性。</summary>

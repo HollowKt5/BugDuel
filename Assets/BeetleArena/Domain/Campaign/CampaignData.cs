@@ -11,6 +11,8 @@ namespace BugDuel.Campaign
         internal CampaignState ShallowCopy() => (CampaignState)MemberwiseClone();
         public int schema = 1, week = 1, capacity = 6, cabinet = 3, highestLeague, reputation;
         public long coins = 1800;
+        public string playerName;
+        public int playerIdentityVersion;
         public uint random = 18273;
         public bool scientistPermit, feedRecipe, mutationRecipe;
         public int sap, lamp;
@@ -29,6 +31,16 @@ namespace BugDuel.Campaign
         public PupaAuction pupaAuction;
         public int lastPupaWeek;
         public int marketWeek;
+        public int tradingVersion;
+        public int calendarVersion;
+        public int constructionVersion;
+        public List<CampaignDecorationPlacement> decorations = new List<CampaignDecorationPlacement>();
+        public CampaignClock clock = new CampaignClock();
+        public CampaignLifeRules lifeRules = new CampaignLifeRules();
+        public List<CampaignSpecimen> specimens = new List<CampaignSpecimen>();
+        public List<CampaignSpecimen> specimenStock = new List<CampaignSpecimen>();
+        public List<SpecimenOffer> specimenOffers = new List<SpecimenOffer>();
+        public List<MarketAuctionLot> marketAuctions = new List<MarketAuctionLot>();
         public string trendSpecies;
         public double recordLength;
     }
@@ -37,21 +49,26 @@ namespace BugDuel.Campaign
         internal CampaignBeetle ShallowCopy() => (CampaignBeetle)MemberwiseClone();
         public string id, speciesId, name, mother, father, brood, habitat = "woodland";
         public List<string> ancestors = new List<string>();
-        public bool female, dead, overturned, listed, rightsSold;
+        public bool female, dead, overturned, listed, rightsSold, customName;
+        public int lifeVersion;
+        public CampaignLifeStage stage = CampaignLifeStage.ActiveAdult;
+        public double stageAgeDays, totalAgeDays, adultAgeDays, developmentScale = 1;
+        public double substrateNutrition = 85, substrateCleanliness = 100, pupalProtectionDays, growthQualityBonus;
         public double length, inheritance = 1, hearts = 5, nutrition = 85, overturnSeconds;
         public int maxHearts = 5, inbred, readyWeek, feed, climate = 1, cooldownWeek, wins, streak, championships, seasonWins;
+        public int broodValueAwards;
         public long initialValue, value;
         public string mutation = "";
         public CampaignMeal meal;
         public bool hasMeal; // Preserve nullness through Unity inline serialization.
         public List<Gene> genes = new List<Gene>();
-        public bool Adult(int week) => !dead && readyWeek <= week;
+        public bool Adult(int week) => !dead && stage == CampaignLifeStage.ActiveAdult;
     }
     [Serializable] public sealed class CampaignMeal { public string id; public int food; }
     [Serializable] public sealed class Gene { public string id; public int stars; public Gene(string id, int stars = 1) { this.id = id; this.stars = stars; } }
     [Serializable] public sealed class Expedition { public string id, habitat; public int dueWeek, count; public bool large; }
     [Serializable] public sealed class MarketOffer { public string id, beetleId, buyer; public long price; public int week; public bool femaleBonus, recipe, permit; }
-    [Serializable] public sealed class HallRecord { public string name, speciesId, mutation; public double length; public long price; public int week; public bool rights; public long royalties; }
+    [Serializable] public sealed class HallRecord { public string name, speciesId, mutation; public double length; public long price; public int week; public bool rights, customName; public long royalties; }
     [Serializable] public sealed class PendingBattle { public string id, beetleId; public CampaignBeetle opponent; public int seed, tier; public long fee; }
     [Serializable] public sealed class AuctionState { public string beetleId; public bool rights; public int round, rounds; public long bid, finalBid; public string bidder; }
     [Serializable] public sealed class PupaAuction { public CampaignBeetle beetle; public int round; public long bid; }
@@ -65,43 +82,53 @@ namespace BugDuel.Campaign
         public FeedRule[] feeds;
         public LeagueRule[] leagues;
         public int seasonWins = 3, upgrade12 = 2500, upgrade20 = 10000, cabinetUpgrade = 1800;
-        public SpeciesRule Species(string id) => species.First(x => x.id == id);
-        public CatchRule Catch(string id) => catches.First(x => x.id == id);
-        public HousingRule Housing(string id) => housing.First(x => x.id == id);
-        public LeagueRule Tier(double length) => leagues.First(x => length >= x.minimum && length < x.maximum);
+        public SpeciesRule Species(string id) => species.FirstOrDefault(x => x.id == id)
+            ?? throw new CampaignDataException("内容表缺少物种：" + id);
+        public CatchRule Catch(string id) => catches.FirstOrDefault(x => x.id == id)
+            ?? throw new CampaignDataException("内容表缺少捕虫地点：" + id);
+        public HousingRule Housing(string id) => housing.FirstOrDefault(x => x.id == id)
+            ?? throw new CampaignDataException("内容表缺少养殖环境：" + id);
+        public LeagueRule Tier(double length) => leagues.FirstOrDefault(x => length >= x.minimum && length < x.maximum)
+            ?? throw new CampaignDataException("内容表缺少对应体长的联赛：" + length);
         public void Validate()
         {
-            if (schema != 1 || revision < 1) throw new InvalidOperationException("不支持的内容版本");
-            Unique(species?.Select(x => x.id)); Unique(catches?.Select(x => x.id)); Unique(housing?.Select(x => x.id));
-            if (species.Length == 0 || catches.Length == 0 || housing.Length == 0 || feeds == null || feeds.Length != 3 || leagues == null || leagues.Length != 5)
-                throw new InvalidOperationException("内容表缺少必需分类");
+            if (schema != 1 || revision < 1) throw new CampaignDataException("不支持的内容版本");
+            if (species == null || species.Length == 0 || catches == null || catches.Length == 0 ||
+                housing == null || housing.Length == 0 || feeds == null || feeds.Length != 3 || leagues == null || leagues.Length != 5)
+                throw new CampaignDataException("内容表缺少必需分类");
+            if (species.Any(x => x == null) || catches.Any(x => x == null) || housing.Any(x => x == null) ||
+                feeds.Any(x => x == null) || leagues.Any(x => x == null))
+                throw new CampaignDataException("内容表包含空条目");
+            Unique(species.Select(x => x.id)); Unique(catches.Select(x => x.id)); Unique(housing.Select(x => x.id));
             if (!species.Any(x => x.id == "red") || !housing.Any(x => x.id == "woodland") || !catches.Any(x => x.unlock == 0))
-                throw new InvalidOperationException("内容表必须保留初始物种 red、初始环境 woodland 和至少一个初始捕虫地点");
+                throw new CampaignDataException("内容表必须保留初始物种 red、初始环境 woodland 和至少一个初始捕虫地点");
             foreach (var x in species)
             {
-                if (string.IsNullOrWhiteSpace(x.name) || !Finite(x.length, 10, 250) || x.price < 1 || x.price > 1000000 || !Finite(x.hue, 0, 1)) throw new InvalidOperationException("物种参数无效");
-                x.behavior?.Validate();
+                if (string.IsNullOrWhiteSpace(x.name) || !Finite(x.length, 10, 250) || x.price < 1 || x.price > 1000000 || !Finite(x.hue, 0, 1)) throw new CampaignDataException("物种参数无效");
+                try { x.behavior?.Validate(); }
+                catch (InvalidOperationException exception) { throw new CampaignDataException("物种养殖行为参数无效：" + x.id, exception); }
             }
             foreach (var x in catches)
-                if (x.species == null || x.species.Length == 0 || x.species.Any(id => !species.Any(s => s.id == id)) || x.cost < 1 || x.cost > 10000000 || x.weeks < 1 || x.weeks > 2 || x.unlock < 0 || x.unlock > 5 || !Finite(x.min, 10, 250) || !Finite(x.max, x.min, 250) || !Finite(x.twoStar, 0, 1) || !Finite(x.rare, 0, 1) || x.twoStar + x.rare > 1) throw new InvalidOperationException("捕虫表参数无效");
+                if (x.species == null || x.species.Length == 0 || x.species.Any(id => !species.Any(s => s.id == id)) || x.cost < 1 || x.cost > 10000000 || x.weeks < 1 || x.weeks > 2 || x.unlock < 0 || x.unlock > 5 || !Finite(x.min, 10, 250) || !Finite(x.max, x.min, 250) || !Finite(x.twoStar, 0, 1) || !Finite(x.rare, 0, 1) || x.twoStar + x.rare > 1) throw new CampaignDataException("捕虫表参数无效");
             foreach (var x in housing)
             {
-                if (!Finite(x.healthRecovery, 0, 2) || !Finite(x.accidentPerMinute, 0, .25) || !Finite(x.temperature, 0, 40) || !Finite(x.humidity, 0, 100)) throw new InvalidOperationException("环境参数无效");
-                x.behavior?.Validate();
+                if (!Finite(x.healthRecovery, 0, 2) || !Finite(x.accidentPerMinute, 0, .25) || !Finite(x.temperature, 0, 40) || !Finite(x.humidity, 0, 100)) throw new CampaignDataException("环境参数无效");
+                try { x.behavior?.Validate(); }
+                catch (InvalidOperationException exception) { throw new CampaignDataException("养殖环境行为参数无效：" + x.id, exception); }
             }
             foreach (var x in feeds)
-                if (x.cost < 0 || x.cost > 100000 || !Finite(x.multiplier, .5, 2) || !Finite(x.mutationChance, 0, 1)) throw new InvalidOperationException("饲料参数无效");
+                if (x.cost < 0 || x.cost > 100000 || !Finite(x.multiplier, .5, 2) || !Finite(x.mutationChance, 0, 1)) throw new CampaignDataException("饲料参数无效");
             double end = 0;
             for (int i = 0; i < leagues.Length; i++)
             {
                 var x = leagues[i];
-                if (x.tier != i + 1 || x.minimum != end || !Finite(x.maximum, x.minimum + 1, 100000) || x.fee < 0 || x.win < 0 || x.champion < 0 || x.fee > 10000000 || x.win > 10000000 || x.champion > 10000000) throw new InvalidOperationException("联赛分级不连续或奖励无效");
+                if (x.tier != i + 1 || x.minimum != end || !Finite(x.maximum, x.minimum + 1, 100000) || x.fee < 0 || x.win < 0 || x.champion < 0 || x.fee > 10000000 || x.win > 10000000 || x.champion > 10000000) throw new CampaignDataException("联赛分级不连续或奖励无效");
                 end = x.maximum;
             }
-            if (end < 1000 || seasonWins < 1 || seasonWins > 20 || upgrade12 < 1 || upgrade20 < 1 || cabinetUpgrade < 1) throw new InvalidOperationException("经营配置无效");
+            if (end < 1000 || seasonWins < 1 || seasonWins > 20 || upgrade12 < 1 || upgrade20 < 1 || cabinetUpgrade < 1) throw new CampaignDataException("经营配置无效");
         }
         static bool Finite(double x, double min, double max) => !double.IsNaN(x) && !double.IsInfinity(x) && x >= min && x <= max;
-        static void Unique(IEnumerable<string> ids) { if (ids == null) throw new InvalidOperationException("内容表为空"); var a = ids.ToArray(); if (a.Any(string.IsNullOrWhiteSpace) || a.Distinct().Count() != a.Length) throw new InvalidOperationException("内容 ID 重复或为空"); }
+        static void Unique(IEnumerable<string> ids) { var a = ids.ToArray(); if (a.Any(string.IsNullOrWhiteSpace) || a.Distinct().Count() != a.Length) throw new CampaignDataException("内容 ID 重复或为空"); }
         public static CampaignCatalog Defaults() => new CampaignCatalog
         {
             species = new[] {

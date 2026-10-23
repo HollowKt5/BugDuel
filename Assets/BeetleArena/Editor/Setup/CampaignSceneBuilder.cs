@@ -10,6 +10,7 @@ using UnityEngine;
 using UnityEngine.Rendering;
 using UnityEngine.Rendering.Universal;
 using UnityEngine.SceneManagement;
+using CampaignSpecimen=BeetleArena.Campaign.CampaignSpecimen;
 
 public static class CampaignSceneBuilder
 {
@@ -22,8 +23,9 @@ public static class CampaignSceneBuilder
         CampaignTransitionSetup.Apply();
         CareGroundingSetup.Apply();
         Directory.CreateDirectory(Folder);Directory.CreateDirectory("Assets/StreamingAssets");
-        var font=BeetleArenaSceneBuilder.MakeFont();var blur=Shader.Find("Hidden/BugDuel/CampaignBlur");var glass=Shader.Find("BugDuel/CampaignGlass");
-        if(!blur||!glass||!font)throw new InvalidOperationException("Campaign shaders or font are missing.");
+        CampaignSpecimenRoomSetup.Install();
+        var font=BeetleArenaSceneBuilder.MakeFont();var blur=Shader.Find("Hidden/BugDuel/CampaignBlur");
+        if(!blur||!font)throw new InvalidOperationException("Campaign blur shader or font is missing.");
         var paths=Enum.GetValues(typeof(CampaignPage)).Cast<CampaignPage>().Select(p=>Folder+"/"+CampaignApp.SceneName(p)+".unity").ToArray();
         for(int i=0;i<paths.Length;i++)
         {
@@ -34,7 +36,7 @@ public static class CampaignSceneBuilder
             var original=EditorSceneManager.OpenScene(source,OpenSceneMode.Single);
             if(!EditorSceneManager.SaveScene(original,paths[i],true))throw new IOException("Could not copy "+source);
             var scene=EditorSceneManager.OpenScene(paths[i],OpenSceneMode.Single);
-            var go=new GameObject("Campaign Presentation");var view=go.AddComponent<CampaignView>();view.page=page;view.font=font;view.glassShader=glass;
+            var go=new GameObject(page+"UI");var view=go.AddComponent<CampaignView>();view.page=page;view.font=font;
             var camera=UnityEngine.Object.FindObjectsByType<Camera>(FindObjectsSortMode.None).First(c=>c.enabled);
             var backdrop=go.AddComponent<CampaignBackdrop>();backdrop.sceneCamera=camera;backdrop.blurShader=blur;view.backdrop=backdrop;
             if(page==CampaignPage.Arena)
@@ -71,7 +73,7 @@ public static class CampaignSceneBuilder
         CampaignIridescenceSetup.Apply();
         EditorSceneManager.playModeStartScene=AssetDatabase.LoadAssetAtPath<SceneAsset>(paths[0]);
         EditorSceneManager.OpenScene(paths[0],OpenSceneMode.Single);
-        Debug.Log("Campaign flow installed: 8 scenes; combat source and original scenes preserved.");
+        Debug.Log("Campaign flow installed: "+paths.Length+" scenes; combat source and original scenes preserved.");
     }
     static void Place(Transform item,Camera camera,float x,float y)
     {

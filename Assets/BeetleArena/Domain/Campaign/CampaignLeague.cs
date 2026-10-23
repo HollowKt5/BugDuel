@@ -7,7 +7,7 @@ namespace BugDuel.Campaign
     {
         public void EnterLeague(string id)
         {
-            Require(State.battle == null && State.auction == null,"请先完成当前赛事或拍卖"); var b = Beetle(id); HealthyAdult(b);
+            Require(State.battle == null && State.auction == null && State.pupaAuction == null,"请先完成当前赛事或拍卖"); var b = Beetle(id); HealthyAdult(b);
             var tier = Catalog.Tier(b.length); Spend(tier.fee);
             double max = tier.tier == 5 ? Math.Max(170,b.length+8) : tier.maximum-.1;
             double min = Math.Max(30,tier.minimum);
@@ -29,8 +29,8 @@ namespace BugDuel.Campaign
             if (first)
             {
                 b.value=CampaignEconomy.Money(b.value*2.5);
-                if (!string.IsNullOrEmpty(b.brood)) foreach (var sibling in State.beetles.Where(x=>x.id!=b.id&&x.brood==b.brood))
-                { sibling.initialValue=CampaignEconomy.Money(sibling.initialValue*2); sibling.value=CampaignEconomy.Money(sibling.value*2); }
+                if (!string.IsNullOrEmpty(b.brood)) foreach (var sibling in State.beetles.Concat(State.storedBeetles).Where(x=>x.id!=b.id&&x.brood==b.brood))
+                { sibling.broodValueAwards++; sibling.initialValue=CampaignEconomy.Money(sibling.initialValue*2); sibling.value=CampaignEconomy.Money(sibling.value*2); }
             }
             Tell("联赛总冠军！奖励 " + tier.champion + " G。" + (first ? "身价×2.5，同腹弟妹底价×2，冠军拍卖已解锁！" : "卫冕成功，获得赛季奖金！"));
         }
@@ -43,7 +43,7 @@ namespace BugDuel.Campaign
         }
         public void BeginAuction(string id,bool rights)
         {
-            Require(State.auction == null && State.battle == null,"请先完成当前活动"); var b=Beetle(id); HealthyAdult(b); Require(b.championships>0,"仅限联赛总冠军入场");
+            Require(State.auction == null && State.battle == null && State.pupaAuction == null,"请先完成当前活动"); var b=Beetle(id); HealthyAdult(b); Require(b.championships>0,"仅限联赛总冠军入场");
             Require(!rights || !b.rightsSold,"首配权已拍卖过，可以拍卖冠军本体");
             State.auction=new AuctionState { beetleId=id,rights=rights,rounds=5+(int)(Roll()*4),bid=b.value,finalBid=CampaignEconomy.Money(b.value*(2+Roll()*2.5)),bidder="财阀代表" };
             Tell(rights ? "冠军首配权专场开始，冠军留在温室。" : "冠军本体拍卖开始，成交后将离开温室。");
@@ -58,7 +58,7 @@ namespace BugDuel.Campaign
         public void CloseAuction()
         {
             var a=State.auction; Require(a != null && a.round == a.rounds,"请完成所有举牌轮次"); var b=Beetle(a.beetleId);
-            State.hall.Add(new HallRecord { name=b.name,speciesId=b.speciesId,length=b.length,mutation=b.mutation,week=State.week,price=a.bid,rights=a.rights });
+            State.hall.Add(new HallRecord { name=b.name,customName=b.customName,speciesId=b.speciesId,length=b.length,mutation=b.mutation,week=State.week,price=a.bid,rights=a.rights });
             Earn(a.bid); if (a.rights) b.rightsSold=true; else RemoveBeetle(b); State.auction=null;
             Tell("落槌！" + a.bid + " G。已入名人堂；血统每周参加一次NPC赛事，胜场奖金的10%作为分红。");
         }

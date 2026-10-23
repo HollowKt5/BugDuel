@@ -94,8 +94,6 @@ namespace BeetleArena
         public double OverturnedGraceDays;
         public float OverturnedHealthLossPerDay;
 
-        public SpeciesDefinition ToDefinition() => ToDefinition(BeetleContentData.CurrentSchemaVersion);
-
         public SpeciesDefinition ToDefinition(int schemaVersion)
         {
             if (schemaVersion != 1 && schemaVersion != BeetleContentData.CurrentSchemaVersion)

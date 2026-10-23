@@ -74,6 +74,7 @@ namespace BeetleArena
         public event Action<int> PersistentMatchRequested;
         public bool CanRequestNextMatch => firstEntrant == null || PersistentMatchRequested != null;
         BeetleMatchEntrant firstEntrant;
+        BeetleFeedbackSettings feedbackSettings;
         // accumulator 为未消费的模拟时间，animationTime 为表现时间，hudClock 控制 10Hz UI 刷新。
         float accumulator, animationTime, hudClock;
         public float RoundClock { get; private set; }
@@ -106,6 +107,7 @@ namespace BeetleArena
                 return;
             }
             hud.Bind(this);
+            feedbackSettings = hud.GetComponent<BeetleFeedbackSettings>();
             BeetleCombatDisplay.Install(spectatorCamera.GetComponent<Camera>());
             // 应用可在 Awake 中交付已预订的比赛；Unity Start 不能重置其场地或再次抽局。
             if (Simulation != null) return;
@@ -236,7 +238,7 @@ namespace BeetleArena
             if (Simulation == null)
                 return;
             var keyboard = Keyboard.current;
-            if (keyboard != null)
+            if (keyboard != null && !(feedbackSettings && feedbackSettings.IsOpen))
             {
                 if (keyboard.qKey.wasPressedThisFrame)
                     Cheer(0);

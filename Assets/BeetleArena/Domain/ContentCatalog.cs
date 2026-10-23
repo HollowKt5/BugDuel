@@ -15,7 +15,7 @@ namespace BugDuel.Domain
             IEnumerable<LifeStage> allowedStages = null, IEnumerable<string> tags = null)
         {
             Id = DomainGuard.Id(id, nameof(id));
-            DisplayName = DomainGuard.Text(displayName, nameof(displayName));
+            DisplayName = DomainGuard.DisplayText(displayName, nameof(displayName));
             Environment = environment ?? throw new ArgumentNullException(nameof(environment));
             var stages = new List<LifeStage>(allowedStages ?? new[] { LifeStage.Egg, LifeStage.Larva, LifeStage.Pupa, LifeStage.Adult });
             var uniqueStages = new HashSet<LifeStage>();

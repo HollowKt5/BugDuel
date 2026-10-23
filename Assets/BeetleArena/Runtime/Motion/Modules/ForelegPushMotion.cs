@@ -33,8 +33,8 @@ namespace BeetleArena
             // 直接把 14° 乘以单足支撑 .55 会降到 7.7°，反而低于伸前足所需的 8° 门槛。
             float rearLoad = c.RearSupport > .4f ? Mathf.Lerp(.75f, 1, c.RearSupport) : c.RearSupport;
             // Accepted chest pose, not the requested pose, authorizes lifting a foreleg.
-            // 短暂松开角部时保持后足蓄力并向前贴近；前足仍落地，不探爪、不结算攻击。
-            bool supportedRise = c.OpponentContactConfirmed && c.ForebodyRaised && c.RearSupport > .4f;
+            // 起手已经确认真实接触；抬胸短暂松角时完成本次短推，实际命中仍由前足几何认证。
+            bool supportedRise = c.ContactConfirmedAtStart && c.ForebodyRaised && c.RearSupport > .4f;
             float push = supportedRise ? extend * release : 0;
             return new BeetleMotionSample
             {
@@ -62,7 +62,7 @@ namespace BeetleArena
         public override bool SampleLeg(in BeetleMotionContext c, float phase, int slot, out Vector3 offset)
         {
             offset = Vector3.zero;
-            if (!c.OpponentContactConfirmed || !c.ForebodyRaised || c.RearSupport <= .4f || phase < .26f)
+            if (!c.ContactConfirmedAtStart || !c.ForebodyRaised || c.RearSupport <= .4f || phase < .26f)
                 return false;
             // Keep the elbow folded toward the head, never wind it out to the side.
             Vector3 folded = new Vector3(-c.ForelegSide * .06f, .28f, -.12f);

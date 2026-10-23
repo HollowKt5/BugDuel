@@ -4,7 +4,6 @@ using System.Linq;
 using System.Text;
 using BeetleArena;
 using UnityEditor;
-using UnityEditor.SceneManagement;
 using UnityEngine;
 
 /// <summary>真实模型落败反馈：空中连续性、地面碰撞、结束后恢复、显示隔离和双落台规则。</summary>

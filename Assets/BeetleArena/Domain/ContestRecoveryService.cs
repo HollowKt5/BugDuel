@@ -47,10 +47,10 @@ namespace BugDuel.Domain
                 return DomainResult.Fail("NeedsRighting", "An overturned beetle cannot receive a contest settlement.");
             BeetleCondition condition = individual.Condition;
             double effort = aftermath.Exertion01;
-            individual.Condition = new BeetleCondition(Math.Max(0, condition.Health - policy.HealthCost * effort),
-                Math.Max(0, condition.Nutrition - policy.NutritionCost * effort),
-                Math.Max(0, condition.Hydration - policy.HydrationCost * effort),
-                Math.Min(100, condition.Stress + policy.StressGain * effort));
+            individual.Condition = new BeetleCondition(condition.Health - policy.HealthCost * effort,
+                condition.Nutrition - policy.NutritionCost * effort,
+                condition.Hydration - policy.HydrationCost * effort,
+                condition.Stress + policy.StressGain * effort);
             var events = new List<HusbandryEvent>();
             if (individual.Condition.Health == 0)
             {

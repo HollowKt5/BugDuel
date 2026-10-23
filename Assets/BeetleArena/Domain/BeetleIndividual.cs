@@ -18,6 +18,7 @@ namespace BugDuel.Domain
         }
     }
 
+    /// <summary>Saturating 0–100 meters. Callers supply raw deltas; non-finite values remain programming errors.</summary>
     public sealed class BeetleCondition
     {
         public double Health { get; }
@@ -26,10 +27,17 @@ namespace BugDuel.Domain
         public double Stress { get; }
         public BeetleCondition(double health = 100, double nutrition = 100, double hydration = 100, double stress = 0)
         {
-            Health = DomainGuard.Range(health, 0, 100, nameof(health));
-            Nutrition = DomainGuard.Range(nutrition, 0, 100, nameof(nutrition));
-            Hydration = DomainGuard.Range(hydration, 0, 100, nameof(hydration));
-            Stress = DomainGuard.Range(stress, 0, 100, nameof(stress));
+            Health = Percentage(health, nameof(health));
+            Nutrition = Percentage(nutrition, nameof(nutrition));
+            Hydration = Percentage(hydration, nameof(hydration));
+            Stress = Percentage(stress, nameof(stress));
+        }
+
+        static double Percentage(double value, string name)
+        {
+            if (double.IsNaN(value) || double.IsInfinity(value))
+                throw new ArgumentOutOfRangeException(name, "Condition values must be finite.");
+            return Math.Max(0, Math.Min(100, value));
         }
     }
 
@@ -77,7 +85,7 @@ namespace BugDuel.Domain
         {
             Id = DomainGuard.Text(id, nameof(id));
             SpeciesId = DomainGuard.Text(speciesId, nameof(speciesId));
-            DisplayName = DomainGuard.Text(displayName, nameof(displayName));
+            DisplayName = DomainGuard.DisplayText(displayName, nameof(displayName));
             if (!Enum.IsDefined(typeof(BeetleSex), sex) || !Enum.IsDefined(typeof(LifeStage), stage))
                 throw new ArgumentOutOfRangeException(nameof(stage));
             Sex = sex;
@@ -92,7 +100,7 @@ namespace BugDuel.Domain
             BreedingCooldownDays = DomainGuard.Range(breedingCooldownDays, 0, 100000, nameof(breedingCooldownDays));
             if ((stage == LifeStage.Dead) != (condition.Health == 0))
                 throw new ArgumentException("Death stage and zero health must agree.");
-            OverturnedDays = DomainGuard.Range(overturnedDays, 0, stageAgeDays + 0.000001, nameof(overturnedDays));
+            OverturnedDays = Math.Min(StageAgeDays, DomainGuard.Range(overturnedDays, 0, double.MaxValue, nameof(overturnedDays)));
             if ((!isOverturned && overturnedDays != 0) || (isOverturned && stage != LifeStage.Adult && stage != LifeStage.Dead))
                 throw new ArgumentException("Only adult or dead beetles can retain an overturned pose; upright beetles have no active overturn timer.");
             IsOverturned = isOverturned;

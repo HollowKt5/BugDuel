@@ -32,6 +32,7 @@ public static class CampaignToonSetup
                     for(int i=0;i<materials.Length;i++)
                     {
                         var source=materials[i]; if(!source)continue;
+                        if(HusbandryTerrariumSetup.IsTerrariumMaterial(source))continue;
                         if(source.shader && (source.shader.name==BeetleArenaToonSetup.ShaderName ||
                             page==CampaignPage.MainMenu && CampaignIridescenceSetup.IsIridescentSurface(renderer) && source.shader.name==CampaignIridescenceSetup.ShaderName))continue;
                         string sourcePath=AssetDatabase.GetAssetPath(source);

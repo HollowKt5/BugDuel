@@ -42,6 +42,12 @@ namespace BugDuel.Domain
             if (value == null) throw new ArgumentNullException(nameof(value));
             value.Validate(); profile = CareBehaviorProfile.Resolve(value);
         }
+        // A resized/replaced enclosure may move a destination; eating/resting must require arrival again.
+        public void InvalidateArrival()
+        {
+            if (State == CareState.Eating) Enter(CareState.SeekingFood);
+            else if (State == CareState.Resting) Enter(CareState.SeekingShelter);
+        }
         // A nearby interaction can startle a calm beetle, but repeated clicks cannot hold it forever.
         public void Disturb()
         {

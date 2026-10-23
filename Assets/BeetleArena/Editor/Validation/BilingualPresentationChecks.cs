@@ -31,7 +31,7 @@ public sealed partial class RetroPresentationDriver
         view.SendMessage("CloseModal");yield return null;yield return LanguageCapture("L03-Menu-EN");
         // Re-initialization reads the saved preference, as a later game launch would.
         CampaignLocalization.Initialize(prefs.language);Check(CampaignLocalization.English,"saved English preference survives initialization");
-        app.NewGame(0);yield return Page(CampaignPage.Greenhouse);yield return Pause(.3f);
+        app.NewGame(0,"验收玩家");yield return Page(CampaignPage.Greenhouse);yield return Pause(.3f);
         string state=JsonUtility.ToJson(app.Session.State);
         CampaignLocalization.Select(0);CampaignLocalization.Select(1);
         Check(state==JsonUtility.ToJson(app.Session.State),"locale changes do not modify game state");

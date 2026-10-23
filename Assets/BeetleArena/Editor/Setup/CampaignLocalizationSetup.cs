@@ -10,7 +10,6 @@ using UnityEditor.Localization;
 using UnityEngine;
 using UnityEngine.Localization;
 using UnityEngine.Localization.Settings;
-using UnityEngine.Localization.Tables;
 using UnityEngine.TextCore.LowLevel;
 
 public static class CampaignLocalizationSetup
@@ -38,7 +37,8 @@ public static class CampaignLocalizationSetup
         LocalizationSettings.InitializeSynchronously=true;EditorUtility.SetDirty(settings);
         var data=JsonUtility.FromJson<CampaignLocalization.Catalog>(File.ReadAllText(Folder+"/Source/GameText.json"));
         const string patterns="Assets/BeetleArena/Resources/CampaignLanguagePatterns.json";
-        var sourcePatterns=new CampaignLocalization.Catalog{entries=data.entries.Select(e=>new CampaignLocalization.Entry{key=e.key,zh=e.zh}).ToArray()};
+        var sourcePatterns=new CampaignLocalization.Catalog{entries=data.entries.Select(e=>new CampaignLocalization.Entry{key=e.key,source=e.source,zh=e.zh}).ToArray()};
+        AssetDatabase.ReleaseCachedFileHandles();
         File.WriteAllText(patterns,JsonUtility.ToJson(sourcePatterns,true));AssetDatabase.ImportAsset(patterns);
         var strings=LocalizationEditorSettings.GetStringTableCollection(CampaignLocalization.TableName)??LocalizationEditorSettings.CreateStringTableCollection(CampaignLocalization.TableName,Folder+"/Tables");
         foreach(var table in strings.StringTables)

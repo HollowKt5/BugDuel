@@ -20,7 +20,7 @@ namespace BeetleArena
                 (b.RecoveryTime >= s.recoveryMinimumSeconds && b.Stamina >= b.StaminaLimit *
                     Mathf.Clamp(s.recoveryResumeFraction + (b.Traits.lateralPreference - .5f) * .32f, .35f, .75f) && b.BurstReserve >= .40f);
         }
-        public static bool WantsRest(BeetleState b, BeetleMatchSettings s, bool regrouping, bool pressure)
+        public static bool WantsRest(BeetleState b, bool regrouping, bool pressure)
         {
             if (pressure || b.RecoveryCooldown > 0) return false;
             return b.Readiness01 < Mathf.Lerp(.39f, .23f, b.Traits.aggressionScore / 100) || b.BurstReserve < .20f ||

@@ -11,7 +11,7 @@ namespace BugDuel.Domain
         public FoodDefinition(string id, string displayName, FoodPortion portion)
         {
             Id = DomainGuard.Id(id, nameof(id));
-            DisplayName = DomainGuard.Text(displayName, nameof(displayName));
+            DisplayName = DomainGuard.DisplayText(displayName, nameof(displayName));
             Portion = portion ?? throw new ArgumentNullException(nameof(portion));
         }
     }

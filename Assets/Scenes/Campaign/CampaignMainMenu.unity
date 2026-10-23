@@ -725,6 +725,7 @@ GameObject:
   m_Component:
   - component: {fileID: 379038331}
   - component: {fileID: 379038330}
+  - component: {fileID: 379038332}
   m_Layer: 0
   m_Name: WarmCanopy
   m_TagString: Untagged
@@ -812,6 +813,35 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &379038332
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 379038329}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 474bcb49853aa07438625e644c072ee6, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Unity.RenderPipelines.Universal.Runtime::UnityEngine.Rendering.Universal.UniversalAdditionalLightData
+  m_UsePipelineSettings: 1
+  m_AdditionalLightsShadowResolutionTier: 2
+  m_CustomShadowLayers: 0
+  m_LightCookieSize: {x: 1, y: 1}
+  m_LightCookieOffset: {x: 0, y: 0}
+  m_SoftShadowQuality: 0
+  m_RenderingLayersMask:
+    serializedVersion: 0
+    m_Bits: 1
+  m_ShadowRenderingLayersMask:
+    serializedVersion: 0
+    m_Bits: 1
+  m_Version: 4
+  m_LightLayerMask: 1
+  m_ShadowLayerMask: 1
+  m_RenderingLayers: 1
+  m_ShadowRenderingLayers: 1
 --- !u!1 &392428081
 GameObject:
   m_ObjectHideFlags: 0
@@ -1006,7 +1036,7 @@ GameObject:
   - component: {fileID: 507506038}
   - component: {fileID: 507506037}
   m_Layer: 0
-  m_Name: Campaign Presentation
+  m_Name: MainMenuUI
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -1071,7 +1101,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: BeetleArena.Runtime::BeetleArena.Campaign.CampaignView
   page: 0
   font: {fileID: 11400000, guid: cb56b900afe90cd4a816d77087ddfc83, type: 2}
-  glassShader: {fileID: 4800000, guid: cc7a7430389240742abd0bd48922938a, type: 3}
   backdrop: {fileID: 507506039}
   leagueBridge: {fileID: 0}
 --- !u!4 &507506041
@@ -2519,6 +2548,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1329543932}
   - component: {fileID: 1329543931}
+  - component: {fileID: 1329543933}
   m_Layer: 0
   m_Name: SoftFill
   m_TagString: Untagged
@@ -2606,6 +2636,35 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1329543933
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1329543930}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 474bcb49853aa07438625e644c072ee6, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Unity.RenderPipelines.Universal.Runtime::UnityEngine.Rendering.Universal.UniversalAdditionalLightData
+  m_UsePipelineSettings: 1
+  m_AdditionalLightsShadowResolutionTier: 2
+  m_CustomShadowLayers: 0
+  m_LightCookieSize: {x: 1, y: 1}
+  m_LightCookieOffset: {x: 0, y: 0}
+  m_SoftShadowQuality: 0
+  m_RenderingLayersMask:
+    serializedVersion: 0
+    m_Bits: 1
+  m_ShadowRenderingLayersMask:
+    serializedVersion: 0
+    m_Bits: 1
+  m_Version: 4
+  m_LightLayerMask: 1
+  m_ShadowLayerMask: 1
+  m_RenderingLayers: 1
+  m_ShadowRenderingLayers: 1
 --- !u!1 &1405969291
 GameObject:
   m_ObjectHideFlags: 0
@@ -4006,6 +4065,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: BeetleArena.Runtime::BeetleArena.Campaign.CampaignSpecimen
   selected: 0
   rig: {fileID: 1890306699}
+  enclosureFloor: {fileID: 0}
+  lifeStageVisuals: {fileID: 0}
   phase: 0
 --- !u!1 &1901269024
 GameObject:

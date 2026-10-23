@@ -56,7 +56,7 @@ public static class RetroPresentationValidation
         Directory.CreateDirectory(Output);
         string folder=Path.GetFullPath(Output+"/TestSave/"+DateTime.Now.ToString("yyyyMMdd-HHmmss-fff"));
         Directory.CreateDirectory(folder);SessionState.SetString(Key,folder);CampaignApp.StorageOverride=folder;
-        CampaignRetroTheme.SetAppearance(0,false);
+        CampaignRetroTheme.SetMode(false);
         File.WriteAllText(Output+"/Result.txt","RUNNING\nIsolated saves: "+folder+"\n");
         EditorSceneManager.playModeStartScene=AssetDatabase.LoadAssetAtPath<SceneAsset>("Assets/Scenes/Campaign/CampaignMainMenu.unity");
         EditorWindow.GetWindow(Type.GetType("UnityEditor.GameView,UnityEditor")).Show();EditorApplication.isPlaying=true;
@@ -154,7 +154,7 @@ public sealed partial class RetroPresentationDriver : MonoBehaviour
         yield return null;app=CampaignApp.Ensure();
         Check(app.SaveDirectory.StartsWith(Path.GetFullPath(Output+"/TestSave"),StringComparison.OrdinalIgnoreCase),"storage isolated from player saves");
         yield return Page(CampaignPage.MainMenu);yield return Capture("01-MainMenu");
-        app.NewGame(0);yield return Page(CampaignPage.Greenhouse);
+        app.NewGame(0,"验收玩家");yield return Page(CampaignPage.Greenhouse);
         var backdrop=FindFirstObjectByType<CampaignBackdrop>();var camera=FindFirstObjectByType<CampaignObservationCamera>();
         Check(camera&&backdrop&&backdrop.Frame,"greenhouse observation camera and render target exist");
         yield return Pause(.5f);CheckViewport(backdrop,camera);yield return Capture("02-GreenhouseOverview");

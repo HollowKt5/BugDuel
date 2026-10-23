@@ -17,6 +17,8 @@ public static class CampaignDataValidation
         Check(s.State.beetles[0].genes[0].stars==1&&s.State.beetles[0].ancestors.Count==0&&s.State.stock.Count>0,"transaction snapshot owns nested collections");
         Check(new[]{54.999,55,79.999,80,109.999,110,144.999,145}.Select(c.Tier).Select(x=>x.tier).SequenceEqual(new[]{1,2,2,3,3,4,4,5}),"league boundaries");
         string id=s.State.beetles[0].id,mother=s.State.beetles[1].id;
+        // This is a short breeding-to-market workflow, not a check of the default 300-day development period.
+        s.ConfigureLifeRules(new CampaignLifeRules { eggDays=1,larva1Days=1,larva2Days=1,larva3Days=1,prepupaDays=1,pupaDays=1,dormantDays=1,adultDays=180 });
         s.State.coins=100000;s.Breed(id,mother);var child=s.State.beetles.Last();Check(child.maxHearts==5&&child.inheritance>=.945,"outcrossing");s.Grow(child.id,1,0);s.NextWeek();s.NextWeek();Check(child.Adult(s.State.week),"growth completion");s.Validate();
         s.Dispatch("oak",false,false);s.NextWeek();Check(s.State.expeditions.Count==0&&s.State.beetles.Count==5,"reserved expedition arrival");s.Validate();
         bool rejected=false;try{s.Dispatch("oak",false,false);}catch(InvalidOperationException){rejected=true;}Check(rejected,"capacity includes reservations");
@@ -48,7 +50,21 @@ public static class CampaignDataValidation
         copy.BidPupa();copy.BidPupa();copy.BidPupa();copy.Validate();Check(copy.Reserved==0&&copy.State.beetles.Count==2&&copy.State.mail.Last().senderId=="auction","blind auction mailbox settlement");
         var b=copy.State.beetles[0];b.nutrition=100;long value=b.value;int streak=b.streak;copy.EnterLeague(b.id);copy.DrawBattle(copy.State.battle.id);
         Check(b.value==value&&b.streak==streak&&copy.State.battle==null,"draw does not become a defeat");copy.Validate();
+        var busy=CampaignSession.New(CampaignCatalog.Defaults(),4512);busy.State.coins=100000;busy.NextWeek();var champion=busy.State.beetles[0];champion.championships=1;
+        busy.EnterLeague(champion.id);RejectActivity(busy,()=>busy.StartPupaAuction(),"a pending league blocks starting a blind auction");busy.DrawBattle(busy.State.battle.id);
+        busy.BeginAuction(champion.id,true);RejectActivity(busy,()=>busy.StartPupaAuction(),"a pending champion auction blocks starting a blind auction");
+        while(busy.State.auction.round<busy.State.auction.rounds)busy.AdvanceAuction();busy.CloseAuction();
+        busy.StartPupaAuction();RejectActivity(busy,()=>busy.EnterLeague(champion.id),"a pending blind auction blocks entering a league");
+        RejectActivity(busy,()=>busy.BeginAuction(champion.id,false),"a pending blind auction blocks starting a champion auction");
+        busy.LeavePupaAuction();busy.EnterLeague(champion.id);busy.DrawBattle(busy.State.battle.id);busy.BeginAuction(champion.id,false);busy.Validate();
+        Check(busy.State.auction!=null,"leaving the blind auction releases the activity lock for league and champion entries");
         Debug.Log("Campaign pending-activity contracts PASS: blind auction reservation, JSON, settlement, combat draw.");
+    }
+    static void RejectActivity(CampaignSession s,Action action,string message)
+    {
+        long coins=s.State.coins;uint random=s.State.random;bool refused=false;
+        try{action();}catch(CampaignRuleException){refused=true;}
+        Check(refused&&s.State.coins==coins&&s.State.random==random,message);s.Validate();
     }
     static void Check(bool passed,string name){if(!passed)throw new InvalidOperationException("Campaign contract failed: "+name);}
 }

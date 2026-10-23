@@ -1,0 +1,44 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!21 &2100000
+Material:
+  serializedVersion: 8
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: GlassLow
+  m_Shader: {fileID: 4800000, guid: d72c88e200bb9a94ab4587dcd2720b05, type: 3}
+  m_Parent: {fileID: 0}
+  m_ModifiedSerializedProperties: 0
+  m_ValidKeywords: []
+  m_InvalidKeywords: []
+  m_LightmapFlags: 4
+  m_EnableInstancingVariants: 0
+  m_DoubleSidedGI: 0
+  m_CustomRenderQueue: -1
+  stringTagMap: {}
+  disabledShaderPasses: []
+  m_LockedProperties: 
+  m_SavedProperties:
+    serializedVersion: 3
+    m_TexEnvs: []
+    m_Ints: []
+    m_Floats:
+    - _AbsorptionDensity: 1
+    - _HighlightStrength: 0.65
+    - _IOR: 1.5
+    - _ReflectionStrength: 0.16
+    - _Smoothness: 0.9
+    - _WindowHeight: 1.8
+    - _WindowMinimumFill: 0.35
+    - _WindowSoftness: 0.32
+    - _WindowStrength: 0.22
+    - _WindowWidth: 1.5
+    m_Colors:
+    - _TransmissionColor: {r: 0.8399999, g: 0.96999997, b: 0.93, a: 1}
+    - _WindowColor: {r: 0.92, g: 0.97, b: 1, a: 1}
+    - _WindowDirection: {r: -0.5, g: -0.65, b: -0.57, a: 0}
+    - _WindowPosition: {r: -4, g: -4, b: -8, a: 0}
+  m_BuildTextureStacks: []
+  m_AllowLocking: 1

@@ -36,7 +36,7 @@ public static class BeetleFeedbackSetup
         ui.sparks = sparks;
         if (!ui.openButton)
         {
-            ui.openButton = Button(match.hud.pauseButton, match.hud.transform, "Settings", "设置", new Vector2(1, .5f), new Vector2(-34, -50), new Vector2(138, 38));
+            ui.openButton = Button(match.hud.pauseButton, match.hud.transform, "Settings", "设置", new Vector2(1, .5f), new Vector2(-34, -186), new Vector2(230, 38));
             var panel = Rect("Contact Settings", match.hud.transform, new Vector2(.5f, .5f), Vector2.zero, new Vector2(410, 230));
             ui.panel = panel.gameObject;
             var background = panel.gameObject.AddComponent<UnityEngine.UI.Image>(); background.color = new Color(.035f, .055f, .043f, .98f);
@@ -55,6 +55,9 @@ public static class BeetleFeedbackSetup
             ui.closeButton = Button(match.hud.pauseButton, panel, "Close Settings", "完成", new Vector2(1, 0), new Vector2(-25, 18), new Vector2(100, 38));
             panel.gameObject.SetActive(false);
         }
+        // Keep settings below view, slow-motion and nursery controls in the right column.
+        var settingsRect=(RectTransform)ui.openButton.transform;
+        settingsRect.anchoredPosition=new Vector2(-34,-186);settingsRect.sizeDelta=new Vector2(230,38);
         // 只补新增文案字形，不为代码注释扩充整个字体图集。
         var f = match.hud.clock.font; f.atlasPopulationMode = AtlasPopulationMode.DynamicOS;
         f.TryAddCharacters("设置角斗碰撞火星兵器般的细小完成", out string missing); f.atlasPopulationMode = AtlasPopulationMode.Static;

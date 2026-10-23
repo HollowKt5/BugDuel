@@ -51,7 +51,7 @@ public static class CampaignMailboxValidation
         s.BidPupa();s.BidPupa();s.BidPupa();mail=s.State.mail.Last();Check(mail.senderId=="auction"&&mail.Pending&&s.State.pupaAuction==null,"auction prize arrives by mail");
         s.ClaimMail(mail.id);s.Validate();
         string folder=Path.GetFullPath("Artifacts/Mailbox/TestSave");var repository=new CampaignSaveRepository(folder);
-        repository.Write(0,new CampaignSave {state=CampaignSnapshots.Copy(s.State),catalog=s.Catalog});var read=repository.Read(0);var loaded=new CampaignSession(read.state,read.catalog);loaded.Validate();
+        s.RenamePlayer("验收玩家");repository.Write(0,new CampaignSave {state=CampaignSnapshots.Copy(s.State),catalog=s.Catalog});var read=repository.Read(0);var loaded=new CampaignSession(read.state,read.catalog);loaded.Validate();
         Check(loaded.State.mail.Last().claimed&&loaded.State.storedBeetles.Single().meal==null,"disk round trip preserves claims and restores absent optional meals");
         Rejected(loaded,()=>loaded.ClaimMail(mail.id),"reload cannot reclaim an attachment");
         var legacy=CampaignSnapshots.Copy(s.State);legacy.mailboxVersion=0;legacy.mail=null;legacy.inventory=null;legacy.storedBeetles=null;

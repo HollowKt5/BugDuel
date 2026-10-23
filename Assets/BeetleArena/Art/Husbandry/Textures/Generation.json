@@ -1,0 +1,15 @@
+{
+  "mode": "built-in image_gen",
+  "sources": [
+    {
+      "file": "aa86ec4b-d9a6-4a4a-9f19-2066956c3b88.jpg",
+      "role": "soil cross-section reference"
+    },
+    {
+      "file": "8376ef3e-d8a4-486f-b2cd-933f7f17f093.jpg",
+      "role": "soil top reference"
+    }
+  ],
+  "topPrompt": "Use case: precise-object-edit. Asset type: seamless photorealistic albedo texture for the TOP face of a cube soil layer inside a beetle terrarium in a Unity game. Input image is the edit target and material reference. Preserve its natural dark brown earthy soil, fine grains, irregular small woody mulch chips, organic detail and realistic colors. Make an orthographic top-down square texture filling the whole image, evenly lit with no directional highlights, no perspective, no borders. Remove the small sparkle/logo watermark in the lower right and replace it with matching uninterrupted soil. Blend edges so the pattern can tile seamlessly horizontally and vertically without a visible frame or mirrored shapes. Keep variation natural and fine at uniform scale, not large isolated objects. No labels, text, logos, border, green foliage, insects, or container. Output one square 1024x1024 texture.",
+  "sidePrompt": "Use case: precise-object-edit. Asset type: realistic albedo texture for the VERTICAL SIDE faces of a shallow cube soil slab in a Unity beetle terrarium. Input image is the edit target and reference. Preserve its dark organic humus and natural brown wood fibers/colors. Recompose as an orthographic straight-on shallow soil cross-section rectangle 2048x512: upper 10-15% is loose small mulch fragments and fibrous leaf litter, remaining depth is compact dark crumbly soil with occasional tiny organic wood fragments. Entire frame is soil with flat uniform lighting, absolutely no perspective, container, empty space or horizon. Tile seamlessly horizontally, avoid obvious horizontal bands or giant wood chunks. Remove the lower right sparkle watermark and replace it naturally. Preserve photo detail and subtle earthy colors. No text, logos or borders. Output one horizontal 4:1 texture."
+}

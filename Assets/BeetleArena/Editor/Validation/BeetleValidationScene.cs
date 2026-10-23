@@ -32,6 +32,9 @@ public sealed class BeetleValidationScene : IDisposable
             ownsAsset = AssetDatabase.CopyAsset(BeetleArenaSceneBuilder.ScenePath, path);
             if (!ownsAsset) throw new InvalidOperationException("Cannot copy validation scene: " + path);
             ownedAssetGuid = AssetDatabase.AssetPathToGUID(path);
+            // Finish the copied asset's import before its scene can be opened and immediately disposed.
+            // Releasing cached handles during cleanup does not wait for an outstanding import reader.
+            AssetDatabase.ImportAsset(path, ImportAssetOptions.ForceSynchronousImport);
             Scene = EditorSceneManager.OpenScene(path, OpenSceneMode.Additive);
             SceneManager.SetActiveScene(Scene);
             Match = BeetleSceneHierarchy.FindMatch(Scene);
@@ -79,6 +82,10 @@ public sealed class BeetleValidationScene : IDisposable
                 });
             }
             Attempt(() => { if (Settings) UnityEngine.Object.DestroyImmediate(Settings); });
+            Match = null; Settings = null;
+            // CloseScene can leave its serialized-file stream alive until unused assets unload.
+            // Wait for that release while retaining the user's managed asset references.
+            Attempt(() => EditorUtility.UnloadUnusedAssetsImmediate(true));
             Attempt(DeleteOwnedAsset);
         }
         finally

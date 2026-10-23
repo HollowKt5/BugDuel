@@ -15,8 +15,9 @@ namespace BeetleArena.Campaign
         public BeetleMatchController controller;
         [NonSerialized] public TMP_Text playerLabel,opponentLabel;
         [NonSerialized] public UI.Image playerBar,opponentBar;
-        public event Action Finished;
+        public event Action StateChanged;
         public bool IsFinished { get; private set; }
+        public bool SettlementPending => result!=null&&!IsFinished;
         public string ResultTitle { get; private set; }
         public int Speed { get; private set; } = 1;
         CampaignApp app;
@@ -46,7 +47,7 @@ namespace BeetleArena.Campaign
                     CampaignSpecimen.Tint(rig,Color.HSVToRGB((float)app.Session.Catalog.Species(b.speciesId).hue+(i==0?0:.08f),.65f,i==0?.75f:.45f));
                 }
             }
-            catch(Exception e){ResultTitle="赛场载入失败";IsFinished=true;Debug.LogException(e);Finished?.Invoke();}
+            catch(Exception e){ResultTitle="赛场载入失败";IsFinished=true;Debug.LogException(e);StateChanged?.Invoke();}
         }
         BeetleMatchEntrant Entrant(CampaignBeetle b)
         {
@@ -65,30 +66,37 @@ namespace BeetleArena.Campaign
         }
         public void CycleSpeed(){Speed=Speed==1?2:Speed==2?4:1;}
         public void CycleCamera(){if(controller&&controller.Simulation!=null)controller.CycleView();}
-        void Update()
+        void Update() => Tick(Time.unscaledDeltaTime);
+        void Tick(float elapsed)
         {
             if(!controller||controller.Simulation==null||app.Modal||app.Busy)return;
-            if(result!=null&&!IsFinished){retryTime-=Time.unscaledDeltaTime;if(retryTime<=0){retryTime=3;TrySettle();}}
-            if(IsFinished){finishTime+=Time.unscaledDeltaTime;if(finishTime>3)return;}
-            accumulator=Mathf.Min(.24f,accumulator+Mathf.Min(.05f,Time.unscaledDeltaTime)*Speed);
+            if(result!=null&&!IsFinished){retryTime-=elapsed;if(retryTime<=0){retryTime=3;TrySettle();}}
+            if(IsFinished){finishTime+=elapsed;if(finishTime>3)return;}
+            // The match deadline follows elapsed play time even when physics must cap
+            // catch-up work after a slow frame. Pauses and durable writes exclude both.
+            controller.AdvanceRoundClock(elapsed*Speed);
+            accumulator=Mathf.Min(.24f,accumulator+Mathf.Min(.05f,elapsed)*Speed);
             int steps=0;
             while(accumulator>=BeetleSimulation.FixedStep && steps++<12)
             {
-                controller.AdvanceRoundClock(BeetleSimulation.FixedStep);controller.AdvanceFixedStep();accumulator-=BeetleSimulation.FixedStep;
+                controller.AdvanceFixedStep();accumulator-=BeetleSimulation.FixedStep;
             }
-            controller.Present(accumulator/BeetleSimulation.FixedStep,controller.Simulation.MotionTime,Mathf.Min(.05f,Time.unscaledDeltaTime)*Speed);
-            hudTime+=Time.unscaledDeltaTime;if(hudTime<.1f)return;hudTime=0;
+            controller.Present(accumulator/BeetleSimulation.FixedStep,controller.Simulation.MotionTime,Mathf.Min(.05f,elapsed)*Speed);
+            hudTime+=elapsed;if(hudTime<.1f)return;hudTime=0;
             var a=controller.Simulation.Fighters[0];var b=controller.Simulation.Fighters[1];
-            if(playerLabel)playerLabel.text=controller.Simulation.FighterName(0);
-            if(opponentLabel)opponentLabel.text=controller.Simulation.FighterName(1);
+            if(playerLabel)CampaignLocalization.Bind(playerLabel,CampaignLocalization.Name(app.Session.Beetle(reservation.beetleId)));
+            if(opponentLabel)CampaignLocalization.Bind(opponentLabel,CampaignLocalization.Name(reservation.opponent));
             if(playerBar)playerBar.fillAmount=a.Stamina01;if(opponentBar)opponentBar.fillAmount=b.Stamina01;
         }
-        void OnCompleted(BeetleMatchResult completed){result=completed;TrySettle();}
+        void OnCompleted(BeetleMatchResult completed)
+        {result=completed;retryTime=3;TrySettle();StateChanged?.Invoke();}
+        public void RetrySettlement()
+        {if(!SettlementPending||app.Busy)return;retryTime=3;TrySettle();StateChanged?.Invoke();}
         void TrySettle()
         {
             if(result==null||IsFinished||app.Busy)return;
             app.Execute(s=>{if(result.Winner<0)s.DrawBattle(result.MatchId);else s.SettleBattle(result.MatchId,result.Winner==0);},
-                ()=>{IsFinished=true;ResultTitle=result.Winner<0?"平局 · 棋逢对手":result.Winner==0?"赢啦！漂亮的一战":"这一场，先歇一歇";Finished?.Invoke();});
+                ()=>{IsFinished=true;ResultTitle=result.Winner<0?"平局 · 棋逢对手":result.Winner==0?"赢啦！漂亮的一战":"这一场，先歇一歇";StateChanged?.Invoke();});
         }
         void OnDestroy(){if(controller)controller.MatchCompleted-=OnCompleted;foreach(var item in owned)if(item)Destroy(item);}
     }

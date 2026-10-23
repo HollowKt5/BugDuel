@@ -1,5 +1,7 @@
 # BugDuel · 真实模型甲虫对战
 
+正式游戏从 `Assets/Scenes/Campaign/CampaignMainMenu.unity` 进入。当前经营功能与代码导航见项目根目录 [README.md](../../README.md)、[CodeMap.md](../../CodeMap.md) 和 [Campaign.md](../../Campaign.md)。下文描述独立战斗及早期 `BeetleNursery` 原型；“未接入市场/联赛”等限制只适用于该旧入口。
+
 Unity 6000.3.16f1 / URP 17.3。打开 `Assets/Scenes/BeetleArena.unity` 后 Play。
 Q/E 加油，空格暂停，T 在平地木桩、起伏岩台、半圆槽、起伏圆槽之间切换并重开。默认平地。
 C 循环切换全景、琥珀上方跟随、墨甲上方跟随；V 或右侧按钮开关击败慢镜头（落台时近景、0.28 倍速，最多 3 秒；超时平局直接结算）。
@@ -53,7 +55,13 @@ C 循环切换全景、琥珀上方跟随、墨甲上方跟随；V 或右侧按�
 | Runtime/Rig | 真实模型骨骼 IK、触角避地 |
 | Runtime/Physics | 碰撞代理缓存与接触求解 |
 | Runtime/Environment | 地形支撑和贴地标记 |
-| Runtime/Presentation | 表现姿态镜头快照、跟随取景、音效、对战/养殖 HUD 与救助姿态 |
+| Runtime/Presentation/Display | 原色 dither、CRT、自定义材质与分场景显示配置 |
+| Runtime/Presentation/Cameras | 战斗取景与表现姿态镜头快照 |
+| Runtime/Presentation/UI | 独立对战/养殖 HUD、设置、滑块与导航 |
+| Runtime/Presentation/Audio | 战斗声音、按钮合成声与滑块点击声 |
+| Runtime/Presentation/Husbandry | 养殖姿态、游走、足部 IK、箱内空间与地表 |
+| Runtime/Presentation/CombatFeedback | 战斗接触反馈与可关闭火星 |
+| Runtime/Campaign/Presentation | 经营表现按 Audio、Cameras、Construction、Display、Husbandry、Specimens、Transitions 分类；完整索引见根目录 CodeMap.md |
 | Editor/Model | FBX 部件、关节、蒙皮、材质与碰撞代理生成 |
 | Editor/Setup | 场景、四擂台与材质安装、格斗增量升级 |
 | Editor/Validation | 规则、碰撞、蒙皮和地形验证 |
@@ -71,6 +79,7 @@ C 循环切换全景、琥珀上方跟随、墨甲上方跟随；V 或右侧按�
 `Artifacts/Migration/` 保存本次真实模型的对局报告、最终网格穿地采样和截图。
 `Artifacts/BeetleArena/` 保存专项碰撞、挑飞和运行检查报告。
 `Artifacts/CombatRefinement/` 保存四地图、属性分布、后足互斥及击败慢镜头验证和预览；`Artifacts/DeadlockFix/CapturedReplay.txt` 保存旧卡角现场复现。
+2026-10-22 夹具字段迁移：`Editor/Validation/Fixtures/FlatHornDeadlock.json` 仅移除两个 Animator 快照中的 `arenaRadius`。该字段原本只在初始化赋值、未参与动画或几何计算，已从 `BeetleProceduralAnimator` 删除；其余状态、腿部缓存、骨骼与根旋转数据保留。`RestoreFields` 继续对未知字段报错，本次数据迁移不代表 Unity 回放验收已通过。
 报告中代理重叠深度与可见网格穿地深度是不同指标，不能混为一谈。
 有限样本通过不保证任意姿态都完全无穿模；细刺和足爪使用近似约束。
 单局硬上限为三分钟（正常播放、暂停除外），含开场和最多三秒击败展示；默认交战时限为174秒。平均约90秒为多种子调参目标，单局长短仍由实际攻防决定。超时判平局，不移动选手来指定赢家。

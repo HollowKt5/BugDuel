@@ -1,12 +1,9 @@
 using System;
 using System.IO;
 using System.Linq;
-using System.Text;
 using BeetleArena;
 using UnityEditor;
-using UnityEditor.SceneManagement;
 using UnityEngine;
-using UnityEngine.SceneManagement;
 
 /// <summary>验证真实网格的骨长、接触、双地图完整比赛；生成渲染截图供人工检查。</summary>
 public static class BeetleImportedValidation

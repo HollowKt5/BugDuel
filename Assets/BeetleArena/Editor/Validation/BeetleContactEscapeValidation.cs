@@ -176,5 +176,40 @@ public static class BeetleContactEscapeValidation
                 throw new Exception($"Unsafe neck retreat trial: actor={i}, pitch={pitch}");
         }
         report.AppendLine("PASS: 8 neck retreat trials preserve yaw/caches, repeat identically and respect the downward angle limit.");
+
+        float[] yaws = { -30, -24, 0, 24, 30 };
+        float[] turns = { -4, 4 };
+        // Outside the usual range, an outward request stays put and an inward
+        // request takes only its requested step; neither snaps back to the limit.
+        float[,] expectedYaws = { { -30, -26 }, { -24, -20 }, { -4, 4 }, { 20, 24 }, { 26, 30 } };
+        for (int i = 0; i < 2; i++)
+        for (int angle = 0; angle < yaws.Length; angle++)
+        for (int direction = 0; direction < turns.Length; direction++)
+        {
+            var animator = fixture.Match.actors[i].animator;
+            float yaw = yaws[angle], turn = turns[direction], expected = expectedYaws[angle, direction];
+            float pitch = i == 0 ? 11 : -17;
+            const float cachedPitch = -43, cachedYaw = 67;
+            var origin = Quaternion.Euler(pitch, yaw, 0);
+            pitchField.SetValue(animator, cachedPitch); yawField.SetValue(animator, cachedYaw);
+            animator.headPivot.localRotation = origin;
+            bool changed = animator.TryTurnHeadForRetreat(turn);
+            var first = animator.headPivot.localRotation;
+            bool firstCachesUnchanged = (float)pitchField.GetValue(animator) == cachedPitch &&
+                (float)yawField.GetValue(animator) == cachedYaw;
+            animator.headPivot.localRotation = origin;
+            bool repeated = animator.TryTurnHeadForRetreat(turn);
+            float actual = Mathf.DeltaAngle(0, animator.headPivot.localEulerAngles.y);
+            float step = Mathf.DeltaAngle(yaw, actual);
+            if (changed != (expected != yaw) || repeated != changed || !firstCachesUnchanged ||
+                (float)pitchField.GetValue(animator) != cachedPitch || (float)yawField.GetValue(animator) != cachedYaw ||
+                Mathf.Abs(Mathf.DeltaAngle(expected, actual)) > .001f || Mathf.Abs(step) > 4.001f || step * turn < -.001f ||
+                (Mathf.Abs(yaw) <= 24 && Mathf.Abs(actual) > 24.001f) ||
+                Quaternion.Angle(origin, animator.headPivot.localRotation) > 4.01f ||
+                1 - Mathf.Abs(Quaternion.Dot(first, animator.headPivot.localRotation)) > .000001f ||
+                1 - Mathf.Abs(Quaternion.Dot(first, Quaternion.Euler(pitch, expected, 0))) > .000001f)
+                throw new Exception($"Unsafe sideways neck retreat trial: actor={i}, yaw={yaw}, turn={turn}, actual={actual}");
+        }
+        report.AppendLine("PASS: 20 sideways neck trials preserve pitch/caches, repeat identically, stay within the normal yaw range and never reverse or snap an out-of-range pose.");
     }
 }

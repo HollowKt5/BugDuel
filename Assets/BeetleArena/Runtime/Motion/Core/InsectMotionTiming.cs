@@ -21,9 +21,5 @@ namespace BeetleArena
             float p = Mathf.Clamp01((t - start) / span);
             return Mathf.Pow(Mathf.Sin(Mathf.PI * p), 2) * Mathf.Lerp(.6f, 1, Value(n, salt + 2));
         }
-        // 慢加载、短促发力、保压、较长卸力。角度/时间为艺术参数，非物种测量值。
-        public static float Drive(float p) => p < .24f ? .28f * Mathf.SmoothStep(0, 1, p / .24f) :
-            p < .36f ? Mathf.Lerp(.28f, 1, Mathf.SmoothStep(0, 1, (p - .24f) / .12f)) :
-            1 - Mathf.SmoothStep(0, 1, Mathf.InverseLerp(.46f, 1, p));
     }
 }

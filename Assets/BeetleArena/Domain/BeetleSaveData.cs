@@ -74,19 +74,16 @@ namespace BugDuel.Domain
                 foreach (string ancestor in data.AncestorIds)
                     if (!ancestors.Add(DomainGuard.Text(ancestor, nameof(data.AncestorIds))))
                         throw new ArgumentException("Ancestor IDs must be unique.");
+                // Balance patches may lower the cooldown cap. Keep historical ages and stage intact;
+                // HusbandryService resolves an overdue stage on the next explicit time advance.
+                double cooldown = Math.Min(species.Breeding.CooldownDays,
+                    DomainGuard.Range(data.BreedingCooldownDays, 0, 100000, nameof(data.BreedingCooldownDays)));
                 var individual = new BeetleIndividual(data.Id, data.SpeciesId, data.DisplayName,
                     (BeetleSex)data.Sex, (LifeStage)data.Stage,
                     new BeetleTraits(data.Strength, data.Defense, data.Speed, data.Stamina),
                     new BeetleCondition(data.Health, data.Nutrition, data.Hydration, data.Stress),
                     new BeetlePedigree(data.MotherId, data.FatherId, data.AncestorIds),
-                    data.TotalAgeDays, data.StageAgeDays, data.BreedingCooldownDays, data.IsOverturned, data.OverturnedDays);
-                DomainResult invalid = HusbandryService.Check(individual, species);
-                if (invalid != null) return new RestoreResult(code: invalid.ErrorCode, message: invalid.ErrorMessage);
-                if (individual.TotalAgeDays > species.Lifecycle.StartAge(LifeStage.Dead) + 0.000001 ||
-                    individual.StageAgeDays > Math.Max(Math.Max(species.Lifecycle.EggDays, species.Lifecycle.LarvaDays),
-                        Math.Max(species.Lifecycle.PupaDays, species.Lifecycle.AdultDays)) + 0.000001 ||
-                    individual.BreedingCooldownDays > species.Breeding.CooldownDays)
-                    throw new ArgumentException("Saved age or breeding cooldown is incompatible with this species definition.");
+                    data.TotalAgeDays, data.StageAgeDays, cooldown, data.IsOverturned, data.OverturnedDays);
                 return new RestoreResult(individual);
             }
             catch (ArgumentException exception) { return new RestoreResult(code: "InvalidSave", message: exception.Message); }

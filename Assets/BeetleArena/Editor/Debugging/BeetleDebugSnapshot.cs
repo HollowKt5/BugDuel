@@ -5,7 +5,6 @@ using System.Linq;
 using System.Reflection;
 using System.Security.Cryptography;
 using System.Text;
-using BeetleArena;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using UnityEditor;
@@ -80,6 +79,14 @@ namespace BeetleArena.EditorTools
             if(poses.Length!=Bones(match).Count() || poses.Select(p=>p.target).Distinct().Count()!=poses.Length)throw new InvalidOperationException("现场骨架拓扑不匹配。");
             match.SelectArena((int)data["arena"]);
             foreach(var c in changes)c.field.SetValue(c.target,c.value);
+            // Horn length changes native CapsuleCollider dimensions at Bind time. Restoring
+            // Transform poses alone leaves the destination match's horn lengths in PhysX.
+            // Rebuild those dimensions from the restored entrant before publishing saved poses.
+            foreach(var actor in match.actors)
+            {
+                var horns=actor.animator.importedRig?actor.animator.importedRig.GetComponent<BeetleHornRig>():null;
+                if(horns)horns.SetLength(actor.State.Traits.hornLengthFactor);
+            }
             foreach(var pose in poses){pose.target.localPosition=pose.p;pose.target.localRotation=pose.r;pose.target.localScale=pose.s;}
             match.EditorReconnectEvents();match.EditorSetPaused(true);
             // 仅重建表现侧反馈，不回写模拟；每次恢复清除旧声音/火星节奏，不声称音视频逐帧复现。

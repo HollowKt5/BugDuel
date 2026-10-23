@@ -30,7 +30,7 @@ public sealed partial class RetroPresentationDriver
     IEnumerator RunMailbox()
     {
         yield return null;app=CampaignApp.Ensure();yield return Page(CampaignPage.MainMenu);
-        app.NewGame(0);yield return Page(CampaignPage.Greenhouse);
+        app.NewGame(0,"验收玩家");yield return Page(CampaignPage.Greenhouse);
         app.Execute(s=>{foreach(var b in s.State.beetles)s.House(b.id,"recovery");});yield return Idle();
         app.Go(CampaignPage.Market);yield return Page(CampaignPage.Market);
         var view=FindFirstObjectByType<CampaignView>();

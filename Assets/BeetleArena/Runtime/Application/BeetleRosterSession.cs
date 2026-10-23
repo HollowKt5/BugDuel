@@ -105,6 +105,10 @@ namespace BeetleArena
                 return DomainResult.Rejected("HabitatUnavailable", "Choose a known habitat before advancing.");
             SpeciesDefinition species = Definition(individual.SpeciesId);
             double allowedDays = AllowedDays(individual, species, habitat);
+            // A shortened stage may already be due in a stage-specific box. Complete that zero-time
+            // boundary so the player can select the next stage's box; consume no requested care time.
+            if (habitat.Allows(individual.Stage) && allowedDays == 0 && elapsedDays > 0 && elapsedDays <= 1000000)
+                elapsedDays = 0;
             if (!habitat.Allows(individual.Stage) || elapsedDays > allowedDays)
                 return DomainResult.Rejected("RelocationRequired", "Advance at most " + allowedDays.ToString("R", CultureInfo.InvariantCulture) +
                     " game days, then relocate to a compatible habitat. No time has been consumed.");
@@ -119,7 +123,7 @@ namespace BeetleArena
         static double AllowedDays(BeetleIndividual individual, SpeciesDefinition species, HabitatDefinition habitat)
         {
             if (!habitat.Allows(individual.Stage)) return 0;
-            double days = species.Lifecycle.Duration(individual.Stage) - individual.StageAgeDays;
+            double days = Math.Max(0, species.Lifecycle.Duration(individual.Stage) - individual.StageAgeDays);
             for (int index = (int)individual.Stage + 1; index < (int)LifeStage.Dead; index++)
             {
                 LifeStage stage = (LifeStage)index;

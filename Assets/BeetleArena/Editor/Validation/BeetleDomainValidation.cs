@@ -20,8 +20,11 @@ public static class BeetleDomainValidation
         var report = new StringBuilder("HUSBANDRY DOMAIN CONTRACTS\n");
         var failures = new List<Exception>();
         Check("Definition and input guards", Definitions, report, failures);
+        Check("Display text cleanup preserves stable identities", DisplayNames, report, failures);
+        Check("Overturn timer normalization and invalid records", OverturnTimers, report, failures);
         Check("Immutable content catalogs and habitat choices", ContentDefinitions, report, failures);
         Check("Lifecycle boundaries and partition invariance", Lifecycle, report, failures);
+        Check("Balance-patch save and lifecycle compatibility", LifecycleCompatibility, report, failures);
         Check("Care thresholds and mortality", CareThresholds, report, failures);
         Check("Food suitability and transactional rejection", Feeding, report, failures);
         Check("Breeding, identity, ancestry and cooldown", Breeding, report, failures);
@@ -111,6 +114,9 @@ public static class BeetleDomainValidation
         }
         Rejects(() => new BeetleTraits(-.01f), "Negative trait accepted");
         Rejects(() => new BeetleTraits(stamina: 1.01f), "Trait above normalized range accepted");
+        var saturated = new BeetleCondition(120, -10, 140, -2);
+        Require(saturated.Health == 100 && saturated.Nutrition == 0 && saturated.Hydration == 100 && saturated.Stress == 0,
+            "Finite condition deltas did not saturate at the value-object boundary");
         Rejects(() => new LifecycleProfile(eggDays: 0), "Zero-duration stage accepted");
         Rejects(() => new CareProfile(minimumTemperature: 30, maximumTemperature: 20), "Reversed habitat interval accepted");
         Rejects(() => new SpeciesDefinition(" s ", "Species", 55, 8), "Unstable whitespace identity accepted");
@@ -124,6 +130,60 @@ public static class BeetleDomainValidation
         source[0] = Species("other");
         Require(catalog.TryGet(species.Id, out var found) && found == species && !catalog.TryGet("other", out _),
             "Catalog retained mutable input collection");
+    }
+
+    static void DisplayNames()
+    {
+        var species = new SpeciesDefinition("names", " \t大兜虫\u3000", 55, 8);
+        var individual = BeetleIndividual.Create(species, "beetle-1", "\u3000 小 栗子 \r\n", BeetleSex.Female);
+        var food = new FoodDefinition("jelly", "  果冻\t", new FoodPortion(FoodKind.BeetleJelly, 1, 1));
+        var habitat = new HabitatDefinition("box", "\n 饲养箱  ", new HabitatConditions());
+        Require(species.DisplayName == "大兜虫" && individual.DisplayName == "小 栗子" &&
+            food.DisplayName == "果冻" && habitat.DisplayName == "饲养箱", "Display whitespace was not normalized at construction");
+        Require(individual.Id == "beetle-1" && individual.SpeciesId == "names", "Display cleanup changed identity");
+        foreach (string blank in new[] { null, "", " \t\u3000" })
+            Rejects(() => BeetleIndividual.Create(species, "beetle-1", blank, BeetleSex.Female), "Blank name accepted");
+        Rejects(() => Individual(species, " beetle-1 "), "Individual identity was silently normalized");
+        var data = BeetleSaveMapper.Export(individual);
+        data.DisplayName = "  存档昵称\t";
+        var restored = Restore(data, species);
+        Require(restored.DisplayName == "存档昵称" && restored.Clone().DisplayName == "存档昵称" &&
+            BeetleSaveMapper.Export(restored).DisplayName == "存档昵称", "Cleaned name did not survive clone/export");
+        Require(data.DisplayName == "  存档昵称\t", "Restore mutated its source record");
+        data.MotherId = " mother "; data.FatherId = "father";
+        data.AncestorIds = new[] { "mother", "father" };
+        Require(!BeetleSaveMapper.Restore(data, new SpeciesCatalog(new[] { species })).Success,
+            "Parent identity was silently normalized");
+        data.MotherId = "mother";
+        data.AncestorIds = new[] { "mother", "father", " ancestor " };
+        Require(!BeetleSaveMapper.Restore(data, new SpeciesCatalog(new[] { species })).Success,
+            "Ancestor identity was silently normalized");
+    }
+
+    static void OverturnTimers()
+    {
+        var species = Species();
+        var catalog = new SpeciesCatalog(new[] { species });
+        var data = BeetleSaveMapper.Export(Individual(species));
+        data.TotalAgeDays += .5; data.StageAgeDays = .5; data.IsOverturned = true;
+        foreach (double timer in new[] { 0, .25, .5, .5 + 1e-12, 2d })
+        {
+            data.OverturnedDays = timer;
+            var restored = Restore(data, species);
+            Near(restored.OverturnedDays, Math.Min(.5, timer), "Overturn timer normalization");
+            Same(restored.Clone(), restored, "Normalized overturn clone");
+            Near(BeetleSaveMapper.Export(restored).OverturnedDays, Math.Min(.5, timer), "Normalized timer export");
+            Require(data.OverturnedDays == timer, "Timer cleanup mutated source record");
+        }
+        foreach (double timer in new[] { -.01, double.NaN, double.PositiveInfinity, double.NegativeInfinity })
+        {
+            data.OverturnedDays = timer;
+            Require(!BeetleSaveMapper.Restore(data, catalog).Success, "Invalid elapsed timer accepted");
+        }
+        data.OverturnedDays = .25; data.IsOverturned = false;
+        Require(!BeetleSaveMapper.Restore(data, catalog).Success, "Upright beetle retained an overturn timer");
+        data.IsOverturned = true; data.Stage = (int)LifeStage.Larva;
+        Require(!BeetleSaveMapper.Restore(data, catalog).Success, "Larva retained an adult overturn pose");
     }
 
     static void Lifecycle()
@@ -360,6 +420,65 @@ public static class BeetleDomainValidation
         Same(father, beforeFather, message + " (father mutated)");
     }
 
+    static void LifecycleCompatibility()
+    {
+        var care = new CareProfile(nutritionLossPerDay: 0, hydrationLossPerDay: 0,
+            recoveryPerDay: 0, stressChangePerDay: 0, healthLossPerDay: 0);
+        var oldSpecies = new SpeciesDefinition("compat", "Compatibility", 55, 8, care: care,
+            lifecycle: new LifecycleProfile(3, 30, 10, 90), breeding: new BreedingProfile(cooldownDays: 10));
+        var service = new HusbandryService();
+        var habitat = new HabitatConditions();
+        var adult = Individual(oldSpecies);
+        service.Advance(adult, oldSpecies, habitat, 8);
+        var saved = BeetleSaveMapper.Export(adult);
+        saved.BreedingCooldownDays = 8;
+        var revised = new SpeciesDefinition("compat", "Compatibility", 55, 8, care: care,
+            lifecycle: new LifecycleProfile(4, 40, 10, 90), breeding: new BreedingProfile(cooldownDays: 7));
+        var restored = Restore(saved, revised);
+        Near(restored.BreedingCooldownDays, 7, "Lowered cooldown cap rejected or extended an old save");
+        Near(saved.BreedingCooldownDays, 8, "Restore mutated source transport data");
+        Near(restored.TotalAgeDays, adult.TotalAgeDays, "New preceding-stage durations rewrote historical age");
+        Near(restored.StageAgeDays, 8, "Hot reload reset stage progress");
+        Require(service.Feed(restored, revised, new FoodPortion(FoodKind.Fruit, 10, 10)).Success,
+            "Revised lifecycle blocked feeding");
+        Require(service.MarkOverturned(restored, revised).Success && service.HelpRight(restored, revised).Success,
+            "Revised lifecycle blocked overturn assistance");
+        Require(service.Feed(adult, revised, new FoodPortion(FoodKind.Fruit, 10, 10)).Success,
+            "Direct live-definition update requires a save round trip before feeding");
+        Require(service.Advance(restored, revised, habitat, .5).Success, "Revised lifecycle blocked time advance");
+        Near(restored.TotalAgeDays, adult.TotalAgeDays + .5, "Historical age did not advance monotonically");
+        Same(Restore(BeetleSaveMapper.Export(restored), revised), restored, "Migrated save is not stable on a second restore");
+
+        var shortened = new SpeciesDefinition("compat", "Compatibility", 55, 8, care: care,
+            lifecycle: new LifecycleProfile(1, 5, 4, 7), breeding: new BreedingProfile(cooldownDays: 7));
+        var overdue = Restore(saved, shortened);
+        Require(overdue.Stage == LifeStage.Adult && overdue.Condition.Health > 0, "Load killed an adult after a balance patch");
+        var boundaryOnly = overdue.Clone();
+        Require(service.Advance(boundaryOnly, shortened, habitat, 0).Success && boundaryOnly.Stage == LifeStage.Dead,
+            "Explicit zero-time advance cannot settle an overdue stage");
+        Near(boundaryOnly.TotalAgeDays, overdue.TotalAgeDays, "Boundary-only advance consumed time");
+        Require(service.Feed(overdue, shortened, new FoodPortion(FoodKind.Fruit, 1, 1)).Success,
+            "Overdue stage blocked ordinary interaction");
+        var result = service.Advance(overdue, shortened, habitat, .5);
+        Require(result.Success && overdue.Stage == LifeStage.Dead && result.Events.Count == 1 &&
+            result.Events[0].Kind == HusbandryEventKind.Died, "Overdue adult did not end once at next time advance");
+        Near(overdue.TotalAgeDays, adult.TotalAgeDays, "Shortened lifespan ran time backwards or re-aged a dead beetle");
+        Same(Restore(BeetleSaveMapper.Export(overdue), shortened), overdue, "Historical dead beetle cannot round trip");
+
+        var larva = Individual(oldSpecies, "larva", stage: LifeStage.Larva);
+        service.Advance(larva, oldSpecies, habitat, 8);
+        double priorAge = larva.TotalAgeDays;
+        var parts = larva.Clone();
+        result = service.Advance(larva, shortened, habitat, .5);
+        service.Advance(parts, shortened, habitat, .25);
+        service.Advance(parts, shortened, habitat, .25);
+        Require(result.Success && larva.Stage == LifeStage.Pupa && result.Events.Count == 1,
+            "Overdue juvenile did not transition exactly once");
+        Near(larva.TotalAgeDays, priorAge + .5, "Shortened juvenile stage consumed negative time");
+        Near(larva.StageAgeDays, .5, "Old-stage historical time leaked into next-stage progress");
+        Same(parts, larva, "Shortened-stage migration depends on frame partitioning");
+    }
+
     static void Persistence()
     {
         var species = Species();
@@ -385,7 +504,7 @@ public static class BeetleDomainValidation
         reject(d => d.Id = " ", "Empty save identity accepted");
         reject(d => d.Health = double.NaN, "NaN health accepted");
         reject(d => d.TotalAgeDays = double.PositiveInfinity, "Infinite age accepted");
-        reject(d => d.Nutrition = -1, "Negative nutrition accepted");
+        reject(d => d.Nutrition = double.NegativeInfinity, "Infinite nutrition accepted");
         reject(d => d.BreedingCooldownDays = -1, "Negative cooldown accepted");
         reject(d => d.Strength = 1.1f, "Out-of-range inherited trait accepted");
         reject(d => d.Sex = 99, "Unknown serialized sex accepted");
@@ -396,6 +515,11 @@ public static class BeetleDomainValidation
         reject(d => { d.MotherId = "parent"; d.FatherId = "parent"; }, "Same parent identity accepted twice");
         reject(d => { d.MotherId = d.Id; d.FatherId = "other"; }, "Self ancestor accepted");
         reject(d => { d.MotherId = "mother"; d.FatherId = null; }, "Incomplete parentage accepted");
+        var oldMeters = BeetleSaveMapper.Export(original);
+        oldMeters.Nutrition = -1; oldMeters.Hydration = 101; oldMeters.Stress = -2;
+        var cleaned = Restore(oldMeters, species);
+        Require(cleaned.Condition.Nutrition == 0 && cleaned.Condition.Hydration == 100 && cleaned.Condition.Stress == 0,
+            "Finite legacy condition values were not cleaned at restore");
         var pedigreeData = BeetleSaveMapper.Export(original);
         pedigreeData.MotherId = "mother"; pedigreeData.FatherId = "father";
         pedigreeData.AncestorIds = new[] { "grandmother", "mother", "father" };

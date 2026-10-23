@@ -90,6 +90,7 @@ public static class BeetleHusbandrySceneBuilder
         {
             BuildTerrarium();
             var camera = BuildCamera();
+            HusbandryLightingSetup.Configure(scene);
             var system = new GameObject("HusbandryController");
             var controller = system.AddComponent<BeetleHusbandryController>();
             controller.secondsPerGameDay = 600; controller.simulateAccidents = true; controller.loadOnStart = true;
@@ -130,7 +131,7 @@ public static class BeetleHusbandrySceneBuilder
         var go = new GameObject("NurseryCamera", typeof(Camera), typeof(AudioListener));
         go.tag = "MainCamera";
         var camera = go.GetComponent<Camera>();
-        camera.orthographic = true; camera.orthographicSize = 4.2f;
+        camera.orthographic = true; camera.orthographicSize = 6.8f;
         camera.nearClipPlane = .1f; camera.farClipPlane = 60;
         camera.clearFlags = CameraClearFlags.SolidColor; camera.backgroundColor = new Color(.045f, .08f, .064f);
         go.transform.position = new Vector3(6.2f, 7.4f, -8.5f);
@@ -151,7 +152,8 @@ public static class BeetleHusbandrySceneBuilder
     static void BuildTerrarium()
     {
         if (!AssetDatabase.IsValidFolder(MaterialFolder)) AssetDatabase.CreateFolder("Assets/BeetleArena/Generated", "NurseryMaterials");
-        var soil = Material("Soil", new Color(.22f, .15f, .09f));
+        HusbandryTerrariumSetup.EnsureAssets();
+        var soil = AssetDatabase.LoadAssetAtPath<Material>(HusbandryTerrariumSetup.SoilTopMaterialPath);
         var wood = Material("WarmWood", new Color(.34f, .25f, .15f));
         var leaf = Material("DeepLeaves", new Color(.13f, .25f, .15f));
         var stone = Material("Clay", new Color(.47f, .39f, .27f));
@@ -160,10 +162,6 @@ public static class BeetleHusbandrySceneBuilder
         var root = new GameObject("Terrarium").transform;
         Primitive(root, "Backdrop", PrimitiveType.Cube, new Vector3(0, -.65f, 0), new Vector3(30, .2f, 30), floor);
         Primitive(root, "SoilBed", PrimitiveType.Cube, new Vector3(0, -.22f, 0), new Vector3(9.4f, .4f, 7.4f), soil);
-        Primitive(root, "LeftRim", PrimitiveType.Cube, new Vector3(-4.8f, -.02f, 0), new Vector3(.22f, .65f, 7.8f), wood);
-        Primitive(root, "RightRim", PrimitiveType.Cube, new Vector3(4.8f, -.02f, 0), new Vector3(.22f, .65f, 7.8f), wood);
-        Primitive(root, "BackRim", PrimitiveType.Cube, new Vector3(0, -.02f, 3.8f), new Vector3(9.4f, .65f, .22f), wood);
-        Primitive(root, "FrontRim", PrimitiveType.Cube, new Vector3(0, -.16f, -3.8f), new Vector3(9.4f, .32f, .22f), wood);
         var log = Primitive(root, "ClimbingLog", PrimitiveType.Cylinder, new Vector3(-2.8f, .28f, 1.7f), new Vector3(.68f, 1.4f, .68f), wood);
         log.transform.rotation = Quaternion.Euler(0, 28, 90);
         Primitive(root, "FoodDish", PrimitiveType.Cylinder, new Vector3(2.6f, .035f, -1.7f), new Vector3(1.05f, .06f, 1.05f), stone);
@@ -182,6 +180,7 @@ public static class BeetleHusbandrySceneBuilder
             var piece = Primitive(root, "Leaf" + i, PrimitiveType.Sphere, new Vector3(-3.5f + i * .35f, .07f, 2.8f), new Vector3(.45f, .08f, 1.2f), leaf);
             piece.transform.rotation = Quaternion.Euler(0, -55 + i * 23, 8);
         }
+        HusbandryTerrariumSetup.ApplyToTerrarium(root);
         Light("WarmCanopy", new Vector3(-5, 9, -4), new Color(1, .86f, .65f), 1.8f);
         Light("SoftFill", new Vector3(5, 5, 6), new Color(.69f, .82f, .73f), .8f);
         RenderSettings.ambientMode = AmbientMode.Trilight;

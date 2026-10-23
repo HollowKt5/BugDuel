@@ -762,7 +762,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 5261676719
-    m_Localized: Item specifications - Information
+    m_Localized: Item Details
     m_Metadata:
       m_Items: []
   - m_Id: 5261676720
@@ -960,8 +960,8 @@ MonoBehaviour:
       4. Themes and display
 
       Choose
-      a seasonal palette. Alt+T: themes; Alt+M: light/dark; Alt+H: help. Themes change
-      appearance only; configure the actual habitat in the greenhouse.'
+      a seasonal palette. Alt+T: theme menus; Alt+M: light/dark; Alt+H: help. Themes
+      change appearance only; configure the actual habitat in the greenhouse.'
     m_Metadata:
       m_Items: []
   - m_Id: 5265870886
@@ -1026,7 +1026,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 5265870901
-    m_Localized: "Week {0} | {1} G | Theme: {2} \xB7 {3}"
+    m_Localized: "Week {0} | Theme: {1} \xB7 {2}"
     m_Metadata:
       m_Items: []
   - m_Id: 5265870902
@@ -1088,7 +1088,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 5265870914
-    m_Localized: '{0} items in this category'
+    m_Localized: 'Items in this category: {0}'
     m_Metadata:
       m_Items: []
   - m_Id: 5265870915
@@ -1372,7 +1372,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 5265870984
-    m_Localized: "BUG DUEL \xB7 Beetle Sanctuary"
+    m_Localized: Beetle Sanctuary
     m_Metadata:
       m_Items: []
   - m_Id: 5265870985
@@ -1504,11 +1504,11 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 5265871012
-    m_Localized: "Language / \u754C\u9762\u8BED\u8A00"
+    m_Localized: Language
     m_Metadata:
       m_Items: []
   - m_Id: 5265871013
-    m_Localized: "\u7B80\u4F53\u4E2D\u6587"
+    m_Localized: Simplified Chinese
     m_Metadata:
       m_Items: []
   - m_Id: 5265871014
@@ -1548,7 +1548,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 5265871023
-    m_Localized: Shell impact ASMR
+    m_Localized: Shell impact sounds
     m_Metadata:
       m_Items: []
   - m_Id: 5265871024
@@ -1604,10 +1604,10 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 5265871037
-    m_Localized: 'Keyboard / Xbox / PlayStation / Switch
+    m_Localized: 'Keyboard, mouse and controller
 
-      Navigate with arrows
-      or stick, confirm and cancel. Remap management shortcuts below.'
+      Navigate with arrows, sticks,
+      confirm and cancel. Campaign shortcuts can be remapped below.'
     m_Metadata:
       m_Items: []
   - m_Id: 5265871038
@@ -1657,7 +1657,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 5265871049
-    m_Localized: BUG DUEL / Greenhouse journal
+    m_Localized: BUG DUEL  /  Nursery Diary
     m_Metadata:
       m_Items: []
   - m_Id: 5265871050
@@ -2764,7 +2764,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 5265871317
-    m_Localized: Reload content
+    m_Localized: Reload
     m_Metadata:
       m_Items: []
   - m_Id: 5265871318
@@ -2772,7 +2772,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 5265871319
-    m_Localized: Select a beetle to observe and care for
+    m_Localized: Select a beetle for care
     m_Metadata:
       m_Items: []
   - m_Id: 5265871320
@@ -3170,7 +3170,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 17452119281702
-    m_Localized: Greenhouse Mail - BUG DUEL MAIL
+    m_Localized: Nursery Mail
     m_Metadata:
       m_Items: []
   - m_Id: 17452119281703
@@ -3290,7 +3290,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 17452119281731
-    m_Localized: Greenhouse Storage - BUG DUEL STORAGE
+    m_Localized: Nursery Storage
     m_Metadata:
       m_Items: []
   - m_Id: 17452119281732
@@ -3414,6 +3414,2967 @@ MonoBehaviour:
       m_Items: []
   - m_Id: 17452119281755
     m_Localized: "{0} \xB7 Week {1}"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 351479363719168
+    m_Localized: Food and care supplies
+    m_Metadata:
+      m_Items: []
+  - m_Id: 351479409856512
+    m_Localized: Expedition tools and upgrades
+    m_Metadata:
+      m_Items: []
+  - m_Id: 351479409856513
+    m_Localized: Framed specimens
+    m_Metadata:
+      m_Items: []
+  - m_Id: 351479409856514
+    m_Localized: Framed specimen
+    m_Metadata:
+      m_Items: []
+  - m_Id: 351479409856515
+    m_Localized: Public auctions (custom bids)
+    m_Metadata:
+      m_Items: []
+  - m_Id: 351479409856516
+    m_Localized: Sell collection and supplies
+    m_Metadata:
+      m_Items: []
+  - m_Id: 351479409856517
+    m_Localized: Buyback
+    m_Metadata:
+      m_Items: []
+  - m_Id: 351479409856518
+    m_Localized: '{0} lots'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 351479409856519
+    m_Localized: "Order by quantity \xB7 Collect by mail"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 351479409856520
+    m_Localized: "One serving \xB7 Collect before feeding"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 351479409856521
+    m_Localized: Listing cabinet upgrade
+    m_Metadata:
+      m_Items: []
+  - m_Id: 351479409856522
+    m_Localized: "Shared listings \xB7 3 \u2192 6 slots"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 351479409856523
+    m_Localized: Upgrade already purchased
+    m_Metadata:
+      m_Items: []
+  - m_Id: 351479409856524
+    m_Localized: Choose order quantity
+    m_Metadata:
+      m_Items: []
+  - m_Id: 351479409856525
+    m_Localized: "Live beetle and specimen listings \xB7 Free to list / 5% sale fee"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 351479409856526
+    m_Localized: Collection / Buyer offers
+    m_Metadata:
+      m_Items: []
+  - m_Id: 351479409856527
+    m_Localized: Market value
+    m_Metadata:
+      m_Items: []
+  - m_Id: 351479409856528
+    m_Localized: '[Specimen]'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 351479409856529
+    m_Localized: '[Framed specimen] {0}  {1} mm'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 351479409856530
+    m_Localized: "{0} \xB7 {1} \xB7 {2} valid offers"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 351479409856531
+    m_Localized: My specimen room
+    m_Metadata:
+      m_Items: []
+  - m_Id: 351479409856532
+    m_Localized: No listings yet. Choose a healthy adult or specimen with New listing;
+      you decide which offer to accept.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 351479409856533
+    m_Localized: For immediate funds, use Sell collection and supplies at the displayed
+      buyback price.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 351479409856534
+    m_Localized: Your order will arrive by mail. Claim it to add it to your collection.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 351479409856535
+    m_Localized: Not enough coins. Sell supplies or compete in a league to earn more.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 351479409856536
+    m_Localized: New listing - Choose beetle or specimen
+    m_Metadata:
+      m_Items: []
+  - m_Id: 351479409856537
+    m_Localized: "Listing cabinet {0}/{1} \xB7 Free to list; 5% fee on completed
+      sales."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 351479409856538
+    m_Localized: Offers last until the week ends. Withdraw anytime. Move stored beetles
+      into the greenhouse before listing them.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 351479409856539
+    m_Localized: '[Live] {0}   {1} mm / {2} hearts'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 351479409856540
+    m_Localized: "Healthy adult \xB7 Market value {0} G"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 351479409856541
+    m_Localized: "Requires a healthy adult, food \u2265 40, and no active match or
+      auction."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 351479409856542
+    m_Localized: '[Specimen] {0}   {1} mm'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 351479409856543
+    m_Localized: "{0} \xB7 Market value {1} G"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 351479409856544
+    m_Localized: No collections available to select.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 351479409856545
+    m_Localized: "{0}  {1} mm \xB7 Market value {2} G"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 351479409856546
+    m_Localized: Offer {0} G
+    m_Metadata:
+      m_Items: []
+  - m_Id: 351479409856547
+    m_Localized: "Fee {0} G \xB7 You receive {1} G"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 351479409856548
+    m_Localized: 'Sell {0} to {1}?
+
+      Offer {2} G, fee {3} G, you receive {4}
+      G.'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 351479409856549
+    m_Localized: Trading & Auction Guide
+    m_Metadata:
+      m_Items: []
+  - m_Id: 351479409856550
+    m_Localized: Beetle store / Collection market / Public auctions
+    m_Metadata:
+      m_Items: []
+  - m_Id: 351479409856551
+    m_Localized: "1. Store and mailbox\nLive beetles, framed specimens and supplies
+      have fixed prices. Buy supplies in batches of 1\u201399. Claim orders by mail:
+      beetles enter storage, specimens enter your collection.\n\n2. Instant sales\nStore
+      buyback: 55% of adult market value (larvae 35%), 60% for specimens, and 40%
+      of supply retail price. The displayed amount is your final payout.\n\n3. Trading
+      BBS\nHealthy adults and specimens share listing slots. Listing is free; offers
+      refresh weekly. Completed sales incur a 5% fee. Withdraw any time before selling.
+      Listed specimens leave the display wall.\n\n4. Public auctions\nEach lot lasts
+      four rounds. Enter a bid, then advance the round for rival responses. Only
+      the highest bidder at closing can win. Bids at or above expectation always
+      succeed; below it, acceptance equals the bid/expectation ratio squared. Bids
+      are held in escrow and refunded if outbid or rejected.\n\n5. Weekly stock and
+      saves\nNext week settles unfinished auctions and refreshes stock. Every successful
+      trade is saved. Alt+T: theme menu; Alt+M: light/dark; Alt+H: help."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 351479409856552
+    m_Localized: "Instant store buyback \xB7 Displayed prices are your final payouts"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 351479409856553
+    m_Localized: Live beetles
+    m_Metadata:
+      m_Items: []
+  - m_Id: 351479409856554
+    m_Localized: Specimens
+    m_Metadata:
+      m_Items: []
+  - m_Id: 351479409856555
+    m_Localized: Supply inventory
+    m_Metadata:
+      m_Items: []
+  - m_Id: 351479409856556
+    m_Localized: 'Buyback: adults 55% / larvae 35% of value; specimens 60%; supplies
+      40% of retail. Try BBS listings for higher offers.'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 351479409856557
+    m_Localized: "Deceased \xB7 Preserve or discard in the greenhouse"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 351479409856558
+    m_Localized: "Listed on BBS \xB7 Withdraw to sell to the store"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 351479409856559
+    m_Localized: "In a match or champion auction \xB7 Available afterward"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 351479409856560
+    m_Localized: "Larva / pupa \xB7 Ready to sell"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 351479409856561
+    m_Localized: "Adult \xB7 Ready to sell"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 351479409856562
+    m_Localized: In storage
+    m_Metadata:
+      m_Items: []
+  - m_Id: 351479409856563
+    m_Localized: In greenhouse
+    m_Metadata:
+      m_Items: []
+  - m_Id: 351479409856564
+    m_Localized: Sell to store
+    m_Metadata:
+      m_Items: []
+  - m_Id: 351479409856565
+    m_Localized: 'Sell {0} for {1} G now?
+
+      This beetle will leave your collection.'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 351479409856566
+    m_Localized: Listed on trading BBS
+    m_Metadata:
+      m_Items: []
+  - m_Id: 351479409856567
+    m_Localized: "On display \xB7 Removed from wall when sold"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 351479409856568
+    m_Localized: In collection storage
+    m_Metadata:
+      m_Items: []
+  - m_Id: 351479409856569
+    m_Localized: View buyer offers
+    m_Metadata:
+      m_Items: []
+  - m_Id: 351479409856570
+    m_Localized: Sell to collector
+    m_Metadata:
+      m_Items: []
+  - m_Id: 351479409856571
+    m_Localized: 'Sell specimen "{0}" for {1} G now?
+
+      The specimen and its
+      frame will leave your room.'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 351479409856572
+    m_Localized: "Retail {0} G each \xB7 Claimed inventory only; sell 1\u201399 per
+      order"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 351479409856573
+    m_Localized: '{0} G each'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 351479409856574
+    m_Localized: Choose sale quantity
+    m_Metadata:
+      m_Items: []
+  - m_Id: 351479409856575
+    m_Localized: No live beetles yet. Claim store and auction purchases from your
+      mailbox.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 351479409856576
+    m_Localized: No specimens yet. Preserve deceased beetles in the greenhouse, or
+      buy specimens from the store or public auctions.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 351479409856577
+    m_Localized: "Sell supplies \xB7 "
+    m_Metadata:
+      m_Items: []
+  - m_Id: 351479409856578
+    m_Localized: "Order supplies \xB7 "
+    m_Metadata:
+      m_Items: []
+  - m_Id: 351479409856579
+    m_Localized: "Sale price {0} G each \xB7 {1} in storage"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 351479409856580
+    m_Localized: "Buyback {0} G each \xB7 {1} in storage"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 351479409856581
+    m_Localized: "Buy price {0} G each \xB7 {1} in storage"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 351479409856582
+    m_Localized: Deducted from claimed inventory. Coins arrive immediately; buyback
+      discount is already included.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 351479409856583
+    m_Localized: Delivered by mail; claim it to add to inventory. Maximum 99 per
+      order.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 351479409856584
+    m_Localized: Quantity
+    m_Metadata:
+      m_Items: []
+  - m_Id: 351479409856585
+    m_Localized: Confirm sale
+    m_Metadata:
+      m_Items: []
+  - m_Id: 351479409856586
+    m_Localized: Confirm purchase
+    m_Metadata:
+      m_Items: []
+  - m_Id: 351479409856587
+    m_Localized: 'You receive: {0} G'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 351479409856588
+    m_Localized: 'Total due: {0} G'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 351479409856589
+    m_Localized: Enter a valid quantity
+    m_Metadata:
+      m_Items: []
+  - m_Id: 351479409856590
+    m_Localized: No claimed inventory. Check your mailbox first.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 351479409856591
+    m_Localized: Upgrade purchased or installed. Check your mailbox and storage.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 351479414050816
+    m_Localized: Not enough coins to buy.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 351479414050817
+    m_Localized: "Sell 1\u2013{0} items \xB7 Available coins {1} G"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 351479414050818
+    m_Localized: "Buy 1\u2013{0} items \xB7 Available coins {1} G"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 351479414050819
+    m_Localized: Maximum
+    m_Metadata:
+      m_Items: []
+  - m_Id: 351479414050820
+    m_Localized: Specimen listing - This week's offers
+    m_Metadata:
+      m_Items: []
+  - m_Id: 351479414050821
+    m_Localized: "{0} \xB7 Market value {1} G"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 351479414050822
+    m_Localized: Valid this week. The specimen and frame transfer together.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 351479414050823
+    m_Localized: 'Sell specimen "{0}" to {1}?
+
+      Offer {2} G, fee {3} G, you
+      receive {4} G.'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 351479414050824
+    m_Localized: "Public auction hall \xB7 Live beetles / Framed specimens"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 351479414050825
+    m_Localized: "Week {0} lots \xB7 4 rounds each"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 351479414050826
+    m_Localized: 'Highest bidder wins: meet the expected price for a guaranteed sale.
+      Below it, closer bids have higher acceptance.'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 351479414050827
+    m_Localized: Bids are held in escrow and refunded if outbid or rejected. Advance
+      rounds yourself; next week settles unfinished lots.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 351479414050828
+    m_Localized: "Special event \xB7 Mystery pupa auction"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 351479414050829
+    m_Localized: 'Three classic bidding rounds; species revealed after purchase.
+
+      Fixed
+      bidding rules, open every even-numbered week.
+
+      Leaving costs nothing,
+      but you cannot rejoin that week.'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 351479414050830
+    m_Localized: "Starts at 150 G \xB7 {0}"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 351479414050831
+    m_Localized: "Current {0} G \xB7 Round {1}/3"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 351479414050832
+    m_Localized: Enter mystery pupa auction
+    m_Metadata:
+      m_Items: []
+  - m_Id: 351479414050833
+    m_Localized: Continue mystery pupa auction
+    m_Metadata:
+      m_Items: []
+  - m_Id: 351479414050834
+    m_Localized: Framed specimen / Collector lot
+    m_Metadata:
+      m_Items: []
+  - m_Id: 351479414050835
+    m_Localized: Healthy adult / Live lot
+    m_Metadata:
+      m_Items: []
+  - m_Id: 351479414050836
+    m_Localized: Won
+    m_Metadata:
+      m_Items: []
+  - m_Id: 351479414050837
+    m_Localized: Closed
+    m_Metadata:
+      m_Items: []
+  - m_Id: 351479414050838
+    m_Localized: Round {0}/{1}
+    m_Metadata:
+      m_Items: []
+  - m_Id: 351479414050839
+    m_Localized: Expected price  {0} G
+    m_Metadata:
+      m_Items: []
+  - m_Id: 351479414050840
+    m_Localized: Highest bid  {0} G / {1}
+    m_Metadata:
+      m_Items: []
+  - m_Id: 351479414050841
+    m_Localized: "You lead \xB7 {0} G held \xB7 Acceptance if still highest: {1}"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 351479414050842
+    m_Localized: "Minimum bid {0} G \xB7 Increment at least 5% of expectation"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 351479414050843
+    m_Localized: View result
+    m_Metadata:
+      m_Items: []
+  - m_Id: 351479414050844
+    m_Localized: Continue bidding / Advance round
+    m_Metadata:
+      m_Items: []
+  - m_Id: 351479414050845
+    m_Localized: Inspect lot / Enter bid
+    m_Metadata:
+      m_Items: []
+  - m_Id: 351479414050846
+    m_Localized: "Public auction \xB7 "
+    m_Metadata:
+      m_Items: []
+  - m_Id: 351479414050847
+    m_Localized: Live beetle
+    m_Metadata:
+      m_Items: []
+  - m_Id: 351479414050848
+    m_Localized: Health {0} hearts
+    m_Metadata:
+      m_Items: []
+  - m_Id: 351479414050849
+    m_Localized: Seller expectation
+    m_Metadata:
+      m_Items: []
+  - m_Id: 351479414050850
+    m_Localized: Current highest bid
+    m_Metadata:
+      m_Items: []
+  - m_Id: 351479414050851
+    m_Localized: 'Highest bidder: '
+    m_Metadata:
+      m_Items: []
+  - m_Id: 351479414050852
+    m_Localized: My escrow
+    m_Metadata:
+      m_Items: []
+  - m_Id: 351479414050853
+    m_Localized: You won this lot
+    m_Metadata:
+      m_Items: []
+  - m_Id: 351479414050854
+    m_Localized: This auction has ended
+    m_Metadata:
+      m_Items: []
+  - m_Id: 351479414050855
+    m_Localized: Your lot is in the mailbox. Claim it to house the beetle or display
+      the specimen.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 351479414050856
+    m_Localized: Unsuccessful escrow has been fully refunded. New lots arrive next
+      week.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 351479414050857
+    m_Localized: Open mailbox
+    m_Metadata:
+      m_Items: []
+  - m_Id: 351479414050858
+    m_Localized: Back to hall
+    m_Metadata:
+      m_Items: []
+  - m_Id: 351479414050859
+    m_Localized: My bid (G)
+    m_Metadata:
+      m_Items: []
+  - m_Id: 351479414050860
+    m_Localized: Minimum raise
+    m_Metadata:
+      m_Items: []
+  - m_Id: 351479414050861
+    m_Localized: 75% of expectation
+    m_Metadata:
+      m_Items: []
+  - m_Id: 351479414050862
+    m_Localized: 100% of expectation
+    m_Metadata:
+      m_Items: []
+  - m_Id: 351479414050863
+    m_Localized: "Minimum this round {0} G \xB7 Budget including escrow {1} G"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 351479414050864
+    m_Localized: 'Only the highest bidder at closing can win. Meet expectation for
+      a guaranteed sale.
+
+      Below it: a 50% bid has 25% acceptance, 75% has 56%,
+      and 90% has 81%.
+
+      Rivals can still outbid you in the final round. Outbid
+      or rejected escrow is refunded.'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 351479414050865
+    m_Localized: "Saving auction record\u2026"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 351479414050866
+    m_Localized: Place bid
+    m_Metadata:
+      m_Items: []
+  - m_Id: 351479414050867
+    m_Localized: Final round / Close auction
+    m_Metadata:
+      m_Items: []
+  - m_Id: 351479414050868
+    m_Localized: Next round / Rival response
+    m_Metadata:
+      m_Items: []
+  - m_Id: 351479414050869
+    m_Localized: Seller acceptance {0}
+    m_Metadata:
+      m_Items: []
+  - m_Id: 351479414050870
+    m_Localized: Enter a bid
+    m_Metadata:
+      m_Items: []
+  - m_Id: 351479414050871
+    m_Localized: Adds {0} G to escrow; remaining balance {1} G.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 351479414050872
+    m_Localized: Bid must be at least {0} G.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 351479414050873
+    m_Localized: Not enough available coins. Lower your bid or sell a collection.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 351479414050874
+    m_Localized: 'Spend {0} G to prepare, frame and label this specimen?
+
+      The
+      remains will be removed. Display or sell the specimen from the specimen room.'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 351479414050875
+    m_Localized: SPECIMEN ROOM
+    m_Metadata:
+      m_Items: []
+  - m_Id: 351479414050876
+    m_Localized: "Beetle museum \xB7 A three-row, four-column collection wall"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 351479414050877
+    m_Localized: Visit market
+    m_Metadata:
+      m_Items: []
+  - m_Id: 351479414050878
+    m_Localized: "Collection {0} \xB7 Displayed {1}/12 \xB7 {2} G"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 351479414050879
+    m_Localized: "\u2713 Arrange mode"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 351479414050880
+    m_Localized: Enter arrange mode
+    m_Metadata:
+      m_Items: []
+  - m_Id: 351479414050881
+    m_Localized: Full wall / Reset view
+    m_Metadata:
+      m_Items: []
+  - m_Id: 351479414050882
+    m_Localized: "Select a specimen, then click a wall slot to place it. Drag frames
+      to swap.\nRight drag: orbit \xB7 Wheel: zoom \xB7 Middle drag: pan"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 351479414050883
+    m_Localized: 'Click a frame to select. Right drag to orbit, wheel to zoom, middle
+      drag to pan.
+
+      Enable arrange mode to move frames and edit plaques.'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 351479414050884
+    m_Localized: "Collection \xB7 Select a specimen"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 351479414050885
+    m_Localized: Listed at market
+    m_Metadata:
+      m_Items: []
+  - m_Id: 351479414050886
+    m_Localized: Collection storage
+    m_Metadata:
+      m_Items: []
+  - m_Id: 351479414050887
+    m_Localized: Wall slot {0}
+    m_Metadata:
+      m_Items: []
+  - m_Id: 351479414050888
+    m_Localized: Selected
+    m_Metadata:
+      m_Items: []
+  - m_Id: 351479414050889
+    m_Localized: Select
+    m_Metadata:
+      m_Items: []
+  - m_Id: 351479414050890
+    m_Localized: 'Your wall awaits its first specimen.
+
+      Preserve a deceased
+      beetle in the greenhouse,
+
+      or buy one from the store or auctions.'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 351479414050891
+    m_Localized: "{0} \xB7 {1} mm\nPlaque date {2} \xB7 Prepared in week {3}"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 351479414050892
+    m_Localized: Inspect specimen
+    m_Metadata:
+      m_Items: []
+  - m_Id: 351479414050893
+    m_Localized: Edit plaque
+    m_Metadata:
+      m_Items: []
+  - m_Id: 351479414050894
+    m_Localized: Walnut
+    m_Metadata:
+      m_Items: []
+  - m_Id: 351479414050895
+    m_Localized: Brass
+    m_Metadata:
+      m_Items: []
+  - m_Id: 351479414050896
+    m_Localized: Ebony
+    m_Metadata:
+      m_Items: []
+  - m_Id: 351479414050897
+    m_Localized: 'Frame: '
+    m_Metadata:
+      m_Items: []
+  - m_Id: 351479414050898
+    m_Localized: "Rotate +15\xB0"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 351479414050899
+    m_Localized: "Wall slot \xB7 Click to move or swap"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 351479414050900
+    m_Localized: Put into storage
+    m_Metadata:
+      m_Items: []
+  - m_Id: 351479414050901
+    m_Localized: List at market
+    m_Metadata:
+      m_Items: []
+  - m_Id: 351479414050902
+    m_Localized: "Sell directly \xB7 Receive {0} G"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 351479414050903
+    m_Localized: 'Sell "{0}" for {1} G?
+
+      It will be removed from your collection
+      and wall.'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 351479414050904
+    m_Localized: Edit specimen plaque
+    m_Metadata:
+      m_Items: []
+  - m_Id: 351479414050905
+    m_Localized: Collection name
+    m_Metadata:
+      m_Items: []
+  - m_Id: 351479414050906
+    m_Localized: Species label
+    m_Metadata:
+      m_Items: []
+  - m_Id: 351479414050907
+    m_Localized: Plaque date
+    m_Metadata:
+      m_Items: []
+  - m_Id: 351479414050908
+    m_Localized: Write your own plaque. Original species and preparation week are
+      preserved.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 351479414050909
+    m_Localized: Save plaque
+    m_Metadata:
+      m_Items: []
+  - m_Id: 351479414050910
+    m_Localized: '{0} / Reserved for your next specimen'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 351479414050911
+    m_Localized: This specimen is no longer in your collection
+    m_Metadata:
+      m_Items: []
+  - m_Id: 351479414050912
+    m_Localized: Only deceased beetles can be preserved
+    m_Metadata:
+      m_Items: []
+  - m_Id: 351479414050913
+    m_Localized: Enter a date, up to 40 characters
+    m_Metadata:
+      m_Items: []
+  - m_Id: 351479414050914
+    m_Localized: '{0} has been framed. Visit the specimen room to edit its plaque,
+      display it or sell it.'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 351479414050915
+    m_Localized: Withdraw the listing before editing the specimen
+    m_Metadata:
+      m_Items: []
+  - m_Id: 351479414050916
+    m_Localized: 'Plaque fields are required: name/date up to 40 characters, species
+      up to 60'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 351479414050917
+    m_Localized: Invalid frame or rotation
+    m_Metadata:
+      m_Items: []
+  - m_Id: 351479414050918
+    m_Localized: Specimen plaque and frame saved.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 351479414050919
+    m_Localized: Withdraw listed specimens before placing them
+    m_Metadata:
+      m_Items: []
+  - m_Id: 351479414050920
+    m_Localized: The wall has 12 display slots
+    m_Metadata:
+      m_Items: []
+  - m_Id: 351479414050921
+    m_Localized: Specimen placed on the wall.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 351479414050922
+    m_Localized: Specimens swapped positions.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 351479414050923
+    m_Localized: Withdraw the listing first
+    m_Metadata:
+      m_Items: []
+  - m_Id: 351479414050924
+    m_Localized: Specimen returned to collection storage.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 351479414050925
+    m_Localized: Withdraw the listing before selling to the store
+    m_Metadata:
+      m_Items: []
+  - m_Id: 351479414050926
+    m_Localized: '{0} sold to the collector for {1} G.'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 351479414050927
+    m_Localized: This specimen has already sold
+    m_Metadata:
+      m_Items: []
+  - m_Id: 351479414050928
+    m_Localized: Specimen is already listed
+    m_Metadata:
+      m_Items: []
+  - m_Id: 351479414050929
+    m_Localized: Specimen listed. A 5% fee applies on sale. Withdraw it to display
+      it again.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 351479414050930
+    m_Localized: Specimen is not listed
+    m_Metadata:
+      m_Items: []
+  - m_Id: 351479414050931
+    m_Localized: Specimen listing withdrawn to storage.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 351479414050932
+    m_Localized: Natural History Museum
+    m_Metadata:
+      m_Items: []
+  - m_Id: 351479414050933
+    m_Localized: Private Specimen Collector
+    m_Metadata:
+      m_Items: []
+  - m_Id: 351479414050934
+    m_Localized: Specimen is not listed
+    m_Metadata:
+      m_Items: []
+  - m_Id: 351479414050935
+    m_Localized: '{0} acquired by {1} for {2} G. You receive {3} G after the 5% fee.'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 351479414050936
+    m_Localized: Supply item does not exist
+    m_Metadata:
+      m_Items: []
+  - m_Id: 351479414050937
+    m_Localized: "Buy 1\u201399 items per order"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 351479414050938
+    m_Localized: Inventory capacity reached
+    m_Metadata:
+      m_Items: []
+  - m_Id: 351479414050939
+    m_Localized: "Sell 1\u201399 items per order"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 351479414050940
+    m_Localized: Not enough inventory. Claim mail attachments first
+    m_Metadata:
+      m_Items: []
+  - m_Id: 351479414050941
+    m_Localized: "Sold {0} \xD7{1} back to the store for {2} G."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 351479414050942
+    m_Localized: This beetle is unavailable
+    m_Metadata:
+      m_Items: []
+  - m_Id: 351479414050943
+    m_Localized: '{0} sold to the beetle store for {1} G.'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 351479414050944
+    m_Localized: Lot unavailable or the week has changed
+    m_Metadata:
+      m_Items: []
+  - m_Id: 351479414050945
+    m_Localized: This auction has already closed
+    m_Metadata:
+      m_Items: []
+  - m_Id: 351479414050946
+    m_Localized: Bid must meet the minimum raise and stay within the coin limit
+    m_Metadata:
+      m_Items: []
+  - m_Id: 351479414050947
+    m_Localized: Bid {0} G held in escrow. Advance the round for rival responses;
+      outbid or rejected bids are refunded.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 351479414050948
+    m_Localized: You
+    m_Metadata:
+      m_Items: []
+  - m_Id: 351479414050949
+    m_Localized: None yet
+    m_Metadata:
+      m_Items: []
+  - m_Id: 351479414050950
+    m_Localized: Amber Collector
+    m_Metadata:
+      m_Items: []
+  - m_Id: 351479414050951
+    m_Localized: Moss Beetle House
+    m_Metadata:
+      m_Items: []
+  - m_Id: 351479414050952
+    m_Localized: Woodland Breeder
+    m_Metadata:
+      m_Items: []
+  - m_Id: 351479414050953
+    m_Localized: 'Round {0}/{1}. Highest bid: {2}, {3} G. {4}'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 351479414050954
+    m_Localized: You still lead.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 351479414050955
+    m_Localized: You may raise your bid.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 351479414050956
+    m_Localized: Auction won for {0} G. The lot is in your mailbox.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 351479414050957
+    m_Localized: Auction closed. {0} wins for {1} G.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 351479414050958
+    m_Localized: The seller did not accept the final price. Lot unsold; escrow refunded.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 351479414050959
+    m_Localized: "Auction result \xB7 "
+    m_Metadata:
+      m_Items: []
+  - m_Id: 351479414050960
+    m_Localized: '
+
+
+      Seller expectation: '
+    m_Metadata:
+      m_Items: []
+  - m_Id: 351479414050961
+    m_Localized: '
+
+
+      You did not win. All escrow has been refunded. Seller
+      expectation: '
+    m_Metadata:
+      m_Items: []
+  - m_Id: 351479414050962
+    m_Localized: ' G. Claim attachments to house live beetles or display specimens.'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 351479414050963
+    m_Localized: "Specimen delivery \xB7 "
+    m_Metadata:
+      m_Items: []
+  - m_Id: 351479414050964
+    m_Localized: Missing trade or specimen data
+    m_Metadata:
+      m_Items: []
+  - m_Id: 351479414050965
+    m_Localized: Invalid auction lot data
+    m_Metadata:
+      m_Items: []
+  - m_Id: 351479414050966
+    m_Localized: Invalid auction values
+    m_Metadata:
+      m_Items: []
+  - m_Id: 351479414050967
+    m_Localized: Invalid escrow record
+    m_Metadata:
+      m_Items: []
+  - m_Id: 351479414050968
+    m_Localized: Invalid lot ownership
+    m_Metadata:
+      m_Items: []
+  - m_Id: 351479414050969
+    m_Localized: Invalid specimen ownership
+    m_Metadata:
+      m_Items: []
+  - m_Id: 351479414050970
+    m_Localized: Invalid specimen plaque or value
+    m_Metadata:
+      m_Items: []
+  - m_Id: 351479414050971
+    m_Localized: Invalid specimen placement
+    m_Metadata:
+      m_Items: []
+  - m_Id: 351479414050972
+    m_Localized: Unowned specimens cannot be displayed or listed
+    m_Metadata:
+      m_Items: []
+  - m_Id: 351479414050973
+    m_Localized: A wall slot cannot hold two specimens
+    m_Metadata:
+      m_Items: []
+  - m_Id: 351479414050974
+    m_Localized: Invalid specimen offer
+    m_Metadata:
+      m_Items: []
+  - m_Id: 351479414050975
+    m_Localized: Visuals
+    m_Metadata:
+      m_Items: []
+  - m_Id: 351479414050976
+    m_Localized: "Drag the handle or click the track. Use \u2190 / \u2192 or a controller
+      for fine adjustment."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 351479414050977
+    m_Localized: "Current scene only \xB7 Choose one style \xB7 UI stays clear"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 351479414050978
+    m_Localized: Live preview of the current scene
+    m_Metadata:
+      m_Items: []
+  - m_Id: 351479414050979
+    m_Localized: Pixel size
+    m_Metadata:
+      m_Items: []
+  - m_Id: 351479414050980
+    m_Localized: Palette
+    m_Metadata:
+      m_Items: []
+  - m_Id: 351479414050981
+    m_Localized: Contrast
+    m_Metadata:
+      m_Items: []
+  - m_Id: 351479414050982
+    m_Localized: CRT
+    m_Metadata:
+      m_Items: []
+  - m_Id: 351479414050983
+    m_Localized: Ordered dither / Pixels
+    m_Metadata:
+      m_Items: []
+  - m_Id: 351479414050984
+    m_Localized: Clean image
+    m_Metadata:
+      m_Items: []
+  - m_Id: 351479414050985
+    m_Localized: Ink / Bone white
+    m_Metadata:
+      m_Items: []
+  - m_Id: 351479414050986
+    m_Localized: Classic 8 colors
+    m_Metadata:
+      m_Items: []
+  - m_Id: 351479414050987
+    m_Localized: Mono / Electric blue
+    m_Metadata:
+      m_Items: []
+  - m_Id: 351479414050988
+    m_Localized: Preserve specimen
+    m_Metadata:
+      m_Items: []
+  - m_Id: 351479414050989
+    m_Localized: Discard
+    m_Metadata:
+      m_Items: []
+  - m_Id: 351479414050990
+    m_Localized: Specimen room
+    m_Metadata:
+      m_Items: []
+  - m_Id: 357416082264064
+    m_Localized: Rename
+    m_Metadata:
+      m_Items: []
+  - m_Id: 357416115818496
+    m_Localized: Name your beetle
+    m_Metadata:
+      m_Items: []
+  - m_Id: 357416115818497
+    m_Localized: Beetle name
+    m_Metadata:
+      m_Items: []
+  - m_Id: 357416115818498
+    m_Localized: Save name
+    m_Metadata:
+      m_Items: []
+  - m_Id: 357416115818499
+    m_Localized: "1\u201324 characters \xB7 Change anytime \xB7 Kept after growth"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 357416115818500
+    m_Localized: "Name must contain 1\u201324 characters"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 357416115818501
+    m_Localized: Name cannot contain line breaks, control characters or angle brackets
+    m_Metadata:
+      m_Items: []
+  - m_Id: 357416115818502
+    m_Localized: Only beetles in your greenhouse or storage can be named
+    m_Metadata:
+      m_Items: []
+  - m_Id: 357416115818503
+    m_Localized: Name saved. It stays through growth, trading and preservation.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 364787357634560
+    m_Localized: Original scene colors
+    m_Metadata:
+      m_Items: []
+  - m_Id: 364787395383296
+    m_Localized: 'Fine ordered dithering with square pixels.
+
+      Smaller pixels
+      retain more detail.'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 364787395383297
+    m_Localized: Dithering retains scene colors. Choose one style; the HUD stays
+      clear.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 364787395383298
+    m_Localized: Game time and life cycle
+    m_Metadata:
+      m_Items: []
+  - m_Id: 364787395383299
+    m_Localized: "Current save only \xB7 Apply on save \xB7 Cancel discards these
+      edits"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 364787395383300
+    m_Localized: Time flow
+    m_Metadata:
+      m_Items: []
+  - m_Id: 364787395383301
+    m_Localized: "Real minutes per game day (1\xD7)"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 364787395383302
+    m_Localized: Time multiplier
+    m_Metadata:
+      m_Items: []
+  - m_Id: 364787395383303
+    m_Localized: "Paused \xB7 Click to resume"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 364787395383304
+    m_Localized: "Running \xB7 Click to pause"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 364787395383305
+    m_Localized: Time will pause after saving. Resume whenever you like.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 364787395383306
+    m_Localized: 'Current pace: {0} real minutes per game day'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 364787395383307
+    m_Localized: Enter the real minutes for one game day.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 364787395383308
+    m_Localized: "30 days per month \xB7 12 months per year\nTime pauses in dialogs
+      and combat\nNo progress while the game is closed"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 364787395383309
+    m_Localized: Base stage durations
+    m_Metadata:
+      m_Items: []
+  - m_Id: 364787395383310
+    m_Localized: Stage
+    m_Metadata:
+      m_Items: []
+  - m_Id: 364787395383311
+    m_Localized: Days (editable)
+    m_Metadata:
+      m_Items: []
+  - m_Id: 364787395383312
+    m_Localized: Reference range
+    m_Metadata:
+      m_Items: []
+  - m_Id: 364787395383313
+    m_Localized: Egg
+    m_Metadata:
+      m_Items: []
+  - m_Id: 364787395383314
+    m_Localized: L1 larva
+    m_Metadata:
+      m_Items: []
+  - m_Id: 364787395383315
+    m_Localized: L2 larva
+    m_Metadata:
+      m_Items: []
+  - m_Id: 364787395383316
+    m_Localized: L3 larva
+    m_Metadata:
+      m_Items: []
+  - m_Id: 364787395383317
+    m_Localized: L1 first instar
+    m_Metadata:
+      m_Items: []
+  - m_Id: 364787395383318
+    m_Localized: L2 second instar
+    m_Metadata:
+      m_Items: []
+  - m_Id: 364787395383319
+    m_Localized: L3 third instar
+    m_Metadata:
+      m_Items: []
+  - m_Id: 364787395383320
+    m_Localized: Prepupa
+    m_Metadata:
+      m_Items: []
+  - m_Id: 364787395383321
+    m_Localized: Prepupa
+    m_Metadata:
+      m_Items: []
+  - m_Id: 364787395383322
+    m_Localized: Post-emergence dormancy
+    m_Metadata:
+      m_Items: []
+  - m_Id: 364787395383323
+    m_Localized: Active adult
+    m_Metadata:
+      m_Items: []
+  - m_Id: 364787395383324
+    m_Localized: Dormant adult
+    m_Metadata:
+      m_Items: []
+  - m_Id: 364787395383325
+    m_Localized: Active adult
+    m_Metadata:
+      m_Items: []
+  - m_Id: 364787395383326
+    m_Localized: "10\u201320 days"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 364787395383327
+    m_Localized: "7\u201314 days / 1\u20132 weeks"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 364787395383328
+    m_Localized: "14\u201321 days / 2\u20133 weeks"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 364787395383329
+    m_Localized: "180\u2013240 days / 6\u20138 months"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 364787395383330
+    m_Localized: "7\u201310 days"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 364787395383331
+    m_Localized: "14\u201328 days / 2\u20134 weeks"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 364787395383332
+    m_Localized: 'Default: 180 days / 6 months'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 364787395383333
+    m_Localized: Reset stage durations
+    m_Metadata:
+      m_Items: []
+  - m_Id: 364787395383334
+    m_Localized: Dormancy is separate. Active adults receive a full 180 days by default.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 364787395383335
+    m_Localized: "New durations preserve current stage progress and total age. Each
+      stage accepts 0.25\u20133650 days."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 364787395383336
+    m_Localized: Save and return
+    m_Metadata:
+      m_Items: []
+  - m_Id: 364787395383337
+    m_Localized: Enter valid real minutes, from 1/6 to 1440.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 364787395383338
+    m_Localized: Enter valid stage days, from 0.25 to 3650.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 364787395383339
+    m_Localized: Available in a saved game
+    m_Metadata:
+      m_Items: []
+  - m_Id: 364787395383340
+    m_Localized: Adjust time and stage durations
+    m_Metadata:
+      m_Items: []
+  - m_Id: 364787395383341
+    m_Localized: Stage progress {0}
+    m_Metadata:
+      m_Items: []
+  - m_Id: 364787395383342
+    m_Localized: Life-stage supplies
+    m_Metadata:
+      m_Items: []
+  - m_Id: 364787395383343
+    m_Localized: Estimated adult size
+    m_Metadata:
+      m_Items: []
+  - m_Id: 364787395383344
+    m_Localized: "Live beetles are valued by stage \xB7 Specimens: 60% of appraisal
+      \xB7 Supplies: 40% of retail. Try the Trading BBS for higher offers."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 364787395383345
+    m_Localized: Ready to sell
+    m_Metadata:
+      m_Items: []
+  - m_Id: 364787395383346
+    m_Localized: Match supplies to life stages. Storage provides care, but beetles
+      keep growing and adults still age naturally.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 364787395383347
+    m_Localized: Unsuitable for current stage
+    m_Metadata:
+      m_Items: []
+  - m_Id: 364787395383348
+    m_Localized: Use on selected beetle
+    m_Metadata:
+      m_Items: []
+  - m_Id: 364787395383349
+    m_Localized: Choose beetle
+    m_Metadata:
+      m_Items: []
+  - m_Id: 364787395383350
+    m_Localized: Sell back supplies
+    m_Metadata:
+      m_Items: []
+  - m_Id: 364787395383351
+    m_Localized: "Total age: {0} days \xB7 Active adult age: {1} days"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 364787395383352
+    m_Localized: "Preserve specimen \xB7 {0} G"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 364787395383353
+    m_Localized: Discard this dead beetle? It can no longer become a specimen.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 364787395383354
+    m_Localized: "Rearing supplies \xB7 Choose a beetle"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 364787395383355
+    m_Localized: "{0} \xB7 {1} in stock"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 364787395383356
+    m_Localized: Fullness {0}% / Health {1} hearts
+    m_Metadata:
+      m_Items: []
+  - m_Id: 364787395383357
+    m_Localized: Substrate nutrition {0}% / Cleanliness {1}%
+    m_Metadata:
+      m_Items: []
+  - m_Id: 364787395383358
+    m_Localized: Use one
+    m_Metadata:
+      m_Items: []
+  - m_Id: 364787395383359
+    m_Localized: Beetle is busy
+    m_Metadata:
+      m_Items: []
+  - m_Id: 364787395383360
+    m_Localized: No beetles in your greenhouse or storage can use this supply yet.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 364787395383361
+    m_Localized: Back to storage
+    m_Metadata:
+      m_Items: []
+  - m_Id: 364787395383362
+    m_Localized: Egg incubation medium
+    m_Metadata:
+      m_Items: []
+  - m_Id: 364787395383363
+    m_Localized: L1 fine-screened humus
+    m_Metadata:
+      m_Items: []
+  - m_Id: 364787395383364
+    m_Localized: Fermented wood substrate
+    m_Metadata:
+      m_Items: []
+  - m_Id: 364787395383365
+    m_Localized: Nutritious fungus bottle
+    m_Metadata:
+      m_Items: []
+  - m_Id: 364787395383366
+    m_Localized: Artificial pupal chamber
+    m_Metadata:
+      m_Items: []
+  - m_Id: 364787395383367
+    m_Localized: Adult beetle jelly
+    m_Metadata:
+      m_Items: []
+  - m_Id: 364787395383368
+    m_Localized: Unknown rearing supply
+    m_Metadata:
+      m_Items: []
+  - m_Id: 364787395383369
+    m_Localized: 'For eggs: substrate nutrition +35; restores cleanliness to 100.'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 364787395383370
+    m_Localized: 'For L1 larvae: substrate nutrition +45; restores cleanliness to
+      100.'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 364787395383371
+    m_Localized: 'For L2 / L3 larvae: substrate nutrition +60; restores cleanliness
+      to 100.'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 364787395383372
+    m_Localized: 'For L2 / L3 larvae: restores nutrition and cleanliness to 100;
+      +5% adult length on emergence (does not stack).'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 364787395383373
+    m_Localized: 'For prepupae, pupae and dormant adults: 30 days of protection;
+      cleanliness 100; health +0.25.'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 364787395383374
+    m_Localized: 'For active adults: fullness +40; health +0.5. Dormant adults do
+      not feed yet.'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 364787395383375
+    m_Localized: Keep the incubation medium clean and wait for natural hatching.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 364787395383376
+    m_Localized: Use fine-screened humus for newly hatched larvae and avoid frequent
+      disturbance.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 364787395383377
+    m_Localized: Appetite is increasing. Use fermented wood substrate or a nutritious
+      fungus bottle.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 364787395383378
+    m_Localized: The main growth stage. Substrate nutrition affects adult length
+      at emergence.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 364787395383379
+    m_Localized: Stops feeding and prepares to pupate. Keep it undisturbed; an artificial
+      pupal chamber can help.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 364787395383380
+    m_Localized: Metamorphosis takes place inside the pupal chamber. Adult food is
+      unnecessary.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 364787395383381
+    m_Localized: The adult has emerged but does not feed yet. Wait for its shell
+      to harden and activity to begin.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 364787395383382
+    m_Localized: Feeds actively and can compete or breed. Default adult life is 180
+      days, excluding prior dormancy.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 364787395383383
+    m_Localized: "A game day must last 10\u201386400 real seconds; speed must be
+      0.1\u20131000\xD7."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 364787395383384
+    m_Localized: The natural clock is paused.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 364787395383385
+    m_Localized: Natural clock settings saved.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 364787395383386
+    m_Localized: "Each stage must last 0.25\u20133650 days."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 364787395383387
+    m_Localized: Life cycle updated with current stage progress preserved. Adult
+      active life and dormancy are timed separately.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 364787395383388
+    m_Localized: Invalid time advance
+    m_Metadata:
+      m_Items: []
+  - m_Id: 364787395383389
+    m_Localized: Advance between 0 and 36500 days at a time.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 364787395383390
+    m_Localized: The calendar has reached the maximum supported year.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 364787395383391
+    m_Localized: ' entered '
+    m_Metadata:
+      m_Items: []
+  - m_Id: 364787395383392
+    m_Localized: Feeding begins. Active adult life starts today.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 364787395383393
+    m_Localized: ' died after prolonged lack of care'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 364787399577600
+    m_Localized: ' reached the end of its active adult life'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 364787399577601
+    m_Localized: . Preserve it as a specimen or discard the remains.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 364787399577602
+    m_Localized: You do not own this beetle.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 364787399577603
+    m_Localized: This supply is unsuitable for the current life stage.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 364787399577604
+    m_Localized: Used {1} on {0}.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 364787399577605
+    m_Localized: Invalid calendar or life-cycle configuration
+    m_Metadata:
+      m_Items: []
+  - m_Id: 364787399577606
+    m_Localized: The natural clock and trading week are inconsistent.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 364787399577607
+    m_Localized: Invalid beetle life stage or age
+    m_Metadata:
+      m_Items: []
+  - m_Id: 364787399577608
+    m_Localized: Invalid substrate or pupal chamber data
+    m_Metadata:
+      m_Items: []
+  - m_Id: 364787399577609
+    m_Localized: Invalid active adult age
+    m_Metadata:
+      m_Items: []
+  - m_Id: 364787399577610
+    m_Localized: Calendar and time
+    m_Metadata:
+      m_Items: []
+  - m_Id: 364787399577611
+    m_Localized: Resume time
+    m_Metadata:
+      m_Items: []
+  - m_Id: 364787399577612
+    m_Localized: Pause time
+    m_Metadata:
+      m_Items: []
+  - m_Id: 364787399577613
+    m_Localized: "Speed {0}\xD7"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 364787399577614
+    m_Localized: Time settings
+    m_Metadata:
+      m_Items: []
+  - m_Id: 364787399577615
+    m_Localized: Care notes
+    m_Metadata:
+      m_Items: []
+  - m_Id: 364787399577616
+    m_Localized: Use rearing supply
+    m_Metadata:
+      m_Items: []
+  - m_Id: 364787399577617
+    m_Localized: Shop for stage supplies
+    m_Metadata:
+      m_Items: []
+  - m_Id: 364787399577618
+    m_Localized: Running
+    m_Metadata:
+      m_Items: []
+  - m_Id: 364787399577619
+    m_Localized: Paused
+    m_Metadata:
+      m_Items: []
+  - m_Id: 364787399577620
+    m_Localized: Paused for interaction
+    m_Metadata:
+      m_Items: []
+  - m_Id: 364787399577621
+    m_Localized: "Year {0} \xB7 {1}/{2}{3}"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 364787399577622
+    m_Localized: Advance 7 days  N
+    m_Metadata:
+      m_Items: []
+  - m_Id: 364787399577623
+    m_Localized: Growing naturally
+    m_Metadata:
+      m_Items: []
+  - m_Id: 364787399577624
+    m_Localized: 'Active life remaining: {0} days'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 364787399577625
+    m_Localized: Substrate nutrition
+    m_Metadata:
+      m_Items: []
+  - m_Id: 364787399577626
+    m_Localized: Cleanliness
+    m_Metadata:
+      m_Items: []
+  - m_Id: 364787399577627
+    m_Localized: Time in care
+    m_Metadata:
+      m_Items: []
+  - m_Id: 364787399577628
+    m_Localized: "Egg \u2192 Larva \u2192 Pupa \u2192 Adult \xB7 Natural growth"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 364787399577629
+    m_Localized: Keep, display or sell the specimen at the market.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 364787399577630
+    m_Localized: Make room for a memory from your beetle house.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 364787399577631
+    m_Localized: "Preserve framed specimen \xB7 {0} G"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 364787399577632
+    m_Localized: Discard remains and free the slot
+    m_Metadata:
+      m_Items: []
+  - m_Id: 364787399577633
+    m_Localized: Discarding is permanent and prevents preservation. Clear this beetle?
+    m_Metadata:
+      m_Items: []
+  - m_Id: 364787399577634
+    m_Localized: The scene follows each life stage. Leave pupae and dormant adults
+      undisturbed.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 364787399577635
+    m_Localized: "Size development \xB7 Optional feed and climate plans"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 364787399577636
+    m_Localized: Choose feed and climate plan
+    m_Metadata:
+      m_Items: []
+  - m_Id: 364787399577637
+    m_Localized: "Plan selected \xB7 Growing naturally"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 364787399577638
+    m_Localized: Growth continues without a purchased plan. Adjust durations in Time
+      Settings.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 364787399577639
+    m_Localized: "Warm\nSize \xD70.88"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 364787399577640
+    m_Localized: "Normal\nSize \xD71.00"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 364787399577641
+    m_Localized: "Cool\nSize \xD71.22"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 364787399577642
+    m_Localized: Handle remains / Preserve specimen
+    m_Metadata:
+      m_Items: []
+  - m_Id: 364787399577643
+    m_Localized: Visit specimen room
+    m_Metadata:
+      m_Items: []
+  - m_Id: 364787399577644
+    m_Localized: Preferences apply immediately and save on close.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 364787399577645
+    m_Localized: Done
+    m_Metadata:
+      m_Items: []
+  - m_Id: 364787399577646
+    m_Localized: Vertical sync / VSync
+    m_Metadata:
+      m_Items: []
+  - m_Id: 364787399577647
+    m_Localized: Frame rate limit
+    m_Metadata:
+      m_Items: []
+  - m_Id: 364787399577648
+    m_Localized: Match display refresh rate
+    m_Metadata:
+      m_Items: []
+  - m_Id: 364787399577649
+    m_Localized: Advance 7 days
+    m_Metadata:
+      m_Items: []
+  - m_Id: 374041221189632
+    m_Localized: Scenery storage
+    m_Metadata:
+      m_Items: []
+  - m_Id: 374041263132672
+    m_Localized: "Each beetle has its own layout \xB7 Drag a card out or click to
+      place"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 374041263132673
+    m_Localized: "Ready to place \xB7 {0}"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 374041263132674
+    m_Localized: "Cannot place \xB7 {0}"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 374041263132675
+    m_Localized: Cancel  Esc
+    m_Metadata:
+      m_Items: []
+  - m_Id: 374041263132676
+    m_Localized: "Left-click to place / select \xB7 Q / E to rotate \xB7 Right-drag
+      to orbit"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 374041263132677
+    m_Localized: "Selected \xB7 {0}"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 374041263132678
+    m_Localized: "Position {0}, {1} \xB7 Rotation {2}\xB0"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 374041263132679
+    m_Localized: Move
+    m_Metadata:
+      m_Items: []
+  - m_Id: 374041263132680
+    m_Localized: Return to storage
+    m_Metadata:
+      m_Items: []
+  - m_Id: 374041263132681
+    m_Localized: Sell +{0} G
+    m_Metadata:
+      m_Items: []
+  - m_Id: 374041263132682
+    m_Localized: "Place \xB7 {0}"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 374041263132683
+    m_Localized: "\xD7{0}  \xB7  {1}\xD7{2} cells"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 374041263132684
+    m_Localized: 'Scenery storage is empty.
+
+      Buy more at the market or return
+      placed scenery to storage.'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 374041263132685
+    m_Localized: Buy more scenery
+    m_Metadata:
+      m_Items: []
+  - m_Id: 374041263132686
+    m_Localized: View all storage
+    m_Metadata:
+      m_Items: []
+  - m_Id: 374041263132687
+    m_Localized: Hide
+    m_Metadata:
+      m_Items: []
+  - m_Id: 374041263132688
+    m_Localized: Show
+    m_Metadata:
+      m_Items: []
+  - m_Id: 374041263132689
+    m_Localized: Take out and place
+    m_Metadata:
+      m_Items: []
+  - m_Id: 374041263132690
+    m_Localized: Sell back
+    m_Metadata:
+      m_Items: []
+  - m_Id: 374041263132691
+    m_Localized: Enclosure scenery
+    m_Metadata:
+      m_Items: []
+  - m_Id: 374041263132692
+    m_Localized: 6 categories
+    m_Metadata:
+      m_Items: []
+  - m_Id: 374041263132693
+    m_Localized: '[6 categories]'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 374041263132694
+    m_Localized: Drag into the enclosure. Green positions are available.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 374041263132695
+    m_Localized: Saving placement
+    m_Metadata:
+      m_Items: []
+  - m_Id: 374041263132696
+    m_Localized: This scenery is not in storage. Purchase it first.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 374041263132697
+    m_Localized: "Click to place \xB7 Q / E to rotate \xB7 Esc to cancel"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 374041263132698
+    m_Localized: Pebble cluster
+    m_Metadata:
+      m_Items: []
+  - m_Id: 374041263132699
+    m_Localized: Fern
+    m_Metadata:
+      m_Items: []
+  - m_Id: 374041263132700
+    m_Localized: Driftwood
+    m_Metadata:
+      m_Items: []
+  - m_Id: 374041263132701
+    m_Localized: Moss patch
+    m_Metadata:
+      m_Items: []
+  - m_Id: 374041263132702
+    m_Localized: Water dish
+    m_Metadata:
+      m_Items: []
+  - m_Id: 374041263132703
+    m_Localized: Wooden arch
+    m_Metadata:
+      m_Items: []
+  - m_Id: 374041263132704
+    m_Localized: Leaf pile
+    m_Metadata:
+      m_Items: []
+  - m_Id: 374041263132705
+    m_Localized: Garden lamp
+    m_Metadata:
+      m_Items: []
+  - m_Id: 374041263132706
+    m_Localized: A cluster of rounded pebbles adds natural detail to the enclosure.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 374041263132707
+    m_Localized: A compact fern suited to the edges of the enclosure.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 374041263132708
+    m_Localized: A fallen branch. Rotate it to fit along the enclosure edge.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 374041263132709
+    m_Localized: A soft green patch of decorative moss.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 374041263132710
+    m_Localized: A decorative shallow water dish. It does not replace food or affect
+      fullness.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 374041263132711
+    m_Localized: A wooden arch for a spacious corner of the enclosure.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 374041263132712
+    m_Localized: A small pile of warm-colored leaves to decorate the substrate.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 374041263132713
+    m_Localized: A small warm lamp for decoration. It does not affect temperature
+      or growth.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 374041263132714
+    m_Localized: Unknown scenery item
+    m_Metadata:
+      m_Items: []
+  - m_Id: 374041263132715
+    m_Localized: This scenery is not in the selected enclosure.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 374041263132716
+    m_Localized: You can only decorate enclosures belonging to your own beetles.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 374041263132717
+    m_Localized: Rotation must be 0, 90, 180 or 270 degrees.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 374041263132718
+    m_Localized: The scenery being moved belongs to another enclosure.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 374041263132719
+    m_Localized: The scenery extends beyond the enclosure.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 374041263132720
+    m_Localized: Keep the outer rim and central activity and feeding areas clear.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 374041263132721
+    m_Localized: This space is occupied by other scenery.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 374041263132722
+    m_Localized: '{0} placed in the enclosure.'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 374041263132723
+    m_Localized: Scenery placement saved.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 374041263132724
+    m_Localized: '{0} returned to storage.'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 374041263132725
+    m_Localized: Sold {0} for {1} G.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 374041263132726
+    m_Localized: Enclosure scenery data is missing.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 374041263132727
+    m_Localized: Invalid scenery record
+    m_Metadata:
+      m_Items: []
+  - m_Id: 374041263132728
+    m_Localized: Invalid scenery ownership, footprint or reserved area
+    m_Metadata:
+      m_Items: []
+  - m_Id: 374041263132729
+    m_Localized: Stored and placed scenery exceed the item limit.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 384473881300992
+    m_Localized: Name required
+    m_Metadata:
+      m_Items: []
+  - m_Id: 384473919049728
+    m_Localized: Player name
+    m_Metadata:
+      m_Items: []
+  - m_Id: 384473919049729
+    m_Localized: 'Player: {0}'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 384473919049730
+    m_Localized: Name your new journey
+    m_Metadata:
+      m_Items: []
+  - m_Id: 384473919049731
+    m_Localized: Add your player name
+    m_Metadata:
+      m_Items: []
+  - m_Id: 384473919049732
+    m_Localized: Change player name
+    m_Metadata:
+      m_Items: []
+  - m_Id: 384473919049733
+    m_Localized: This older save has no player name. Add one to continue.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 384473919049734
+    m_Localized: Mail, listings and auction bids will use this name.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 384473919049735
+    m_Localized: "1\u201324 characters \xB7 Change it in Settings \xB7 Separate from
+      beetle names"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 384473919049736
+    m_Localized: Start journey
+    m_Metadata:
+      m_Items: []
+  - m_Id: 384473919049737
+    m_Localized: Save and continue
+    m_Metadata:
+      m_Items: []
+  - m_Id: 384473919049738
+    m_Localized: Set your player name before continuing the journey.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 384473919049739
+    m_Localized: Player name saved. Mail and market signatures will use this name.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 384473919049740
+    m_Localized: Invalid player identity data version
+    m_Metadata:
+      m_Items: []
+  - m_Id: 384473919049741
+    m_Localized: Invalid player name data
+    m_Metadata:
+      m_Items: []
+  - m_Id: 384473919049742
+    m_Localized: 'Hello {0},
+
+
+      {1}'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 384473919049743
+    m_Localized: "From: {0}  <{1}>\nTo: {2}    \xB7    Week {3}"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 384473919049744
+    m_Localized: "Seller: {0} \xB7 Free listing / 5% sale fee"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 384473919049745
+    m_Localized: 'Bidder: {0}'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 384473919049746
+    m_Localized: "Champion auction \xB7 {0}"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 384473919049747
+    m_Localized: "{0} leads \xB7 {1} G in escrow \xB7 Seller acceptance if still
+      highest: {2}"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 384473919049748
+    m_Localized: '{0} won this lot'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 384473919049749
+    m_Localized: '{0} won for {1} G. The lot has been mailed.'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 384473919049750
+    m_Localized: '{0} bid {1} G, held in escrow. Advance the round for rival bids.
+      Escrow is refunded if outbid or unsold.'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 384473919049751
+    m_Localized: Welcome, {0}. Care for your beetles, then try the Rookie League.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 384473919049752
+    m_Localized: "Finish building \xB7 Return beetle"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 384473919049753
+    m_Localized: Keep scenery inside the rim and circular vessel boundary.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 384473919049754
+    m_Localized: "Not enough living space: keep 30 connected cells and a clear 4\xD74
+      resting area."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 384473919049755
+    m_Localized: 'Not enough living space: the beetle needs room to turn and walk.'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 384473919049756
+    m_Localized: 'Insufficient living space: leave safe footing for {0}'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 394156318838784
+    m_Localized: '{0} vs. Woodland challenger
+
+      Restart with the same opponent
+      and seed. No additional entry fee.'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 394156348198912
+    m_Localized: Return to arena
+    m_Metadata:
+      m_Items: []
+  - m_Id: 394156348198913
+    m_Localized: "Saving match result\u2026"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 394156348198914
+    m_Localized: Match result not saved
+    m_Metadata:
+      m_Items: []
+  - m_Id: 394156348198915
+    m_Localized: Rewards are granted only after the result is saved. Saving retries
+      automatically; you can also retry now.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 394156348198916
+    m_Localized: Retry save
+    m_Metadata:
+      m_Items: []
+  - m_Id: 394156348198917
+    m_Localized: Invalid sibling valuation award count
+    m_Metadata:
+      m_Items: []
+  - m_Id: 648064425447424
+    m_Localized: Use scene defaults
+    m_Metadata:
+      m_Items: []
+  - m_Id: 648064471584768
+    m_Localized: Custom screen material
+    m_Metadata:
+      m_Items: []
+  - m_Id: 679178913370112
+    m_Localized: Time speed
+    m_Metadata:
+      m_Items: []
+  - m_Id: 679178917564416
+    m_Localized: Adjust natural time speed
+    m_Metadata:
+      m_Items: []
+  - m_Id: 679178917564417
+    m_Localized: Paused for construction
+    m_Metadata:
+      m_Items: []
+  - m_Id: 679178917564418
+    m_Localized: "Base day length: {0} real minutes (1\xD7)"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 679178917564419
+    m_Localized: "30 days per month \xB7 12 months per year\nTime pauses automatically
+      during construction, dialogs and combat\nTime does not advance while the game
+      is closed"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 681100017848320
+    m_Localized: Current season (game calendar)
+    m_Metadata:
+      m_Items: []
+  - m_Id: 693505389154304
+    m_Localized: Game filter
+    m_Metadata:
+      m_Items: []
+  - m_Id: 693505401737216
+    m_Localized: Original
+    m_Metadata:
+      m_Items: []
+  - m_Id: 693505401737217
+    m_Localized: "Dither \xB7 Soft"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 693505401737218
+    m_Localized: "Dither \xB7 Dense"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 693505401737219
+    m_Localized: Keep the original scene image without a filter.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 693505401737220
+    m_Localized: CRT curvature, scanlines and subtle color separation.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 693505401737221
+    m_Localized: Gentle ordered dithering with smoother color transitions.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 693505405931520
+    m_Localized: Fine dots and stronger color steps, keeping the scene's original
+      colors.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 693505405931521
+    m_Localized: Use the custom screen material configured for this scene in the
+      Editor.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 693505405931522
+    m_Localized: Filter details
+    m_Metadata:
+      m_Items: []
+  - m_Id: 721601525895168
+    m_Localized: CRT
+    m_Metadata:
+      m_Items: []
+  - m_Id: 721601534283776
+    m_Localized: Dither
+    m_Metadata:
+      m_Items: []
+  - m_Id: 721601534283777
+    m_Localized: px
+    m_Metadata:
+      m_Items: []
+  - m_Id: 721601534283778
+    m_Localized: FPS
+    m_Metadata:
+      m_Items: []
+  - m_Id: 721601534283779
+    m_Localized: s
+    m_Metadata:
+      m_Items: []
+  - m_Id: 721601534283780
+    m_Localized: G
+    m_Metadata:
+      m_Items: []
+  - m_Id: 721601534283781
+    m_Localized: mm
+    m_Metadata:
+      m_Items: []
+  - m_Id: 721601534283782
+    m_Localized: g
+    m_Metadata:
+      m_Items: []
+  - m_Id: 721601534283783
+    m_Localized: RH
+    m_Metadata:
+      m_Items: []
+  - m_Id: 721601534283784
+    m_Localized: "\xB0C"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 721601534283785
+    m_Localized: BUG COMBAT
+    m_Metadata:
+      m_Items: []
+  - m_Id: 721601534283786
+    m_Localized: COLLECT  /  CARE  /  COMPETE
+    m_Metadata:
+      m_Items: []
+  - m_Id: 721601534283787
+    m_Localized: G
+    m_Metadata:
+      m_Items: []
+  - m_Id: 721601534283788
+    m_Localized: "Current scene only \xB7 Exclusive filters \xB7 Clear interface"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 721601534283789
+    m_Localized: "Year {0} \xB7 Month {1} \xB7 Day {2}"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 721601534283790
+    m_Localized: Care records loaded. Care does not advance while the game is closed.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 721601534283791
+    m_Localized: The save could not be loaded. A temporary example is in use; the
+      original save is preserved.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 721601534283792
+    m_Localized: This content pack has no available beetle species.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 721601534283793
+    m_Localized: Amber has overturned! Select it, choose Help upright, then prepare
+      food.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 721601534283794
+    m_Localized: Food consumed. Nutrition and hydration replenished.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 721601534283795
+    m_Localized: Gently helped upright. The beetle can stop struggling, eat and rest.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 721601534283796
+    m_Localized: Moved to the new habitat.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 721601534283797
+    m_Localized: Dead. Feeding or helping upright cannot revive it.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 721601534283798
+    m_Localized: Unable to stand after overturning. Struggling and needs help!
+    m_Metadata:
+      m_Items: []
+  - m_Id: 721601534283799
+    m_Localized: Care records saved.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 721601534283800
+    m_Localized: Save failed. The existing save is preserved.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 721601534283801
+    m_Localized: Beetle species and habitats updated.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 721601534283802
+    m_Localized: No compatible update is available. Current content is unchanged.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 721601534283803
+    m_Localized: This food is unsuitable for the current species or life stage.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 721601534283804
+    m_Localized: The beetle is still struggling. Help it upright before feeding.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 721601534283805
+    m_Localized: This habitat no longer suits the current life stage. Change its
+      habitat first.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 721601534283806
+    m_Localized: This habitat is unsuitable. Choose an available habitat.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 721601534283807
+    m_Localized: This beetle is competing and cannot receive care yet.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 721601534283808
+    m_Localized: Action incomplete. Check whether the beetle is alive, upright and
+      at a suitable stage.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 721601534283809
+    m_Localized: 'Built-in content could not be loaded; using defaults: '
+    m_Metadata:
+      m_Items: []
+  - m_Id: 721601534283810
+    m_Localized: 'Could not create the content file: '
+    m_Metadata:
+      m_Items: []
+  - m_Id: 721601534283811
+    m_Localized: 'Settings could not be loaded; using defaults: '
+    m_Metadata:
+      m_Items: []
+  - m_Id: 721601534283812
+    m_Localized: 'Input settings could not be loaded; default bindings restored: '
+    m_Metadata:
+      m_Items: []
+  - m_Id: 721601534283813
+    m_Localized: 'Action was not committed: '
+    m_Metadata:
+      m_Items: []
+  - m_Id: 721601534283814
+    m_Localized: Cannot access the file. Check disk space and read/write permissions.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 721601534283815
+    m_Localized: An internal error occurred. Details were recorded in the console.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 721601534283816
+    m_Localized: The configuration or save is empty
+    m_Metadata:
+      m_Items: []
+  - m_Id: 721601534283817
+    m_Localized: Landscape construction
+    m_Metadata:
+      m_Items: []
+  - m_Id: 721601534283818
+    m_Localized: Length
+    m_Metadata:
+      m_Items: []
+  - m_Id: 721601534283819
+    m_Localized: "{0} \xB7 {1}/{2} days\n{3}\n{4}  {5}/{6} hearts    Nutrition {7}%\n{8}
+      \xB7 Time in care {9} days\n{10} \xB7 {11}\n{12} {13} mm \xB7 Value {14} G\nGenes
+      {15}\nMutation {16} \xB7 Wins {17}"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 721601534283820
+    m_Localized: "Claimed \xB7 Specimen stored in the specimen room collection"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 721601534283821
+    m_Localized: "Specimen attachment \xB7 Claim it, then display it in the specimen
+      room"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 721601534283822
+    m_Localized: "Live beetle in storage \xB7 "
+    m_Metadata:
+      m_Items: []
+  - m_Id: 721601534283823
+    m_Localized: "Specimen collection \xB7 {0} items"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 721601534283824
+    m_Localized: Claimed specimens are kept in the specimen room. Display them, edit
+      their plaques or sell them.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 721601534283825
+    m_Localized: " \xB7 Health {0} hearts"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 721601534283826
+    m_Localized: " \xB7 Round {0}/{1}"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 721601534283827
+    m_Localized: '[Specimen] {0}   '
+    m_Metadata:
+      m_Items: []
+  - m_Id: 721601534283828
+    m_Localized: "{0} price {1} G \xB7 Storage: {2}"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 721601534283829
+    m_Localized: Buyback
+    m_Metadata:
+      m_Items: []
+  - m_Id: 721601534283830
+    m_Localized: Buy
+    m_Metadata:
+      m_Items: []
+  - m_Id: 721601534283831
+    m_Localized: Proceeds
+    m_Metadata:
+      m_Items: []
+  - m_Id: 721601534283832
+    m_Localized: Total due
+    m_Metadata:
+      m_Items: []
+  - m_Id: 721601534283833
+    m_Localized: Sell
+    m_Metadata:
+      m_Items: []
+  - m_Id: 721601534283834
+    m_Localized: '{0}: {1} G'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 721601534283835
+    m_Localized: "{0} 1\u2013{1} items \xB7 Available: {2} G"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 721601534283836
+    m_Localized: 'Seller: '
+    m_Metadata:
+      m_Items: []
+  - m_Id: 721601534283837
+    m_Localized: " \xB7 Free listing / 5% commission on sale"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 721601534283838
+    m_Localized: "{0} \xB7 {1}\nPlaque date {2} \xB7 Prepared in week {3}"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 721601534283839
+    m_Localized: Developing
+    m_Metadata:
+      m_Items: []
+  - m_Id: 721601534283840
+    m_Localized: " \xB7 Resting under observation"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 721601534283841
+    m_Localized: Adult terrarium
+    m_Metadata:
+      m_Items: []
+  - m_Id: 721601534283842
+    m_Localized: Fermented substrate nursery
+    m_Metadata:
+      m_Items: []
+  - m_Id: 721601534283843
+    m_Localized: Isolation recovery enclosure
+    m_Metadata:
+      m_Items: []
+  - m_Id: 721601534283844
+    m_Localized: Beetle jelly
+    m_Metadata:
+      m_Items: []
+  - m_Id: 721601534283845
+    m_Localized: Handles live beetle and framed specimen orders. Claimed beetles
+      enter storage; specimens enter the specimen room collection.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 721601534283846
+    m_Localized: Sends public and mystery pupa auction results and delivers winning
+      lots.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 721601534283847
+    m_Localized: Listed. Offers remain valid until the end of this week. Sales incur
+      a 5% commission; withdraw before selling.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 721601534283848
+    m_Localized: Only your dead beetles can be discarded. Sell living beetles at
+      the market
+    m_Metadata:
+      m_Items: []
+  - m_Id: 721601534283849
+    m_Localized: Remains discarded and the slot cleared.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 721601534283850
+    m_Localized: Died after being unable to get upright for too long
+    m_Metadata:
+      m_Items: []
+  - m_Id: 721601534283851
+    m_Localized: Feeding and temperature plans apply to eggs and larvae
+    m_Metadata:
+      m_Items: []
+  - m_Id: 721601534283852
+    m_Localized: Feeding and temperature plan saved. Active adulthood is expected
+      in {0} days. Development continues naturally without a plan.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 721601534283853
+    m_Localized: 'Egg laid: the related offspring has a maximum of {0} hearts. Care
+      for its incubation medium.'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 721601534283854
+    m_Localized: 'Unrelated pairing produced an egg: 5 maximum hearts and +5% inherited
+      length. The egg hatches as the calendar advances.'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 721601534283855
+    m_Localized: 'Week {0}: {1} beetles caught, {2} offspring matured, {3} G in lineage
+      royalties. Stock and auction lots refreshed. Growth and aging follow the natural
+      calendar.'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 721601534283856
+    m_Localized: Only your own dead beetles can be preserved
+    m_Metadata:
+      m_Items: []
+  - m_Id: 721601534283857
+    m_Localized: Your framed specimen has arrived. Claim the attachment and visit
+      the specimen room to edit its plaque, display it or trade it.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 721601534283858
+    m_Localized: '{0} s'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 721601534283859
+    m_Localized: '{0} FPS'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 721601534283860
+    m_Localized: '{0} px'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 721601534283861
+    m_Localized: "{0}   Cheer cooldown \xB7 {1} s"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 721601534283862
+    m_Localized: A short, close-range lever throw!
+    m_Metadata:
+      m_Items: []
+  - m_Id: 721601534283863
+    m_Localized: A quick horn lift throws the opponent forward!
+    m_Metadata:
+      m_Items: []
+  - m_Id: 721601534283864
+    m_Localized: Sustained force sends the opponent in an arc!
+    m_Metadata:
+      m_Items: []
+  - m_Id: 721601534283865
+    m_Localized: A powerful horn lift launches a high throw!
+    m_Metadata:
+      m_Items: []
+  - m_Id: 721601534283866
+    m_Localized: The horn swings back to flip the opponent!
+    m_Metadata:
+      m_Items: []
+  - m_Id: 721601534283867
+    m_Localized: A burst of force throws the opponent overhead!
+    m_Metadata:
+      m_Items: []
+  - m_Id: 721601534283868
+    m_Localized: Lever throw
+    m_Metadata:
+      m_Items: []
+  - m_Id: 721601534283869
+    m_Localized: Intermittent antenna probing
+    m_Metadata:
+      m_Items: []
+  - m_Id: 721601534283870
+    m_Localized: "Hind legs brace \xB7 Head pushes upward"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 721601534283871
+    m_Localized: "Forelegs probe \xB7 Scrape free"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 721601534283872
+    m_Localized: "Hind legs brace \xB7 Forelegs push"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 721601534283873
+    m_Localized: Forelegs lift and press
+    m_Metadata:
+      m_Items: []
+  - m_Id: 721601534283874
+    m_Localized: "Horns interlock \xB7 Lateral contest"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 721601534283875
+    m_Localized: "Horn feint \xB7 Horn retracts and retreats"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 721601534283876
+    m_Localized: "Horn lowers to prepare \xB7 Head thrusts upward"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 721601534283877
+    m_Localized: "Yield to impact \xB7 Reposition for support"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 721601534283878
+    m_Localized: "Resting foot change \xB7 Support adjustment"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 723748413952000
+    m_Localized: "{0}\n{1}  \xB7  {2}\n{3}"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 723749366059008
+    m_Localized: "{0} \xB7 Wall slot {1}"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 723749366059009
+    m_Localized: Week {0}
+    m_Metadata:
+      m_Items: []
+  - m_Id: 723749366059010
+    m_Localized: Tier {0}  {1}
+    m_Metadata:
+      m_Items: []
+  - m_Id: 723749366059011
+    m_Localized: "{0}  \xB7  {1} mm  \xB7  Tier {2}"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 723749366059012
+    m_Localized: Small sparks from clashing horns
+    m_Metadata:
+      m_Items: []
+  - m_Id: 723749366059013
+    m_Localized: Combat impact sparks
+    m_Metadata:
+      m_Items: []
+  - m_Id: 723749366059014
+    m_Localized: Dueling beetle (sample)
+    m_Metadata:
+      m_Items: []
+  - m_Id: 723749366059015
+    m_Localized: Unbound
+    m_Metadata:
+      m_Items: []
+  - m_Id: 723749366059016
+    m_Localized: Numpad {0}
+    m_Metadata:
+      m_Items: []
+  - m_Id: 723749366059017
+    m_Localized: Space
+    m_Metadata:
+      m_Items: []
+  - m_Id: 723749366059018
+    m_Localized: Enter
+    m_Metadata:
+      m_Items: []
+  - m_Id: 723749366059019
+    m_Localized: Tab
+    m_Metadata:
+      m_Items: []
+  - m_Id: 723749366059020
+    m_Localized: Backspace
+    m_Metadata:
+      m_Items: []
+  - m_Id: 723749366059021
+    m_Localized: Delete
+    m_Metadata:
+      m_Items: []
+  - m_Id: 723749366059022
+    m_Localized: Insert
+    m_Metadata:
+      m_Items: []
+  - m_Id: 723749366059023
+    m_Localized: Home
+    m_Metadata:
+      m_Items: []
+  - m_Id: 723749366059024
+    m_Localized: End
+    m_Metadata:
+      m_Items: []
+  - m_Id: 723749366059025
+    m_Localized: Page Up
+    m_Metadata:
+      m_Items: []
+  - m_Id: 723749366059026
+    m_Localized: Page Down
+    m_Metadata:
+      m_Items: []
+  - m_Id: 723749366059027
+    m_Localized: Left Shift
+    m_Metadata:
+      m_Items: []
+  - m_Id: 723749366059028
+    m_Localized: Right Shift
+    m_Metadata:
+      m_Items: []
+  - m_Id: 723749366059029
+    m_Localized: Left Ctrl
+    m_Metadata:
+      m_Items: []
+  - m_Id: 723749366059030
+    m_Localized: Right Ctrl
+    m_Metadata:
+      m_Items: []
+  - m_Id: 723749366059031
+    m_Localized: Left Alt
+    m_Metadata:
+      m_Items: []
+  - m_Id: 723749366059032
+    m_Localized: Right Alt
+    m_Metadata:
+      m_Items: []
+  - m_Id: 723749366059033
+    m_Localized: Left System
+    m_Metadata:
+      m_Items: []
+  - m_Id: 723749366059034
+    m_Localized: Right System
+    m_Metadata:
+      m_Items: []
+  - m_Id: 723749366059035
+    m_Localized: Menu
+    m_Metadata:
+      m_Items: []
+  - m_Id: 723749366059036
+    m_Localized: Caps Lock
+    m_Metadata:
+      m_Items: []
+  - m_Id: 723749366059037
+    m_Localized: Num Lock
+    m_Metadata:
+      m_Items: []
+  - m_Id: 723749366059038
+    m_Localized: Print Screen
+    m_Metadata:
+      m_Items: []
+  - m_Id: 723749366059039
+    m_Localized: Scroll Lock
+    m_Metadata:
+      m_Items: []
+  - m_Id: 723749366059040
+    m_Localized: Pause
+    m_Metadata:
+      m_Items: []
+  - m_Id: 723749366059041
+    m_Localized: Numpad Enter
+    m_Metadata:
+      m_Items: []
+  - m_Id: 723749366059042
+    m_Localized: Left Mouse Button
+    m_Metadata:
+      m_Items: []
+  - m_Id: 723749366059043
+    m_Localized: Right Mouse Button
+    m_Metadata:
+      m_Items: []
+  - m_Id: 723749366059044
+    m_Localized: Middle Mouse Button
+    m_Metadata:
+      m_Items: []
+  - m_Id: 723749366059045
+    m_Localized: Mouse Forward Button
+    m_Metadata:
+      m_Items: []
+  - m_Id: 723749366059046
+    m_Localized: Mouse Back Button
+    m_Metadata:
+      m_Items: []
+  - m_Id: 723749366059047
+    m_Localized: D-Pad
+    m_Metadata:
+      m_Items: []
+  - m_Id: 723749366059048
+    m_Localized: D-Pad Up
+    m_Metadata:
+      m_Items: []
+  - m_Id: 723749366059049
+    m_Localized: D-Pad Down
+    m_Metadata:
+      m_Items: []
+  - m_Id: 723749366059050
+    m_Localized: D-Pad Left
+    m_Metadata:
+      m_Items: []
+  - m_Id: 723749366059051
+    m_Localized: D-Pad Right
+    m_Metadata:
+      m_Items: []
+  - m_Id: 723749366059052
+    m_Localized: Left Stick Press
+    m_Metadata:
+      m_Items: []
+  - m_Id: 723749366059053
+    m_Localized: Right Stick Press
+    m_Metadata:
+      m_Items: []
+  - m_Id: 723749366059054
+    m_Localized: Left Shoulder
+    m_Metadata:
+      m_Items: []
+  - m_Id: 723749366059055
+    m_Localized: Right Shoulder
+    m_Metadata:
+      m_Items: []
+  - m_Id: 723749366059056
+    m_Localized: Left Trigger
+    m_Metadata:
+      m_Items: []
+  - m_Id: 723749366059057
+    m_Localized: Right Trigger
+    m_Metadata:
+      m_Items: []
+  - m_Id: 723749366059058
+    m_Localized: Gamepad Menu
+    m_Metadata:
+      m_Items: []
+  - m_Id: 723749366059059
+    m_Localized: Gamepad Select
+    m_Metadata:
+      m_Items: []
+  - m_Id: 725654720925696
+    m_Localized: '{0} is struggling after overturning and needs help!'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 725654771257344
+    m_Localized: "{0} \xB7 Egg"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 725654771257345
+    m_Localized: "{0} \xB7 Egg"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 725654771257346
+    m_Localized: "{0} \xB7 L1 first instar"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 725654771257347
+    m_Localized: "{0} \xB7 L1 first instar"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 725654771257348
+    m_Localized: "{0} \xB7 L2 second instar"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 725654771257349
+    m_Localized: "{0} \xB7 L2 second instar"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 725654771257350
+    m_Localized: "{0} \xB7 L3 third instar"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 725654771257351
+    m_Localized: "{0} \xB7 L3 third instar"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 725654771257352
+    m_Localized: "{0} \xB7 Prepupa"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 725654771257353
+    m_Localized: "{0} \xB7 Prepupa"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 725654771257354
+    m_Localized: "{0} \xB7 Pupa"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 725654771257355
+    m_Localized: "{0} \xB7 Pupa"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 743118628376576
+    m_Localized: Glass effects
+    m_Metadata:
+      m_Items: []
+  - m_Id: 743118766788608
+    m_Localized: Realistic
+    m_Metadata:
+      m_Items: []
+  - m_Id: 743118766788609
+    m_Localized: Low
+    m_Metadata:
+      m_Items: []
+  - m_Id: 743118766788610
+    m_Localized: "Global \xB7 Reflections and subtle refraction."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 743118766788611
+    m_Localized: "Global \xB7 Simplified reflections; no refraction."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 755511127363584
+    m_Localized: Husbandry spotlight
     m_Metadata:
       m_Items: []
   references:

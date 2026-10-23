@@ -43,12 +43,12 @@ public static class CareBehaviorValidation
         o.Dead=true;o.Overturned=true;brain.Step(.05,o);Check(brain.State==CareState.Dead&&!brain.MealReady,"death takes priority over struggle");
         o=new CareObservation{Nutrition=80,HealthFraction=.2,Hour=12,HabitatActivity=1};
         brain=new CareStateMachine(p,42);brain.Step(.05,o);Check(brain.State==CareState.SeekingShelter,"injured beetle seeks a resting spot");
-        var motor=new CareLocomotion(42);int steps=0;
+        var motor=new CareLocomotion(42,new CareWalkArea(new Rect(-2,-2,4,4),.8f));int steps=0;
         while(brain.State!=CareState.Resting&&steps++<1000){o.AtGoal=motor.AtGoal;brain.Step(.05,o);motor.Tick(brain,.05f);}
         Check(brain.State==CareState.Resting,"bounded motor reaches shelter");
         o.HealthFraction=1;o.FoodAvailable=true;
         for(int i=0;i<500;i++){o.AtGoal=motor.AtGoal;brain.Step(.05,o);motor.Tick(brain,.05f);}
-        Check(brain.MealReady&&Vector2.Distance(motor.Position,CareLocomotion.FeedingPoint)<.03f,"motor reaches and faces food, then stops");
+        Check(brain.MealReady&&Vector2.Distance(motor.Position,motor.FeedingPoint)<.03f,"motor reaches and faces food, then stops");
         Check(motor.Speed==0,"eating cannot slide");
         bool rejected=false;try{new CareBehaviorProfile{eatSeconds=double.NaN}.Validate();}catch(InvalidOperationException){rejected=true;}
         Check(rejected,"nonfinite hot-update parameters rejected");
@@ -85,7 +85,7 @@ public static class CareBehaviorValidation
         s.Validate();
         Directory.CreateDirectory("Artifacts/Campaign/Care/Serialization");
         var repository=new CampaignSaveRepository(Path.GetFullPath("Artifacts/Campaign/Care/Serialization"));
-        repository.Write(0,new CampaignSave { state=s.State,catalog=catalog });
+        s.RenamePlayer("验收玩家");repository.Write(0,new CampaignSave { state=s.State,catalog=catalog });
         var disk=repository.Read(0);
         Check(disk.state.beetles[0].meal==null&&!disk.state.beetles[0].hasMeal,"save/load preserves an empty dish instead of a phantom meal");
         var legacy=JsonUtility.FromJson<CampaignCatalog>(File.ReadAllText("Assets/StreamingAssets/campaign-content.json"));

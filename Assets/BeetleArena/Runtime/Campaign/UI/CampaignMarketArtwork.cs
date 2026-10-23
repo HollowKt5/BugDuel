@@ -8,7 +8,7 @@ namespace BeetleArena.Campaign
     [RequireComponent(typeof(CanvasRenderer))]
     public sealed class CampaignMarketArtwork : UnityEngine.UI.MaskableGraphic
     {
-        public enum Kind { Horn, Stag, Rainbow, Container, Wood, Lamp, Sap, Potato, Banana, Apple }
+        public enum Kind { Horn, Stag, Rainbow, Container, Wood, Lamp, Sap, Potato, Banana, Apple, Specimen, Stones, Fern, Moss, Leaves, Driftwood, Water, Arch, GardenLamp }
         Kind kind;
         UnityEngine.UI.VertexHelper mesh;
         Rect bounds;
@@ -19,6 +19,23 @@ namespace BeetleArena.Campaign
             vh.Clear();mesh=vh;bounds=rectTransform.rect;
             switch(kind)
             {
+                case Kind.Stones:
+                    Box(0,0,100,100,0x16221f);Ellipse(50,76,37,9,0x0e1614);Ellipse(33,61,21,16,0x748981,-18);Ellipse(66,66,20,13,0xa4b5a1,12);Ellipse(52,42,21,19,0x586b65,-10);Ellipse(47,36,10,6,0x98aaa0);break;
+                case Kind.Fern:
+                    Box(0,0,100,100,0x14241e);Move(49,86);Quad(43,50,54,16);Stroke(0xc6ad6d,3);
+                    for(int i=0;i<5;i++){float y=28+i*10,w=8+i*3;Move(50,y+8);Quad(50-w,y-12,50-w-6,y-1);Quad(50-w,y+7,50,y+8);Fill(i%2==0?0x70ae69u:0x3c8951u);Move(50,y+8);Quad(50+w,y-12,50+w+6,y-1);Quad(50+w,y+7,50,y+8);Fill(0x4e9a5b);}break;
+                case Kind.Moss:
+                    Box(0,0,100,100,0x14251e);Ellipse(50,65,38,17,0x55412a);Ellipse(50,58,38,19,0x478448);for(int i=0;i<8;i++)Ellipse(23+i*8,51+(i%3)*7,10,9,i%2==0?0x7aab52u:0x5b984au);break;
+                case Kind.Leaves:
+                    Box(0,0,100,100,0x252319);for(int i=0;i<4;i++){float x=25+i*17,y=40+(i%2)*18;Move(x-13,y+18);Quad(x-19,y-15,x+12,y-12);Quad(x+19,y+15,x-13,y+18);Fill(i%2==0?0xad7035u:0xc49b4fu);Move(x-12,y+18);Line(x+10,y-10);Stroke(0x614024,2);}break;
+                case Kind.Driftwood:
+                    Box(0,0,100,100,0x1f241f);Move(13,70);Line(24,41);Line(84,38);Line(89,65);Fill(0x876042);Ellipse(24,56,12,16,0xc09b65);Ellipse(24,56,7,10,0x805634);Move(38,50);Line(77,48);Stroke(0xb68a54,3);Move(61,40);Line(70,21);Stroke(0x745039,10);break;
+                case Kind.Water:
+                    Box(0,0,100,100,0x16242a);Ellipse(50,65,38,21,0x667c79);Ellipse(50,54,38,21,0x9aaca0);Ellipse(50,51,31,15,0x338796);Ellipse(50,49,25,11,0x65b4b6);Move(30,46);Quad(39,39,57,40);Stroke(0xd3eece,2);break;
+                case Kind.Arch:
+                    Box(0,0,100,100,0x1c251e);Move(16,79);Cubic(15,9,85,9,84,79);Stroke(0x7d5538,19);Move(16,79);Cubic(15,9,85,9,84,79);Stroke(0xaa7b49,7);Ellipse(17,79,10,6,0xcaa16a);Ellipse(83,79,10,6,0xcaa16a);break;
+                case Kind.GardenLamp:
+                    Box(0,0,100,100,0x15232a);Ellipse(50,41,32,30,0x303c29);Box(46,56,8,29,0x6d786a);Ellipse(50,83,18,6,0x4e5a4d);Box(34,28,32,35,0xa8904c);Box(39,33,22,24,0xffd77c);Move(28,29);Line(50,14);Line(72,29);Fill(0x5b6e5c);break;
                 case Kind.Horn:
                     Box(0,0,100,100,0x1b281f);Move(50,15);Cubic(55,35,75,40,75,65);Cubic(75,85,62,92,50,92);Cubic(38,92,25,85,25,65);Cubic(25,40,45,35,50,15);Fill(0x2d4a32);
                     Move(50,10);Line(50,45);Stroke(0xf59e0b,3);Move(50,20);Quad(70,10,75,5);Stroke(0xf59e0b,3);Move(50,30);Quad(30,18,25,15);Stroke(0xf59e0b,3);Ellipse(50,55,18,18,0xeab308);break;
@@ -42,6 +59,11 @@ namespace BeetleArena.Campaign
                     Box(0,0,100,100,0x171a2e);Box(25,19,50,67,0x475569);Box(29,23,42,56,0x1e1b4b);Box(37,28,8,44,0xc4b5fd);Box(55,28,8,44,0xc4b5fd);Box(32,79,36,7,0x94a3b8);Move(39,19);Quad(50,3,61,19);Stroke(0x94a3b8,3);break;
                 case Kind.Sap:
                     Box(0,0,100,100,0x231d15);Box(31,24,38,10,0xa16207);Box(27,34,46,47,0xca8a04);Box(30,37,40,40,0x78350f);Box(32,48,36,21,0xfef3c7);Ellipse(50,59,7,7,0xd97706);break;
+                case Kind.Specimen:
+                    Box(0,0,100,100,0x211c18);Box(10,7,80,79,0x9d7546);Box(15,12,70,69,0x403024);Box(19,16,62,61,0xe8dcc0);
+                    Move(43,34);Quad(36,18,41,19);Line(47,34);Stroke(0x30291f,3);Move(57,34);Quad(64,18,59,19);Line(53,34);Stroke(0x30291f,3);
+                    for(int i=0;i<3;i++){float y=40+i*9;Move(43,y);Line(30,y-4);Line(25,y+2);Stroke(0x30291f,2);Move(57,y);Line(70,y-4);Line(75,y+2);Stroke(0x30291f,2);}
+                    Ellipse(50,51,11,18,0x3f3b2c);Ellipse(50,35,9,8,0x27271e);Move(50,40);Line(50,68);Stroke(0x8a8060,1);Box(30,89,40,7,0xc8ab70);break;
             }
         }
         void Move(float x,float y){path.Clear();path.Add(new Vector2(x,y));}

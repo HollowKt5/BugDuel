@@ -5,7 +5,6 @@ using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Runtime.Serialization;
-using BeetleArena;
 using Newtonsoft.Json.Linq;
 using UnityEditor;
 using UnityEngine;

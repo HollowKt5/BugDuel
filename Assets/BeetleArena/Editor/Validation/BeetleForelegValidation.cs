@@ -56,7 +56,7 @@ public static class BeetleForelegValidation
                             if (module.SampleLeg(c, p, slot, out var offset))
                             { owned++; selected = slot; Require(slot == 0 || slot == 3, "Foreleg action owns another leg"); Require(offset.magnitude < 1.6f, "Excessive limb target"); }
                         var sample = module.Sample(c, p);
-                        bool groundedPush = module is ForelegPushMotion && (!c.OpponentContactConfirmed || !c.ForebodyRaised || c.RearSupport <= .4f || p < .26f);
+                        bool groundedPush = module is ForelegPushMotion && (!c.ContactConfirmedAtStart || !c.ForebodyRaised || c.RearSupport <= .4f || p < .26f);
                         if (groundedPush)
                             Require(owned == 0 && sample.Contact == BeetleMotionContact.None, "Push lifted a foot before accepted rear-up");
                         else
@@ -130,14 +130,14 @@ public static class BeetleForelegValidation
         Require(!push.CanStart(a.Motion.Context), "Push starts from stale contact flag");
         a.Motion.EditorPreviewStart(push);
         a.Motion.Refresh(sim, a);
-        Require(!push.SampleLeg(a.Motion.Context, .5f, 0, out _) &&
+        Require(!a.Motion.ContactConfirmedAtStart && !push.SampleLeg(a.Motion.Context, .5f, 0, out _) &&
             !push.SampleLeg(a.Motion.Context, .5f, 3, out _) &&
             push.Sample(a.Motion.Context, .5f).Contact == BeetleMotionContact.None,
-            "Separated beetles reach or request a push hit");
+            "An unqualified preview reaches or requests a push hit");
         a.Motion.Tick(.02f);
         Require(a.Motion.CombatSample.Contact == BeetleMotionContact.None &&
             !a.Motion.SampleLeg(0, out _) && !a.Motion.SampleLeg(3, out _),
-            "Lost pair contact did not suppress reaching and attack");
+            "An action without confirmed starting contact acquired reach permission");
         a.Motion.Cancel();
 
         probe.Touching = true;
@@ -146,7 +146,18 @@ public static class BeetleForelegValidation
         a.Motion.Refresh(sim, a);
         Require(push.CanStart(a.Motion.Context), "Supported touching fixture cannot push");
         a.Motion.EditorPreviewStart(push);
+        a.Motion.Refresh(sim, a);
         a.Motion.Tick(a.Motion.Duration * .5f);
+        float elapsed = a.Motion.Elapsed;
+        float side = a.Motion.ForelegSide;
+        probe.Touching = false;
+        a.Motion.Refresh(sim, a);
+        int slot = side < 0 ? 0 : 3;
+        Require(a.Motion.ContactConfirmedAtStart && !a.Motion.Context.OpponentContactConfirmed &&
+            push.SampleLeg(a.Motion.Context, .5f, slot, out _) &&
+            !push.SampleLeg(a.Motion.Context, .5f, slot == 0 ? 3 : 0, out _) &&
+            a.Motion.CombatSample.Contact == BeetleMotionContact.Foreleg && a.Motion.Elapsed == elapsed && a.Motion.ForelegSide == side,
+            "A confirmed start cannot complete its same-limb stroke after the horns briefly separate");
         var apply = typeof(BeetleSimulation).GetMethod("ApplyModuleContacts", BindingFlags.NonPublic | BindingFlags.Instance);
         int hits = a.Motion.Hits;
         Vector2 before = b.Velocity;
@@ -154,6 +165,19 @@ public static class BeetleForelegValidation
         Require(a.Motion.Hits == hits && b.Velocity == before, "Horn contact alone awards a foreleg hit");
 
         probe.ForelegContact = true;
+        probe.Raised = false;
+        a.Motion.Refresh(sim, a);
+        apply.Invoke(sim, null);
+        Require(!a.Motion.SampleLeg(0, out _) && !a.Motion.SampleLeg(3, out _) &&
+            a.Motion.CombatSample.Contact == BeetleMotionContact.None && a.Motion.Hits == hits && b.Velocity == before,
+            "Starting contact bypasses a blocked chest rise");
+        probe.Raised = true; probe.Grip = 0;
+        a.Motion.Refresh(sim, a);
+        apply.Invoke(sim, null);
+        Require(!a.Motion.SampleLeg(0, out _) && !a.Motion.SampleLeg(3, out _) &&
+            a.Motion.CombatSample.Contact == BeetleMotionContact.None && a.Motion.Hits == hits && b.Velocity == before,
+            "Starting contact bypasses lost rear support");
+        probe.Grip = 1;
         a.Traits.strength = a.Traits.mass = b.Traits.mass = b.Traits.grip = 1;
         a.Footing = a.Balance = b.Footing = b.Balance = 1;
         a.Stamina = a.Traits.endurance;
@@ -168,8 +192,12 @@ public static class BeetleForelegValidation
         before = b.Velocity;
         apply.Invoke(sim, null);
         Require(b.Velocity == before, "Push applies the same impulse twice");
-        report.AppendLine($"PASS contact gates: stale/no pair contact cannot start/reach; horn-only cannot hit; " +
-            $"confirmed push deltaV={velocityGain:F3}, balance={b.Balance:F3}, stagger={b.ActionDuration:F2}s; one hit only.");
+        a.Motion.Cancel();a.Motion.Refresh(sim, a);
+        Require(!a.Motion.ContactConfirmedAtStart && !a.Motion.Context.ContactConfirmedAtStart && !push.CanStart(a.Motion.Context),
+            "A cancelled stroke leaks its starting contact into the next attempt");
+        report.AppendLine($"PASS contact gates: stale/no pair contact cannot start; only a confirmed start may finish its same-limb stroke across brief separation; " +
+            $"no foreleg contact, blocked rise or lost rear support produces no impulse; confirmed push deltaV={velocityGain:F3}, " +
+            $"balance={b.Balance:F3}, stagger={b.ActionDuration:F2}s; one hit only; cancellation clears contact permission.");
         sim.ContactSolver = match.Contacts;
     }
     static void SupportRules(BeetleMatchController match, StringBuilder report)

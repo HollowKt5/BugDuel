@@ -1,0 +1,8 @@
+.display-tool { flex-grow: 1; padding: 14px; }
+.title { font-size: 20px; -unity-font-style: bold; margin-bottom: 8px; }
+.hint { white-space: normal; margin-bottom: 12px; color: rgb(185, 198, 208); }
+.section { margin-top: 12px; padding-top: 10px; border-top-width: 1px; border-top-color: rgb(75, 81, 90); }
+.row { flex-direction: row; flex-wrap: wrap; margin-top: 8px; }
+.row > Button { min-height: 30px; margin-right: 8px; margin-bottom: 5px; flex-grow: 1; }
+.status { white-space: normal; padding: 10px; margin-top: 12px; background-color: rgb(39, 49, 58); }
+.path { white-space: normal; font-size: 11px; margin-top: 6px; margin-bottom: 10px; }

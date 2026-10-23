@@ -38,6 +38,9 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/Scenes/BeetleNursery.unity
     guid: 87a47e54159192647bad3cdb57223594
+  - enabled: 1
+    path: Assets/Scenes/Campaign/CampaignSpecimenRoom.unity
+    guid: 7d9a14953fcf17342a4d9cdd318c14ca
   m_configObjects:
     com.unity.addressableassets: {fileID: 11400000, guid: 5c86d81c29be93d468de928aa84d6173, type: 2}
     com.unity.input.settings.actions: {fileID: -944628639613478452, guid: 052faaac586de48259a63d0c4782560b, type: 3}

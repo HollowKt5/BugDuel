@@ -62,4 +62,7 @@ MonoBehaviour:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
-  blackHoldDuration: 0.06
+  blackFadeDurationMultiplier: 3
+  shutterSoftness: 0.025
+  shutterShader: {fileID: 4800000, guid: 0e702a68a8a24ae190cd9edb392a1ea9, type: 3}
+  blackHoldDuration: 2.06

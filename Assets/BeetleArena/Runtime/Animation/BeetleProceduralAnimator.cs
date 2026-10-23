@@ -71,7 +71,7 @@ namespace BeetleArena
         Vector3[] antennaAngles;
         // size 是个体大小，scale 是最终视觉缩放；三个 Pitch/Roll 为平滑后的角度（度）。
         // walkCycle 是连续步态相位。ground 与模拟共用，只采样当前有效擂台。
-        float size = 1, scale = .7f, arenaRadius = 5.2f, bodyPitch, bodyRoll, headPitch, walkCycle;
+        float size = 1, scale = .7f, bodyPitch, bodyRoll, headPitch, walkCycle;
         IBeetleGround ground;
         Vector3 previousPosition;
         bool initialized;
@@ -89,7 +89,6 @@ namespace BeetleArena
         bool edgeTumbling;
         public float EdgeReach { get; private set; }
 
-        public bool EdgeTumbling => edgeTumbling && flightSpinning;
         bool backRighting;
         Vector3 rightingAngularVelocity;
         float stableRightingSeconds;
@@ -144,7 +143,6 @@ namespace BeetleArena
             ground = surface;
             size = traits.size;
             scale = (visualScale ?? settings.visualScale) * size;
-            arenaRadius = settings.arenaRadius;
             model.localScale = Vector3.one * scale;
             model.localPosition = importedRig ? Vector3.zero : new Vector3(0, -.077f * size, 0);
             bodyRest = importedRig ? importedRig.bodyRest : new Vector3(0, 1.10f, 0);
@@ -925,6 +923,16 @@ namespace BeetleArena
                 return false;
             float yaw = Mathf.DeltaAngle(0, headPivot.localEulerAngles.y);
             headPivot.localRotation = Quaternion.Euler(target, yaw, 0);
+            return true;
+        }
+
+        public bool TryTurnHeadForRetreat(float degrees)
+        {
+            float yaw = Mathf.DeltaAngle(0, headPivot.localEulerAngles.y);
+            float target = degrees > 0 ? Mathf.Min(24, yaw + degrees) : Mathf.Max(-24, yaw + degrees);
+            if (degrees > 0 ? target <= yaw + .0001f : target >= yaw - .0001f) return false;
+            float pitch = Mathf.DeltaAngle(0, headPivot.localEulerAngles.x);
+            headPivot.localRotation = Quaternion.Euler(pitch, target, 0);
             return true;
         }
 

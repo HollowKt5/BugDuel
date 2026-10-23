@@ -28,6 +28,8 @@ public static class BeetleContentValidation
                 report.AppendLine("PASS: stage-filtered choices, environment effects, unknown/unsuitable choices, relocation and saved habitat selections.");
                 Reload(fixture);
                 report.AppendLine("PASS: complete JSON revisions, rejected schema/data/version preservation, species/selected habitat removal, lifecycle compatibility and active contests.");
+                StageSpecificReload();
+                report.AppendLine("PASS: shortened lifecycle can leave a stage-specific box without losing age or consuming forbidden care time.");
                 FileReload(fixture);
                 report.AppendLine("PASS: explicit file reload, malformed/missing files preserve current content.");
             }
@@ -140,7 +142,15 @@ public static class BeetleContentValidation
         update.Species = new[] { BeetleSpeciesContentData.FromDefinition(new SpeciesDefinition("unused", "Unused", 50, 6)) };
         RejectUpdate(service, session, JsonUtility.ToJson(update), "Species referenced by existing individuals was removed");
         update = Next(service); update.Species[0].EggDays += 1;
-        RejectUpdate(service, session, JsonUtility.ToJson(update), "Incompatible lifecycle revision silently re-aged existing adults");
+        var beforeLifecycleUpdate = Read(session, "female");
+        Require(service.TryApplyJson(JsonUtility.ToJson(update)).Success, "Lifecycle tuning rejected existing adults");
+        var afterLifecycleUpdate = Read(session, "female");
+        Require(afterLifecycleUpdate.TotalAgeDays == beforeLifecycleUpdate.TotalAgeDays &&
+            afterLifecycleUpdate.StageAgeDays == beforeLifecycleUpdate.StageAgeDays &&
+            afterLifecycleUpdate.Stage == beforeLifecycleUpdate.Stage, "Lifecycle tuning rewrote historical ages or stage");
+        Require(session.Feed("female", new FoodPortion(FoodKind.Fruit, 1, 1)).Success &&
+            session.MarkOverturned("female").Success && session.HelpRight("female").Success,
+            "Lifecycle hot update blocked feeding or righting");
         update = Next(service);
         var habitats = new List<BeetleHabitatContentData>();
         foreach (var habitat in update.Habitats) if (habitat.Id != "calm") habitats.Add(habitat);
@@ -175,6 +185,38 @@ public static class BeetleContentValidation
         bool rejectedMatch = false;
         try { session.BeginMatch("female", "male", fixture.Settings, 6); } catch (InvalidOperationException) { rejectedMatch = true; }
         Require(rejectedMatch && session.ActiveMatchCount == 0, "Hot-disabled species still entered combat");
+    }
+
+    static void StageSpecificReload()
+    {
+        var oldSpecies = new SpeciesDefinition("stage-box", "Stage box", 50, 8);
+        var habitats = new[]
+        {
+            new HabitatDefinition("larva-box", "Larva box", new HabitatConditions(), new[] { LifeStage.Larva }),
+            new HabitatDefinition("pupa-box", "Pupa box", new HabitatConditions(), new[] { LifeStage.Pupa })
+        };
+        var session = new BeetleRosterSession(new ContentCatalog(1, new[] { oldSpecies }, habitats),
+            new Dictionary<string, BeetleCombatProfile>());
+        var larva = BeetleIndividual.Create(oldSpecies, "larva", "Larva", BeetleSex.Unknown, LifeStage.Larva);
+        new HusbandryService().Advance(larva, oldSpecies, new HabitatConditions(), 8);
+        session.Add(larva);
+        session.SelectHabitat(larva.Id, "larva-box");
+        var revised = new SpeciesDefinition(oldSpecies.Id, oldSpecies.DisplayName, 50, 8,
+            lifecycle: new LifecycleProfile(3, 5, 10, 90));
+        Require(session.TryUpdateContent(new ContentCatalog(2, new[] { revised }, habitats)).Success,
+            "Stage-specific box prevented a lifecycle balance update");
+        var boundary = session.AdvanceInSelectedHabitat(larva.Id, .25);
+        var pupa = Read(session, larva.Id);
+        Require(boundary.Success && boundary.Events.Count == 1 && pupa.Stage == LifeStage.Pupa &&
+            pupa.TotalAgeDays == larva.TotalAgeDays && pupa.StageAgeDays == 0,
+            "Overdue stage could not reach the relocation boundary without consuming care time");
+        string beforeRejected = JsonUtility.ToJson(session.Export());
+        Require(!session.AdvanceInSelectedHabitat(larva.Id, .25).Success &&
+            JsonUtility.ToJson(session.Export()) == beforeRejected,
+            "New pupa advanced in an incompatible box or rejected command mutated state");
+        Require(session.SelectHabitat(larva.Id, "pupa-box").Success &&
+            session.AdvanceInSelectedHabitat(larva.Id, .25).Success && Read(session, larva.Id).StageAgeDays == .25,
+            "Shortened-stage individual is stuck between stage-specific boxes");
     }
 
     static BeetleContentData Next(BeetleContentService service)

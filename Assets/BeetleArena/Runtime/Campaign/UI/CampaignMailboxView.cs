@@ -10,12 +10,11 @@ namespace BeetleArena.Campaign
     {
         int mailFolder,storageOverlay; // 0 inbox, 1 unread, 2 attachments, 3 deleted, 4 contacts
         string selectedMail,selectedContact="keeper",contactFilter;
-        TMP_Text mailboxNotice;
 
         void OpenMailbox()
         {
             if(Session==null)return;
-            var p=MarketDialog("虫舍邮箱 - BUG DUEL MAIL",1420,800);storageOverlay=1;
+            var p=MarketDialog("虫舍邮箱",1420,800);storageOverlay=1;
             string[] tabs={"收件箱","未读邮件","待领取","已删除","联系人"};
             for(int i=0;i<tabs.Length;i++)
             {
@@ -26,8 +25,7 @@ namespace BeetleArena.Campaign
             MBox("MessageList",p,16,126,408,600,CampaignRetroTheme.Panel,CampaignRetroTheme.Border,1);
             MBox("MessageDetails",p,436,126,968,600,CampaignRetroTheme.Panel,CampaignRetroTheme.Border,1);
             if(mailFolder==4)DrawMailContacts(p);else DrawMailInbox(p);
-            var status=MBox("MailboxStatus",p,16,742,1388,40,CampaignRetroTheme.Notice,CampaignRetroTheme.Border,1);
-            mailboxNotice=MText(status,app.Message,10,7,1368,29,17);
+            dialogNotice=MStatus(p,26,749,1368,29,17,app.Message);
             SelectFirst(p);
         }
         void DrawMailInbox(RectTransform p)
@@ -56,17 +54,18 @@ namespace BeetleArena.Campaign
             }
             var contact=CampaignMailContacts.Find(current.senderId);
             MText(p,current.subject,458,143,924,50,27,accent,true);
-            MText(p,$"发件人：{contact.name}  <{contact.address}>\n收件人：我的虫舍    ·    第 {current.week} 周",458,204,924,66,18,muted);
+            MText(p,$"发件人：{contact.name}  <{CampaignLocalization.Literal(contact.address)}>\n收件人：{Session.PlayerSignature}    ·    第 {current.week} 周",458,204,924,66,18,muted);
             MBox("MailDivider",p,458,284,924,1,CampaignRetroTheme.Border);
             var detail=Column(458,299,924,332,p);
-            var body=MText(detail.content,current.body,4,4,892,166,20);
-            float bodyHeight=Mathf.Max(100,body.GetPreferredValues(CampaignLocalization.Text(current.body),892,0).y+16);
+            string message=Session.MailBody(current);
+            var body=MText(detail.content,message,4,4,892,166,20);
+            float bodyHeight=Mathf.Max(100,body.GetPreferredValues(CampaignLocalization.Text(message),892,0).y+16);
             body.rectTransform.sizeDelta=new Vector2(892,bodyHeight);detail.y=bodyHeight+20;
             foreach(var attachment in current.attachments)
             {
                 var a=attachment;var card=Card(detail,94);
-                MText(card,$"{a.name} ×{a.quantity}",16,12,866,30,22,accent,true);
-                MText(card,current.claimed?"已领取 · 附件已存入仓库":a.itemId==CampaignItems.Beetle?"活体附件 · 领取后从仓库安排入住温室":"物品附件 · 领取后存入仓库",16,52,866,27,17,muted);
+                MText(card,$"{CampaignLocalization.Name(a)} ×{a.quantity}",16,12,866,30,22,accent,true);
+                MText(card,a.itemId==CampaignItems.Specimen?(current.claimed?"已领取 · 标本已存入标本室收藏库":"标本附件 · 领取后前往标本室布展"):current.claimed?"已领取 · 附件已存入仓库":a.itemId==CampaignItems.Beetle?"活体附件 · 领取后从仓库安排入住温室":"物品附件 · 领取后存入仓库",16,52,866,27,17,muted);
             }
             if(current.attachments.Count==0){MText(detail.content,"这封邮件没有附件。",4,detail.y,892,42,19,muted);detail.y+=54;}
             detail.content.sizeDelta=new Vector2(924,Mathf.Max(detail.y,244));
@@ -95,11 +94,11 @@ namespace BeetleArena.Campaign
             {
                 var c=contact;var card=Card(list,90);
                 MButton(card,c.name,10,10,350,36,()=>{selectedContact=c.id;OpenMailbox();},true,20);
-                MText(card,c.address,12,54,346,25,14,muted);
+                MText(card,CampaignLocalization.Literal(c.address),12,54,346,25,14,muted);
             }
             var person=CampaignMailContacts.Find(selectedContact)??CampaignMailContacts.All[0];
             MText(p,person.name,470,164,908,58,32,accent,true);
-            MText(p,person.address,470,242,908,35,22,muted);
+            MText(p,CampaignLocalization.Literal(person.address),470,242,908,35,22,muted);
             MText(p,person.description,470,316,908,170,24);
             MText(p,$"往来邮件：{State.mail.Count(m=>m.senderId==person.id&&!m.deleted)} 封",470,518,908,40,22,muted);
             MButton(p,"查看往来邮件",470,640,908,52,()=>{contactFilter=person.id;mailFolder=0;selectedMail=null;OpenMailbox();},true,20);
@@ -117,32 +116,70 @@ namespace BeetleArena.Campaign
         void OpenWarehouse()
         {
             if(Session==null)return;
-            var p=MarketDialog("虫舍仓库 - BUG DUEL STORAGE",1420,800);storageOverlay=2;
+            var p=MarketDialog("虫舍仓库",1420,800);storageOverlay=2;
             MText(p,"已领取的物品",22,53,860,40,28,accent,true);
             MButton(p,"打开邮箱",1198,49,202,36,OpenMailbox,true,18);
-            MText(p,"食物可投喂当前甲虫；捕虫道具在派遣时使用。暂存活体入住温室后才开始养殖。",22,103,1370,38,19,muted);
+            MText(p,"养殖用品请按阶段使用。暂存活体由仓库代养，生命周期继续推进；成年后仍会自然老去。",22,103,1370,38,19,muted);
             var list=Column(20,153,1380,555,p);int rows=0;
             var selected=State.beetles.FirstOrDefault(b=>b.id==State.selectedId);
-            foreach(var id in new[]{CampaignItems.Food(0),CampaignItems.Food(1),CampaignItems.Food(2),CampaignItems.Sap,CampaignItems.Lamp,CampaignItems.Cabinet})
+            foreach(var id in TradableSupplies)
             {
                 int count=Session.InventoryCount(id);if(count==0)continue;rows++;
+                if(CampaignDecorations.Known(id))
+                {
+                    string decoration=id;var card=Card(list,122);
+                    Component<CampaignMarketArtwork>(Rect("Decoration",card,14,14,90,90)).SetKind(DecorationArtwork(decoration));
+                    MText(card,$"{CampaignItems.Name(decoration)} ×{count}",122,15,874,32,24,accent,true);
+                    MText(card,CampaignDecorations.Get(decoration).description,122,57,874,47,18,muted);
+                    MButton(card,"取出并布置",1040,18,300,36,()=>UseWarehouseDecoration(decoration),selected!=null,18);
+                    MButton(card,"直接回售",1040,69,300,36,()=>OpenMarketSupply(decoration,true),true,18);
+                    continue;
+                }
+                if(CampaignRearingItems.All.Contains(id))
+                {
+                    string supply=id;var card=Card(list,140);
+                    MText(card,$"{CampaignItems.Name(supply)} ×{count}",18,12,990,32,24,accent,true);
+                    MText(card,CampaignRearingItems.Description(supply),18,53,990,34,18,muted);
+                    string target=selected==null?"请先在温室选择甲虫":"当前甲虫："+CampaignLocalization.Name(selected)+" · "+CampaignSession.StageName(selected.stage);
+                    bool matches=selected!=null&&CampaignRearingItems.Applicable(supply,selected.stage);
+                    MText(card,target,18,96,990,30,17,matches?ink:muted);
+                    bool available=matches&&!selected.dead&&!selected.listed&&State.battle?.beetleId!=selected.id&&State.auction?.beetleId!=selected.id;
+                    MButton(card,matches?"用于当前甲虫":"当前阶段不适用",1040,27,300,42,()=>MailboxCommand(s=>s.UseRearingItem(selected.id,supply)),available,19);
+                    MButton(card,"选择甲虫",1040,84,145,32,()=>OpenRearingSupplyTargets(supply),true,17);
+                    MButton(card,"回售用品",1195,84,145,32,()=>OpenMarketSupply(supply,true),true,17);
+                    continue;
+                }
                 string item=id;int food=CampaignItems.FoodIndex(item);var row=Card(list,100);
                 MText(row,$"{CampaignItems.Name(item)} ×{count}",18,15,670,34,24,accent,true);
-                MText(row,food>=0?selected==null?"请先在温室选择甲虫":"当前甲虫："+selected.name:item==CampaignItems.Cabinet?"安装后，交易展柜从 3 格扩展到 6 格。":"捕虫队出发时可选择消耗此道具。",18,56,940,30,18,muted);
+                MText(row,food>=0?selected==null?"请先在温室选择甲虫":"当前甲虫："+CampaignLocalization.Name(selected):item==CampaignItems.Cabinet?"安装后，交易展柜从 3 格扩展到 6 格。":"捕虫队出发时可选择消耗此道具。",18,56,940,30,18,muted);
                 if(food>=0)MButton(row,"投喂当前甲虫",1040,28,300,42,()=>MailboxCommand(s=>s.Feed(selected.id,food)),selected!=null&&selected.Adult(State.week)&&!selected.listed&&!selected.overturned&&selected.meal==null&&State.battle?.beetleId!=selected.id&&State.auction?.beetleId!=selected.id,19);
                 else if(item==CampaignItems.Cabinet)MButton(row,"安装展柜扩展包",1040,28,300,42,()=>MailboxCommand(s=>s.InstallCabinetUpgrade()),State.cabinet==3,19);
                 else MButton(row,"前往派遣",1040,28,300,42,()=>{CloseModal();app.Go(CampaignPage.Catching);},true,19);
             }
             foreach(var beetle in State.storedBeetles)
             {
-                rows++;var b=beetle;var row=Card(list,110);
-                MText(row,$"{b.name} · {b.length:0.0} mm",18,14,930,36,24,accent,true);
-                MText(row,$"活体暂存 · {(b.female?"雌":"雄")} · {Session.Catalog.Species(b.speciesId).name}",18,59,930,31,18,muted);
-                MButton(row,State.beetles.Count+Session.Reserved<State.capacity?"安排入住温室":"温室栏位不足",1040,34,300,42,()=>MailboxCommand(s=>s.HouseStoredBeetle(b.id)),State.beetles.Count+Session.Reserved<State.capacity,19);
+                rows++;var b=beetle;var row=Card(list,b.dead?148:110);
+                MText(row,CampaignLocalization.Name(b)+" · "+(b.stage<CampaignLifeStage.DormantAdult?"预估成虫 ":"")+$"{b.length:0.0} mm",18,14,930,36,24,accent,true);
+                MText(row,(b.dead?"已死亡 · ":"活体暂存 · ")+$"{CampaignSession.StageName(b.stage)} · {(b.female?"雌":"雄")} · {Session.Catalog.Species(b.speciesId).name}",18,59,930,31,18,muted);
+                MButton(row,"命名",1040,12,300,34,()=>OpenBeetleNaming(b.id,OpenWarehouse),true,19);
+                if(b.dead)
+                {
+                    MText(row,$"累计年龄 {b.totalAgeDays:0.#} 天 · 活动成虫日龄 {b.adultAgeDays:0.#} 天",18,103,930,29,18,muted);
+                    MButton(row,$"制作标本 {CampaignSession.SpecimenPreparationCost} G",1040,58,300,34,()=>PrepareSpecimen(b.id),State.coins>=CampaignSession.SpecimenPreparationCost,18);
+                    MButton(row,"遗弃",1040,102,300,32,()=>Confirm("遗弃这只死亡甲虫？此后无法再制作标本。",()=>app.Execute(s=>s.ClearDead(b.id),OpenWarehouse)),true,18);
+                    continue;
+                }
+                MButton(row,State.beetles.Count+Session.Reserved<State.capacity?"安排入住温室":"温室栏位不足",1040,58,300,36,()=>MailboxCommand(s=>s.HouseStoredBeetle(b.id)),State.beetles.Count+Session.Reserved<State.capacity,19);
+            }
+            if(State.specimens.Count>0)
+            {
+                rows++;var row=Card(list,100);
+                MText(row,$"标本收藏 · {State.specimens.Count} 件",18,15,930,34,24,accent,true);
+                MText(row,"已领取的标本保存在标本室，可以布展、编辑铭牌或出售。",18,56,930,30,18,muted);
+                MButton(row,"前往标本室",1040,28,300,42,()=>{CloseModal();app.Go(CampaignPage.SpecimenRoom);},true,19);
             }
             if(rows==0)MText(p,"仓库暂时为空。请先在邮箱领取市场订单附件。",40,288,1340,100,27,muted);
-            var status=MBox("WarehouseStatus",p,20,740,1380,42,CampaignRetroTheme.Notice,CampaignRetroTheme.Border,1);
-            mailboxNotice=MText(status,app.Message,10,7,1360,30,18);SelectFirst(p);
+            dialogNotice=MStatus(p,30,747,1360,30,18,app.Message);SelectFirst(p);
         }
     }
 }
