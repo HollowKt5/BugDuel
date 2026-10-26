@@ -88,7 +88,7 @@ public static class CampaignPlayerIdentityValidation
     }
 
 #if UNITY_EDITOR
-    [MenuItem("Tools/Beetle Arena/Validate Player Identity Data")]
+    [MenuItem("Tools/甲壳虫斗/验证/战役流程/玩家身份数据", false, 570)]
     public static void Run()
     {
         RunDomain();var session=Session();session.RenamePlayer("归档饲养员");var lot=session.State.marketAuctions[0];

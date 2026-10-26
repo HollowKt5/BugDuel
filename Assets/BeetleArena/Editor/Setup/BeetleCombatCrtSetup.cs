@@ -9,7 +9,7 @@ public static class BeetleCombatCrtSetup
 {
     public const string ProfilePath = "Assets/BeetleArena/Resources/CombatCrt.asset";
 
-    [MenuItem("Tools/Beetle Arena/Combat CRT Settings")]
+    [MenuItem("Tools/甲壳虫斗/常用工具/战斗 CRT 设置", false, 102)]
     static void SelectSettings()
     {
         Selection.activeObject = EnsureProfile();
@@ -28,7 +28,7 @@ public static class BeetleCombatCrtSetup
         return profile;
     }
 
-    [MenuItem("Tools/Beetle Arena/Apply Steady CRT Preset")]
+    [MenuItem("Tools/甲壳虫斗/画面与资源/界面与字体/应用稳定 CRT 预设", false, 343)]
     public static void ApplySteadyPreset()
     {
         var profile = EnsureProfile();

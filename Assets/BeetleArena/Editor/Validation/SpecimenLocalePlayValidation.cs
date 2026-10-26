@@ -28,7 +28,7 @@ public static class SpecimenLocalePlayValidation
         EditorApplication.playModeStateChanged+=OnPlay;
         EditorApplication.update+=()=>{if(SessionState.GetString(Key,"").Length>0&&EditorApplication.isPlaying)EditorApplication.QueuePlayerLoopUpdate();};
     }
-    [MenuItem("Tools/Beetle Arena/Validate Specimen Room and Languages")]
+    [MenuItem("Tools/甲壳虫斗/验证/本地化/标本室与语言切换", false, 643)]
     public static void Run()
     {
         if(EditorApplication.isPlaying)throw new InvalidOperationException("Stop Play before isolated validation.");

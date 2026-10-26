@@ -19,7 +19,6 @@ using UnityEngine.UI;
 public static class CampaignPlayModeValidation
 {
     public const string Output=CampaignEndToEndValidation.Output;
-    [MenuItem("Tools/Beetle Arena/Validate Campaign Play Flow")]
     public static void Run()=>CampaignEndToEndValidation.Run();
 }
 

@@ -1,10 +1,10 @@
-using UnityEngine;
+﻿using UnityEngine;
 
 namespace BeetleArena
 {
     /// <summary>
-    /// 耐力与短时爆发分开：不是肌肉生理仿真，而是慢支撑/短促强发力的游戏近似。
-    /// Simulation 调用才推进状态；动画与模块只能读取，避免显示帧率改变体力。
+    /// Decouples endurance from short-burst output: a gameplay approximation of sustained posture vs. explosive impulse, not a muscle physiology simulation.
+    /// State advances strictly when invoked by Simulation; animations and modules are read-only, preventing render frame rate from altering stamina.
     /// </summary>
     public static class BeetleEnergyPolicy
     {
@@ -27,11 +27,11 @@ namespace BeetleArena
         {
             bool working = cost >= 5 || b.Action == BeetleAction.Lifting;
             if (working) b.ExertionCooldown = s.exertionRecoveryDelay;
-            // 撤开和换位才有较好的恢复；贴身撑地仍可小幅恢复，避免双低体力永久僵持。
+            // Disengaging and repositioning yield better recovery; close-range stance holding still grants minor recovery to prevent mutual low-stamina deadlock.
             if (cost < 0)
             {
                 float factor = b.TouchingOpponent ? s.contactRecoveryMultiplier : 1;
-                // 真正卸力恢复比原地撑住有效；否则贴身耗到低能量后无法挣脱恢复死循环。
+                // Genuine unloading recovery is more effective than holding ground in place; otherwise exhausted fighters get trapped in low-energy attrition.
                 if (!threatened && BeetleRecoveryPolicy.IsRest(b.Action)) factor = Mathf.Max(factor, .85f);
                 if (threatened) factor *= .55f;
                 if (b.ExertionCooldown > 0) factor *= .18f;
@@ -43,7 +43,7 @@ namespace BeetleArena
             b.BurstReserve = Mathf.Clamp01(b.BurstReserve + burstRate * dt);
         }
 
-        // 命中结算的一次性受压；绝不每个碰撞帧扣除，鼓励也不直接填满爆发储备。
+        // One-off pressure applied upon hit resolution; never deducted per collision frame, and encouragement does not instantly refill burst reserves.
         public static void ReceiveContact(BeetleState attacker, BeetleState defender, float intensity)
         {
             attacker.ContactConfidence = Mathf.Clamp(attacker.ContactConfidence + intensity * .30f, -1, 1);

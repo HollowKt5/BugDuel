@@ -13,7 +13,7 @@ public static class BeetleDomainValidation
     const string ReportPath = "Artifacts/Framework/DomainValidation.txt";
 
 #if UNITY_EDITOR
-    [MenuItem("Tools/Beetle Arena/Validate Husbandry Domain")]
+    [MenuItem("Tools/甲壳虫斗/验证/养殖/领域规则", false, 540)]
 #endif
     public static void Run()
     {

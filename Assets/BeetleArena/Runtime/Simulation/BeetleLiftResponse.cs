@@ -1,21 +1,21 @@
-using UnityEngine;
+﻿using UnityEngine;
 
 namespace BeetleArena
 {
-    // 受击者的托举反馈。模拟拥有时序，接触求解器拥有两个局部接触点，动画只消费状态。
-    // 对应头角杠杆托举/失去抓地的行为近似，不是假定角尖能产生任意方向的吸附力。
+    // Defender lift response: Simulation owns timing, contact solver owns the two local contact points, and animator only consumes state.
+    // Approximates cephalic horn leverage lift and traction loss without assuming artificial sticky forces at the horn tip.
     // Reference: Weber et al. 2023, https://doi.org/10.1016/j.cub.2023.08.066
     public sealed class BeetleLiftResponse
     {
         public int Supporter = -1;
         public float Time, RaiseSeconds, HoldSeconds;
         public float Pitch, Roll, UnsupportedTime, TwistSign;
-        // 接触求解持续无法推进的时间。用于松脱失败的托举，不能靠累积位置修正强行抬起。
+        // Duration for which contact solver has failed to advance. Used to release stuck lifts rather than forcing elevation via position corrections.
         public float BlockedTime;
-        // 本次是否额外爆发用力；普通成功顶举也会抛出，不由此标记开关。
+        // Indicates whether explosive force was triggered this step; standard successful lifts still throw without being gated by this flag.
         public bool BurstEffort;
         public float Effort, SnapSeconds, SweepTarget, StrokeProgress;
-        // 接触层只在固定步最终姿态被接受后写入以下测量值，显示插值不累计。
+        // The contact layer only writes the following measurements once the final fixed-step pose is accepted; display interpolation does not accumulate.
         public float ContactSeconds, LostContactSeconds, HeadSweep, AngularSpeed, PeakAngularSpeed;
         public float LeverArm, OutputForce, Work, Impulse;
         public Vector3 ReleaseTangent, LaunchVelocity;
@@ -29,14 +29,14 @@ namespace BeetleArena
             LeverArm = OutputForce = Work = Impulse = StrokeProgress = LaunchElevation = 0;
             ReleaseTangent = LaunchVelocity = Vector3.zero; ThrowKind = BeetleThrowKind.None;
         }
-        // 六足首次同时失去支撑后锁存；空中挣扎偶尔擦地不能重新算作抓住台面。
+        // Latches when all six tarsi lose support simultaneously; airborne flailing that grazes the surface does not count as regrowing grip.
         public bool GripReleased;
         public Vector2 Direction;
         public bool Supported => Supporter >= 0;
         public float RaiseProgress => Mathf.Clamp01(Time / Mathf.Max(.05f, RaiseSeconds));
     }
 
-    // 只有实际场景接触才能建立托举。隔空或腿碰腿不能退化成通用向上冲量。
+    // A lift can only be established through physical scene contact. Non-contact or leg-to-leg clashes must not degenerate into generic upward impulses.
     public interface IBeetleLiftContacts
     {
         bool TryBeginLift(BeetleSimulation simulation, BeetleState attacker, BeetleState defender);

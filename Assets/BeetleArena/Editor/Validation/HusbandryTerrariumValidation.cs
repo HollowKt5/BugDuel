@@ -15,7 +15,7 @@ public static class HusbandryTerrariumValidation
     const string Report="Artifacts/Terrarium/Data.txt";
     static readonly string[] Panes={"GlassLeft","GlassRight","GlassBack","GlassFront"};
 
-    [MenuItem("Tools/Beetle Arena/Validate Husbandry Terrarium")]
+    [MenuItem("Tools/甲壳虫斗/验证/养殖/玻璃养殖箱", false, 545)]
     public static void Run()
     {
         if(EditorApplication.isPlaying)throw new InvalidOperationException("Stop Play before terrarium checks.");

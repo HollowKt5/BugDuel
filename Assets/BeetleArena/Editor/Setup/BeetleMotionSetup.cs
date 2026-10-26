@@ -4,10 +4,10 @@ using BeetleArena;
 using UnityEditor;
 using UnityEngine;
 
-/// <summary>默认动作装配，仅编辑器使用。运行核心不引用任何具体动作类型。</summary>
+/// <summary>Default motion setup, Editor-only. Runtime core holds no references to concrete motion types.</summary>
 public static class BeetleMotionSetup
 {
-    [MenuItem("Tools/Beetle Arena/Install Motion Modules")]
+    [MenuItem("Tools/甲壳虫斗/场景与安装/战斗模块/安装动作模块", false, 221)]
     public static void Install()
     {
         const string folder = "Assets/BeetleArena/Generated/Motions";
@@ -20,7 +20,7 @@ public static class BeetleMotionSetup
                 if (!module) { module = (BeetleMotionModule)ScriptableObject.CreateInstance(type); AssetDatabase.CreateAsset(module, path); }
                 return module;
             }).ToArray();
-        // 安装是显式操作；正常开局绝不自动把用户已移除的模块重新加回去。
+        // Installation is an explicit action; normal startup never re-adds modules removed by user.
         settings.motionModules = modules;
         settings.Validate(); EditorUtility.SetDirty(settings); AssetDatabase.SaveAssets();
     }

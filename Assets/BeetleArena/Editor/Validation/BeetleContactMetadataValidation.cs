@@ -8,7 +8,7 @@ using UnityEditor.SceneManagement;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
-/// <summary>不同模型的接触语义、旧模型兼容与元数据缓存边界；不依赖正式场景或模型资产。</summary>
+    /// <summary>Contact semantics, legacy model compatibility, and metadata caching boundaries; decoupled from production scene or model assets.</summary>
 public static class BeetleContactMetadataValidation
 {
     static void Require(bool condition, string why) { if (!condition) throw new Exception(why); }
@@ -29,7 +29,7 @@ public static class BeetleContactMetadataValidation
         throw new Exception(why);
     }
 
-    [MenuItem("Tools/Beetle Arena/Validate Contact Metadata")]
+    [MenuItem("Tools/甲壳虫斗/验证/战斗/接触元数据", false, 504)]
     public static void Run()
     {
         if (EditorApplication.isPlayingOrWillChangePlaymode)

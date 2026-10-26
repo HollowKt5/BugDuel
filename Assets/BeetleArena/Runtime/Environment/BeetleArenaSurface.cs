@@ -1,21 +1,21 @@
-using UnityEngine;
+﻿using UnityEngine;
 
 namespace BeetleArena
 {
-    /// <summary>地表查询结果：高度为世界 Y，法线朝外；只代表可支撑的擂台表面。</summary>
+    /// <summary>Surface query result: World Y height and outward normal; represents supportable arena surface only.</summary>
     public struct BeetleGroundSample
     {
         public float height, grip;
         public Vector3 normal;
     }
 
-    // 数据模拟只依赖查询接口；无场景测试仍可使用默认水平圆台或自定义地表实现。
+    // Simulation depends on query interface only; headless tests can use default planar disc or custom surface implementations.
     public interface IBeetleGround
     {
         bool Sample(Vector2 position, out BeetleGroundSample sample);
     }
 
-    /// <summary>指定擂台的地表提供者。直接查询指定 Collider，不会射中甲虫或台外地板。</summary>
+    /// <summary>Surface provider for designated arena. Queries specified Collider directly without hitting beetles or outer floor.</summary>
     public sealed class BeetleArenaSurface : MonoBehaviour, IBeetleGround
     {
         public string displayName = "平地木桩";
@@ -29,7 +29,7 @@ namespace BeetleArena
         public float rayCeiling = 15;
         [Min(1)] public float rayDistance = 30;
 
-        // Collider.Raycast 不依赖全局层遮罩/触发器设置，也不需要分配 RaycastHit 数组。
+        // Collider.Raycast is independent of global layer masks and trigger settings, avoiding RaycastHit array allocations.
         public bool Sample(Vector2 position, out BeetleGroundSample sample)
         {
             sample = default;

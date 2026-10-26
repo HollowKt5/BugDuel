@@ -103,7 +103,7 @@ public static class CampaignNamingValidation
     }
 
 #if UNITY_EDITOR
-    [MenuItem("Tools/Beetle Arena/Validate Campaign Naming")]
+    [MenuItem("Tools/甲壳虫斗/验证/战役流程/甲虫命名规则", false, 569)]
     public static void Run()
     {
         RunDomain();var s=Session();var adult=s.State.beetles[0];s.RenameBeetle(adult.id,"归档甲虫");

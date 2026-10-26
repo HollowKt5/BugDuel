@@ -28,7 +28,7 @@ public static class GameFilterValidation
         EditorApplication.playModeStateChanged+=OnPlay;
         EditorApplication.update+=()=>{if(SessionState.GetString(Key,"").Length>0&&EditorApplication.isPlaying)EditorApplication.QueuePlayerLoopUpdate();};
     }
-    [MenuItem("Tools/Beetle Arena/Validate Game Filter Play Flow")]
+    [MenuItem("Tools/甲壳虫斗/验证/界面与画面/游戏滤镜交互", false, 605)]
     public static void Run()
     {
         if(EditorApplication.isPlaying)throw new InvalidOperationException("Stop Play before isolated filter validation.");
@@ -192,9 +192,9 @@ public sealed class GameFilterPlayDriver:MonoBehaviour
         Check((int)BeetleDisplayStyle.Custom==3&&(int)BeetleDisplayStyle.DenseDither==4,"new dense preset preserves the saved custom-material enum value");
         BeetleDisplayPreferences.SetStyle("SampleScene",BeetleDisplayStyle.OrderedDither);BeetleDisplayPreferences.SetPixelSize("SampleScene",4);
         BeetleDisplayPreferences.SetStyle("SampleScene",BeetleDisplayStyle.DenseDither);
-        Check(BeetleDisplayPreferences.GetPixelSize("SampleScene")==1,"new dense preset starts at its own 1px default instead of the saved soft size");
+        Check(BeetleDisplayPreferences.GetPixelSize("SampleScene")==2,"dense preset starts at level two independently of the saved soft size");
         BeetleDisplayPreferences.SetPixelSize("SampleScene",2);BeetleDisplayPreferences.SetStyle("SampleScene",BeetleDisplayStyle.OrderedDither);
-        Check(BeetleDisplayPreferences.GetPixelSize("SampleScene")==4,"switching back restores the separate soft pixel preference");
+        Check(BeetleDisplayPreferences.GetPixelSize("SampleScene")==3,"switching back restores the separate soft pixel preference, clamped to level three");
         BeetleDisplayPreferences.SetStyle("SampleScene",BeetleDisplayStyle.DenseDither);
         Check(BeetleDisplayPreferences.GetPixelSize("SampleScene")==2,"dense pixel preference survives the round trip");
         BeetleDisplayPreferences.UseSceneDefault("SampleScene");
@@ -391,7 +391,7 @@ public sealed class GameFilterPlayDriver:MonoBehaviour
                 var shader=Resources.Load<Shader>(dense?"BeetleDenseDither":"BeetleCombatDither");var material=new Material(shader);
                 try
                 {
-                    Check(shader&&shader.isSupported&&!ShaderUtil.ShaderHasError(shader)&&Mathf.Approximately(material.GetFloat("_PixelSize"),dense?1:3)&&Mathf.Approximately(material.GetFloat("_ColorLevels"),dense?6:16)&&Mathf.Approximately(material.GetFloat("_DitherStrength"),dense?1:.5f),"GPU preset defaults: "+(dense?"dense 1px / 6 levels / full":"soft 3px / 16 levels / half"));
+                    Check(shader&&shader.isSupported&&!ShaderUtil.ShaderHasError(shader)&&Mathf.Approximately(material.GetFloat("_PixelSize"),2)&&Mathf.Approximately(material.GetFloat("_ColorLevels"),dense?6:16)&&Mathf.Approximately(material.GetFloat("_DitherStrength"),dense?1:.5f),"GPU preset defaults: "+(dense?"dense 2px / 6 levels / full":"soft 2px / 16 levels / half"));
                     Graphics.Blit(source,target,material);var output=Read();File.WriteAllBytes(Output+"/Calibration-"+(dense?"Dense":"Soft")+".png",capture.EncodeToPNG());
                     Graphics.Blit(source,target,material);var repeated=Read();
                     Check(output.SequenceEqual(repeated),"identical input gives stable ordered pixels: "+(dense?"dense":"soft"));
@@ -408,9 +408,9 @@ public sealed class GameFilterPlayDriver:MonoBehaviour
                     if(!dense)
                     {
                         soft=output;bool uniform=true;
-                        for(int y=3;y<height-3;y+=3)for(int x=3;x<width-3;x+=3)
-                            for(int dy=0;dy<3;dy++)for(int dx=0;dx<3;dx++)uniform&=output[(y+dy)*width+x+dx].Equals(output[y*width+x]);
-                        Check(uniform,"soft default holds one color across each 3 by 3 pixel cell");
+                        for(int y=2;y<height-2;y+=2)for(int x=2;x<width-2;x+=2)
+                            for(int dy=0;dy<2;dy++)for(int dx=0;dx<2;dx++)uniform&=output[(y+dy)*width+x+dx].Equals(output[y*width+x]);
+                        Check(uniform,"soft default holds one color across each 2 by 2 pixel cell");
                     }
                     else
                     {

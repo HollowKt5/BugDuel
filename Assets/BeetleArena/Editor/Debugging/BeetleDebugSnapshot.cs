@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -12,7 +12,7 @@ using UnityEngine;
 
 namespace BeetleArena.EditorTools
 {
-    /// <summary>同版本现场恢复：模拟/随机源/模块/IK/接触/插值缓存完整捕获，音频粒子和相机内部时钟不在范围内。</summary>
+    /// <summary>Same-version scene reproduction: simulation, RNG, modules, IK, contacts, and interpolation caches fully captured; audio/particles and camera clocks are excluded.</summary>
     public static class BeetleDebugSnapshot
     {
         const int Version=1;
@@ -31,7 +31,7 @@ namespace BeetleArena.EditorTools
         public static string Fingerprint(BeetleMatchController match)
         {
             var text=new StringBuilder(Application.unityVersion+"|"+Environment.Version+"|"+Version);
-            // 配置内容也参与比较；瞬态 Settings 副本映射到同一个固定键，跨编辑器会话不依赖 instanceID。
+            // Config contents participate in comparison; transient Settings copies map to a single fixed key, decoupled from instanceID across editor sessions.
             var graph=new BeetleDebugGraph(match);text.Append(graph.WriteFields(match.settings).ToString(Formatting.None));text.Append(graph.Nodes.ToString(Formatting.None));
             foreach(var module in match.settings.motionModules??Array.Empty<BeetleMotionModule>())if(module)text.Append(EditorJsonUtility.ToJson(module));
             text.Append(AssetDatabase.GetAssetDependencyHash(BeetleArenaSceneBuilder.ScenePath));
@@ -55,7 +55,7 @@ namespace BeetleArena.EditorTools
             if((int?)data["version"]!=Version || (string)data["fingerprint"]!=Fingerprint(match))
                 throw new InvalidOperationException("现场版本/代码/模型/配置不匹配；拒绝覆盖当前对局。请使用保存现场时的版本。");
             var graph=new BeetleDebugGraph(match);
-            // 先完全解析、校验所有引用及字段，最后才修改现有组件和 Transform。
+            // Fully parses and validates all references and fields first before mutating existing components and Transforms.
             graph.Load((JArray)data["nodes"]);
             var components=((JArray)data["components"]).Select(n=>(node:n,target:graph.Resolve((string)n["key"]))).ToArray();
             var expected=Roots(match).Select(graph.Key).OrderBy(k=>k).ToArray();
@@ -89,7 +89,7 @@ namespace BeetleArena.EditorTools
             }
             foreach(var pose in poses){pose.target.localPosition=pose.p;pose.target.localRotation=pose.r;pose.target.localScale=pose.s;}
             match.EditorReconnectEvents();match.EditorSetPaused(true);
-            // 仅重建表现侧反馈，不回写模拟；每次恢复清除旧声音/火星节奏，不声称音视频逐帧复现。
+            // Reconstructs presentation feedback only, without mutating simulation; restores clear stale audio/spark cadence without claiming bitwise AV parity.
             if(match.contactFeedback)match.contactFeedback.Bind(match.actors);
             foreach(var actor in match.actors)actor.EditorRefreshMarker();
             Physics.SyncTransforms();if(match.hud)match.hud.Refresh();SceneView.RepaintAll();

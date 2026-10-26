@@ -4,14 +4,14 @@ using UnityEngine;
 namespace BeetleArena
 {
     public enum BeetleCombatArchetype { HornWrestling, MandibleGrappling }
-    /// <summary>物种的战斗/模型适配，与饲养参数分离。每种新模型都需要校准此配置与真实骨架。</summary>
+    /// <summary>Species combat/model profile, decoupled from husbandry attributes. Each new model requires calibrating this asset against its skeleton.</summary>
     [CreateAssetMenu(menuName = "BugDuel/Combat Profile", fileName = "BeetleCombatProfile")]
     public sealed class BeetleCombatProfile : ScriptableObject
     {
         public const string LegacyRigId = "bugduel.horn-rig.v1";
         public BeetleSpeciesAsset species;
         public BeetleCombatArchetype archetype = BeetleCombatArchetype.HornWrestling;
-        [Tooltip("必须与场景 Actor 的 rigId 一致。此版本仅实现角斗行为；大颚夹持需要另做动作和接触适配。")]
+        [Tooltip("Must match rigId of scene Actor. This build implements horn-wrestling behavior only; mandible combat requires bespoke motion/contact adapters.")]
         public string rigId = LegacyRigId;
         public BeetleActor actorPrefab;
         [Range(.4f, .9f)] public float visualScale = .70f;
@@ -20,9 +20,9 @@ namespace BeetleArena
         [Min(1)] public float endurance = 100;
         [Min(.01f)] public float hornReach = 1.65f;
         [Range(.84f, 1.20f)] public float hornLengthFactor = 1;
-        [Tooltip("模型局部六足位置：左前/中/后、右前/中/后。必须独立校准。")]
+        [Tooltip("Model-local six-foot positions: Left/Right Front/Middle/Hind. Must be calibrated independently.")]
         public Vector3[] supportFootOffsets = Array.Empty<Vector3>();
-        [Tooltip("勾选后仅使用此列表；空列表表示无模块。否则继承 MatchSettings 的动作列表。")]
+        [Tooltip("When checked, uses this list exclusively; empty list denotes no modules. Otherwise inherits action list from MatchSettings.")]
         public bool overrideMotionModules;
         public BeetleMotionModule[] motionModules = Array.Empty<BeetleMotionModule>();
         [Range(0, 100)] public float minimumCombatHealth = 50, maximumCombatStress = 80;

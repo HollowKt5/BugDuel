@@ -25,7 +25,7 @@ public static class CampaignLifecyclePlayValidation
         EditorApplication.playModeStateChanged+=OnPlay;
         EditorApplication.update+=()=>{if(SessionState.GetString(Key,"").Length>0&&EditorApplication.isPlaying)EditorApplication.QueuePlayerLoopUpdate();};
     }
-    [MenuItem("Tools/Beetle Arena/Validate Lifecycle Play Flow")]
+    [MenuItem("Tools/甲壳虫斗/验证/战役流程/生命周期实机流程", false, 565)]
     public static void Run()
     {
         if(EditorApplication.isPlaying)throw new InvalidOperationException("Stop Play before the isolated lifecycle validation.");

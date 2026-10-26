@@ -7,13 +7,13 @@ using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.SceneManagement;
 
-/// <summary>只整理编辑器层级；单位父节点保留世界姿态、对象引用、启停状态和模型骨骼结构。</summary>
+/// <summary>Cleans up editor hierarchy; unit parent preserves world poses, object references, active states, and skeletal hierarchy.</summary>
 public static class BeetleSceneHierarchy
 {
     public static BeetleMatchController FindMatch(Scene scene) => scene.GetRootGameObjects()
         .SelectMany(root => root.GetComponentsInChildren<BeetleMatchController>(true)).Single();
 
-    [MenuItem("Tools/Beetle Arena/Organize Scene Hierarchy")]
+    [MenuItem("Tools/甲壳虫斗/场景与安装/整理场景层级", false, 205)]
     public static void OrganizeCurrent()
     {
         if (EditorApplication.isPlaying) throw new InvalidOperationException("Stop Play before organizing the scene.");
@@ -31,7 +31,7 @@ public static class BeetleSceneHierarchy
     public static void Organize(BeetleMatchController match)
     {
         var scene = match.gameObject.scene;
-        // 用整理前的快照核对所有原有物体，不能让不活跃擂台、UI 或模型悄悄移动。
+        // Verifies pre-organization snapshot against all existing GameObjects, ensuring inactive arenas, UI, or models never drift.
         var before = scene.GetRootGameObjects().SelectMany(g => g.GetComponentsInChildren<Transform>(true)).ToArray();
         var matrices = before.Select(t => t.localToWorldMatrix).ToArray();
         var active = before.Select(t => t.gameObject.activeSelf).ToArray();
@@ -58,7 +58,7 @@ public static class BeetleSceneHierarchy
         {
             if (!arena) continue;
             Move(arena.transform, arenas);
-            // 只对已知的木桩装饰分组。岩台保持其 MeshCollider/Renderer 在原对象上。
+            // Groups known stump decorations only. Rock arena retains MeshCollider/Renderer on original GameObjects.
             var parts = Enumerable.Range(0, arena.transform.childCount).Select(i => arena.transform.GetChild(i)).ToArray();
             if (!parts.Any(t => t.name == "Stump - ring-out surface")) continue;
             var surface = Folder(scene, arena.transform, "00 Surface and Collision", 0);
@@ -97,7 +97,7 @@ public static class BeetleSceneHierarchy
             result = go.transform;
             if (parent) result.SetParent(parent, false);
         }
-        // 分组不是额外缩放/旋转层；已有同名非单位对象不能静默重置。
+        // Grouping adds no extra scale/rotation layers; existing non-unit objects with identical names are not silently reset.
         if (result.localPosition.sqrMagnitude > .000001f || Quaternion.Angle(result.localRotation, Quaternion.identity) > .001f ||
             (result.localScale - Vector3.one).sqrMagnitude > .000001f || !result.gameObject.activeSelf)
             throw new InvalidOperationException("Hierarchy folder must be active with identity transform: " + name);
@@ -107,7 +107,7 @@ public static class BeetleSceneHierarchy
     static void Move(Transform target, Transform parent)
     {
         if (target.parent == parent) return;
-        // Undo.SetTransformParent 的行为保留世界位置/旋转/缩放，并可在编辑器撤销。
+        // Undo.SetTransformParent preserves world position/rotation/scale and supports Editor undo.
         Undo.SetTransformParent(target, parent, "Group scene object");
     }
 }

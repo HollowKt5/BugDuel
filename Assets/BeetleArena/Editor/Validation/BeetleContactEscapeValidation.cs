@@ -9,8 +9,8 @@ using UnityEditor;
 using UnityEngine;
 
 /// <summary>
-/// 从用户卡死现场保存的权威几何、步态缓存重放。不是完整录像：随机源从种子重建，
-/// 检验的是已知互锁姿态能否通过正常固定步退出，并保持碰撞、位移和显示隔离。
+/// Replays authoritative geometry and gait cache saved from user deadlock scenarios. Not a full recording: RNG rebuilt from seed.
+/// Verifies whether known interlocked poses escape via standard fixed steps while preserving collision, motion, and presentation isolation.
 /// </summary>
 public static class BeetleContactEscapeValidation
 {
@@ -47,8 +47,8 @@ public static class BeetleContactEscapeValidation
             RestoreFields(state.Traits, (JObject)snapshot["traits"][i]);
             RestoreFields(state, (JObject)snapshot["states"][i]);
             actor.Bind(state, match.settings, match.ActiveSurface);
-            // 夹具锁定碰撞/步态现场，模型标定后的触角安装点仍由资产拥有。
-            // 触角只有旋转动画；重绑口器后不能把旧安装点位置覆盖回新蒙皮绑定。
+            // Fixture locks collision/gait state; calibrated antenna attachment points remain owned by assets.
+            // Antenna has rotational animation only; rebinding mouthparts must not overwrite new skinned bindings with legacy anchor positions.
             var feelerPositions = actor.animator.antennae.SelectMany(p => p.GetComponentsInChildren<Transform>())
                 .ToDictionary(t => t, t => t.localPosition);
             RestoreFields(actor.animator, (JObject)snapshot["animators"][i]);
@@ -61,21 +61,21 @@ public static class BeetleContactEscapeValidation
                 transform.localPosition = feelerPositions.TryGetValue(transform, out var mount) ? mount : V3(bone["p"]);
                 transform.localRotation = Q(bone["r"]); transform.localScale = V3(bone["s"]);
             }
-            // Heading 是尚未完全接受的朝向指令，必须恢复实际根旋转。夹具从六足世界点
-            // 与骨链反求平地 yaw，误差 < 3e-7；来源记录保存在 rootRotationSource。
+            // Heading represents unaccepted steering intent; must restore physical root rotation. Fixture reconstructs planar yaw from
+            // six tarsal points and bone chains with error < 3e-7; provenance logged in rootRotationSource.
             actor.transform.rotation = Q(snapshot["rootRotations"][i]);
             actor.CaptureSimulationPose(); actor.BeforeStep();
         }
         var contacts = new BeetleContactSolver(match.actors, match.arenaContacts, .006f);
         sim.ContactSolver = contacts; SetProperty(match, "Contacts", contacts);
-        // 以当前安全现场初始化显示缓存；不推进一次 IK，也不把故障姿态替换成新的站姿。
+        // Initializes display cache from current safe scene without advancing IK or replacing fault pose with new stance.
         var view = (BeetleContactMotion[])typeof(BeetleContactSolver).GetField("viewMotion", Fields).GetValue(contacts);
         foreach (var motion in view) motion.Begin();
         typeof(BeetleContactSolver).GetField("viewInitialized", Fields).SetValue(contacts, true);
         Physics.SyncTransforms();
     }
 
-    [MenuItem("Tools/Beetle Arena/Validate Contact Escape")]
+    [MenuItem("Tools/甲壳虫斗/验证/战斗/接触脱困", false, 505)]
     public static void Run()
     {
         var report = new StringBuilder("CAPTURED CONTACT DEADLOCK\n" + DateTimeOffset.Now.ToString("o") + "\n");
@@ -84,16 +84,21 @@ public static class BeetleContactEscapeValidation
         try
         {
             ValidateHeadRetries(report);
+            ValidateRetreatBudget();
             foreach (int renders in new[] { 0, 1, 4 })
             {
                 using var fixture = new BeetleValidationScene("ContactEscapeValidation");
                 var match = fixture.Match; Restore(match); var sim = match.Simulation;
                 var origins = match.actors.Select(a => a.transform.position).ToArray();
                 float longestBlocked = 0, blocked = 0, overlap = 0, excess = 0, firstProgress = -1, renderDifference = 0;
+                int maxRetreatTrials = 0;
                 for (int tick = 0; tick < 600; tick++)
                 {
                     var before = sim.Fighters.Select(b => new Vector3(b.Position.x, b.Height, b.Position.y)).ToArray();
                     match.AdvanceFixedStep();
+                    maxRetreatTrials = Mathf.Max(maxRetreatTrials, match.Contacts.LastRetreatTrials);
+                    if (maxRetreatTrials > BeetleContactSolver.MaxRetreatTrialsPerStep)
+                        throw new Exception("Retreat exceeded the fixed-step candidate budget.");
                     blocked = match.Contacts.AcceptedMotionFraction == 0 ? blocked + .02f : 0;
                     longestBlocked = Mathf.Max(longestBlocked, blocked);
                     bool moved = true;
@@ -113,7 +118,7 @@ public static class BeetleContactEscapeValidation
                         overlap = Mathf.Max(overlap, match.Contacts.MeasurePenetration());
                     }
                 }
-                report.AppendLine($"renders={renders}: progress={firstProgress:F2}s, longestBlocked={longestBlocked:F2}s, overlap={overlap:F6}, budgetExcess={excess:F6}, simulationDifference={renderDifference:F7}");
+                report.AppendLine($"renders={renders}: progress={firstProgress:F2}s, longestBlocked={longestBlocked:F2}s, overlap={overlap:F6}, budgetExcess={excess:F6}, simulationDifference={renderDifference:F7}, maxRetreatTrials={maxRetreatTrials}");
                 success &= firstProgress > 0 && firstProgress < 2 && longestBlocked < 1 && overlap < .003f && excess < .0003f && renderDifference < .00001f;
             }
             if (!success) throw new Exception("Captured contact lock persists, exceeds motion/penetration limits, or render feeds back.");
@@ -126,7 +131,40 @@ public static class BeetleContactEscapeValidation
         }
     }
 
-    // 模拟接触重试只还原 Transform 的场景：缓存不能让同一提案越试越低头/抬头。
+    // Deliberately inadmissible proposals with a tiny positive step exercise the
+    // worst-case search. This checks its bound/rollback, not natural escape speed.
+    public static void ValidateRetreatBudget()
+    {
+        using var fixture = new BeetleValidationScene("RetreatBudgetValidation");
+        var match = fixture.Match; Restore(match); var sim = match.Simulation;
+        const BindingFlags fields = BindingFlags.Instance | BindingFlags.NonPublic;
+        var cursor = typeof(BeetleContactSolver).GetField("rootRetreatCursor", fields);
+        int previousCursor = (int)cursor.GetValue(match.Contacts);
+        for (int step = 0; step < 16; step++)
+        {
+            var beforeA = match.actors[0].transform.position;
+            var beforeB = match.actors[1].transform.position;
+            sim.Fighters[0].Position = sim.Fighters[1].Position;
+            for (int i = 0; i < 2; i++)
+            {
+                sim.Fighters[i].ContactBlockedSeconds = 1;
+                sim.Fighters[i].Velocity = Vector2.zero;
+            }
+            match.Contacts.Solve(sim, .0001f);
+            int nextCursor = (int)cursor.GetValue(match.Contacts);
+            if (match.Contacts.LastRetreatTrials != BeetleContactSolver.MaxRetreatTrialsPerStep || nextCursor == previousCursor)
+                throw new Exception("Worst-case retreat did not consume/resume its bounded candidate search at step " + step);
+            if (match.Contacts.MeasurePenetration() > .003f ||
+                Vector3.Distance(beforeA, match.actors[0].transform.position) > match.Contacts.MotionBudget(0) + .0003f ||
+                Vector3.Distance(beforeB, match.actors[1].transform.position) > match.Contacts.MotionBudget(1) + .0003f)
+                throw new Exception("Exhausted retreat did not restore a safe bounded pose at step " + step);
+            previousCursor = nextCursor;
+        }
+        Directory.CreateDirectory("Artifacts/Performance");
+        File.WriteAllText("Artifacts/Performance/RetreatBudget.txt", "PASS: 16 rejected steps, exactly 6 retreat trials per step, candidate cursor advances and wraps, safe pose restored within motion/penetration limits.\n");
+    }
+
+    // Simulates contact retries that restore Transforms only: cache must not cause identical proposals to pitch lower/higher across retries.
     static void ValidateHeadRetries(StringBuilder report)
     {
         using var fixture = new BeetleValidationScene("HeadRetryValidation");
@@ -148,7 +186,7 @@ public static class BeetleContactEscapeValidation
                 float expectedPitch = Mathf.Min(pitch, Mathf.Max(-55, pitch - 4));
                 float actualPitch = (float)pitchField.GetValue(animator);
                 var expected = Quaternion.Euler(expectedPitch, yaw, 0);
-                // Quaternion.Angle 在接近零时有量化误差，姿态使用绝对点积比较。
+                // Quaternion.Angle exhibits quantization error near zero; compares poses using absolute dot product.
                 if (Mathf.Abs(Mathf.DeltaAngle(firstPitch, actualPitch)) >= .0001f ||
                     Mathf.Abs(Mathf.DeltaAngle(expectedPitch, actualPitch)) >= .0001f ||
                     1 - Mathf.Abs(Quaternion.Dot(first, animator.headPivot.localRotation)) >= .000001f ||

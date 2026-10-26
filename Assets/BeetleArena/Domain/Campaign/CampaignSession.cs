@@ -56,14 +56,14 @@ namespace BugDuel.Campaign
             var b = Beetle(id); Available(b); Require(b.Adult(State.week) && !b.overturned, "先帮助甲虫翻身；幼虫使用饲料瓶"); Require(food >= 0 && food <= 2, "食物不存在");
             Require(b.meal == null,"食盆里还有食物，请等它吃完");
             ConsumeItem(CampaignItems.Food(food)); b.meal = new CampaignMeal { id=Id(), food=food }; b.hasMeal=true;
-            Tell("已放下" + new[] { "红薯", "香蕉", "苹果" }[food] + "，" + CampaignDisplayText.Name(b) + "会走过去进食。");
+            Tell("已放置" + new[] { "红薯", "香蕉", "苹果" }[food]);
         }
         public void CompleteMeal(string id,string mealId)
         {
             var b=Beetle(id); Available(b);
             Require(b.Adult(State.week) && !b.overturned && b.meal!=null && b.meal.id==mealId,"这份食物当前不能结算");
             b.nutrition=Math.Min(100,b.nutrition+(b.meal.food==0?35:25)); b.hearts=Math.Min(b.maxHearts,b.hearts+.5);
-            b.meal=null;b.hasMeal=false;Tell(CampaignDisplayText.Name(b)+"吃好了，正在清理触角。");
+            b.meal=null;b.hasMeal=false;Tell("进食完成");
         }
         public void Rescue(string id)
         {
@@ -105,6 +105,12 @@ namespace BugDuel.Campaign
             Require(father.cooldownWeek <= State.week && mother.cooldownWeek <= State.week,"亲本需要休息到下一周"); Space(1); Spend(100);
             bool related = CampaignGenetics.Related(father,mother); int depth = related ? Math.Max(father.inbred,mother.inbred)+1 : 0;
             Require(depth < 5,"近亲世代已达到健康极限，请换血");
+            var b = CreateOffspring(father,mother,related,depth);
+            father.cooldownWeek = mother.cooldownWeek = State.week+1; father.nutrition -= 15; mother.nutrition -= 20; Add(b);
+            Tell("配种成功，获得 1 枚卵。");
+        }
+        CampaignBeetle CreateOffspring(CampaignBeetle father,CampaignBeetle mother,bool related,int depth)
+        {
             var b = Create(father.speciesId,Catalog.Species(father.speciesId).length);
             b.father = father.id; b.mother = mother.id; b.brood = father.id + ":" + mother.id;
             b.ancestors = new[] { father.id,mother.id }.Concat(father.ancestors).Concat(mother.ancestors).Distinct().Take(128).ToList();
@@ -112,8 +118,7 @@ namespace BugDuel.Campaign
             double parentFactor = (father.length + mother.length)/(2*Catalog.Species(b.speciesId).length);
             b.inheritance = Math.Max(.90,Math.Min(1.25,parentFactor * (.95+Roll()*.1))) * (related ? 1 : 1.05);
             b.mutation = CampaignGenetics.Combo(b.genes);SetInitialStage(b,CampaignLifeStage.Egg);b.initialValue=b.value=CampaignEconomy.Initial(b,Catalog.Species(b.speciesId));
-            father.cooldownWeek = mother.cooldownWeek = State.week+1; father.nutrition -= 15; mother.nutrition -= 20; Add(b);
-            Tell(related ? "成功产卵：近亲后代健康上限 " + b.maxHearts + " 心，请照料孵化基质。" : "换血成功并产卵：5心上限，遗传体长额外+5%。卵会随自然日历孵化。");
+            return b;
         }
         public bool Unlocked(CatchRule c) => State.highestLeague >= c.unlock || c.id == "amazon" && State.scientistPermit;
         public void Dispatch(string id,bool sap,bool lamp)

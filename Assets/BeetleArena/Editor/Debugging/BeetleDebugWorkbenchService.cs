@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -30,8 +30,8 @@ namespace BeetleArena.EditorTools
     }
 
     /// <summary>
-    /// 人与AI共用的调试用例层。UI不直接更改状态，命令白名单不接受任意C#。
-    /// 仅编辑器存在；临时场景由本服务独占，退出/编译/切Play时释放。
+    /// Shared debug case tier for human and AI. UI does not mutate state directly; command whitelist rejects arbitrary C# code.
+    /// Editor-only; temporary scene is owned exclusively by this service and released upon exit, compile, or PlayMode toggle.
     /// </summary>
     [InitializeOnLoad]
     public static class BeetleDebugWorkbenchService
@@ -236,7 +236,7 @@ namespace BeetleArena.EditorTools
                 if(!Enum.TryParse(moduleName,out BeetleAction action) || !new[]{BeetleAction.Probe,BeetleAction.ShoveWindup,BeetleAction.ChargeWindup,BeetleAction.PryWindup,BeetleAction.HornLock}.Contains(action))throw new ArgumentException("未知试演动作："+moduleName);
                 self.Action=action;self.ActionDuration=action==BeetleAction.PryWindup?.62f:action==BeetleAction.HornLock?Match.settings.hornLockSeconds:.35f;
             }
-            // 试演从同一个完整现场起算；后续仍走真实状态转换与对手受击/接触，不强造命中。
+            // Trial runs evaluate from the same complete scene; subsequent steps execute real state transitions, defender reactions, and contacts without fabricating hits.
             previewBaseline=BeetleDebugSnapshot.Capture(Match);frames.Clear();trace.Clear();OnStep(Match);
             LastMessage="已安排动作试演："+moduleName+"。对手保持防守，命中仍需真实接触。";
         }
@@ -278,7 +278,7 @@ namespace BeetleArena.EditorTools
             }
             result["fighters"]=fighters;result["contact"]=new JObject{{"acceptedFraction",Match.Contacts.AcceptedMotionFraction},{"limitedSteps",Match.Contacts.LimitedMotionSteps},{"liftAnchorError",Match.Contacts.LiftAnchorError},{"liftPair",Match.Contacts.LiftContact}};return result;
         }
-        /// <summary>供AI/批处理调用的唯一命令分发，与窗口按钮调用同一方法。</summary>
+        /// <summary>Unified command dispatch for AI/batch harnesses, invoking identical methods as editor window buttons.</summary>
         public static string ExecuteJson(string json)
         {
             string id=null;

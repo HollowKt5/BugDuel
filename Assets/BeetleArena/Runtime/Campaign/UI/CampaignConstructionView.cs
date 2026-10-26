@@ -34,7 +34,7 @@ namespace BeetleArena.Campaign
         }
         void SetGreenhouseTab(int tab)
         {
-            greenhouseTab=tab;construction?.SetEditing(tab==3);QueueRefresh();
+            greenhouseInfoOpen=true;greenhouseTab=tab;construction?.SetEditing(tab==3);QueueRefresh();
         }
         void OpenConstructionWarehouse()
         {
@@ -44,11 +44,12 @@ namespace BeetleArena.Campaign
         void UseWarehouseDecoration(string itemId)
         {
             CloseModal();
-            if(page==CampaignPage.Greenhouse){OpenConstructionWarehouse();construction.BeginPlace(itemId);}
+            if(page==CampaignPage.Greenhouse){ExitWarehouse();OpenConstructionWarehouse();construction.BeginPlace(itemId);}
             else {requestedDecoration=itemId;app.Go(CampaignPage.Greenhouse);}
         }
         void ApplyConstructionRequest()
         {
+            if(requestedWarehouse&&!app.Busy){requestedWarehouse=false;OpenWarehouse();}
             if(requestedDecoration==null||!construction||construction.CurrentBeetleId==null||app.Busy)return;
             string item=requestedDecoration;requestedDecoration=null;OpenConstructionWarehouse();construction.BeginPlace(item);
         }
@@ -126,47 +127,71 @@ namespace BeetleArena.Campaign
         {
             if(Session!=null&&page!=CampaignPage.MainMenu&&page!=CampaignPage.Saves&&page!=CampaignPage.Arena)
             {
-                if(!currencyHost)currencyHost=Panel(canvas,0,0,280,62);
+                if(!currencyHost)currencyHost=Panel(root,0,0,280,42);
                 currencyHost.name="Player currency";
-                currencyHost.anchorMin=currencyHost.anchorMax=currencyHost.pivot=new Vector2(1,1);
-                currencyHost.anchoredPosition=new Vector2(-14,page==CampaignPage.Greenhouse||page==CampaignPage.SpecimenRoom?-132:-164);
+                currencyHost.anchorMin=currencyHost.anchorMax=currencyHost.pivot=new Vector2(0,1);
+                currencyHost.anchoredPosition=new Vector2(1280,-119);
+                currencyHost.sizeDelta=new Vector2(250,35);
+                if(page==CampaignPage.SpecimenRoom)
+                {
+                    currencyHost.anchoredPosition=new Vector2(8,-57);
+                    currencyHost.sizeDelta=new Vector2(root.rect.width*.5f-12,page==CampaignPage.SpecimenRoom?28:42);
+                }
                 if(page==CampaignPage.Market)
                 {
-                    currencyHost.SetParent(root,false);
-                    currencyHost.anchoredPosition=new Vector2(-26,-40);currencyHost.sizeDelta=new Vector2(240,25);
+                    currencyHost.anchoredPosition=new Vector2(12,-34);currencyHost.sizeDelta=new Vector2(260,28);
                 }
-                CampaignCurrencyHud.Attach(currencyHost,font,ink,new Color(.35f,.95f,.55f),new Color(1,.43f,.35f),page==CampaignPage.Market);currencyHost.SetAsLastSibling();
+                CampaignCurrencyHud.Attach(currencyHost,font,ink,new Color(.35f,.95f,.55f),new Color(1,.43f,.35f),true);currencyHost.SetAsLastSibling();
+                if(page==CampaignPage.Greenhouse)
+                {
+                    currencyHost.SetParent(greenhouseFooter,false);
+                    currencyHost.anchorMin=Vector2.zero;currencyHost.anchorMax=new Vector2(1,0);currencyHost.pivot=new Vector2(0,1);
+                    currencyHost.anchoredPosition=new Vector2(56,38);currencyHost.sizeDelta=new Vector2(-100,30);
+                    Component<RetroBevel>(currencyHost).Configure(2,CampaignRetroTheme.DarkEdge,CampaignRetroTheme.LightEdge);
+                    currencyHost.GetComponent<CampaignCurrencyHud>().FloatAbove=true;
+                    greenhouseMail.transform.SetAsLastSibling();
+                }
             }
             if(page!=CampaignPage.Greenhouse)return;
             if(!sidebarHandle)
             {
-                sidebarButton=Btn(canvas,"收起",0,18,54,34,ToggleSidebar);sidebarHandle=sidebarButton.GetComponent<RectTransform>();
-                sidebarHandle.name="Sidebar toggle";sidebarButton.GetComponentInChildren<TMP_Text>().fontSize=15;
+                sidebarButton=Btn(canvas,"收起",0,0,30,30,ToggleSidebar);sidebarHandle=sidebarButton.GetComponent<RectTransform>();
+                sidebarHandle.name="Sidebar toggle";
+                var arrow=sidebarButton.GetComponentInChildren<TMP_Text>();CampaignLocalization.SetFontSize(arrow,17);
+                arrow.rectTransform.anchoredPosition=new Vector2(2,0);arrow.rectTransform.sizeDelta=new Vector2(26,30);
+                sidebarHandle.anchorMin=sidebarHandle.anchorMax=sidebarHandle.pivot=Vector2.zero;
             }
-            CampaignLocalization.Bind(sidebarButton.GetComponentInChildren<TMP_Text>(),sidebarCollapsed?"展开":"收起");
+            CampaignLocalization.Bind(sidebarButton.GetComponentInChildren<TMP_Text>(),sidebarCollapsed?"▶":"◀");
             sidebarHandle.SetAsLastSibling();ApplySidebar();
             CampaignRescuePrompt.Attach(canvas,backdrop,font);
         }
         public void ToggleSidebar()
         {
-            sidebarCollapsed=!sidebarCollapsed;sidebarTween?.Kill();
+            bool collapsed=!sidebarCollapsed;
+            if(!collapsed&&warehouseOpen)ExitWarehouse();
+            SetSidebarCollapsed(collapsed);
+        }
+        void SetSidebarCollapsed(bool collapsed)
+        {
+            sidebarCollapsed=collapsed;sidebarTween?.Kill();
             if(EventSystem.current)EventSystem.current.SetSelectedGameObject(null);
-            backdrop.DeferViewportResize=true;
-            sidebarTween=DOTween.To(()=>sidebarProgress,v=>{sidebarProgress=v;ApplySidebar();},sidebarCollapsed?1:0,.42f)
-                .SetEase(sidebarCollapsed?Ease.InOutCubic:Ease.OutBack).SetUpdate(true)
-                .OnComplete(()=>{sidebarTween=null;backdrop.DeferViewportResize=false;ApplySidebar();});
+            if(backdrop)backdrop.DeferViewportResize=true;
+            sidebarTween=DOTween.To(()=>sidebarProgress,v=>{sidebarProgress=v;ApplySidebar();},sidebarCollapsed?1:0,.24f)
+                .SetEase(Ease.OutCubic).SetUpdate(true).SetLink(gameObject)
+                .OnComplete(()=>{sidebarTween=null;if(backdrop)backdrop.DeferViewportResize=warehouseTween!=null;ApplySidebar();});
             QueueRefresh();
         }
         void ApplySidebar()
         {
             if(!root||!backdrop)return;
+            root.anchorMax=new Vector2((1+warehouseProgress)/6f,1);
             root.anchoredPosition=new Vector2(-root.rect.width*sidebarProgress,0);
-            float left=Mathf.Clamp01(1-sidebarProgress)/3f;
+            float left=Mathf.Clamp01(1-sidebarProgress)*(1+warehouseProgress)/6f;
             backdrop.SetViewport(new Rect(left,0,1-left,1));
-            if(sidebarHandle)sidebarHandle.anchoredPosition=new Vector2(Mathf.Max(4,root.rect.width*(1-sidebarProgress)-sidebarHandle.rect.width-4),-18);
+            if(sidebarHandle)sidebarHandle.anchoredPosition=new Vector2(Mathf.Max(7,root.rect.width*(1-sidebarProgress)-37),8);
             if(pageInteraction){pageInteraction.blocksRaycasts=!sidebarCollapsed&&!modal;pageInteraction.interactable=!sidebarCollapsed&&!app.Busy&&!modal;}
         }
         void DisposeConstructionUi()
-        {sidebarTween?.Kill();if(construction)construction.Changed-=ConstructionChanged;if(backdrop)backdrop.DeferViewportResize=false;}
+        {sidebarTween?.Kill();warehouseTween?.Kill();warehouseModeTween?.Kill();if(construction)construction.Changed-=ConstructionChanged;if(backdrop)backdrop.DeferViewportResize=false;}
     }
 }

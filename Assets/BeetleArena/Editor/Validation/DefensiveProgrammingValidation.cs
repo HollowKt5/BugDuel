@@ -7,7 +7,7 @@ using UnityEditor;
 // Focused regression suite: no Play run, user saves, or authored asset changes.
 public static class DefensiveProgrammingValidation
 {
-    [MenuItem("Tools/Beetle Arena/Validate Defensive Programming Refactor")]
+    [MenuItem("Tools/甲壳虫斗/验证/架构与性能/边界与防御检查", false, 742)]
     public static void Run()
     {
         var report = new StringBuilder("DEFENSIVE PROGRAMMING REFACTOR / " + DateTimeOffset.Now.ToString("o") + "\n");

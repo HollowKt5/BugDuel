@@ -9,7 +9,7 @@ using UnityEditor;
 using UnityEngine;
 using UnityEngine.UIElements;
 
-/// <summary>现场续算、观察隔离、跨场景对象重绑定与工具生命期回归；不以种子重开冒充快照恢复。</summary>
+/// <summary>Scene resumption, telemetry isolation, cross-scene re-binding, and tool lifecycle regressions; does not substitute snapshot restore with seed re-runs.</summary>
 public static class BeetleDebugWorkbenchValidation
 {
     static void Require(bool value,string message){if(!value)throw new Exception(message);}
@@ -47,7 +47,7 @@ public static class BeetleDebugWorkbenchValidation
         }
         return JToken.DeepEquals(expected,actual);
     }
-    [MenuItem("Tools/Beetle Arena/Validate Debug Workbench")]
+    [MenuItem("Tools/甲壳虫斗/验证/架构与性能/调试工作台", false, 744)]
     public static void Run()
     {
         var report=new StringBuilder("DEBUG WORKBENCH VALIDATION\n"+DateTimeOffset.Now.ToString("o")+"\n");
@@ -60,7 +60,7 @@ public static class BeetleDebugWorkbenchValidation
             {
                 BeetleDebugWorkbenchService.CreateSandbox(1132085498,arena);var match=BeetleDebugWorkbenchService.Match;
                 BeetleDebugWorkbenchService.Step(200);
-                // 在非整数插值姿态保存，确认不会把显示帧的姿态误当下一固定步权威起点。
+                // Saves at non-integer interpolation poses, confirming display poses are never mistaken for authoritative next-step origins.
                 match.EditorSetPaused(false);match.Present(.37f,match.Simulation.MotionTime,.007f);match.EditorSetPaused(true);
                 var snapshot=BeetleDebugSnapshot.Capture(match);
                 var capsuleSizes=match.actors.SelectMany(a=>a.GetComponentsInChildren<CapsuleCollider>(true))
@@ -74,11 +74,11 @@ public static class BeetleDebugWorkbenchValidation
                 {
                     match.EditorStep();
                     Require(JToken.DeepEquals(expected[step],SimulationGraph(match)),"Snapshot continuation differs at arena="+arena+", tick="+step);
-                    // 检视与模块资格检查必须只读，不能改变下一步。
+                    // Inspection and module eligibility queries must be read-only without mutating subsequent steps.
                     _=BeetleDebugWorkbenchService.Inspect();
                 }
                 report.AppendLine("PASS arena="+arena+": 60 fixed steps exact simulation/RNG/contact graph equality after restore; diagnostics/Inspect do not alter result.");
-                // 文件恢复到新建的另一套实例，验证场景对象路径映射与共享引用。
+                // Restores file into newly spawned secondary instance, verifying scene object path mappings and shared references.
                 BeetleDebugWorkbenchService.CreateSandbox(71,arena);match=BeetleDebugWorkbenchService.Match;
                 BeetleDebugWorkbenchService.LoadCase(path);
                 var restoredCapsules=match.actors.SelectMany(a=>a.GetComponentsInChildren<CapsuleCollider>(true)).ToArray();
@@ -89,7 +89,7 @@ public static class BeetleDebugWorkbenchValidation
                 double maxQueryError=0;
                 for(int step=0;step<10;step++){match.EditorStep();Require(SameCrossSceneState(expected[step],SimulationGraph(match),ref maxQueryError),"Cross-scene restore differs at tick="+step);}
                 report.AppendLine("PASS arena="+arena+": native capsule dimensions match; 10 steps exact RNG/decisions/physics, foreleg query error="+maxQueryError.ToString("E3")+" (limit 1e-6).");
-                // 失败前置检查不得改写当前模拟。
+                // Prerequisite check failures must not mutate active simulation.
                 var before=SimulationGraph(match);var broken=(JObject)snapshot.DeepClone();broken["fingerprint"]="invalid";
                 bool rejected=false;try{BeetleDebugSnapshot.Restore(match,broken);}catch(InvalidOperationException){rejected=true;}
                 Require(rejected && JToken.DeepEquals(before,SimulationGraph(match)),"Stale snapshot mutated match");

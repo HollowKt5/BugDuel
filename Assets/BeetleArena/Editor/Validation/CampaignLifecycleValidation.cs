@@ -144,7 +144,7 @@ public static class CampaignLifecycleValidation
     }
 
 #if UNITY_EDITOR
-    [MenuItem("Tools/Beetle Arena/Validate Campaign Lifecycle")]
+    [MenuItem("Tools/甲壳虫斗/验证/战役流程/生命周期规则", false, 564)]
     public static void Run()
     {
         RunDomain();var s=Session();s.ConfigureLifeRules(FastRules());var child=Egg(s);s.RenameBeetle(child.id,"自然时钟宝宝");Board(s,s.State.beetles[0]);

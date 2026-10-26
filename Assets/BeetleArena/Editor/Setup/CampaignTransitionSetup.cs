@@ -7,7 +7,7 @@ using UnityEngine;
 public static class CampaignTransitionSetup
 {
     public const string AssetPath="Assets/BeetleArena/Resources/CampaignTransition.asset";
-    [MenuItem("Tools/Beetle Arena/Ensure Campaign Transition Profile")]
+    [MenuItem("Tools/甲壳虫斗/画面与资源/界面与字体/更新转场配置", false, 344)]
     public static void Apply()
     {
         if(EditorApplication.isPlaying)throw new InvalidOperationException("Stop Play before creating the transition profile.");

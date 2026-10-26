@@ -11,7 +11,7 @@ public static class BeetleFeedbackValidation
 {
     const string Folder = "Artifacts/ContactFeedback";
     static void Require(bool value, string why) { if (!value) throw new Exception(why); }
-    [MenuItem("Tools/Beetle Arena/Validate Contact Feedback")]
+    [MenuItem("Tools/甲壳虫斗/验证/战斗/接触反馈", false, 515)]
     public static void Run()
     {
         if(EditorApplication.isPlaying) throw new Exception("Stop Play before validation");
@@ -25,7 +25,7 @@ public static class BeetleFeedbackValidation
             var m=fixture.Match; var f=m.contactFeedback; var sparks=f.sparks;
             m.audioFeedback.volume=0; m.hud.Bind(m); sparks.Initialize();
             Require(!ShaderUtil.ShaderHasError(sparks.sparkMaterial.shader),"Spark shader compile error");
-            // 实际 UI 监听/偏好写入/关闭清除均走组件入口，而非直接改布尔字段。
+            // UI event listening, preference writes, and clear on close invoke component APIs directly, rather than mutating boolean fields.
             var ui=m.hud.GetComponent<BeetleFeedbackSettings>();
             typeof(BeetleFeedbackSettings).GetMethod("Awake",BindingFlags.Instance|BindingFlags.NonPublic).Invoke(ui,null);
             ui.openButton.onClick.Invoke(); Require(ui.panel.activeSelf,"Settings button failed");
@@ -34,7 +34,7 @@ public static class BeetleFeedbackValidation
             ui.sparksToggle.isOn=false; Require(!sparks.SparksEnabled && sparks.LiveParticles==0,"Toggle did not clear sparks");
             int count=sparks.BurstCount; sparks.Burst(Vector3.zero,Vector3.right,1);
             Require(count==sparks.BurstCount && PlayerPrefs.GetInt(HornClashSparks.PreferenceKey,1)==0,"Off not suppressed/persisted");
-            // 新组件重新读偏好，模拟重开时的持久化读取。
+            // New component re-reads preferences, simulating persistence reads across restarts.
             var testGo=new GameObject("Preference reload test");
             var reloaded=testGo.AddComponent<HornClashSparks>(); reloaded.sparkMaterial=sparks.sparkMaterial;
             Require(!reloaded.SparksEnabled,"Preference did not survive new instance"); reloaded.ReleaseResources(); UnityEngine.Object.DestroyImmediate(testGo);
@@ -63,7 +63,7 @@ public static class BeetleFeedbackValidation
                 report.AppendLine($"arena={arena}, contacts={f.ObservedContacts}, sounds={sounds}, sparkBursts={burstsNow}, elapsed={m.Simulation.Elapsed:F2}");
                 Require(sounds>0 && burstsNow>0,"Natural horn contacts never produced feedback on arena "+arena);
             }
-            // 已分离且固定步继续时不能凭空播放；暂停 Tick(0) 也不能推进粒子。
+            // Cannot emit phantom particles when separated during active fixed steps; paused Tick(0) must not advance particles.
             m.StartMatch(71); int soundStart=m.audioFeedback.PlayedContacts, sparkStart=sparks.BurstCount;
             for(int i=0;i<25;i++) f.Tick(m.Simulation,.02f);
             Require(soundStart==m.audioFeedback.PlayedContacts && sparkStart==sparks.BurstCount,"Separated/countdown fighters emit feedback");

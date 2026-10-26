@@ -13,7 +13,7 @@ public static class CombatDisplaySettingsValidation
     const string Folder="Artifacts/CombatDisplaySettings";
     static void Require(bool condition,string message) { if(!condition)throw new InvalidOperationException(message); }
 
-    [MenuItem("Tools/Beetle Arena/Validate Display and Settings")]
+    [MenuItem("Tools/甲壳虫斗/验证/界面与画面/战斗显示与设置", false, 604)]
     public static string Run()
     {
         Require(Application.isPlaying,"Open the audio settings in Play mode, allow a rendered frame, then run this validation.");

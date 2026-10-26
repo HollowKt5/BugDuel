@@ -1,15 +1,15 @@
-using UnityEngine;
+﻿using UnityEngine;
 
 namespace BeetleArena
 {
     /// <summary>
-    /// 个体恢复的无状态规则：不碰 Transform、不抽随机数、不修改状态。
-    /// 文献支持接触评估/退让/追赶；具体体力阈值和秒数是游戏参数（TechnicalGuide §22）。
+    /// Stateless rules for individual recovery: does not touch Transforms, draw random numbers, or mutate state.
+    /// Literature supports contact assessment, yielding, and chasing; specific stamina thresholds and durations are gameplay parameters (TechnicalGuide §22).
     /// </summary>
     public static class BeetleRecoveryPolicy
     {
         public static bool IsRest(BeetleAction action) => action == BeetleAction.Recover || action == BeetleAction.Retreat;
-        // 稳定的个体节奏/谨慎偏好决定重整时长，不把索引当作攻防优先权。
+        // Stable individual tempo and caution preferences determine regrouping duration, avoiding using array index as combat precedence.
         public static float Budget(BeetleState b, BeetleMatchSettings s) =>
             Mathf.Max(s.recoveryMinimumSeconds, s.recoveryMaximumSeconds * Mathf.Lerp(.55f, 1.10f, b.Traits.lateralPreference) / b.Traits.tempo);
         public static bool Ready(BeetleState b, BeetleMatchSettings s, bool pressure)

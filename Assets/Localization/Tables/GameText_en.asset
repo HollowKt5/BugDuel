@@ -263,7 +263,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 5261676603
-    m_Localized: Auction
+    m_Localized: Champion auctions
     m_Metadata:
       m_Items: []
   - m_Id: 5261676604
@@ -312,7 +312,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 5261676615
-    m_Localized: Management
+    m_Localized: Greenhouse management
     m_Metadata:
       m_Items: []
   - m_Id: 5261676616
@@ -998,7 +998,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 5265870894
-    m_Localized: BUG DUEL 2003 - Seasonal beetle store & market [
+    m_Localized: Betles Duel 2003 - Seasonal beetle store & market [
     m_Metadata:
       m_Items: []
   - m_Id: 5265870895
@@ -1376,7 +1376,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 5265870985
-    m_Localized: Beetle duels / Greenhouse journal
+    m_Localized: Betles Duels / Greenhouse journal
     m_Metadata:
       m_Items: []
   - m_Id: 5265870986
@@ -1657,7 +1657,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 5265871049
-    m_Localized: BUG DUEL  /  Nursery Diary
+    m_Localized: Betles Duel  /  Nursery Diary
     m_Metadata:
       m_Items: []
   - m_Id: 5265871050
@@ -3012,7 +3012,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 17452119281666
-    m_Localized: Trading market
+    m_Localized: Marketplace
     m_Metadata:
       m_Items: []
   - m_Id: 17452119281667
@@ -3356,7 +3356,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 17452119281747
-    m_Localized: Storage
+    m_Localized: Warehouse
     m_Metadata:
       m_Items: []
   - m_Id: 17452119281748
@@ -4794,7 +4794,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 364787395383352
-    m_Localized: "Preserve specimen \xB7 {0} G"
+    m_Localized: "Preserve \xB7 {0} G"
     m_Metadata:
       m_Items: []
   - m_Id: 364787395383353
@@ -5056,7 +5056,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 364787399577620
-    m_Localized: Paused for interaction
+    m_Localized: Paused
     m_Metadata:
       m_Items: []
   - m_Id: 364787399577621
@@ -5255,7 +5255,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 374041263132689
-    m_Localized: Take out and place
+    m_Localized: Place
     m_Metadata:
       m_Items: []
   - m_Id: 374041263132690
@@ -6375,6 +6375,247 @@ MonoBehaviour:
       m_Items: []
   - m_Id: 755511127363584
     m_Localized: Husbandry spotlight
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1745296872624128
+    m_Localized: Betles Duel
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1745296918761472
+    m_Localized: "Betles Duel \xB7 Market"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1745296918761473
+    m_Localized: Start / Saves
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1745296918761474
+    m_Localized: Breeding Center
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1745296918761475
+    m_Localized: Choose a center-owned female and pay the breeding fee. The female
+      stays at the center.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1745296918761476
+    m_Localized: Selected sire
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1745296918761477
+    m_Localized: Select sire
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1745296918761478
+    m_Localized: No adult males available
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1745296918761479
+    m_Localized: Center female {0}
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1745296918761480
+    m_Localized: "Price tier base failure {0}% \xB7 Random luck modifier {1}%"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1745296918761481
+    m_Localized: Final failure chance {0}% (30% maximum)
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1745296918761482
+    m_Localized: Breed
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1745296918761483
+    m_Localized: 'Pay {0} G to breed with {1}?
+
+      Random failure chance: {2}%.
+      No refund on failure.
+
+      Success yields one egg. The sire can breed again
+      next week.'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1745296918761484
+    m_Localized: No refund on failure. The sire rests until next week.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1745296918761485
+    m_Localized: Requires a healthy, fed, available male and one free greenhouse
+      slot.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1745296918761486
+    m_Localized: Female service unavailable
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1745296918761487
+    m_Localized: Select a male
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1745296918761488
+    m_Localized: Offers have refreshed. Select a female again.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1745296918761489
+    m_Localized: Breeding failed. The fee is non-refundable. The sire can breed again
+      next week.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1745296918761490
+    m_Localized: Breeding succeeded. One egg received.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1745296918761491
+    m_Localized: "Residents {0}/{1} \xB7 Reserved {2}"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1745296918761492
+    m_Localized: Beetle roster
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1745296918761493
+    m_Localized: Care
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1745296918761494
+    m_Localized: Manage
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1745296918761495
+    m_Localized: Build
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1745296918761496
+    m_Localized: No beetles
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1745296918761497
+    m_Localized: No specimens
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1745296918761498
+    m_Localized: Beetles
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1745296918761499
+    m_Localized: Rearing supplies
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1745296918761500
+    m_Localized: Decorations
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1745296918761501
+    m_Localized: Catching & upgrades
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1745296918761502
+    m_Localized: Specimens
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1745296918761503
+    m_Localized: No items
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1745296918761504
+    m_Localized: No beetle selected
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1745296918761505
+    m_Localized: Feed
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1745296918761506
+    m_Localized: Sell back
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1745296918761507
+    m_Localized: Install cabinet
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1745296918761508
+    m_Localized: Move to greenhouse
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1745296918761509
+    m_Localized: "Theme \u25BE"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1745296918761510
+    m_Localized: Light / Dark
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1745296918761511
+    m_Localized: Shop
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1745296918761512
+    m_Localized: Auctions
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1745296918761513
+    m_Localized: '{0} items'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1745296918761514
+    m_Localized: No stock this week
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1745296918761515
+    m_Localized: View / Order
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1745296918761516
+    m_Localized: Public auctions
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1745296918761517
+    m_Localized: Plan selected
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1745296918761518
+    m_Localized: Adult food
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1745296918761519
+    m_Localized: Food available
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1745296918761520
+    m_Localized: Meal completed
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1745296918761521
+    m_Localized: Placed {0}
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1756096857296896
+    m_Localized: Continue
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1802146569703424
+    m_Localized: Terrarium
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1802146607452160
+    m_Localized: Beetle info
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1802146607452161
+    m_Localized: Mail
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1802146607452162
+    m_Localized: Terrarium
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1815335709626368
+    m_Localized: Pixel level
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1815335755763712
+    m_Localized: Level {0}
     m_Metadata:
       m_Items: []
   references:

@@ -33,7 +33,7 @@ public static class CampaignGreenhouseUiValidation
         };
     }
 
-    [MenuItem("Tools/Beetle Arena/Validate Greenhouse UI Play Flow")]
+    [MenuItem("Tools/甲壳虫斗/验证/界面与画面/温室界面交互", false, 600)]
     public static void Run()
     {
         if (EditorApplication.isPlaying) throw new InvalidOperationException("Stop Play before the isolated greenhouse UI validation.");
@@ -242,11 +242,11 @@ public sealed class CampaignGreenhouseUiDriver : MonoBehaviour
         Check(app.Session.State.clock.paused && Path.GetFullPath(app.SaveDirectory) == Path.GetFullPath(CampaignApp.StorageOverride), "fixture uses paused husbandry and isolated saves");
         Check(!PageRect.GetComponentsInChildren<UI.Button>(true).Any(button => button.name.Contains("帮助翻身")) && !Prompt.transform.IsChildOf(PageRect), "rescue action is outside the collapsible sidebar with no old sidebar button");
         Rect page = CanvasBounds(PageRect), toggle = CanvasBounds(ToggleRect);
-        Check(Mathf.Abs(PageRect.rect.width / CanvasRect.rect.width - 1f / 3) < .001f && Contains(page, toggle) && page.xMax - toggle.xMax <= 8 && page.yMax - toggle.yMax <= 24,
-            "one-third sidebar contains the collapse button at its title's top right");
+        Check(Mathf.Abs(PageRect.rect.width / CanvasRect.rect.width - 1f / 6) < .001f && Contains(page, toggle) && page.xMax - toggle.xMax <= 8 && toggle.yMin - page.yMin <= 12,
+            "one-sixth sidebar contains its collapse button in the bottom bar");
         var scroll = PageRect.GetComponentsInChildren<UI.ScrollRect>().Single();
         Check(scroll.content.childCount > 0 && Mathf.Abs(scroll.content.rect.width - scroll.viewport.rect.width) < 1 &&
-            scroll.content.Cast<Transform>().All(child => Mathf.Abs(((RectTransform)child).rect.width - scroll.viewport.rect.width) < 1), "care content and cards fill the scroll viewport width");
+            scroll.content.Cast<Transform>().All(child => Mathf.Abs(((RectTransform)child).rect.width - scroll.viewport.rect.width) < 1), "navigation rows fill the scroll viewport width");
         Check(PromptAnchored() && Quaternion.Angle(upright, Specimen.rig.bodyPivot.localRotation) > 150 && app.Session.State.clock.elapsedDays == elapsedDays,
             "paused beetle visibly overturns and its expanded rescue prompt anchors beside it inside the RawImage without advancing time");
         yield return Capture("01-Expanded-Rescue");
@@ -263,6 +263,7 @@ public sealed class CampaignGreenhouseUiDriver : MonoBehaviour
             "collapsed scene button remains clickable and durably restores the upright pose without advancing paused time");
 
         yield return Click(ToggleRect.GetComponent<UI.Button>()); yield return Wait(() => !View.SidebarCollapsed && !View.SidebarAnimationActive, "sidebar expansion");
+        yield return Click(Button("照料"));yield return null;yield return null;
         yield return Overturn(first); yield return Click(Button("甲虫近观")); yield return new WaitForSecondsRealtime(.8f);
         Check(View.backdrop.GetComponent<CampaignObservationCamera>().Mode == CampaignObservationMode.Specimen && PromptAnchored(), "close observation keeps the prompt beside the rendered beetle");
         yield return Click(Button("场景全景")); yield return new WaitForSecondsRealtime(.8f);
@@ -278,9 +279,9 @@ public sealed class CampaignGreenhouseUiDriver : MonoBehaviour
         InvokeView("OpenGreenhouseRoster"); yield return null; yield return null;
         Check(app.Modal && !Prompt.Visible && !Prompt.GetComponent<CanvasGroup>().blocksRaycasts, "modal hides rescue and disables its pointer interception");
         InvokeView("CloseModal"); yield return Wait(() => !app.Modal && Prompt.Visible, "modal closed");
-        yield return Click(Button("景观建造")); yield return Wait(() => Construction.Editing && app.Constructing, "construction opened");
+        yield return Click(Button("建造")); yield return Wait(() => Construction.Editing && app.Constructing, "construction opened");
         Check(!Prompt.Visible && !Prompt.GetComponent<CanvasGroup>().blocksRaycasts, "construction hides rescue and disables its pointer interception");
-        yield return Click(Button("日常照料")); yield return Wait(() => !app.Constructing && Prompt.Visible, "care restored");
+        yield return Click(View.GetComponentsInChildren<UI.Button>().Last(b=>b.name=="照料")); yield return Wait(() => !app.Constructing && Prompt.Visible, "care restored");
         Check(PromptAnchored(), "leaving construction restores the scene rescue anchor");
         Check(errors.Count == 0, "no runtime errors or exceptions");
     }

@@ -7,15 +7,20 @@ namespace BeetleArena.Campaign
     {
         TMP_Text label;
         bool compact;
-        string shown;
-        public void Bind(TMP_Text target,bool singleLine) { label=target;compact=singleLine;shown=null;Update(); }
+        bool hasShown;
+        (int year,int month,int day,int hour,int minute,double speed,int status) shown;
+        public void Bind(TMP_Text target,bool singleLine) { label=target;compact=singleLine;hasShown=false;Update(); }
         void Update()
         {
             var app=CampaignApp.Instance;if(!label||app?.Session==null)return;
             var clock=app.Session.State.clock;
-            string status=app.CalendarRunning?"流逝中":app.Constructing?"建造暂停":"操作暂停";
-            string text=$"第 {clock.Year} 年 · {clock.Month:00} 月 · {clock.Day:00} 日"+(compact?"  |  ":"\n")+$"{clock.Hour:00}:{clock.Minute:00} · {clock.speed:0.#}× · {status}";
-            if(text==shown)return;shown=text;CampaignLocalization.Bind(label,text);
+            int status=app.CalendarRunning?0:app.Constructing?1:2;
+            var current=(clock.Year,clock.Month,clock.Day,clock.Hour,clock.Minute,clock.speed,status);
+            // Compare values before formatting; localized labels already listen for locale changes.
+            if(hasShown&&current==shown)return;shown=current;hasShown=true;
+            string statusText=status==0?"流逝中":status==1?"建造暂停":"操作暂停";
+            string text=$"第 {shown.year} 年 · {shown.month:00} 月 · {shown.day:00} 日"+(compact?"  |  ":"\n")+$"{shown.hour:00}:{shown.minute:00} · {shown.speed:0.#}× · {statusText}";
+            CampaignLocalization.Bind(label,text);
         }
     }
 }

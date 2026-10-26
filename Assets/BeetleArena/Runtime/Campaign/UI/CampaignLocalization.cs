@@ -27,6 +27,12 @@ namespace BeetleArena.Campaign
         public static event Action Changed;
         public static bool English => LocalizationSettings.HasSettings && LocalizationSettings.SelectedLocale && LocalizationSettings.SelectedLocale.Identifier.Code=="en";
         public static TMP_FontAsset Font => currentFont ? currentFont : Resources.Load<TMP_FontAsset>("RetroUiFont");
+        public static float PointSize(float authored)=>authored*(English?.9f:1f);
+        public static void SetFontSize(TMP_Text label,float size,float minimum=-1)
+        {
+            var binding=label.GetComponent<CampaignLocalizedLabel>()??label.gameObject.AddComponent<CampaignLocalizedLabel>();
+            binding.SetFontSize(size,minimum<0?size:minimum);
+        }
 
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
         static void Reset()
@@ -122,7 +128,7 @@ namespace BeetleArena.Campaign
                 int language=CampaignApp.Instance?CampaignApp.Instance.Preferences.language:0;
                 if(!CampaignApp.Instance)
                 {
-                    string folder=CampaignApp.StorageOverride??System.IO.Path.Combine(Application.persistentDataPath,"Campaign");
+                    string folder=CampaignApp.StorageOverride??System.IO.Path.Combine(BeetleStoragePaths.PersistentData,"Campaign");
                     string path=System.IO.Path.Combine(folder,"settings.json");
                     try { if(System.IO.File.Exists(path))language=CampaignJson.Read<CampaignPreferences>(path).language; }
                     catch(Exception error) when(CampaignApp.IsExternalDataFailure(error))

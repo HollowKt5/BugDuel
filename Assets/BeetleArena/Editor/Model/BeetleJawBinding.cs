@@ -1,9 +1,9 @@
-using System.Linq;
+﻿using System.Linq;
 using BeetleArena;
 using UnityEditor;
 using UnityEngine;
 
-/// <summary>将前部口器按几何位置切为左右颚片；源 Part 编号不代表解剖左右。</summary>
+/// <summary>Slices anterior mouthparts into left and right mandibles based on geometry; source Part index does not dictate anatomical side.</summary>
 public static class BeetleJawBinding
 {
     public const float RootZ = 1.50f, OuterX = .20f;
@@ -19,7 +19,7 @@ public static class BeetleJawBinding
         AssetDatabase.CreateAsset(mesh,path);return mesh;
     }
 
-    /// <summary>传入完整口器副本，返回保留在头部的固定基部；调用者负责保存返回网格。</summary>
+    /// <summary>Takes complete mouthpart copy, returns fixed base retained on head; caller owns saving returned mesh.</summary>
     public static Mesh Bind(Transform model, Transform head, Mesh mouth, int id, Renderer template, BeetleContactRig contacts)
     {
         var modelRig=model.GetComponentInParent<BeetleModelRig>();

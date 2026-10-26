@@ -1,10 +1,10 @@
-using System;
+﻿using System;
 using BugDuel.Domain;
 using UnityEngine;
 
 namespace BeetleArena
 {
-    /// <summary>养殖 → 战斗的单向快照。没有个体引用、库存、存档或服务引用。</summary>
+    /// <summary>One-way snapshot from Husbandry to Combat. Holds no entity references, inventory, saves, or service handles.</summary>
     public sealed class BeetleMatchEntrant
     {
         public string IndividualId { get; }
@@ -36,7 +36,7 @@ namespace BeetleArena
         public static BeetleMatchEntrant FromIndividual(BeetleIndividual individual, BeetleCombatProfile profile)
             => FromIndividual(individual, profile, profile && profile.species ? profile.species.ToDefinition() : null);
 
-        // 热更数据定义与静态模型标定独立：不要求修改 ScriptableObject 资产来更新饲养数值。
+        // Hotfix data definitions are decoupled from static model calibration: updating husbandry attributes requires no ScriptableObject edits.
         public static BeetleMatchEntrant FromIndividual(BeetleIndividual individual, BeetleCombatProfile profile, SpeciesDefinition definition)
         {
             if (individual == null) throw new ArgumentNullException(nameof(individual));
@@ -51,7 +51,7 @@ namespace BeetleArena
                 throw new InvalidOperationException("Only healthy, nourished adult beetles eligible for combat may enter.");
             var potential = individual.Traits;
             float readiness = Mathf.Clamp01((float)((individual.Condition.Health + individual.Condition.Nutrition + individual.Condition.Hydration) / 300));
-            // 显式游戏映射；潜力不在比赛构造时再次随机抽取。物理质量与展示毫米/克各自独立。
+            // Explicit gameplay mapping; potential is not re-rolled during match construction. Kinematic mass and cosmetic mm/g remain independent.
             var traits = new BeetleTraits
             {
                 size = profile.size, lengthMm = definition.AdultLengthMm * profile.size,

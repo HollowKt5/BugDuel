@@ -7,7 +7,7 @@ using UnityEngine;
 
 public static class CampaignRetroFontSetup
 {
-    [MenuItem("Tools/Beetle Arena/Prepare Retro Presentation")]
+    [MenuItem("Tools/甲壳虫斗/画面与资源/界面与字体/准备复古字体与 CRT", false, 342)]
     public static void Apply()
     {
         if(EditorApplication.isPlaying)throw new InvalidOperationException("Stop Play before preparing presentation assets.");

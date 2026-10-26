@@ -26,7 +26,7 @@ public static class HusbandryTerrariumSetup
     public static readonly Vector3 SoilSize=new Vector3(9.4f,.4f,7.4f);
     public const float GlassHeight=HusbandryGlassEnclosure.DefaultHeight;
 
-    [MenuItem("Tools/Beetle Arena/Apply Glass Husbandry Terrariums")]
+    [MenuItem("Tools/甲壳虫斗/画面与资源/养殖表现/应用玻璃养殖箱", false, 320)]
     public static void Apply()
     {
         if(EditorApplication.isPlayingOrWillChangePlaymode)throw new InvalidOperationException("Stop Play before changing husbandry terrariums.");

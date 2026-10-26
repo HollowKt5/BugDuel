@@ -8,10 +8,10 @@ using UnityEngine;
 using UnityEngine.SceneManagement;
 
 /// <summary>
-/// 当前 bug.fbx 的口器/触角运动分区，以及现有场景的增量升级入口。
-/// Part2/14 各是一块连续网格；现在裁切为独立触角/口器 Mesh 和 Renderer。
-/// 固定口器跟随头部，可动颚片由 BeetleJawBinding 拆分；触角独立摆动，切口保留连接。
-/// 该边界来自当前模型测量，不是任意昆虫模型的自动分割算法。
+/// Mouthparts/antennae kinematic segmentation for current bug.fbx, and incremental upgrade entry for existing scenes.
+/// Part2 and Part14 are continuous submeshes; now sliced into distinct antenna/mouthpart meshes and Renderers.
+/// Fixed mouthparts follow head; movable mandibles split via BeetleJawBinding; antennae articulate independently with seamless seams.
+/// Boundary parameters are calibrated against current geometry, not a generalized insect segmentation algorithm.
 /// </summary>
 public static class BeetleAntennaBindingUpgrade
 {
@@ -19,15 +19,15 @@ public static class BeetleAntennaBindingUpgrade
     const string MeshFolder = "Assets/BeetleArena/Generated/ImportedModel";
     const string PrefabPath = "Assets/BeetleArena/Generated/ArticulatedBeetle.prefab";
 
-    // 所有数值均为 BeetleImportedModelBuilder.Point 转换后的、尚未乘 visualScale 的模型坐标。
-    // 原枢轴 Z=1.45 位于真正细颈后方；新的枢轴取颈部截面中心。
+    // All values represent model-space coordinates after BeetleImportedModelBuilder.Point transform, prior to visualScale.
+    // Legacy pivot Z=1.45 resided behind the true slender neck; new pivot aligns with neck cross-section centroid.
     public static Vector3 PivotInModel(int side) => new Vector3(side * .235f, .477832f, 1.64343f);
 
     public static float AntennaWeight(Vector3 point, int side)
     {
-        // Part14 还包含外侧但靠后的口器；只检查左右位置会错误带动这部分。
-        // 前向门槛与外侧门槛同时成立才允许触角权重，其他顶点精确为零。
-        // 两条真实切口上的权重都严格为0，复制的边缘才能与刚性口器保持重合。
+        // Part14 also includes lateral posterior mouthparts; filtering strictly on X would inadvertently move these regions.
+        // Antenna weights require passing both forward and lateral thresholds; remaining vertices are strictly zero.
+        // Both cut seams have exactly zero antenna weight, ensuring duplicated seam edges remain coincident with rigid mouthparts.
         return Mathf.SmoothStep(0, 1, Mathf.InverseLerp(BeetleHeadMeshSplit.LateralCut, .285f, side * point.x)) *
             Mathf.SmoothStep(0, 1, Mathf.InverseLerp(BeetleHeadMeshSplit.ForwardCut, 1.62f, point.z));
     }
@@ -40,9 +40,9 @@ public static class BeetleAntennaBindingUpgrade
     }
 
     /// <summary>
-    /// 为一个已有或新建的同名 Part GO 安装两骨蒙皮，不改变其最终父子路径。
-    /// 调用时 body/head/pivot 必须处于绑定姿势，mesh 必须是可修改的生成副本。
-    /// renderer 的绑定矩阵来自它自己的静止变换，不能以已旋转的触角矩阵代替。
+    /// Installs 2-bone skinning onto an existing or newly spawned Part GameObject without altering its parent-child path.
+    /// body, head, and pivot must be in bind pose upon invocation; mesh must be a mutable cloned copy.
+    /// renderer bindposes derive from its rest transform; must not substitute rotated antenna matrices.
     /// </summary>
     public static SkinnedMeshRenderer BindPart(GameObject part, Transform model, Transform head,
         Transform pivot, Mesh mesh, int side, BeetleContactRig contacts = null)
@@ -54,8 +54,8 @@ public static class BeetleAntennaBindingUpgrade
         var renderer = part.GetComponent<SkinnedMeshRenderer>();
         if (oldRigid && renderer) throw new InvalidOperationException("Part has both rigid and skinned renderers: " + part.name);
 
-        // 不移动顶点来迁就新枢轴。原网格顶点本来处于 model 坐标，故重建同一静止矩阵。
-        // 现有 GO 不临时换父节点，避免破坏预制体实例结构；新建 GO 才建立原来的父子路径。
+        // Avoids moving vertices to accommodate new pivot. Original mesh vertices reside in model space, reconstructing the same rest matrix.
+        // Existing GameObjects avoid temporary reparenting to preserve prefab instance hierarchy; new GameObjects establish original paths.
         if (part.transform.parent != pivot) part.transform.SetParent(pivot, false);
         Matrix4x4 restInPivot = pivot.worldToLocalMatrix * model.localToWorldMatrix;
         part.transform.localPosition = restInPivot.GetColumn(3);
@@ -76,7 +76,7 @@ public static class BeetleAntennaBindingUpgrade
 
         if (oldRigid)
         {
-            // 迁移使用现有材质/渲染开关。不要重新跑 MaterialFor 重置用户已经调整的材质。
+            // Migration reuses existing materials and render toggles. Avoids re-running MaterialFor to preserve user material tweaks.
             var materials = oldRigid.sharedMaterials; bool visible = oldRigid.enabled, receive = oldRigid.receiveShadows;
             var shadows = oldRigid.shadowCastingMode; var lightProbes = oldRigid.lightProbeUsage;
             var reflectionProbes = oldRigid.reflectionProbeUsage;
@@ -86,7 +86,7 @@ public static class BeetleAntennaBindingUpgrade
             if (contacts && contacts.surfaces != null)
                 for (int i = 0; i < contacts.surfaces.Length; i++)
                     if (contacts.surfaces[i] == oldRigid) referenceSlots.Add(i);
-            // 先保存引用位置与外观，再移除刚性 Renderer，避免同一 GO 短暂拥有两种 Renderer。
+            // Preserves reference transform and appearance before removing rigid Renderer, preventing holding two Renderers on same GameObject.
             UnityEngine.Object.DestroyImmediate(oldRigid);
             renderer = part.AddComponent<SkinnedMeshRenderer>();
             renderer.sharedMaterials = materials; renderer.enabled = visible;
@@ -105,9 +105,9 @@ public static class BeetleAntennaBindingUpgrade
         renderer.rootBone = head;
         renderer.quality = SkinQuality.Bone2;
         renderer.updateWhenOffscreen = true;
-        // 触角旋转后可能超出源网格静止包围盒；使用与现有六足一致的保守模型范围。
+        // Rotated antennae can exceed static source mesh bounding box; uses conservative bounding volume consistent with legs.
         renderer.localBounds = new Bounds(Vector3.up, new Vector3(5, 5, 7));
-        // 独立口器对象挂在头部，而不是触角节点。重复升级复用同一对象/资产，不生成副本。
+        // Discrete mouthpart GameObject is parented to head, not antenna node. Re-running upgrades reuses existing instances/assets without duplicates.
         var mouthTransform=head.Find(MouthName(side));
         if(!mouthTransform) {mouthTransform=new GameObject(MouthName(side)).transform;mouthTransform.SetParent(head,false);}
         var mouthRest=head.worldToLocalMatrix*model.localToWorldMatrix;
@@ -127,8 +127,8 @@ public static class BeetleAntennaBindingUpgrade
     }
 
     /// <summary>
-    /// 避地采样只取完全跟随触角的远端。过渡带/口器受两骨或头部控制，
-    /// 不能继续把它们当作 pivot.TransformPoint 可准确预测的刚性触角表面。
+    /// Ground avoidance sampling queries distal tips that follow antennae completely. Transition zones and mouthparts are driven by head/two-bone blend,
+    /// and cannot be treated as rigid antenna surfaces predictable by pivot.TransformPoint.
     /// </summary>
     public static BeetleModelRig.FeelerBinding CreateFeeler(Transform model, Transform pivot, Vector3[] vertices, int side)
     {
@@ -150,13 +150,13 @@ public static class BeetleAntennaBindingUpgrade
         };
     }
 
-    [MenuItem("Tools/Beetle Arena/Split Antenna And Mouth Meshes")]
+    [MenuItem("Tools/甲壳虫斗/模型与绑定/拆分触角与口器网格", false, 400)]
     public static void Run() => Debug.Log(UpgradeExistingAssets());
 
     /// <summary>
-    /// 增量升级正式场景两只 Actor 和已有预制体；不重建场景、UI、擂台或其他骨骼。
-    /// 场景若已打开就沿用现有对象，否则临时 Additive 打开，保存后关闭；不关闭用户其他场景。
-    /// 使用 LoadPrefabContents/SaveAsPrefabAsset/UnloadPrefabContents 修改原预制体。
+    /// Incrementally upgrades both scene Actors and existing prefabs without rebuilding scene, UI, arena, or other bones.
+    /// Reuses active scene objects if open; otherwise opens additively, saves, and closes without closing other user scenes.
+    /// Mutates source prefab using LoadPrefabContents / SaveAsPrefabAsset / UnloadPrefabContents.
     /// </summary>
     public static string UpgradeExistingAssets()
     {
@@ -175,13 +175,13 @@ public static class BeetleAntennaBindingUpgrade
             if (actors.Length != 2) throw new InvalidOperationException("Expected exactly two existing scene beetles.");
             prefab = PrefabUtility.LoadPrefabContents(PrefabPath);
             var prefabActor = prefab.GetComponent<BeetleActor>();
-            // 先核对所有输入，缺失绑定时不要做到一半才发现另一个 Actor 不适用。
+            // Validates all inputs upfront; prevents discovering halfway through that the second Actor is incompatible.
             foreach (var actor in actors) ValidateActor(actor);
             ValidateActor(prefabActor);
             UpgradeActor(prefabActor, sourceParts);
             PrefabUtility.SaveAsPrefabAsset(prefab, PrefabPath, out bool prefabSaved);
             if (!prefabSaved) throw new InvalidOperationException("Could not save upgraded beetle prefab.");
-            // 先升级 Prefab，场景中若有它的实例便继承新 Renderer，再记录自己的必要覆盖。
+            // Upgrades prefab first; active scene instances inherit new Renderer, then record necessary scene overrides.
             foreach (var actor in actors) UpgradeActor(actor, sourceParts);
             EditorSceneManager.MarkSceneDirty(scene);
             if (!EditorSceneManager.SaveScene(scene)) throw new InvalidOperationException("Could not save upgraded beetle scene.");
@@ -227,8 +227,8 @@ public static class BeetleAntennaBindingUpgrade
         var contacts = actor.GetComponent<BeetleContactRig>();
         Vector3 bodyPosition = anim.bodyPivot.localPosition;
         Quaternion bodyRotation = anim.bodyPivot.localRotation, headRotation = anim.headPivot.localRotation;
-        // 共享 Mesh 的 bindposes 必须来自一致的绑定姿势，不能把某次编辑器预览的头部角度烘进去。
-        // Actor/model 整体位置与缩放不用清零：worldToLocal * rendererRest 会抵消它们。
+        // Shared mesh bindposes must derive from consistent bind pose; must not bake arbitrary editor preview head angles.
+        // Actor/model root transform and scale need not be zeroed: worldToLocal * rendererRest cancels them out.
         anim.bodyPivot.localPosition = rig.bodyRest;
         anim.bodyPivot.localRotation = Quaternion.identity;
         anim.headPivot.localRotation = Quaternion.identity;

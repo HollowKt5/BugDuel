@@ -5,7 +5,7 @@ using UnityEngine;
 
 public static class CareGroundingSetup
 {
-    [MenuItem("Tools/Beetle Arena/Prepare Husbandry Shell Contact")]
+    [MenuItem("Tools/甲壳虫斗/画面与资源/养殖表现/生成甲壳接地资源", false, 321)]
     public static void Apply()
     {
         if(EditorApplication.isPlaying)throw new InvalidOperationException("Stop Play before preparing model geometry.");

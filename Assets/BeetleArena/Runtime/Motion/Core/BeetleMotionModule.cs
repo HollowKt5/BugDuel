@@ -1,4 +1,4 @@
-using UnityEngine;
+﻿using UnityEngine;
 
 namespace BeetleArena
 {
@@ -6,7 +6,7 @@ namespace BeetleArena
     public enum BeetleMotionContact { None, Horn, Foreleg }
     public enum BeetleMotionFamily { General, RaisedDrive, Foreleg }
 
-    /// <summary>传给模块的值快照。没有 State、Transform、随机源或求解器引用，模块不能反写比赛。</summary>
+    /// <summary>Value snapshot passed to modules. Lacks references to State, Transform, RNG, or Solver, preventing modules from mutating the match.</summary>
     public readonly struct BeetleMotionContext
     {
         public readonly float Time, SimulationTime, Speed, Stamina, Footing, Balance, Distance, Facing, Side, FloorTime, Impact;
@@ -72,17 +72,17 @@ namespace BeetleArena
         }
     }
 
-    /// <summary>模块只交付意图。移动、消耗、碰撞确认和一次性冲量均由宿主统一处理。</summary>
+    /// <summary>Modules deliver intent only. Locomotion, energy burn, collision validation, and one-off impulses are handled uniformly by host.</summary>
     public struct BeetleMotionSample
     {
         public float BodyPitch, BodyRoll, HeadPitch, HeadYaw, BodyHeight, Strain, StaminaPerSecond;
-        // 非零时只改变该动作的关节响应速度；默认保留旧动作/抬举的平滑参数。
+        // Non-zero values override joint response speed for this action; defaults to retaining legacy motion/lift smoothing parameters.
         public float PoseResponse;
         public Vector2 LocalVelocity;
         public BeetleMotionContact Contact;
         public Vector2 LocalImpulse;
         public float Impulse, BalanceCost;
-        // 有效命中后的失衡窗口；默认 0，不打断原有模块的防守动作。
+        // Vulnerability window following a valid hit; defaults to 0, not interrupting defensive actions of existing modules.
         public float StaggerSeconds;
         // 0 retains legacy selection; 1/4 explicitly identify left/right front leg.
         public int ContactLegPlusOne;
@@ -90,8 +90,8 @@ namespace BeetleArena
     }
 
     /// <summary>
-    /// 无状态动作资产。每个模块独立文件，Inspector 引用列表即注册表；无需给核心添加 switch/case。
-    /// 共享资产禁止保存计时/命中状态。实例数据只属于 BeetleMotionRuntime。
+    /// Stateless motion asset. Each module is an isolated file; Inspector reference list acts as registry without requiring core switch/case additions.
+    /// Shared assets must never store timer/hit state. Instance data belongs strictly to BeetleMotionRuntime.
     /// </summary>
     public abstract class BeetleMotionModule : ScriptableObject
     {
@@ -109,14 +109,14 @@ namespace BeetleArena
         public abstract bool CanStart(in BeetleMotionContext context);
         public virtual bool CanContinue(in BeetleMotionContext c) => c.Fighting && c.Grounded && !c.OpponentAirborne && c.Distance < 4.8f;
         public abstract BeetleMotionSample Sample(in BeetleMotionContext context, float phase);
-        // offset 使用模型局部坐标、单位缩放。slot=左前/中/后、右前/中/后；最多覆盖自己的活动区域。
+        // offset uses model local coordinates and unit scale. slot = Left/Right Front/Middle/Hind; at most covers its own anatomical workspace.
         public virtual bool SampleLeg(in BeetleMotionContext context, float phase, int slot, out Vector3 offset)
         { offset = Vector3.zero; return false; }
         public virtual float LegSpeed(in BeetleMotionContext context, float phase, int slot) => 3;
-        // 触角为独立可选通道：返回相对绑定姿态的局部欧拉角，由宿主平滑。
+        // Antenna is an independent optional channel: returns local Euler angles relative to bound rest pose, smoothed by host.
         public virtual bool SampleAntenna(in BeetleMotionContext context, float phase, int slot, out Vector3 angles)
         { angles = Vector3.zero; return false; }
-        // 新资产的默认参数/证据由自己的类提供，装配器不认识具体动作类型。
+        // Default parameters/evidence for new assets are provided by their own class; the assembler requires no bespoke action type knowledge.
         public virtual void SetDefaults() { }
         protected virtual void OnEnable() { if (string.IsNullOrWhiteSpace(evidence)) SetDefaults(); }
         protected static float Pulse(float phase) => Mathf.Pow(Mathf.Sin(Mathf.PI * Mathf.Clamp01(phase)), 2);
@@ -124,7 +124,7 @@ namespace BeetleArena
         { weight = Mathf.Max(0, weight); duration = Mathf.Clamp(duration, .25f, 3); cooldown = Mathf.Clamp(cooldown, .2f, 12); }
     }
 
-    /// <summary>可选的物理能力。没有该接口时，新模块的攻击不会以距离近似假造命中。</summary>
+    /// <summary>Optional physical capability. In the absence of this interface, new module attacks will not fabricate hits via distance approximations.</summary>
     public interface IBeetleMotionContacts
     {
         bool HasMotionContact(int attacker, BeetleMotionContact kind, int forelegSlot);

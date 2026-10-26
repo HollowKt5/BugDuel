@@ -11,7 +11,7 @@ using UnityEngine.SceneManagement;
 public static class CampaignSpecimenRoomSetup
 {
     public const string ScenePath="Assets/Scenes/Campaign/CampaignSpecimenRoom.unity";
-    [MenuItem("Tools/Beetle Arena/Install Specimen Room")]
+    [MenuItem("Tools/甲壳虫斗/场景与安装/安装标本室", false, 203)]
     public static void Install()
     {
         if(EditorApplication.isPlaying)throw new InvalidOperationException("Stop Play before installing the specimen room.");

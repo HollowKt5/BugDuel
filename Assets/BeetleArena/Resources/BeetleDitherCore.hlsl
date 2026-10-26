@@ -23,7 +23,7 @@ float Bayer4(float2 cell)
 half4 frag(Varyings i):SV_Target
 {
     float2 screenPixel=max(fwidth(i.uv),float2(.000001,.000001));
-    float2 cellUv=screenPixel*max(1,round(_PixelSize));
+    float2 cellUv=screenPixel*max(1,_PixelSize);
     float2 cell=floor(i.uv/cellUv);
     // Snapped UV derivatives cross cell boundaries. An explicit base level keeps
     // anisotropic filtering from sampling different footprints inside one pixel cell.

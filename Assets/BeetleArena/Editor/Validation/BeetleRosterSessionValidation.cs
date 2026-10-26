@@ -13,7 +13,7 @@ public static class BeetleRosterSessionValidation
 {
     static void Require(bool condition, string message) { if (!condition) throw new Exception(message); }
 
-    [MenuItem("Tools/Beetle Arena/Validate Roster Session")]
+    [MenuItem("Tools/甲壳虫斗/验证/存档与数据/名册会话", false, 661)]
     public static void Run()
     {
         var scene = SceneManager.GetActiveScene();

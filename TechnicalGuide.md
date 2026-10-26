@@ -545,7 +545,7 @@ SurfaceNormal = Normalize(中心法线 + Σ(足位法线 * reach))
 
 后两层搜索会在每个候选位置重新执行 `YieldArticulatedContacts()`。上一帧安全的腿姿在根位置改变后，可能把前足重新塞进对手角下；仅恢复旧关节并平移会把可动肢体当成不可变的刚架。候选中的脚目标仍由真实骨长 IK 求解，随后再统一检查双方和台面碰撞。被阻挡的局部关节与根部撤步必须一起求解，不能分别通过后假定组合仍安全。
 
-专项回归入口为 `Tools/Beetle Arena/Validate Underbody Escape`，使用真实入角后撤场景；`Validate Combat Stalls` 复查原始互锁现场与多个地形的固定种子对局。诊断证据在 `Artifacts/UnderbodyEscape/` 与 `Artifacts/DeadlockFix/`。
+专项回归入口为 `Tools/甲壳虫斗/验证/战斗/腹部脱困`，使用真实入角后撤场景；`Validate Combat Stalls` 复查原始互锁现场与多个地形的固定种子对局。诊断证据在 `Artifacts/UnderbodyEscape/` 与 `Artifacts/DeadlockFix/`。
 
 后续扩大种子检查时，种子 17、地形 1（起伏岩台）在约 15.7 秒处出现真正的持续互锁：角尖顶在腹下，双方动作仍切换，根位置却连续约 16 秒完全不变。现场试算显示，原有轴向撤步需要约 0.3 世界单位的整体分离而超出预算；斜向撤步则只需约 0.013 世界单位即可无穿透退出。这是补充四条斜向候选的依据，而非增大位移预算或放宽碰撞条件。修复前快照、轨迹和方向试算保存在 `Artifacts/SeedSweep/`。
 
@@ -870,7 +870,7 @@ position += 平面速度 * dt
 
 ### 12.4 本次验证入口
 
-菜单 `Tools/Beetle Arena/Validate Fall Recovery` 对应 `Editor/Validation/BeetleFallValidation.cs`。检查两种擂台 × 四类离台速度/方向（含紧贴台边下落），并各跑无显示与每步三次插值显示的版本；检查脚端活动、接地、结束后时钟、根位移预算、角度连续性、防穿透及最终撑起。另检查纯数据台外落地和双落台平局。报告和近景截图保存在 `Artifacts/FallRecovery/`。测试结果只覆盖这些受控场景，不是所有落败轨迹的证明。
+菜单 `Tools/甲壳虫斗/验证/战斗/跌落恢复` 对应 `Editor/Validation/BeetleFallValidation.cs`。检查两种擂台 × 四类离台速度/方向（含紧贴台边下落），并各跑无显示与每步三次插值显示的版本；检查脚端活动、接地、结束后时钟、根位移预算、角度连续性、防穿透及最终撑起。另检查纯数据台外落地和双落台平局。报告和近景截图保存在 `Artifacts/FallRecovery/`。测试结果只覆盖这些受控场景，不是所有落败轨迹的证明。
 
 ## 13. 随机性、复现与性能
 
@@ -1091,7 +1091,7 @@ Combat 模块对自己声明控制的腿优先；未被占用的腿可以由第�
 
 ### 17.6 配置与验证
 
-具体启停/扩展步骤见 [MotionModules.md](MotionModules.md)。`Tools > Beetle Arena > Validate Motion Modules` 检查新类型注册、空/重复引用、独立实例、禁用/移除/状态中断、真实接触、一次命中锁、显示不改模块状态、赛后持续活动和两种擂台自然对局。报告位于 `Artifacts/ModularActions/Validation.txt`。
+具体启停/扩展步骤见 [MotionModules.md](MotionModules.md)。`Tools > 甲壳虫斗 > 验证 > 模型与动作 > 动作模块` 检查新类型注册、空/重复引用、独立实例、禁用/移除/状态中断、真实接触、一次命中锁、显示不改模块状态、赛后持续活动和两种擂台自然对局。报告位于 `Artifacts/ModularActions/Validation.txt`。
 
 相同种子还要求相同模块列表顺序、权重、参数和输入时序；增删模块会改变后续动作序列。不能把相同种子解释为修改配置后仍逐帧一致，当前也没有跨平台 PhysX 位级确定性保证。
 
@@ -1172,7 +1172,7 @@ damping[k] = 48 + 31k
 
 ### 19.5 验证与人工验收
 
-菜单 `Tools > Beetle Arena > Validate Contact Feedback` 在临时场景检查：设置打开/关闭、Toggle 监听、关闭立即清粒子、关闭禁止发射、偏好在新组件恢复、两擂台真实交锋出声/出火星、无接触时不触发、零 dt 不推进、粒子寿命、波形有限值和削波余量、表现不修改模拟/Unity.Random。测试在 finally 恢复用户原偏好。
+菜单 `Tools > 甲壳虫斗 > 验证 > 战斗 > 接触反馈` 在临时场景检查：设置打开/关闭、Toggle 监听、关闭立即清粒子、关闭禁止发射、偏好在新组件恢复、两擂台真实交锋出声/出火星、无接触时不触发、零 dt 不推进、粒子寿命、波形有限值和削波余量、表现不修改模拟/Unity.Random。测试在 finally 恢复用户原偏好。
 
 报告与设置/真实接触截图位于 `Artifacts/ContactFeedback/`。波形数值合格与可见粒子不等于主观满意：用户负责最终确认木质音色、响度、火星形状和克制程度。
 
@@ -1456,7 +1456,7 @@ Profiler 计数方式参见 [Unity ProfilerRecorderOptions.CollectOnlyOnCurrentT
 
 ### 23.7 验证与人工验收
 
-验证记录位于 `Artifacts/StrategyReview/`。新增菜单 `Tools/Beetle Arena/Validate Strategy And Energy`，检查真实 Step 下的反击选择、低体力防守、打空收招、资源消耗恢复和对称局势评估。再结合真实模型双地图对局、动作插值、模块接触与撬投回归。
+验证记录位于 `Artifacts/StrategyReview/`。新增菜单 `Tools/甲壳虫斗/验证/战斗/策略与体力`，检查真实 Step 下的反击选择、低体力防守、打空收招、资源消耗恢复和对称局势评估。再结合真实模型双地图对局、动作插值、模块接触与撬投回归。
 
 第一版实测四场都在 247 秒上限时仍未结束，不能作为完成结果。根据这一失败记录修订受压恢复与顶举进入条件，保留失败记录以免后续再次把“分出攻防”调成永久防守。
 
@@ -1495,7 +1495,7 @@ natural arena=1: finished=Finished, seconds=186.4, winner=0, starts=ForelegGrapp
 
 同一 36 秒诊断窗口中，中足近限位降至 0.31% / 1.03%，最大目标误差降至 .0067 / .0668 世界单位。自然对局路径会因姿态与接触修正变化，因此这不是逐帧相同位置的对照，也不能宣称所有动作都零误差。
 
-新增 Tools > Beetle Arena > Validate Middle Leg Reach：双擂台真实模型，统计两侧中足接近限位时间、超过 .12 世界单位的目标误差及骨长保持情况。报告在 Artifacts/StrategyReview/LegReach.txt。本轮最终专项：平地/岩台近限位比例 0.20% / 0.67%，超过 .12 单位误差的采样为 0，骨长误差显示为 0.000000。
+新增 Tools > 甲壳虫斗 > 验证 > 模型与动作 > 中足可达范围：双擂台真实模型，统计两侧中足接近限位时间、超过 .12 世界单位的目标误差及骨长保持情况。报告在 Artifacts/StrategyReview/LegReach.txt。本轮最终专项：平地/岩台近限位比例 0.20% / 0.67%，超过 .12 单位误差的采样为 0，骨长误差显示为 0.000000。
 
 需要用户在 Play 中重点观看第二对侧足：向前行进时是否及时换脚、贴身顶角时是否仍有支撑弯曲、岩台上是否拖行，以及换脚是否过于频繁。数值回归不能替代这一观感验收。
 
@@ -1617,7 +1617,7 @@ float antennaWeight = p.z >= 1.60f
 
 ### 26.4 验证和观感边界
 
-新增 `Tools > Beetle Arena > Validate Feeler Binding`：检查原顶点、三角形与 UV 保留；场景两只虫分别单独转动左右触角，测量实际蒙皮后的中央口器、另一侧触角、活动远端；随后抬头检查整块能跟随头部运动。
+新增 `Tools > 甲壳虫斗 > 验证 > 模型与动作 > 触角绑定`：检查原顶点、三角形与 UV 保留；场景两只虫分别单独转动左右触角，测量实际蒙皮后的中央口器、另一侧触角、活动远端；随后抬头检查整块能跟随头部运动。
 
 测量通过 CPU 烘焙得到可见蒙皮网格，并按 Renderer 坐标变换回世界空间，不能只检查骨骼名字或权重数组。API 约定参考 [Unity SkinnedMeshRenderer.BakeMesh](https://docs.unity3d.com/6000.0/Documentation/ScriptReference/SkinnedMeshRenderer.BakeMesh.html)。
 
@@ -1697,7 +1697,7 @@ Editor/Model/BeetleHeadMeshSplit.cs 是无场景依赖的裁切器。当前模�
 
 ### 27.3 构建和状态归属
 
-BeetleAntennaBindingUpgrade 负责生成四个网格资产、安装Renderer、替换/补充ContactRig.surfaces及维护避地采样。重复执行复用原对象和资产GUID。菜单为 Tools > Beetle Arena > Split Antenna And Mouth Meshes。BeetleImportedModelBuilder 调用同一安装逻辑；原两块混合生成网格若已存在则保留作旧资源，不再被新口器/触角Renderer引用。
+BeetleAntennaBindingUpgrade 负责生成四个网格资产、安装Renderer、替换/补充ContactRig.surfaces及维护避地采样。重复执行复用原对象和资产GUID。菜单为 Tools > 甲壳虫斗 > 模型与绑定 > 拆分触角与口器网格。BeetleImportedModelBuilder 调用同一安装逻辑；原两块混合生成网格若已存在则保留作旧资源，不再被新口器/触角Renderer引用。
 
 运行时没有新增更新循环、物理刚体或独立战斗状态；头部与触角动画接口保持原样。碰撞代理不按可见网格数量增加。切分、权重及资源维护只发生在编辑器。
 
@@ -1834,7 +1834,7 @@ BeetleDebugGraph使用显式节点ID保存共享引用，白名单涵盖项目�
 - 起伏地面用身体覆盖区采样补偿单点支撑误差。新增两张具有封闭实体侧壁的凹槽网格；半圆槽采用可行走范围的圆柱弧面，起伏圆槽叠加纵向起伏。网格渲染与碰撞共享几何。
 - 头部和下颚的底部轮廓在升级阶段从真实网格采样到头部局部坐标，运行时按地面高度限制低头角度；保持偏航不变，不逐帧 BakeMesh。该约束用于在台面支撑的姿态，落台/腾空仍交由碰撞与落地规则处理。
 - 新角碰声强调宽频短瞬态和不规则二次接触，大幅降低窄带低频共鸣，合成音色以干树枝碰撞为目标，非真实录音。
-- `Tools > Beetle Arena > Apply Combat Refinements` 增量安装场景、连接网格、选项和新动作；`Validate Combat Refinements` 检查分布、交替后足、视角与四地图实际对局。报告和预览位于 `Artifacts/CombatRefinement/`。实际网格采样与碰撞代理残余分别报告。
+- `Tools > 甲壳虫斗 > 场景与安装 > 战斗模块 > 应用战斗调优` 增量安装场景、连接网格、选项和新动作；`Validate Combat Refinements` 检查分布、交替后足、视角与四地图实际对局。报告和预览位于 `Artifacts/CombatRefinement/`。实际网格采样与碰撞代理残余分别报告。
 
 ### 2026-10-14 后续：独立决策与有效接触
 

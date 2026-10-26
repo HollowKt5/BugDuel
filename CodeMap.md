@@ -30,7 +30,8 @@ Runtime/Campaign/UI（输入、排版、提示）
 | 建造剩余空间与安全返回 | `CampaignConstructionSpace.cs` | `CampaignConstructionHabitat.cs`、`CareEnclosureLayout.cs` |
 | 景观造型、建造动画 | `CampaignConstruction.cs` 内的 `CampaignDecorations` | `CampaignDecorationVisuals.cs`、`CampaignDecorationDragSource.cs` |
 | 捕虫队 | `CampaignSession.Dispatch` 与跨周结算 | `CampaignCatchingView.cs` |
-| 邮件、仓库、附件领取与提示音 | `CampaignMailbox.cs`；`CampaignApp.SessionCommitted` | `CampaignMailboxView.cs`；`Presentation/Audio/CampaignMailAudio.cs`（成功入库提示、删除垃圾桶声） |
+| 邮件、仓库、附件领取与提示音 | `CampaignMailbox.cs`；`CampaignApp.SessionCommitted` | `CampaignMailboxView.cs`、`CampaignWarehouseView.cs`（二级分类与 DOTween）；`Presentation/Audio/CampaignMailAudio.cs` |
+| 中心母虫配种服务 | `CampaignBreeding.cs`（稳定报价、随机失败、扣费与母虫所有权）；`CampaignSession.CreateOffspring` | `CampaignBreedingView.cs`；独立 `CampaignBreeding.unity`；`CampaignInterfaceValidation`、`CampaignInterfacePlayValidation` |
 | 商店、挂牌、报价、直接回售 | `CampaignMarket.cs`、`CampaignTrading.cs` | `CampaignMarketView.cs`、`CampaignMarketTradeView.cs`、`CampaignMarketDialogs.cs` |
 | 公开竞拍、托管、落槌 | `CampaignTrading.cs` | `CampaignMarketAuctionView.cs` |
 | 冠军拍卖、联赛、血统分红 | `CampaignLeague.cs`、`CampaignGenetics.cs` | `CampaignLeagueView.cs`、`Integration/CampaignLeagueBridge.cs` |
@@ -97,13 +98,28 @@ Runtime/Campaign/UI（输入、排版、提示）
 
 正式场景位于 `Assets/Scenes/Campaign/`。场景 UI 根对象按页面命名，如 `GreenhouseUI`、`MarketUI`、`SpecimenRoomUI`。场景中的 `ObservedBeetle`、`Terrarium`、`SoilBed` 分别表示观察个体、养殖箱和底床；保留这些有含义且被表现组件使用的名字。
 
-运行时界面使用 `CampaignCanvas / Page`、`DialogPanel`、`DialogTitleBar`、`GreenhousePanel`、`GreenhouseTitle`、`Card`、`Viewport / Content` 等结构名称。温室的 `CareScroll`、`BreedingScroll`、`ManagementScroll`、`ConstructionScroll` 分别属于四个页签，避免跨页签复用裁切和滚动状态。交互按钮沿用其可见操作名称，便于在 Hierarchy 查找。业务归属使用稳定 ID 或明确标记，不用显示名判断玩家、甲虫或拍卖所有权。
+运行时界面使用 `CampaignCanvas / Page`、`DialogPanel`、`DialogTitleBar`、`GreenhousePanel`、`GreenhouseTitle`、`Card`、`Viewport / Content` 等结构名称。养殖主导航 `GreenhouseNavigation` 占左侧1/6，仓库 `WarehouseCategories / WarehouseDetails` 按选择展开至1/3。`GreenhouseInfo` 是点击甲虫后打开的浮窗，其 `CareScroll`、`ManagementScroll`、`ConstructionScroll` 分别属于照料、管理、建造页签；育种仍为独立页面。`GreenhouseFooter` 内整合金币与邮箱，`UnreadMailBadge / RetroRoundBadge` 绘制白边红色圆圈，并置于金币之上。交互按钮沿用其可见操作名称，便于在 Hierarchy 查找。业务归属使用稳定 ID 或明确标记，不用显示名判断玩家、甲虫或拍卖所有权。
 
 导入模型的部件名、骨骼名和已有物理接触标记有绑定用途，不能仅为统一字形随意重命名。新增场景对象应描述职责，避免 `GameObject`、`Cube` 或冗长的解释句。生成器在 `Editor/Setup/`，修改命名时同步生成器，避免重新安装后退回旧名。
 
+## 编辑器工具菜单
+
+统一入口为 `Tools > 甲壳虫斗`，按用途分类，常用工具优先排列。
+
+| 分类 | 用途 |
+| --- | --- |
+| 常用工具 | 调试工作台、场景画面设置、战斗 CRT、界面点击音效 |
+| 场景与安装 | 生成场景、安装战役/标本室、更新界面、整理层级与安装战斗模块 |
+| 画面与资源 | 材质与灯光、养殖表现、界面与字体 |
+| 模型与绑定 | 拆分触角口器、修正和查看角部绑定 |
+| 验证 | 战斗、养殖、战役流程、界面与画面、本地化、存档与数据、模型与动作、架构与性能 |
+| 维护与清理 | 预览或清理无资产引用、源码引用及文件名 GUID 引用的限定生成资源 |
+
+整流程验收只保留一个菜单入口：`验证 > 战役流程 > 完整战役流程`。旧的 `CampaignPlayModeValidation.Run()` 仍可供脚本调用。
+
 ## 修改后验证
 
-所有入口位于 `Editor/Validation/`，Unity 菜单前缀为 `Tools > Beetle Arena`。
+所有入口位于 `Editor/Validation/`，Unity 菜单前缀为 `Tools > 甲壳虫斗 > 验证`。
 
 | 修改范围 | 定向验证类 |
 | --- | --- |

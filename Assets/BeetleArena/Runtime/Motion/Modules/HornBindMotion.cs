@@ -1,4 +1,4 @@
-using UnityEngine;
+﻿using UnityEngine;
 namespace BeetleArena
 {
     [CreateAssetMenu(menuName = "Beetle Arena/Motions/Horn Bind")]
@@ -14,7 +14,7 @@ namespace BeetleArena
         public override float SelectionWeight(in BeetleMotionContext c) => weight * Mathf.Lerp(.35f, 2.1f, c.Lateral);
         public override bool CanStart(in BeetleMotionContext c) => c.Fighting && c.Grounded && !c.OpponentAirborne &&
             (c.Exchange == ExchangePhase.Clash || c.Intent == BeetleIntent.Pressure) && c.Distance < 4.3f && c.Facing > .65f && c.Stamina > .28f;
-        // 先压住支撑，再短促侧顶，随后卸力；峰值前移，留下回弹/恢复时间。
+        // Braces support first, delivers a brief lateral push, then unloads; peak is front-loaded to provide rebound and recovery time.
         static float Drive(float p) => InsectMuscleAnimation.Recruit(p);
         public override BeetleMotionSample Sample(in BeetleMotionContext c, float phase)
         {
@@ -29,7 +29,7 @@ namespace BeetleArena
         public override bool SampleLeg(in BeetleMotionContext c, float phase, int slot, out Vector3 offset)
         {
             float effort = Drive(phase);
-            // 中后足横向撑住并向后蹬；不做悬空的“拳击”，仍由地表和 IK 限制足端。
+            // Middle and hind legs brace laterally and push backwards; ground and IK constrain tarsi without mid-air humanoid boxing.
             offset = new Vector3(-c.Side * .085f * effort, 0, -braceTravel * effort);
             return slot % 3 == 1 || slot == (c.Side < 0 ? 2 : 5);
         }

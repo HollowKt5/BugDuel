@@ -219,7 +219,7 @@ if (!update.Success) throw new InvalidOperationException(update.ErrorMessage);
 
 ## 10. 验证入口与未完成边界
 
-所有入口位于 `Assets/BeetleArena/Editor/Validation/`，可从 `Tools > Beetle Arena` 对应菜单调用。验证报告必须看本次实际结果，不能只因存在验证文件就认定通过。
+所有入口位于 `Assets/BeetleArena/Editor/Validation/`，可从 `Tools > 甲壳虫斗 > 验证` 对应菜单调用。验证报告必须看本次实际结果，不能只因存在验证文件就认定通过。
 
 | 入口 | 覆盖内容 |
 | --- | --- |

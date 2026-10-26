@@ -11,7 +11,7 @@ public static class BeetleCameraValidation
 {
     static void Require(bool condition, string message) { if (!condition) throw new Exception(message); }
 
-    [MenuItem("Tools/Beetle Arena/Validate Camera Follow")]
+    [MenuItem("Tools/甲壳虫斗/验证/战斗/镜头跟随", false, 513)]
     public static void Run()
     {
         var previous = SceneManager.GetActiveScene();
@@ -71,7 +71,7 @@ public static class BeetleCameraValidation
                 point.y - verticalRadius >= -.001f && point.y + verticalRadius <= 1.001f, "Fast followed throw escaped the viewport.");
             report.AppendLine("PASS: rapid airborne follow retains the entire subject while the focus catches up.");
 
-            // 位置由平滑朝向和距离共同推导，静止焦点不能在画面中横向游移。
+        // Position derived jointly from smoothed heading and distance; stationary focus must not wander laterally in view space.
             director.ResetView(); camera.aspect = 16f / 9;
             var centered = new BeetleCameraFrame(new BeetleCameraSubject(director.Focus, 2, false, false),
                 new BeetleCameraSubject(director.Focus, 2, false, false), false);

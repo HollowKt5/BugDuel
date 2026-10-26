@@ -1,10 +1,10 @@
-using UnityEngine;
+﻿using UnityEngine;
 
 namespace BeetleArena
 {
     public enum BeetleIntent { Assess, Pressure, Counter, Defend, Reposition, Recover }
 
-    /// <summary>决策只读快照。双方在本步 Think 之前同时取样，避免后一只读到前一只刚选的新动作。</summary>
+    /// <summary>Read-only decision snapshot sampled simultaneously by both fighters prior to Think(), preventing the second fighter from reacting to actions chosen during the same tick.</summary>
     public readonly struct BeetleTacticalSnapshot
     {
         public readonly float Advantage, Opening, Distance, Facing, Edge;
@@ -14,7 +14,7 @@ namespace BeetleArena
             Vector2 delta = other.Position - self.Position;
             Distance = delta.magnitude; Facing = Vector2.Dot(self.Forward, delta.normalized);
             Edge = self.Position.magnitude / radius;
-            // 只看已发生的动作/支撑状态；不预测随机数，也不读取未来命中结果。
+            // Evaluates only past actions and support states; does not predict RNG outcomes or look ahead to future hit results.
             Threatened = other.Committed && Distance < reach + .25f &&
                 Vector2.Dot(other.Forward, -delta.normalized) > .55f && other.ActionProgress < .78f;
             Opening = other.ExposureRemaining;
@@ -33,8 +33,8 @@ namespace BeetleArena
     }
 
     /// <summary>
-    /// 交锋战术是游戏抽象：借鉴格斗游戏的距离、承诺、收招与反击窗口，不声称甲虫有人类战术思考。
-    /// 所有方法无随机源、无场景依赖；只返回建议，由 Simulation 拥有动作与状态写入权。
+    /// Combat tactics serve as a gameplay abstraction: drawing from fighting game concepts of spacing, commitment, recovery, and whiff punish windows without claiming beetles possess human tactical cognition.
+    /// All methods are free of RNG sources and scene dependencies; they only return recommendations, leaving action and state mutation authority to Simulation.
     /// </summary>
     public static class BeetleTactics
     {
@@ -52,7 +52,7 @@ namespace BeetleArena
             if (!view.Threatened && b.Balance > .55f && b.Readiness01 > .38f && b.BurstReserve > .34f &&
                 (view.OpponentYielding || b.TimeSinceAttack > Mathf.Lerp(2.3f, .7f, b.Traits.aggression)))
                 return BeetleIntent.Pressure;
-            // 滞回让接近临界点时不反复切换攻防；优势只影响选择，不额外增加伤害。
+            // Hysteresis prevents rapid cycling between offensive and defensive stances near boundary thresholds; advantage biases choices without artificially amplifying damage.
             float threshold = b.Intent == BeetleIntent.Pressure ? .025f : .09f;
             threshold -= (b.Traits.aggression - .6f) * .22f;
             if (!view.Threatened && b.TacticalAdvantage > threshold && b.Balance > .58f && b.BurstReserve > .33f)
@@ -65,7 +65,7 @@ namespace BeetleArena
         public static bool CanCommit(BeetleState b, float stamina, float reserve) =>
             b.Stamina >= stamina && b.BurstReserve >= reserve && b.Balance >= .42f;
 
-        // 原随机 choice 仍负责同一情境里的变化；局势先限定可用行为，不靠抽签决定攻守。
+        // RNG choice still provides variation within identical contexts; the tactical situation first circumscribes available actions rather than deciding offense/defense via lottery.
         public static BeetleAction Choose(BeetleState b, in BeetleTacticalSnapshot v, ExchangePhase exchange,
             float reach, float choice, bool inspectThrows = false)
         {
@@ -78,7 +78,7 @@ namespace BeetleArena
             }
             if (b.Intent == BeetleIntent.Reposition)
                 return b.Balance < .32f ? BeetleAction.Brace : BeetleAction.Circle;
-            // 恢复冷却中也应卸力换位，不能因暂时不能 Rest 就再次承诺高消耗攻击。
+            // Recovery cooldown requires disengaging and repositioning; inability to Rest must not prompt re-committing to high-cost attacks.
             if (b.Intent == BeetleIntent.Recover)
                 return BeetleAction.Circle;
             if (v.Distance > reach) return BeetleAction.Approach;

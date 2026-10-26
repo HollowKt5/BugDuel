@@ -4,7 +4,7 @@ Shader "BugDuel/Combat Ordered Dither"
     {
         [PerRendererData] [HideInInspector] _MainTex ("World", 2D) = "white" {}
         [HideInInspector] _Color ("Tint", Color) = (1,1,1,1)
-        _PixelSize ("Pixel Size", Range(1,6)) = 3
+        _PixelSize ("Pixel Size", Range(1,2.5)) = 2
         _DitherStrength ("Dither Strength", Range(0,1)) = 0.5
         _ColorLevels ("Color Levels", Range(2,32)) = 16
         [HideInInspector] _StencilComp ("Stencil Comparison", Float) = 8

@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using BugDuel.Domain;
 using TMPro;
@@ -7,7 +7,7 @@ using L=BeetleArena.Campaign.CampaignLocalization;
 
 namespace BeetleArena
 {
-    /// <summary>uGUI 只显示会话快照和发送照料命令；食谱、环境资格、伤害由领域服务处理。</summary>
+    /// <summary>uGUI displays session snapshots and dispatches care commands only; recipes, environmental eligibility, and health handled by domain services.</summary>
     public sealed class BeetleHusbandryHud : MonoBehaviour
     {
         public BeetleHusbandryController controller;
@@ -34,6 +34,7 @@ namespace BeetleArena
             helpButton.onClick.AddListener(Help);
             pauseButton.onClick.AddListener(Pause);
             saveButton.onClick.AddListener(Save);
+            saveButton.gameObject.SetActive(false);
             reloadButton.onClick.AddListener(Reload);
             bound = true;
             Refresh();

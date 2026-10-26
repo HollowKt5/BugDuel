@@ -8,11 +8,11 @@ using UnityEditor.SceneManagement;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
-/// <summary>双擂台专项验证：台面采样、六足与地形接触、腾空落地、落台、切换和完整自动比赛。</summary>
+/// <summary>Dual-arena validation: surface sampling, six-leg terrain contact, landing, ring-outs, transitions, and full automated matches.</summary>
 public static class BeetleArenaTerrainValidation
 {
     const string ReportPath = "Artifacts/BeetleArena/TerrainValidation.txt";
-    [MenuItem("Tools/Beetle Arena/Validate Switchable Arenas")]
+    [MenuItem("Tools/甲壳虫斗/验证/战斗/可切换场地", false, 514)]
     public static void Run()
     {
         if (EditorApplication.isPlaying) throw new InvalidOperationException("Stop play before terrain validation.");
@@ -37,7 +37,7 @@ public static class BeetleArenaTerrainValidation
                 Require(!surface.Sample(new Vector2(8, 0), out _), "Forest floor incorrectly counts as arena support");
                 if (mode == 1) Require(Mathf.Abs(left.height - right.height) > .5f, "Uneven arena has no meaningful height variation");
                 float residual = 0, minClearance = float.PositiveInfinity, maxClearance = 0, maxTilt = 0;
-                // 三处不同坡向站立，使用真实 IK 与场景碰撞，记录足踝高度而非只检查根节点。
+                // Stands on three distinct slope headings using real IK and scene collisions, logging ankle height rather than only root position.
                 foreach (float z in new[] { -2f, 0f, 2f })
                 {
                     match.StartMatch(7319);
@@ -62,7 +62,7 @@ public static class BeetleArenaTerrainValidation
                 File.WriteAllText(ReportPath, report.ToString());
                 Require(residual < .006f && minClearance > .02f && maxClearance < .40f, "Invalid planted pose\n" + report);
                 if (mode == 1) Require(maxTilt > 3, "Body did not follow slope");
-                // 同一地表上方挑起再落下，应重新接地；抛到边缘外则应判负。
+                // Prying elevation above same terrain followed by fall should re-establish ground contact; launches past rim must trigger ring-out.
                 match.StartMatch(7319); Fight(match);
                 var b = match.Simulation.Fighters[0];
                 b.Airborne = true; b.Height += 1.1f; b.VerticalVelocity = 1.8f; b.Action = BeetleAction.Launched;
@@ -74,7 +74,7 @@ public static class BeetleArenaTerrainValidation
                 for (int i = 0; i < 120 && !b.HasFallen; i++) Step(match);
                 Require(b.HasFallen, "Ring-out failed on arena " + mode);
                 report.AppendLine($"Arena {mode}: landing and ring-out PASS.");
-                // 两场实际自动比赛，采样检查可视模型接触；不设置指定胜者或定时强制结束。
+                // Two full automated matches sampling visible mesh contacts; no predetermined winner or forced timer cutoff.
                 foreach (int seed in new[] { 7319, 7950 })
                 {
                     match.StartMatch(seed); Fight(match);
@@ -130,7 +130,7 @@ public static class BeetleArenaTerrainValidation
     }
     static void Require(bool valid, string message) { if (!valid) throw new InvalidOperationException(message); }
 
-    // 截图隔离其他打开场景，并暂时关闭其灯光；所有临时全局状态在 finally 恢复。
+    // Isolates screenshots from other open scenes and temporarily disables their lights; all temporary global states restored in finally.
     static void Capture(BeetleMatchController match, string file)
     {
         var camera = match.spectatorCamera.GetComponent<Camera>();

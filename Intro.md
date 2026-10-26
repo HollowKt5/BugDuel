@@ -84,7 +84,7 @@ Assets/BeetleArena/
 50 UI                      Spectator HUD、Event System
 ```
 
-`Editor/Setup/BeetleSceneHierarchy.cs` 提供 `Tools > Beetle Arena > Organize Scene Hierarchy`，在非 Play 的正式场景中增量整理、支持撤销并保存。根分组使用单位变换，换父节点保留世界姿态。甲虫骨骼、碰撞体组件及 HUD 内部布局不拆动。
+`Editor/Setup/BeetleSceneHierarchy.cs` 提供 `Tools > 甲壳虫斗 > 场景与安装 > 整理场景层级`，在非 Play 的正式场景中增量整理、支持撤销并保存。根分组使用单位变换，换父节点保留世界姿态。甲虫骨骼、碰撞体组件及 HUD 内部布局不拆动。
 
 `Build Game Scene` 和 `Install Switchable Arenas` 保存前调用同一整理方法，避免重新生成后散乱。验证工具用场景限定的子层级查找获取控制器，不能假定 Match Director 仍在根目录。未知自定义对象不会按猜测归类。
 
@@ -239,7 +239,7 @@ flowchart TD
 | `Lift.ContactSeconds / LostContactSeconds / HeadSweep / AngularSpeed / PeakAngularSpeed / LeverArm / OutputForce / Work / Impulse / ReleaseTangent` | 场景中由 `BeetleHornSupport.Measure()` 在求解结束后经 `Accumulate()` 写入；未注入接触层时由模拟用理想杆近似。 |
 | `Lift.LaunchVelocity / LaunchElevation / ThrowKind` | `BeetleThrowMechanics.Release()` 在模拟出手时产生的诊断结果。 |
 | `BeetleState.Throws / Tosses` | 模拟统计：全部撬投 / 额外爆发猛挑。 |
-| `Editor/Validation/BeetleThrowValidation.cs` | `Tools > Beetle Arena > Validate Lever Throws`；检查力度/质量/接触时长、静止不蓄力、六档边界与真实模型覆盖/第六档实际身后反抛、碰撞与显示隔离。 |
+| `Editor/Validation/BeetleThrowValidation.cs` | `Tools > 甲壳虫斗 > 验证 > 战斗 > 杠杆投掷`；检查力度/质量/接触时长、静止不蓄力、六档边界与真实模型覆盖/第六档实际身后反抛、碰撞与显示隔离。 |
 
 撬投现分六档：近身短撬、快速前抛、中弧抛、高弧强抛、后扬抛、强力越顶反抛。`Classify()` 按不等距速度阈值和实际方向分档，`TierNumber()` 映射显示档位；出手速度仍由有效接触连续计算。
 
@@ -293,7 +293,7 @@ flowchart TD
 | 起伏地图或支撑规则 | `Environment/BeetleArenaSurface.cs`、`Editor/Setup/BeetleArenaTerrainSetup.cs` | `BeetleArenaTerrainValidation`，并检查 IK 与接触 |
 | 卡通外观 | `Shaders/BeetleToon.shader`、`Editor/Setup/BeetleArenaToonSetup.cs` | `BeetleArenaToonSetup.Validate()` |
 
-常用编辑器菜单位于 `Tools > Beetle Arena`，包括 `Validate Simulation`、`Validate Clash Actions`、`Validate Horn Supported Lift`、`Validate Lift Continuity`、`Validate Motion Continuity` 、`Validate Contact Escape` 和 `Validate Switchable Arenas`。`BeetleImportedValidation.Run()` 是代码入口。
+常用编辑器菜单位于 `Tools > 甲壳虫斗 > 验证`，包括 `Validate Simulation`、`Validate Clash Actions`、`Validate Horn Supported Lift`、`Validate Lift Continuity`、`Validate Motion Continuity` 、`Validate Contact Escape` 和 `Validate Switchable Arenas`。`BeetleImportedValidation.Run()` 是代码入口。
 
 `Build Game Scene` 会重建生成场景/预制体，并设置构建场景列表与 Play 启动场景；它不是只读检查。模型结构变更应改构建器，再生成和验证，避免只改生成结果后被下次构建覆盖。
 
@@ -351,7 +351,7 @@ flowchart TD
 - `BeetleSimulation.Step/Think/SetAction` 是 RecoveryTime / RecoveryCooldown 的唯一正常写入者；计时跨 Recover↔Retreat 续接保持，退出时启用冷却。
 - 外层 Exchange.Recovery 是短重整机会，个体可分别休息或寻触；不再按外层状态同步锁住双方。
 - `SupportAdjustmentMotion` 只输出重心/足端意图；不负责体力恢复，不控制比赛阶段。先重心转移再低提足、最后回正。
-- 恢复改造依据见 TechnicalGuide 第 22 节，当前能量/恢复参数以第 23 节为准；验证入口为 `Tools > Beetle Arena > Validate Recovery Pacing`。
+- 恢复改造依据见 TechnicalGuide 第 22 节，当前能量/恢复参数以第 23 节为准；验证入口为 `Tools > 甲壳虫斗 > 验证 > 战斗 > 恢复节奏`。
 
 ## 体力策略与中足校准补充（2026-10-13）
 
@@ -367,7 +367,7 @@ flowchart TD
 - `ProjectView` 使用独立姿态缓存执行相同的方向备用策略，仅修改可见 Transform。它不调用动画退让/缓存提交，也不回写模拟位置、速度或 AI。
 - `ProceduralAnimator.YieldHead` 从本次候选 Transform 读取头角和偏航；失败试算不能让相同姿态的头部退让越积越大。
 - `Editor/Validation/BeetleContactEscapeValidation.cs` 拥有现场恢复及测试流程；`Validation/Fixtures/FlatHornDeadlock.json` 保存已知互锁姿态、模型局部变换、动态状态与步态缓存，仅供编辑器验证。骨架或字段变更时必须明确更新夹具，不能静默跳过缺失字段。
-- `Tools > Beetle Arena > Validate Contact Escape` 覆盖恢复移动、穿透/位移上限、0/1/4 显示次数隔离和头角重试；报告在 `Artifacts/DeadlockFix`。原因与复现边界见 TechnicalGuide 第 25 节。
+- `Tools > 甲壳虫斗 > 验证 > 战斗 > 接触脱困` 覆盖恢复移动、穿透/位移上限、0/1/4 显示次数隔离和头角重试；报告在 `Artifacts/DeadlockFix`。原因与复现边界见 TechnicalGuide 第 25 节。
 
 ## 触角与口器的独立网格（2026-10-13）
 

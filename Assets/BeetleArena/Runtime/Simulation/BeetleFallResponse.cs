@@ -1,11 +1,11 @@
-using UnityEngine;
+﻿using UnityEngine;
 
 namespace BeetleArena
 {
     /// <summary>
-    /// 落台后的运动反馈。HasFallen 只代表比赛资格，不能等同于死亡或冻结动作。
-    /// Simulation 推进独立时钟，ContactSolver 确认台外地面接触，Animator 只消费这些数据。
-    /// 不从本模块重新进入战斗，也不改变已结算的胜负。
+    /// Motion feedback after falling off the ring. HasFallen denotes disqualification only, not death or motion freeze.
+    /// Simulation advances an independent clock, ContactSolver confirms out-of-ring ground contact, and Animator only consumes this data.
+    /// Does not re-enter combat from this module, nor mutate resolved match outcome.
     /// </summary>
     public sealed class BeetleFallResponse
     {
@@ -62,7 +62,7 @@ namespace BeetleArena
                 UnsupportedSeconds += dt;
         }
 
-        // 必须在最终接受的碰撞姿态上调用，不能把被回退的试算当作落地。
+        // Must be invoked on the final accepted collision pose; rolled-back candidate trials must never be treated as landing.
         public void SetFloorContact(bool supported, float downwardSpeed)
         {
             if (!Active)

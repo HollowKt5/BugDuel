@@ -3,8 +3,8 @@ using UnityEngine;
 namespace BeetleArena
 {
     /// <summary>
-    /// 两只甲虫同步回退同一份姿态提案。求解器可减少动作推进量，再完整检查碰撞。
-    /// 起点为上次接受的安全姿态，绝不使用显示帧的姿态；缓存每局分配一次。
+    /// Synchronously rolls back a pose proposal across both beetles. The solver can scale down motion advance before running a full collision pass.
+    /// The baseline is the last accepted safe pose, never a display frame pose; buffers are allocated once per match.
     /// </summary>
     public sealed class BeetleContactMotion
     {

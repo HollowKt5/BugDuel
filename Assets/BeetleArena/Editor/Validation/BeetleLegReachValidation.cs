@@ -4,10 +4,10 @@ using System.Text;
 using UnityEditor;
 using UnityEngine;
 
-/// <summary>真实模型中足的可达余量回归；同时经过生产固定步与接触求解，不只检查 IK 公式。</summary>
+/// <summary>Reachable margin regression for production model middle legs; traverses fixed steps and solver passes rather than isolated IK math.</summary>
 public static class BeetleLegReachValidation
 {
-    [MenuItem("Tools/Beetle Arena/Validate Middle Leg Reach")]
+    [MenuItem("Tools/甲壳虫斗/验证/模型与动作/中足可达范围", false, 704)]
     public static void Run()
     {
         using var fixture = new BeetleValidationScene("LegReachValidation");

@@ -1,14 +1,14 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using UnityEngine;
 
 namespace BeetleArena
 {
-    /// <summary>每只虫独立的模块宿主：固定步时钟、冷却、抢占/退出和单次命中锁。</summary>
+    /// <summary>Per-beetle module host: fixed-step clock, cooldowns, preemption/exit, and one-off hit latching.</summary>
     public sealed class BeetleMotionRuntime
     {
         readonly Dictionary<BeetleMotionModule, float> readyAt = new Dictionary<BeetleMotionModule, float>();
-        // 配置引用变化时才重建有序注册表；保留运行中原位编辑数组的能力。
+        // Rebuilds ordered registry only when configuration references change; preserves in-place editing of arrays during runtime.
         readonly List<BeetleMotionModule> modules = new List<BeetleMotionModule>(8);
         BeetleMotionModule[] moduleConfiguration = Array.Empty<BeetleMotionModule>();
         public BeetleMotionModule Active { get; private set; }
@@ -56,7 +56,7 @@ namespace BeetleArena
         public void Tick(float dt)
         {
             if (!Active) return;
-            // 配置中移除、禁用、资产删除、腾空或判负都能中断；不留下孤立的 Module 状态。
+            // Removal from config, disabling, asset deletion, becoming airborne, or match loss can all interrupt; leaves no orphaned Module state.
             if (!Listed(Active) || !Active.CanContinue(Context)) { Cancel(); return; }
             Elapsed += dt;
             if (Elapsed >= activeDuration) Cancel();
@@ -127,7 +127,7 @@ namespace BeetleArena
         }
         bool Overlay(BeetleMotionModule module) => module && module.enabledInMatch &&
             module.Channel == BeetleMotionChannel.SupportOverlay && module.CanStart(Context);
-        // 与脚端一样，主动作优先；删除触角模块只恢复静息姿态，不影响比赛随机数。
+        // Like feet, primary action takes priority; deleting antenna module simply restores rest pose without affecting match RNG.
         public bool SampleAntenna(int slot, out Vector3 angles)
         {
             if (Listed(Active) && Active.SampleAntenna(Context, Phase, slot, out angles)) return true;
@@ -139,7 +139,7 @@ namespace BeetleArena
         {
             // Bracing both rear feet is support, not a request to swing both hind legs.
             if (PlantSupportLeg(slot)) { offset = Vector3.zero; return false; }
-            // 后足作为同一支撑对仲裁：主动作驱动一侧时，覆盖层不能同时抬另一侧。
+            // Hind legs arbitrate as a shared support pair: when primary action drives one side, the overlay cannot simultaneously lift the other.
             if (slot == 2 || slot == 5)
             {
                 if (Listed(Active))
@@ -155,7 +155,7 @@ namespace BeetleArena
                 }
                 offset = Vector3.zero; return false;
             }
-            // 主动作拥有该腿时，低优先级调整不叠加争夺同一脚端。
+            // When primary action owns a leg, lower-priority adjustments do not layer or contest the same foot endpoint.
             if (Listed(Active) && Active.SampleLeg(Context, Phase, slot, out offset)) return true;
             for (int i = 0; i < modules.Count; i++)
                 if (Overlay(modules[i]) && modules[i].SampleLeg(Context, 0, slot, out offset)) return true;
@@ -169,13 +169,13 @@ namespace BeetleArena
             bool left = module.SampleLeg(Context, phase, 2, out Vector3 leftOffset);
             bool right = module.SampleLeg(Context, phase, 5, out Vector3 rightOffset);
             owned = left || right;
-            // 单个模块意外请求双后足时也保持一侧支撑；正常模块自己安排左右交替。
+            // Preserves unilateral support even if an individual module inadvertently requests dual hind-leg lifts; normal modules alternate sides.
             bool selected = slot == 2 ? left : right && !left;
             offset = selected ? (slot == 2 ? leftOffset : rightOffset) : Vector3.zero;
             return selected;
         }
 #if UNITY_EDITOR
-        // 只读解释资格；不调用 TryStart，不消耗比赛随机数，也不改变计时/冷却。
+        // Read-only eligibility interpretation: does not invoke TryStart, consume match RNG, or alter timers/cooldowns.
         public string EditorEligibility(BeetleMotionModule module)
         {
             if(!module)return "missing";
@@ -188,7 +188,7 @@ namespace BeetleArena
             if(readyAt.TryGetValue(module,out float time) && Context.SimulationTime<time)return "cooldown: "+(time-Context.SimulationTime).ToString("F2")+"s";
             return module.CanStart(Context)?"eligible (not guaranteed selection)":"CanStart=false (see module conditions)";
         }
-        // 只用于隔离的编辑器预览。跳过随机选择/资格；沿用实际动作采样和物理反馈。
+        // Strictly for isolated editor previews. Bypasses random selection/eligibility; retains physical action sampling and physics feedback.
         public void EditorPreviewStart(BeetleMotionModule module)
         {
             if(!Listed(module) || module.Channel!=BeetleMotionChannel.Combat)throw new InvalidOperationException("Preview needs a registered, enabled combat module.");

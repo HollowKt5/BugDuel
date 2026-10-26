@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using BeetleArena;
@@ -6,16 +6,16 @@ using UnityEditor;
 using UnityEngine;
 
 /// <summary>
-/// bug.fbx 的显式解剖绑定。该模型是 22 个静态网格，没有原生骨架。
-/// 保留所有源顶点、三角形、UV 和贴图；生成独立网格副本及六条三段关节链。
-/// 本表是对当前模型的配置，不是任意 FBX 的自动识别器。
+/// Explicit anatomical binding for bug.fbx. The model comprises 22 static meshes without native skeletal rigging.
+/// Preserves all source vertices, triangles, UVs, and textures; generates independent mesh copies and six 3-segment joint chains.
+/// Configuration calibrated specifically for current model; not a generalized FBX recognizer.
 /// </summary>
 public static class BeetleImportedModelBuilder
 {
     const string Folder = "Assets/BeetleArena/Generated/ImportedModel";
     static readonly Dictionary<int, MeshFilter> parts = new Dictionary<int, MeshFilter>();
-    // 源模型：Y 朝头部、-X 朝背部、Z 为左右。统一为 Unity Y 向上、Z 朝前。
-    // 5 倍归一化后仍由 MatchSettings.visualScale 与个体 size 统一缩放。
+    // Source model: Y forward (head), -X dorsal, Z lateral. Normalized to Unity Y up, Z forward.
+    // Normalized by 5x, subsequently scaled by MatchSettings.visualScale and individual size.
     public static Vector3 Point(Vector3 p) => new Vector3(-p.z * 5, (.17f - p.x) * 5, (p.y - .43f) * 5);
     static Vector3 Direction(Vector3 p) => new Vector3(-p.z, -p.x, p.y);
 
@@ -36,7 +36,7 @@ public static class BeetleImportedModelBuilder
         rig.model = anim.model; rig.body = anim.bodyPivot; rig.bodyRest = anim.bodyPivot.localPosition;
         rig.bindings = new BeetleModelRig.LegBinding[6]; anim.legs = new BeetleLegRig[6];
         var renderers = new List<Renderer>(); var collisions = new List<Collider>();
-        // 鞘翅/腹部/前胸硬壳保持刚性；头部与真正的头角共同抬举。
+        // Elytra, abdomen, and prothorax shells remain rigid; head and cephalic horn pitch together.
         foreach (int id in new[] { 0, 12, 3, 22 }) renderers.Add(RigidPart(id, anim.model, anim.bodyPivot));
         foreach (int id in new[] { 5, 13, 15, 20, 21 }) renderers.Add(RigidPart(id, anim.model, anim.headPivot));
         anim.antennae = new Transform[2];
@@ -48,7 +48,7 @@ public static class BeetleImportedModelBuilder
             var pivot = Node(i == 0 ? "Left antenna" : "Right antenna", anim.headPivot,
                 BeetleAntennaBindingUpgrade.PivotInModel(side));
             anim.antennae[i] = pivot;
-            // 从源三角面裁切出独立触角和口器资源；切口同位、触角根部固定，摆动不裂开。
+            // Slices independent antenna and mouthpart assets from source triangles; coincident seams and fixed base prevent seam tearing.
             var mesh = MeshFor(id);
             var go = new GameObject("tripo_part_" + id);
             var renderer = BeetleAntennaBindingUpgrade.BindPart(go, anim.model, anim.headPivot, pivot, mesh, side);
@@ -66,7 +66,7 @@ public static class BeetleImportedModelBuilder
         {
             int side = sideIndex == 0 ? -1 : 1;
             float sourceSide = -side;
-            // 在源模型中测得的股节根、膝、胫跗关节及爪尖。两侧分别使用源网格。
+            // Measured coxa, knee, tibia-tarsus, and claw points in source model. Left and right use source submeshes.
             Vector3 h, k, a, t;
             if (pair == 0) {
                 h = new Vector3(.025f, .625f, .090f * sourceSide);
@@ -101,13 +101,13 @@ public static class BeetleImportedModelBuilder
             anim.legs[n] = new BeetleLegRig {
                 hip = hip, knee = knee, ankle = ankle, upper = hip, lower = knee, foot = ankle,
                 claws = Array.Empty<Transform>(), teeth = Array.Empty<Transform>(),
-                // 中足源站位在落地后已接近完全伸直，向前收 .18 留出支撑与补步余量。
+                // Middle legs in source model are near full extension at rest; retracts forward 0.18 to preserve support and recovery stride margins.
                 hipInBody = anim.bodyPivot.InverseTransformPoint(h), restAnkle = t + Vector3.forward * (pair == 2 ? .32f : pair == 1 ? .18f : 0),
                 upperLength = binding.upperLength, lowerLength = binding.lowerLength, side = side, pair = pair
             };
             int[] ids = side < 0 ? (pair == 0 ? new[] { 1 } : pair == 1 ? new[] { 16, 10 } : new[] { 6, 18 })
                                 : (pair == 0 ? new[] { 7, 9 } : pair == 1 ? new[] { 4, 19 } : new[] { 17, 8 });
-            // 由足节原网格计算接触厚度，不能把所有脚的骨骼原点直接当成脚底。
+            // Calculates contact thickness from tarsus source mesh; bone origins must not be treated as foot bottom.
             Vector3 footAxis = (t-a).normalized;
             float footBottom = ids.SelectMany(id => parts[id].sharedMesh.vertices).Select(Point)
                 .Where(v => Vector3.Dot(v-a,footAxis) > .06f).Min(v => v.y);
@@ -115,10 +115,10 @@ public static class BeetleImportedModelBuilder
             foreach (int id in ids) renderers.Add(SkinnedPart(id, anim.model, new[] { hip, knee, ankle }, new[] { h, k, a, t }));
             collisions.Add(Capsule(name + " femur contact", hip, h, k, .10f));
             collisions.Add(Capsule(name + " tibia contact", knee, k, a, .15f));
-            // 爪尖通过 IK 的接地点约束。足节代理细一些，避免台面把支撑腿连同整虫反复顶起。
+            // Claw tips constrained via IK contact targets. Leg colliders remain slender to prevent arena surface from repeatedly hoisting body.
             collisions.Add(Capsule(name + " tarsus contact", ankle, a, t, .028f));
         }
-        // 腹部、前胸使用低面数凸椭球；长角用分段胶囊，保留分叉间的空隙。
+        // Abdomen and prothorax use low-poly convex ellipsoids; long horn uses segmented capsules, preserving inter-fork gap.
         collisions.Add(Ellipsoid("Abdomen contact", anim.bodyPivot, new Vector3(0, 1.02f, -.48f), new Vector3(.82f, .49f, 1.03f)));
         collisions.Add(Ellipsoid("Thorax contact", anim.bodyPivot, new Vector3(0, 1.06f, 1.12f), new Vector3(.74f, .47f, .50f)));
         collisions.Add(Ellipsoid("Head contact", anim.headPivot, Point(new Vector3(.065f, .70f, 0)), new Vector3(.30f, .24f, .28f)));
@@ -145,8 +145,8 @@ public static class BeetleImportedModelBuilder
     static Mesh MeshFor(int id)
         => ConvertSourceMesh(parts[id].sharedMesh, id);
 
-    // 场景完整构建与增量触角升级共用同一坐标转换，避免旧场景与新建场景方向不一致。
-    // 返回独立副本，调用者负责保存或销毁；绝不修改源 FBX Mesh。
+    // Scene builder and incremental antenna upgrade share identical coordinate transform, ensuring consistent orientation across builds.
+    // Returns independent copy; caller owns saving or disposal; never mutates source FBX Mesh.
     public static Mesh ConvertSourceMesh(Mesh source, int id)
     {
         var mesh = UnityEngine.Object.Instantiate(source); mesh.name = "FBX part " + id;
@@ -200,7 +200,7 @@ public static class BeetleImportedModelBuilder
                 float d = (vertices[i] - (joints[j] + line * t)).sqrMagnitude;
                 if (d < best) { best = d; nearest = j; }
             }
-            // 大部分硬质腿段为刚性权重，仅在关节附近的窄区间做相邻骨骼混合。
+            // Most rigid leg segments use rigid weights, blending adjacent bones only across narrow joint intervals.
             var w = new BoneWeight { boneIndex0 = nearest, weight0 = 1 };
             for (int joint = 1; joint <= 2; joint++) {
                 float r = Vector3.Distance(vertices[i], joints[joint]);

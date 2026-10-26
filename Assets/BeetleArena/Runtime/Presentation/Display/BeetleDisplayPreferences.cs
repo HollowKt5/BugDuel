@@ -24,6 +24,10 @@ namespace BeetleArena
         public static string ScenePixelSizeKey(string scene)=>PixelSizeKey+"."+scene;
         public static string SceneDensePixelSizeKey(string scene)=>DensePixelSizeKey+"."+scene;
         public static bool IsDither(BeetleDisplayStyle style)=>style==BeetleDisplayStyle.OrderedDither || style==BeetleDisplayStyle.DenseDither;
+        public static float DitherPixelScale(int level)=>Mathf.Clamp(level,1,3)==3?2.5f:Mathf.Clamp(level,1,2);
+        public static int DitherPixelLevel(float pixels)=>pixels<1.5f?1:pixels<2.25f?2:3;
+        public static void NextPixelSize()=>PixelSize=PixelSize%3+1;
+        public static string PixelSizeLabel=>PixelSize+" 档";
         static string PixelKey(string scene,BeetleDisplayStyle style)=>style==BeetleDisplayStyle.DenseDither?SceneDensePixelSizeKey(scene):ScenePixelSizeKey(scene);
         public static BeetleDisplayStyle GetStyle(string scene)
         {
@@ -36,14 +40,14 @@ namespace BeetleArena
             var authored=Profile?Profile.Find(scene):null;
             var style=GetStyle(scene);
             var material=IsDither(style)?authored?.DitherMaterial(style):authored?.customMaterial;
-            int fallback=material&&material.HasProperty("_PixelSize")?Mathf.RoundToInt(material.GetFloat("_PixelSize")):
-                style==BeetleDisplayStyle.DenseDither?1:authored?.pixelSize??PlayerPrefs.GetInt(PixelSizeKey,3);
-            return PlayerPrefs.GetInt(PixelKey(scene,style),fallback);
+            int fallback=material&&material.HasProperty("_PixelSize")?(IsDither(style)?DitherPixelLevel(material.GetFloat("_PixelSize")):Mathf.RoundToInt(material.GetFloat("_PixelSize"))):
+                authored?.pixelSize??PlayerPrefs.GetInt(PixelSizeKey,2);
+            return Mathf.Clamp(PlayerPrefs.GetInt(PixelKey(scene,style),fallback),1,IsDither(style)?3:6);
         }
         public static Material GetCustomMaterial(string scene)=>Profile?Profile.Find(scene)?.customMaterial:null;
         public static Material GetDitherMaterial(string scene)=>Profile?Profile.Find(scene)?.DitherMaterial(GetStyle(scene)):null;
         public static void SetStyle(string scene,BeetleDisplayStyle style){PlayerPrefs.SetInt(SceneStyleKey(scene),(int)style);Save();}
-        public static void SetPixelSize(string scene,int pixels){PlayerPrefs.SetInt(PixelKey(scene,GetStyle(scene)),Mathf.Clamp(pixels,1,6));Save();}
+        public static void SetPixelSize(string scene,int pixels){PlayerPrefs.SetInt(PixelKey(scene,GetStyle(scene)),Mathf.Clamp(pixels,1,IsDither(GetStyle(scene))?3:6));Save();}
         public static void UseSceneDefault(string scene)
         {PlayerPrefs.DeleteKey(SceneStyleKey(scene));PlayerPrefs.DeleteKey(ScenePixelSizeKey(scene));PlayerPrefs.DeleteKey(SceneDensePixelSizeKey(scene));Save();}
 

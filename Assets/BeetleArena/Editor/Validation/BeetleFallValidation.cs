@@ -6,11 +6,11 @@ using BeetleArena;
 using UnityEditor;
 using UnityEngine;
 
-/// <summary>真实模型落败反馈：空中连续性、地面碰撞、结束后恢复、显示隔离和双落台规则。</summary>
+/// <summary>Physical model defeat feedback: airborne continuity, ground collision, post-match recovery, presentation isolation, and double ring-out rules.</summary>
 public static class BeetleFallValidation
 {
     static void Require(bool value, string message) { if (!value) throw new Exception(message); }
-    [MenuItem("Tools/Beetle Arena/Validate Fall Recovery")]
+    [MenuItem("Tools/甲壳虫斗/验证/战斗/跌落恢复", false, 511)]
     public static void Run()
     {
         if (EditorApplication.isPlaying) throw new InvalidOperationException("Stop Play before validation.");
@@ -30,7 +30,7 @@ public static class BeetleFallValidation
                     for (int i = 0; i < baseline.Length; i++)
                         Require(Vector3.Distance(baseline[i], displayed[i]) < .00005f, "Render changed simulation trajectory");
                 }
-            // 同步双落台仍是平局；恢复动作不能把负方重新加入战斗。
+            // Synchronous double ring-outs result in a draw; recovery motions must not re-admit defeated fighters to active combat.
             var sim = new BeetleSimulation(settings, 71);
             while (sim.Phase == MatchPhase.Countdown) sim.Step(.02f);
             foreach (var b in sim.Fighters) { b.HasFallen = true; b.Airborne = true; b.Height = -1; }
@@ -52,7 +52,7 @@ public static class BeetleFallValidation
         var sim = match.Simulation;
         while (sim.Phase == MatchPhase.Countdown) sim.Step(.02f);
         var b = sim.Fighters[1]; var actor = match.actors[1]; var anim = actor.animator;
-        // 第四例紧贴台边下落，覆盖身体/长角尚未完全离开侧壁的接触。
+        // Case 4 drops flush against the rim, covering contacts where body/horns have not fully cleared lateral wall.
         b.Position = new Vector2(match.settings.arenaRadius + (variant == 3 ? .4f : 2.7f), 0);
         b.Heading = variant == 1 ? 0 : -90;
         b.Height = variant == 2 ? 1.4f : .2f;

@@ -8,7 +8,7 @@ using UnityEngine.InputSystem;
 
 namespace BeetleArena.Campaign
 {
-    public enum CampaignPage { MainMenu, Saves, Greenhouse, Catching, Market, League, Arena, Auction, SpecimenRoom }
+    public enum CampaignPage { MainMenu, Saves, Greenhouse, Catching, Market, League, Arena, Auction, SpecimenRoom, Breeding }
     public readonly struct CampaignCurrencyChange
     {
         public readonly long Before,After,Delta,Sequence;
@@ -62,7 +62,9 @@ namespace BeetleArena.Campaign
         CampaignSession pendingSession;
         Action afterCommit;
         bool notifyCommit,pendingCurrencyReset,currencyReady;
-        string commitMessage,pendingThumbnail;
+        string commitMessage;
+        CampaignSave pendingSave;
+        CampaignThumbnailCapture pendingCapture;
         float careClock, saveClock, calendarClock;
         string latestThumbnail;
         bool dirty;
@@ -75,7 +77,7 @@ namespace BeetleArena.Campaign
         {
             if (Instance && Instance != this) { Destroy(gameObject); return; }
             Instance=this; DontDestroyOnLoad(gameObject);
-            repository=new CampaignSaveRepository(StorageOverride ?? Path.Combine(Application.persistentDataPath,"Campaign"));
+            repository=new CampaignSaveRepository(StorageOverride ?? Path.Combine(BeetleStoragePaths.PersistentData,"Campaign"));
             var catalog=CampaignCatalog.Defaults();
             string builtIn=Path.Combine(Application.streamingAssetsPath,"campaign-content.json");
             if(File.Exists(builtIn) && TryLoadCatalog(builtIn,"内置内容读取失败，使用默认内容：",out var loadedCatalog))catalog=loadedCatalog;
@@ -142,27 +144,34 @@ namespace BeetleArena.Campaign
             if(action=="Help")return Execute(s=>s.Rescue(s.State.selectedId));
             return false;
         }
-        void BeginCommit(CampaignSession candidate,string message,Action completed=null,bool notify=true,int slot=0,bool newJourney=false,bool resetCurrency=false,string journeyThumbnail=null)
+        void BeginCommit(CampaignSession candidate,string message,Action completed=null,bool notify=true,int slot=0,bool newJourney=false,bool resetCurrency=false,string journeyThumbnail=null,bool captureThumbnail=false)
         {
             if(Busy)throw new InvalidOperationException("请等待当前保存或转场完成");
+            var captureFrame=captureThumbnail?ThumbnailFrame():null;
+            var capture=captureFrame?new CampaignThumbnailCapture(captureFrame):null;
             pendingSession=candidate; commitMessage=message; afterCommit=completed; notifyCommit=notify;
             pendingCurrencyReset=resetCurrency||newJourney||Session==null;
             var snapshot=Snapshot(candidate);
             // A different journey supplies its own image, including an absent image in an old save.
             if(newJourney||resetCurrency)snapshot.thumbnail=journeyThumbnail;
-            pendingThumbnail=snapshot.thumbnail;
-            pendingWrite=repository.WriteAsync(slot,snapshot);
+            pendingSave=snapshot;pendingCapture=capture;
+            pendingWrite=capture==null?repository.WriteAsync(slot,snapshot):WriteSnapshot(slot,snapshot,capture);
+        }
+        async Task WriteSnapshot(int slot,CampaignSave snapshot,CampaignThumbnailCapture capture)
+        {
+            snapshot.thumbnail=await capture.Result.ConfigureAwait(false)??snapshot.thumbnail;
+            await repository.WriteAsync(slot,snapshot).ConfigureAwait(false);
         }
         void FinishCommit(bool invokeCallback)
         {
             if(pendingWrite==null)return;
-            var write=pendingWrite; var candidate=pendingSession; var callback=afterCommit; var thumbnail=pendingThumbnail; bool notify=notifyCommit,resetCurrency=pendingCurrencyReset;
-            pendingWrite=null; pendingSession=null; afterCommit=null; pendingThumbnail=null;
+            var write=pendingWrite; var candidate=pendingSession; var callback=afterCommit; var snapshot=pendingSave; bool notify=notifyCommit,resetCurrency=pendingCurrencyReset;
+            pendingWrite=null; pendingSession=null; afterCommit=null; pendingSave=null;pendingCapture=null;
             try { write.GetAwaiter().GetResult(); }
             catch(Exception error) when(IsStorageFailure(error)) { ReportExternalFailure("保存失败，操作未提交：",error); return; }
             catch(Exception error) { ReportUnexpectedFailure("保存失败，操作未提交：",error); return; }
             var previousState=Session?.State;
-            Session=candidate; latestThumbnail=thumbnail; dirty=false; saveClock=0;
+            Session=candidate; latestThumbnail=snapshot.thumbnail; dirty=false; saveClock=0;
             CommitCurrencyBalance(candidate.State.coins,resetCurrency);
             SessionCommitted?.Invoke(previousState,candidate.State,resetCurrency);
             if(notify) { Message=commitMessage; Changed?.Invoke(); }
@@ -300,8 +309,7 @@ namespace BeetleArena.Campaign
                 saveClock=0;
                 if(dirty)
                 {
-                    CaptureThumbnail();
-                    BeginCommit(new CampaignSession(CloneState(Session.State),Session.Catalog),null,null,false);
+                    BeginCommit(new CampaignSession(CloneState(Session.State),Session.Catalog),null,null,false,captureThumbnail:true);
                 }
             }
         }
@@ -310,12 +318,13 @@ namespace BeetleArena.Campaign
         public void Go(CampaignPage page)
         {
             if(Busy)return;
+            if(page==CampaignPage.Auction) { CampaignView.RequestChampionAuction=true;page=CampaignPage.Market; }
             if(!Application.CanStreamedLevelBeLoaded(SceneName(page))) { Message="无法载入场景："+SceneName(page); return; }
             // Camera orbit and sidebar changes do not dirty domain state, but still change the picture.
-            bool captured=Session!=null && CaptureThumbnail();
+            bool captured=ThumbnailFrame();
             if(Session!=null && (dirty||captured))
             {
-                BeginCommit(new CampaignSession(CloneState(Session.State),Session.Catalog),Message,()=>Navigate(page),false);
+                BeginCommit(new CampaignSession(CloneState(Session.State),Session.Catalog),Message,()=>Navigate(page),false,captureThumbnail:captured);
             }
             else Navigate(page);
         }
@@ -328,23 +337,14 @@ namespace BeetleArena.Campaign
         }
         public bool CaptureThumbnail()
         {
-            if(Session==null || Busy || Constructing || SceneManager.GetActiveScene().name!=SceneName(CampaignPage.Greenhouse))return false;
-            var view=FindFirstObjectByType<CampaignBackdrop>(); if(!view || !view.Ready || !view.Frame)return false;
-            var rt=RenderTexture.GetTemporary(320,180,0); var old=RenderTexture.active; Texture2D tex=null;
-            try
-            {
-                // The observation viewport is narrower than the save thumbnail. Fit it
-                // with side bars instead of stretching the beetle back to 16:9.
-                RenderTexture.active=rt;GL.Clear(false,true,Color.black);
-                float fit=Mathf.Min(320f/view.Frame.width,180f/view.Frame.height);
-                float w=view.Frame.width*fit,h=view.Frame.height*fit;
-                GL.PushMatrix();
-                try { GL.LoadPixelMatrix(0,320,180,0);Graphics.DrawTexture(new Rect((320-w)*.5f,(180-h)*.5f,w,h),view.Frame); }
-                finally { GL.PopMatrix(); }
-                tex=new Texture2D(320,180,TextureFormat.RGB24,false);tex.ReadPixels(new Rect(0,0,320,180),0,0);tex.Apply();latestThumbnail=Convert.ToBase64String(tex.EncodeToJPG(65));
-            }
-            finally { RenderTexture.active=old; RenderTexture.ReleaseTemporary(rt); if(tex)Destroy(tex); }
+            var frame=ThumbnailFrame();if(!frame)return false;
+            latestThumbnail=CampaignThumbnailCapture.CaptureSynchronously(frame);
             return true;
+        }
+        RenderTexture ThumbnailFrame()
+        {
+            if(Session==null || Busy || Constructing || SceneManager.GetActiveScene().name!=SceneName(CampaignPage.Greenhouse))return null;
+            var view=FindFirstObjectByType<CampaignBackdrop>();return view&&view.Ready?view.Frame:null;
         }
         public void ApplyPreferences()
         {
@@ -367,6 +367,7 @@ namespace BeetleArena.Campaign
         {
             // Capture the live journey before resolving a pending load, which may replace it.
             bool captured=CaptureThumbnail();
+            pendingCapture?.UseCachedThumbnail();
             if(pendingWrite!=null)FinishCommit(invokeCallback);
             if(Session==null || (!dirty&&!captured))return;
             try { repository.Write(0,Snapshot(Session)); dirty=false;CommitCurrencyBalance(Session.State.coins,false); }

@@ -25,7 +25,7 @@ public static class CampaignThumbnailPlayValidation
         EditorApplication.playModeStateChanged+=OnPlay;
         EditorApplication.update+=()=>{if(SessionState.GetString(Key,"").Length>0&&EditorApplication.isPlaying)EditorApplication.QueuePlayerLoopUpdate();};
     }
-    [MenuItem("Tools/Beetle Arena/Validate Save Thumbnail Play Flow")]
+    [MenuItem("Tools/甲壳虫斗/验证/存档与数据/存档缩略图实机流程", false, 665)]
     public static void Run()
     {
         if(EditorApplication.isPlaying)throw new InvalidOperationException("Stop Play before thumbnail validation.");

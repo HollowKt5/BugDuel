@@ -29,10 +29,10 @@ namespace BeetleArena.Campaign
                 Btn(c,$"报名  {tier.fee:N0} G",22,140,690,38,()=>app.Execute(s=>s.EnterLeague(b.id),()=>app.Go(CampaignPage.Arena)),State.battle==null&&State.auction==null&&State.pupaAuction==null&&!b.listed&&!b.overturned);
             }
         }
-        void DrawAuction()
+        void DrawAuction(Transform parent=null)
         {
-            Title("冠军荣耀 · "+Session.PlayerSignature,"只有联赛总冠军可以入场。5–8轮竞价；成交价为冠军当前身价的2–4.5倍，冠军首配权仅可出售一次。");
-            var champions=Column(40,265,730,550);var stage=Column(790,265,770,550);
+            if(!parent)Title("冠军拍卖","");
+            var champions=Column(16,parent?164:265,754,parent?710:550,parent,name:"Champions");var stage=Column(790,parent?164:265,790,parent?710:550,parent,name:"ChampionHistory");
             if(State.auction==null)
             {
                 bool canStartAuction=State.battle==null&&State.pupaAuction==null;

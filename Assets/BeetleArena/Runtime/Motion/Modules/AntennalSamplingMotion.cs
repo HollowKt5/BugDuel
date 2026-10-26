@@ -1,4 +1,4 @@
-using UnityEngine;
+﻿using UnityEngine;
 namespace BeetleArena
 {
     [CreateAssetMenu(menuName = "Beetle Arena/Motions/Antennal Sampling")]
@@ -14,7 +14,7 @@ namespace BeetleArena
         public override BeetleMotionSample Sample(in BeetleMotionContext c, float phase) => default;
         public override bool SampleAntenna(in BeetleMotionContext c, float phase, int slot, out Vector3 angles)
         {
-            // 固定窗口的节奏不随上下文缩放时间，避免接触时频率突变造成相位瞬跳。
+            // Fixed-window rhythm avoids scaling time with context, preventing phase pop caused by sudden frequency shifts on contact.
             float sweep = InsectMotionTiming.Bout(c.Time + slot * .19f, 1.17f, 31 + slot * 17);
             float inspect = InsectMotionTiming.Bout(c.Time + slot * .07f, .57f, 73 + slot * 11);
             float side = slot % 2 == 0 ? -1 : 1;

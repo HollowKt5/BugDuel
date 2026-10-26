@@ -13,7 +13,7 @@ using UnityEngine.Rendering;
 using UnityEngine.Rendering.Universal;
 using UnityEngine.SceneManagement;
 
-/// <summary>只通过 Editor API 创建养殖场景；对既有对战场景只增添入口，不重建它。</summary>
+/// <summary>Constructs husbandry scenes via Editor API; adds entry points to existing combat scenes without rebuilding them.</summary>
 public static class BeetleHusbandrySceneBuilder
 {
     public const string ScenePath = BeetleNurseryNavigation.NurseryScenePath;
@@ -23,7 +23,7 @@ public static class BeetleHusbandrySceneBuilder
     static readonly Color Accent = new Color(.83f, .70f, .43f);
     static readonly Color ButtonColor = new Color(.19f, .31f, .23f);
 
-    // 独立批处理进程没有用户未保存场景；先载入已保存的对战场景，避开启动时的 Untitled 占位场景。
+    // Standalone batch processes lack unsaved scenes; opens saved combat scene first, bypassing initial Untitled scene.
     public static void BuildInBatch()
     {
         if (!Application.isBatchMode) throw new InvalidOperationException("Use the normal build menu in an interactive Editor.");
@@ -31,7 +31,7 @@ public static class BeetleHusbandrySceneBuilder
         BuildAndInstall();
     }
 
-    [MenuItem("Tools/Beetle Arena/Build Husbandry Scene")]
+    [MenuItem("Tools/甲壳虫斗/场景与安装/生成养殖场景", false, 201)]
     public static void BuildAndInstall()
     {
         if (EditorApplication.isPlaying) throw new InvalidOperationException("Stop Play before building the nursery.");
@@ -75,7 +75,7 @@ public static class BeetleHusbandrySceneBuilder
         }
     }
 
-    /// <summary>供验证使用：向调用方拥有的空场景构建内容，不保存场景、不更改 Build Settings。</summary>
+    /// <summary>For validation: populates empty caller-owned scene without saving scene or altering Build Settings.</summary>
     public static BeetleHusbandryController BuildContents(Scene scene)
     {
         if (!scene.IsValid() || !scene.isLoaded || scene.rootCount != 0)

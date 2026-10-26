@@ -5,18 +5,18 @@ using BeetleArena;
 using UnityEditor;
 using UnityEngine;
 
-// 纯数据验证器：不创建甲虫模型，也不注入真实碰撞求解器。
-// 用于规则与数值回归；网格防穿模、真实模型节奏在 CollisionValidation 中验证。
+// Headless data validator: spawns no beetle GameObjects and injects no physical contact solvers.
+// Used for combat rules and numerical regressions; mesh penetration and physical pacing are validated in CollisionValidation.
 public static class BeetleArenaValidation
 {
-    [MenuItem("Tools/Beetle Arena/Validate Simulation")]
-    // 按顺序检查体型范围、相同输入重算、鼓励权限、落台规则及 64 场自动对局，输出文本和 CSV。
+    [MenuItem("Tools/甲壳虫斗/验证/战斗/基础模拟", false, 500)]
+    // Sequentially checks size bounds, identical-input replay, encouragement permissions, ring-out rules, and 64 automated matches, outputting text/CSV.
     public static void Run()
     {
         var settings = AssetDatabase.LoadAssetAtPath<BeetleMatchSettings>(BeetleArenaSceneBuilder.AssetFolder + "/MatchSettings.asset");
         Require(settings, "Missing match settings");
         var report = new StringBuilder("BEETLE ARENA VALIDATION\n");
-        // 抽样验证随机配对始终满足体型区间和最大相对体型差。
+        // Samples random pairings to verify they adhere to size ranges and maximum relative size differentials.
         for (int seed = 0; seed < 2000; seed++)
         {
             var sim = new BeetleSimulation(settings, seed);
@@ -25,8 +25,8 @@ public static class BeetleArenaValidation
             Require(Mathf.Max(a, b) / Mathf.Min(a, b) <= 1 + settings.maximumSizeDifference + .00001f, "Pair mismatch cap");
         }
         report.AppendLine("PASS: 2000 seeds respect size range and maximum relative difference.");
-        // 用同种子、同输入时间线重算纯数据模拟；只能证明本环境该路径的一致性，
-        // 不能据此宣称带 Unity 场景碰撞的游戏跨平台逐帧确定。
+        // Re-evaluates headless simulation with identical seed and input timeline; demonstrates reproducibility within current environment,
+        // without claiming bitwise cross-platform determinism for scene physics.
         var first = Started(settings, 189);
         var second = Started(settings, 189);
         for (int i = 0; i < 3500; i++)
@@ -36,7 +36,7 @@ public static class BeetleArenaValidation
         }
         for (int i = 0; i < 2; i++) Require(first.Fighters[i].Position == second.Fighters[i].Position && first.Fighters[i].Stamina == second.Fighters[i].Stamina, "Deterministic replay");
         report.AppendLine("PASS: identical seeds and encouragement timelines reproduce state exactly.");
-        // 鼓励必须接受首次合法请求、拒绝冷却内连点及非法索引，且不能直接操控位移和动作。
+        // Encouragement must accept first valid request, reject cooldown spam and invalid indices, and cannot manipulate position/actions directly.
         var cheer = Started(settings, 91);
         var p = cheer.Fighters[0].Position; var v = cheer.Fighters[0].Velocity; var action = cheer.Fighters[0].Action;
         Require(cheer.Encourage(0), "First encouragement accepted");
@@ -44,7 +44,7 @@ public static class BeetleArenaValidation
         Require(cheer.Fighters[0].Position == p && cheer.Fighters[0].Velocity == v && cheer.Fighters[0].Action == action, "Encouragement cannot steer or attack");
         Require(!cheer.Encourage(-1) && !cheer.Encourage(2), "Invalid fighter indices rejected");
         report.AppendLine("PASS: encouragement cannot change position, velocity or action; cooldown rejects spam.");
-        // 单独覆盖零体力、接近边缘、单方掉落和同时掉落，避免把擦边/疲劳误判为失败。
+        // Evaluates zero stamina, edge proximity, single ring-out, and simultaneous ring-out, preventing edge grazes or fatigue from false loss rulings.
         var inside = Started(settings, 7);
         inside.Fighters[0].Stamina = 0;
         inside.Fighters[0].Position = new Vector2(settings.arenaRadius - .05f, 0);
@@ -66,7 +66,7 @@ public static class BeetleArenaValidation
         float longest = 0, shortest = 300, total = 0;
         int inDurationRange = 0;
         var durations = new StringBuilder("Seed,EncouragedFighter,Winner,Seconds\n");
-        // 批量跑无人鼓励、鼓励 A、鼓励 B 三类输入，并检查有限数、体力和平衡范围。
+        // Sweeps batches across unassisted, encourage A, and encourage B inputs, asserting finite values, stamina, and balance ranges.
         for (int seed = 0; seed < 64; seed++)
         {
             var sim = Started(settings, seed * 7919 + 31);
@@ -87,7 +87,7 @@ public static class BeetleArenaValidation
             if (sim.Winner == 0) winnerA++;
             foreach (var fighter in sim.Fighters) { shoves += fighter.Shoves; pries += fighter.Pries; }
             longest = Mathf.Max(longest, sim.Elapsed); shortest = Mathf.Min(shortest, sim.Elapsed); total += sim.Elapsed;
-            // 记录落在目标时长内的场次，但实际比赛始终以落台结束，不在 180 秒强制判定。
+            // Logs bouts falling within target duration; actual combat terminates upon ring-out without arbitrary 180s cutoffs.
             if (sim.Elapsed >= 60 && sim.Elapsed <= 180) inDurationRange++;
             durations.AppendLine($"{sim.Seed},{(seed % 3 == 0 ? -1 : seed % 3 - 1)},{sim.Winner},{sim.Elapsed:F2}");
         }
@@ -105,15 +105,15 @@ public static class BeetleArenaValidation
         File.WriteAllText("Artifacts/BeetleArena/SimulationValidation.txt", report.ToString());
         Debug.Log(report.ToString());
     }
-    // 建立纯数据实例并消费开场倒计时，返回可接收鼓励和正常战斗的状态。
+    // Instantiates headless instance and consumes opening countdown, returning state eligible for encouragement and standard combat.
     static BeetleSimulation Started(BeetleMatchSettings settings, int seed)
     {
         var sim = new BeetleSimulation(settings, seed);
         while (sim.Phase == MatchPhase.Countdown) sim.Step(.02f);
         return sim;
     }
-    // 拒绝 NaN 和正负无穷，用于尽早暴露积分或除法异常。
+    // Rejects NaN and positive/negative infinity, catching integration or division errors early.
     static bool Finite(float value) => !float.IsNaN(value) && !float.IsInfinity(value);
-    // 统一断言入口：不满足条件就抛异常，批处理调用方会记录并返回失败退出码。
+    // Standard assertion entry: throws on condition failure; batch runner catches exception and returns failure exit code.
     static void Require(bool condition, string message) { if (!condition) throw new InvalidOperationException("Validation failed: " + message); }
 }

@@ -90,7 +90,7 @@ public static class BeetleHornBindingUpgrade
         AssetDatabase.CreateAsset(mesh, path); return mesh;
     }
 
-    [MenuItem("Tools/Beetle Arena/Correct Horn Anatomy Bindings")]
+    [MenuItem("Tools/甲壳虫斗/模型与绑定/修正角部解剖绑定", false, 401)]
     public static void Apply()
     {
         if (EditorApplication.isPlaying) throw new InvalidOperationException("Stop Play before upgrading bindings.");

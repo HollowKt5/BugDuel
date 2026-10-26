@@ -7,7 +7,7 @@ using BeetleArena;
 using UnityEditor;
 using UnityEngine;
 
-/// <summary>撬投回归：真实角部入角、受击者飞行、连续性、有效接触积分及显示独立性。</summary>
+/// <summary>Prying throw regression: physical horn engagement, defender ballistics, continuity, work integration, and presentation isolation.</summary>
 public static class BeetleThrowValidation
 {
     static void Require(bool condition, string message)
@@ -16,7 +16,7 @@ public static class BeetleThrowValidation
             throw new Exception(message);
     }
 
-    [MenuItem("Tools/Beetle Arena/Validate Lever Throws")]
+    [MenuItem("Tools/甲壳虫斗/验证/战斗/杠杆投掷", false, 510)]
     public static void Run() => RunCases(true);
     public static void LandingOnly() => RunCases(true, true);
     public static void SlidingBaseline() => SlidingCases(false);
@@ -345,13 +345,13 @@ public static class BeetleThrowValidation
             float muscleForce = settings.throwMuscleForce;
             int throws = 0;
             var tiers = new System.Collections.Generic.HashSet<int>();
-            // 爆发储备加入后，重标定受控输入以覆盖六档；不改变游戏阈值或放松结果断言。
+            // Recalibrates controlled inputs to cover six tiers following burst reserve integration; preserves gameplay thresholds and assertions.
             float[] forceScales = { .30f, .60f, 1f, 1.65f, .62f, 1f };
             for (int arena = 0; arena < 2; arena++)
                 for (int variant = landingOnly ? 5 : 0; variant < 6; variant++)
                 {
                     settings.tossChance = variant >= 4 ? 1 : 0;
-                    // 弱撬保留足够的入角能力，降低头部输出力；否则只会验证“根本没撬起来”。
+        // Weak prying retains sufficient engagement capability while lowering head output; prevents degenerating into tests of failure to lift.
                     settings.throwMuscleForce = muscleForce * forceScales[variant];
                     match.SelectArena(arena);
                     match.StartMatch(71);
@@ -435,7 +435,7 @@ public static class BeetleThrowValidation
                         if (!b.HasFallen)
                             worstBudgetExcess = Mathf.Max(worstBudgetExcess, step - budget);
                         peak = Mathf.Max(peak, b.Height - b.SurfaceHeight);
-                        // 相对于出手时攻击者前向；不能用随后自动追踪目标而旋转的 Forward。
+                        // Evaluates relative to attacker forward heading at release; cannot use Forward rotated by subsequent auto-tracking.
                         if (launchTick >= 0)
                             minRelative = Mathf.Min(minRelative, Vector2.Dot(b.Position - a.Position, Vector2.right));
                         match.spectatorCamera.Tick(sim, .02f);
@@ -596,7 +596,7 @@ public static class BeetleThrowValidation
 
     static void CheckMechanics(BeetleMatchSettings settings, StringBuilder report)
     {
-        // 验证不等距分界的两侧及精确边界；方向门槛不能被单纯的大速度绕过。
+        // Validates boundaries and adjacent zones across non-uniform tiers; directional gates cannot be bypassed by high speed alone.
         float[] cuts = { settings.throwQuickSpeed, settings.throwArcSpeed, settings.throwHighArcSpeed };
         for (int i = 0; i < cuts.Length; i++)
         {

@@ -1,10 +1,10 @@
-using System;
+﻿using System;
 using UnityEngine;
 using UnityEngine.Rendering;
 
 namespace BeetleArena
 {
-    /// <summary>运行时贴地阵营环。每个顶点单独查询地面，避免平圆盘与曲面交叉产生深度闪烁。</summary>
+    /// <summary>Runtime ground-conforming faction ring. Vertices query ground independently to prevent depth fighting between flat disc and curved terrain.</summary>
     public sealed class BeetleGroundMarker : IDisposable
     {
         const int Segments = 48;
@@ -50,7 +50,7 @@ namespace BeetleArena
             if (!visible) return;
             target.SetPositionAndRotation(new Vector3(center.x, 0, center.y), Quaternion.identity);
             target.localScale = Vector3.one;
-            // 标记无需每帧追踪微小位移；缓存中心，减少静止时地形查询。仍使用当前画面中的位置。
+            // Marker does not track tiny sub-frame displacements; caches center to minimize terrain queries at rest while tracking current visual pose.
             if (hasSample && (center - lastCenter).sqrMagnitude < .000001f) return;
             bool supported = true;
             for (int i = 0; i < vertices.Length; i++)
@@ -65,11 +65,11 @@ namespace BeetleArena
                 vertices[i] = new Vector3(offsets[i].x, height + .045f, offsets[i].y);
                 normals[i] = Vector3.up;
             }
-            // 边缘处宁可隐藏标记，也不让缺支撑的环悬在台外或刺入悬崖。
+            // Conceals marker along cliff edges rather than dangling ungrounded rings or clipping into steep drops.
             renderer.enabled = supported;
             if (!supported) { hasSample = false; return; }
             mesh.vertices = vertices;
-            // 拓扑和法线不会随中心位置变化，每个运行时网格仅上传一次。
+            // Topology and normals remain constant across center movements; uploaded once per runtime mesh.
             if (!topologyUploaded) { mesh.normals = normals; mesh.triangles = triangles; topologyUploaded = true; }
             mesh.RecalculateBounds();
             lastCenter = center; hasSample = true;

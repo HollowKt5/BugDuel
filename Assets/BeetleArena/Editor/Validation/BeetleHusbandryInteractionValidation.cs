@@ -16,7 +16,7 @@ public static class BeetleHusbandryInteractionValidation
     const string ReportPath = "Artifacts/Framework/HusbandryInteractionValidation.txt";
 
 #if UNITY_EDITOR
-    [MenuItem("Tools/Beetle Arena/Validate Husbandry Interaction")]
+    [MenuItem("Tools/甲壳虫斗/验证/养殖/交互流程", false, 541)]
 #endif
     public static void Run()
     {
@@ -359,7 +359,7 @@ public static class BeetleHusbandryInteractionValidation
         BeetleValidationScene fixture = null;
         try
         {
-            // 复制已保存场景后清空自有副本，避免要求调用方保存未命名场景。
+        // Cleans up cloned copies after duplicating saved scenes, avoiding prompting callers to save Untitled scenes.
             fixture = new BeetleValidationScene("NurseryInteraction");
             scene = fixture.Scene;
             foreach (var root in scene.GetRootGameObjects()) UnityEngine.Object.DestroyImmediate(root);

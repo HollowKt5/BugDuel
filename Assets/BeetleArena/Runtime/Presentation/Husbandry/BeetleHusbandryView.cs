@@ -1,9 +1,9 @@
-using BugDuel.Domain;
+﻿using BugDuel.Domain;
 using UnityEngine;
 
 namespace BeetleArena
 {
-    /// <summary>养殖专用姿态表现。只读个体快照；不用比赛状态模拟养殖，也不由骨骼决定死亡。</summary>
+    /// <summary>Husbandry pose presentation: read-only individual snapshot. Does not simulate husbandry with match states, nor let bones determine death.</summary>
     public sealed class BeetleHusbandryView : MonoBehaviour
     {
         public BeetleHusbandryController controller;
@@ -58,7 +58,7 @@ namespace BeetleArena
             }
             if (!changed && controller.IsPaused) return;
             bool dead = individual.Stage == LifeStage.Dead;
-            if (!changed && dead) return; // 死亡冻结最后姿态，不能继续播放挣扎。
+            if (!changed && dead) return; // Freezes final pose on death, halting further flailing animations.
             if (individual.Condition.Nutrition > previousNutrition + .05) eating = 2;
             previousNutrition = individual.Condition.Nutrition;
             time += dt;
@@ -67,7 +67,7 @@ namespace BeetleArena
             roll = Mathf.Lerp(roll, individual.IsOverturned ? 180 : 0, 1 - Mathf.Exp(-dt * 6));
             float rocking = struggling ? Mathf.Sin(time * 7.5f) * 8 : 0;
             sourceRig.bodyPivot.localRotation = Quaternion.Euler(struggling ? Mathf.Sin(time * 5) * 3 : 0, 0, roll + rocking);
-            // 翻倒时由背壳接近土面支撑；扶正过程保留一点抬起，防身体转动穿入地面。
+            // Elytra contacts substrate for support when overturned; righting preserves slight clearance to prevent clipping into ground during roll.
             float turn = Mathf.Abs(Mathf.Sin(roll * Mathf.Deg2Rad));
             float settledHeight = Mathf.Lerp(bodyRest.y, .57f, Mathf.Clamp01(roll / 180));
             sourceRig.bodyPivot.localPosition = new Vector3(bodyRest.x, settledHeight + turn * .4f, bodyRest.z);

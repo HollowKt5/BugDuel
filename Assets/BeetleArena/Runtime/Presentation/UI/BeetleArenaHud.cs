@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using TMPro;
 using UnityEngine;
 using L=BeetleArena.Campaign.CampaignLocalization;
@@ -6,25 +6,25 @@ using L=BeetleArena.Campaign.CampaignLocalization;
 namespace BeetleArena
 {
     [Serializable]
-    // 单名选手的 UI 引用集合；由场景生成器赋值，不保存独立战斗数据。
+    // UI reference container for an individual contestant; assigned by scene builder, holds no independent match state.
     public sealed class FighterHud
     {
-        // 身份/尺寸、动作、体力、抓地和鼓励按钮的文本组件。
+        // Text components for identity/size, action, stamina, grip, and encouragement button.
         public TMP_Text name, measurements, action, staminaText, footingText, cheerText;
-        // 填充条依次表示体力、平衡×支撑和鼓励冷却进度。
+        // Fill bars represent stamina, balance * support, and encouragement cooldown progress in sequence.
         public UnityEngine.UI.Image staminaFill, footingFill, cheerFill;
         public UnityEngine.UI.Button cheerButton;
     }
 
-    // 表现层：读取 MatchController/Simulation 快照更新 UI，按钮统一转交控制器处理。
+    // Presentation layer: reads MatchController/Simulation snapshots to update UI; delegates button actions to controller.
     public sealed class BeetleArenaHud : MonoBehaviour
     {
-        // 数组顺序与 Fighters/actors 保持一致，0 为琥珀，1 为墨甲。
+        // Array ordering mirrors Fighters/actors: 0 for Amber, 1 for Obsidian.
         [SerializeField] public FighterHud[] fighters;
         [SerializeField] public TMP_Text clock, eventText, phaseText, roundText, resultText, pauseText;
         [SerializeField] public UnityEngine.UI.Button pauseButton, nextButton, rematchButton;
         [SerializeField] public GameObject resultPanel;
-        // 切换按钮固定在 HUD 上，不随结算面板隐藏；文案明确提示切换会重开比赛。
+        // Arena swap button is pinned to HUD, persisting across result screens; copy explicitly indicates swapping restarts match.
         public UnityEngine.UI.Button arenaButton;
         public TMP_Text arenaText;
         public UnityEngine.UI.Button viewButton, slowMotionButton;
@@ -33,7 +33,7 @@ namespace BeetleArena
         BeetleMatchController match;
         BeetlePanelMotion resultMotion;
 
-        // 重新绑定前先移除上一控制器的监听，避免重开比赛后一次点击调用多次。
+        // Unbinds previous controller listeners prior to rebinding, preventing duplicate invocations per click across restarts.
         public void Bind(BeetleMatchController controller)
         {
             Unbind(); match = controller;
@@ -73,20 +73,20 @@ namespace BeetleArena
             }
             if (traitTexts != null) foreach (var text in traitTexts) if (text) text.gameObject.SetActive(false);
         }
-        // 按钮适配方法使用固定选手索引；这里只传递请求，资格由控制器和模拟检查。
+        // Button handler delegates using fixed contestant indices; forwards requests while controller and simulation evaluate eligibility.
         void CheerAmber() => match.Cheer(0);
-        // 墨甲的鼓励按钮请求，索引为 1。
+        // Encouragement button request for Obsidian (index 1).
         void CheerInk() => match.Cheer(1);
-        // 暂停/继续按钮统一走控制器入口。
+        // Pause/Resume button routed uniformly through controller entry.
         void Pause() => match.TogglePause();
-        // 下一场按钮请求新种子配对，只有结束后才会被控制器接受。
+        // Next Match button requests a new seed pairing; accepted by controller only post-match.
         void Next() => match.NextMatch();
-        // 重赛按钮复用本局种子生成初始阵容，不回放过去的输入记录。
+        // Rematch button recreates initial roster with current seed, without replaying historical inputs.
         void Rematch() => match.Rematch();
         void SwitchArena() => match.SwitchArena();
         void CycleView() => match.CycleView();
         void ToggleSlowMotion() => match.ToggleDefeatSlowMotion();
-        // 解除自己注册的各个具名回调，保留按钮上可能存在的其他监听者。
+        // Unregisters named callbacks registered by this component, preserving third-party button listeners.
         void Unbind()
         {
             if (!match) return;
@@ -99,10 +99,10 @@ namespace BeetleArena
             if (viewButton) viewButton.onClick.RemoveListener(CycleView);
             if (slowMotionButton) slowMotionButton.onClick.RemoveListener(ToggleSlowMotion);
         }
-        // HUD 被销毁时清理监听，防止持有失效的控制器引用。
+        // Cleans up listeners when HUD is destroyed, preventing holding stale controller references.
         void OnDestroy() => Unbind();
 
-        // 由控制器以 10Hz 及关键按钮操作后调用。显示值来自当前模拟，无额外游戏判定。
+        // Invoked by controller at 10Hz and following key button clicks. Values reflect current simulation with no secondary gameplay checks.
         public void Refresh()
         {
             if (!match || match.Simulation == null) return;
@@ -115,7 +115,7 @@ namespace BeetleArena
                 var b = sim.Fighters[i]; var ui = fighters[i];
                 L.Bind(ui.name,sim.FighterName(i));
                 ui.staminaFill.fillAmount = b.Stamina01;
-                // 按钮可点击状态同时考虑比赛阶段、暂停、冷却和腾空/落台；模拟层仍会二次检查。
+                // Button interactability accounts for match phase, pause, cooldown, and airborne/ring-out; simulation performs authoritative secondary checks.
                 bool canCheer = sim.Phase == MatchPhase.Fighting && !match.IsPaused && b.CheerCooldown <= 0 && !b.Airborne && !b.HasFallen;
                 ui.cheerButton.interactable = canCheer;
                 string key = i == 0 ? "Q" : "E";
@@ -131,11 +131,11 @@ namespace BeetleArena
             L.Bind(pauseText,match.IsPaused ? "继续  [空格]" : "暂停  [空格]");
             pauseButton.interactable = sim.Phase != MatchPhase.Finished;
             bool finished = sim.Phase == MatchPhase.Finished;
-            // 结算面板只在 Finished 展示，Resolving 阶段仍等待可能出现的双落台。
+            // Settlement panel displays strictly on Finished; Resolving phase continues waiting for potential double ring-outs.
             resultMotion.SetVisible(finished && !match.IsDefeatSlowMotion);
             if(finished)L.Bind(resultText,(sim.Winner < 0 ? "本场平局" : $"{sim.FighterName(sim.Winner)} 获胜") + "\n<size=20>" + sim.ResultDescription + "</size>");
             nextButton.interactable = rematchButton.interactable = finished && match.CanRequestNextMatch;
-            // 显示外层交锋阶段；选手区只呈现名字与体力。
+            // Displays outer bout pacing phase; contestant card displays name and stamina only.
             L.Bind(phaseText,match.IsPaused ? "观察暂停" : sim.Phase == MatchPhase.Countdown ? $"准备  {Mathf.CeilToInt(sim.Countdown)}" : sim.Phase == MatchPhase.Resolving ? "落台判定中" : finished ? "本场结束" :
                 sim.Exchange == ExchangePhase.Clash ? "激烈交锋" : sim.Exchange == ExchangePhase.Recovery ? "拉开恢复" : "轻触试探");
             phaseText.color = sim.Phase == MatchPhase.Fighting && sim.Exchange == ExchangePhase.Clash && !match.IsPaused

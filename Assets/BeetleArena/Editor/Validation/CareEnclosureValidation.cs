@@ -14,7 +14,7 @@ using UnityEngine.SceneManagement;
 public static class CareEnclosureValidation
 {
     const string Report = "Artifacts/Campaign/Care/Enclosure.txt";
-    [MenuItem("Tools/Beetle Arena/Validate Enclosure Movement")]
+    [MenuItem("Tools/甲壳虫斗/验证/养殖/箱内移动", false, 543)]
     public static void Run()
     {
         if(EditorApplication.isPlaying)throw new InvalidOperationException("Stop Play before enclosure checks.");

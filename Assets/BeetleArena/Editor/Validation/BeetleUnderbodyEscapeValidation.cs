@@ -5,10 +5,10 @@ using BeetleArena;
 using UnityEditor;
 using UnityEngine;
 
-// 从真实入角生成现场，再模拟撬举未成功时的收招；不把碰撞体塞进对方体内。
+// Generates test scenario from physical engagement, simulating recovery upon failed lift without stuffing colliders inside bodies.
 public static class BeetleUnderbodyEscapeValidation
 {
-    [MenuItem("Tools/Beetle Arena/Validate Underbody Escape")]
+    [MenuItem("Tools/甲壳虫斗/验证/战斗/腹部脱困", false, 506)]
     public static void Run()
     {
         const string folder = "Artifacts/UnderbodyEscape";
@@ -45,7 +45,7 @@ public static class BeetleUnderbodyEscapeValidation
                 for (int tick = 0; tick < 700; tick++)
                 {
                     underTime = underbody ? underTime + BeetleSimulation.FixedStep : 0;
-                    // 收招发生在建立托举前；相当于这次撬举没达到承重条件。
+                    // Recovery occurs prior to establishing lift; corresponds to this prying attempt failing to achieve load-bearing support.
                     if (captured < 0 && underTime >= .12f && !b.Lift.Supported)
                     {
                         captured = tick;

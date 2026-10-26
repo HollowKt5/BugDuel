@@ -15,7 +15,7 @@ public static class BeetleHornBindingValidation
     const string Output = "Artifacts/HornBinding";
     const string TemporaryScene = "Assets/BeetleArena/Generated/HornBindingInspection.unity";
 
-    [MenuItem("Tools/Beetle Arena/Validate Horn Binding")]
+    [MenuItem("Tools/甲壳虫斗/验证/模型与动作/角部绑定", false, 702)]
     public static void Run()
     {
         Directory.CreateDirectory(Output);
@@ -118,7 +118,7 @@ public static class BeetleHornBindingValidation
         return area;
     }
 
-    [MenuItem("Tools/Beetle Arena/Inspect Horn Binding")]
+    [MenuItem("Tools/甲壳虫斗/模型与绑定/查看角部绑定", false, 402)]
     public static void Inspect()
     {
         if (EditorApplication.isPlaying) throw new InvalidOperationException("Stop Play before inspecting bindings.");

@@ -7,12 +7,12 @@ using UnityEditor;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
-/// <summary>架构边界回归：共用调度、暂停、表现组件生命周期、元数据失效和验证场景隔离。</summary>
+/// <summary>Architectural boundary regression: shared dispatch, pausing, presentation lifecycle, metadata invalidation, and validation scene isolation.</summary>
 public static class BeetleArchitectureValidation
 {
     static void Require(bool value, string why) { if (!value) throw new Exception(why); }
 
-    [MenuItem("Tools/Beetle Arena/Validate Architecture Contracts")]
+    [MenuItem("Tools/甲壳虫斗/验证/架构与性能/架构契约", false, 740)]
     public static void Run()
     {
         var previous = SceneManager.GetActiveScene();
@@ -28,7 +28,7 @@ public static class BeetleArchitectureValidation
                 m.audioFeedback.volume = 0;
                 Require(!AssetDatabase.Contains(m.settings), "Validation edits a persistent settings asset");
                 m.SelectArena(0); m.StartMatch(71);
-                // 走正式入口，覆盖倒计时及真实角部接触；原快进入口漏掉了反馈更新。
+                // Traverses production entry point, covering countdown and physical horn contacts; legacy fast-forward skipped presentation updates.
                 for (int i = 0; i < 1500; i++)
                 {
                     m.AdvanceFixedStep();
@@ -36,7 +36,7 @@ public static class BeetleArchitectureValidation
                 }
                 Require(m.contactFeedback.ObservedContacts > 0 && m.audioFeedback.PlayedContacts > 0,
                     "Common fixed-step entry omitted contact feedback");
-                // 当前战斗可能在30秒内自然结束；暂停契约不能依赖一次随机对局恰好还没结束。
+                // Active combat can terminate naturally within 30s; pause contracts must not depend on a random match happening to stay unfinished.
                 if (m.Simulation.Phase == MatchPhase.Finished) m.StartMatch(71);
                 m.TogglePause(); Require(m.IsPaused, "Could not pause fixture");
                 float time = m.Simulation.MotionTime;
@@ -53,7 +53,7 @@ public static class BeetleArchitectureValidation
                 Require(m.Simulation.MotionTime > time, "New arena remained paused");
                 report.AppendLine("PASS: shared fixed-step/presentation entry, real feedback, paused state and full pose, switch while paused.");
 
-                // Edit Mode 验证显式、幂等释放；Play Mode 的 OnDisable/OnDestroy 另行运行真实生命周期检查。
+                // Edit Mode validates explicit idempotent disposal; Play Mode verifies real lifecycle via OnDisable/OnDestroy.
                 var go = new GameObject("Architecture lifecycle fixture");
                 try
                 {
@@ -88,7 +88,7 @@ public static class BeetleArchitectureValidation
                 try
                 {
                     rig.CacheBounds();
-                    // 同长度数组替换也须重新分类，不能仅以 Length 判断缓存有效性。
+                    // Array replacement of identical length must reclassify; Length alone cannot validate cache freshness.
                     rig.shapes = shapes.Reverse().ToArray(); rig.CacheBounds();
                     for (int i = 0; i < rig.shapes.Length; i++)
                     {
@@ -111,13 +111,13 @@ public static class BeetleArchitectureValidation
                 Require(float.IsFinite(noArena.MeasurePenetration()), "Null environment query failed");
                 report.AppendLine("PASS: metadata invalidation, same-length replacement, optional environment query.");
             }
-            // 立即正常退出作为对照：区分刚打开场景的清理与异常展开期间的清理。
+            // Immediate normal exit serves as baseline: distinguishes clean teardown of freshly opened scenes from exception unwinding.
             string immediatePath;
             using (var immediate = new BeetleValidationScene("ArchitectureImmediateCleanup"))
                 immediatePath = immediate.Scene.path;
             Require(!AssetDatabase.LoadAssetAtPath<SceneAsset>(immediatePath) && !File.Exists(immediatePath)
                 && !File.Exists(immediatePath + ".meta"), "Immediate normal cleanup left a temporary asset: " + immediatePath);
-            // using 必须在测试本体抛异常时也恢复场景；故意抛出专属异常，不吞掉构造/清理错误。
+            // using statement must restore scene even when test body throws; throws bespoke exception deliberately, without masking setup/teardown errors.
             string temporary = null;
             bool probeCaught = false;
             try

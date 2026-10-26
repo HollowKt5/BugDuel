@@ -5,17 +5,17 @@ using BeetleArena;
 using UnityEditor;
 using UnityEngine;
 
-/// <summary>正常 AI 对局中的双虫停滞检查；不强制动作、不移动根节点、不跳过碰撞。</summary>
+/// <summary>Stall validation during natural AI combat; does not force actions, translate roots, or bypass collisions.</summary>
 public static class BeetleStallValidation
 {
-    [MenuItem("Tools/Beetle Arena/Validate Combat Stalls")]
+    [MenuItem("Tools/甲壳虫斗/验证/战斗/战斗僵持", false, 507)]
     public static void Run()
     {
         Directory.CreateDirectory("Artifacts/DeadlockFix");
         var report = new StringBuilder("NATURAL AI STALL CHECKS (fixed seeds, not an exhaustive guarantee)\n");
         try
         {
-            // 原始互锁现场还要验证 0/1/4 次显示插值不会影响脱困。
+            // Validates that 0/1/4 visual interpolation samples do not impede deadlock escape at original interlock scenario.
             BeetleContactEscapeValidation.Run();
             using var fixture = new BeetleValidationScene("CombatStallValidation");
             var match = fixture.Match;

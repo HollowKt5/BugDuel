@@ -14,7 +14,7 @@ public static class CampaignIridescenceValidation
     const string Output = "Artifacts/IridescentShell";
     const string TemporaryScene = "Assets/BeetleArena/Generated/MenuIridescenceValidation.unity";
 
-    [MenuItem("Tools/Beetle Arena/Validate Menu Iridescence")]
+    [MenuItem("Tools/甲壳虫斗/验证/界面与画面/菜单虹彩甲壳", false, 608)]
     public static void Run()
     {
         if (EditorApplication.isPlaying) throw new InvalidOperationException("Stop Play before rendering comparisons.");

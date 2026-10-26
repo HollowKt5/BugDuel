@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Globalization;
 using BugDuel.Domain;
@@ -6,8 +6,8 @@ using BugDuel.Domain;
 namespace BeetleArena
 {
     /// <summary>
-    /// 应用层事务边界：拥有档案、参赛占用和结算账本。只在游戏主线程调用；不持有 UI、场景或文件路径。
-    /// 读取与导入导出均复制，战斗只接收快照；领域服务不反向依赖此会话。
+    /// Application-tier transaction boundary: owns roster, tournament bookings, and settlement ledger. Invoked strictly on main thread.
+    /// Read and export/import operations return deep copies; combat receives snapshots only; domain services maintain no back-references.
     /// </summary>
     public sealed class BeetleRosterSession
     {

@@ -1,8 +1,8 @@
-using UnityEngine;
+﻿using UnityEngine;
 
 namespace BeetleArena
 {
-    /// <summary>镜头只读的表现快照。跟随优先读取已插值的身体位置，不追逐领先显示一帧的模拟根节点。</summary>
+    /// <summary>Read-only presentation snapshot for cameras. Tracking prioritizes interpolated body positions over leading fixed-step simulation roots.</summary>
     public readonly struct BeetleCameraSubject
     {
         public readonly Vector3 Center;

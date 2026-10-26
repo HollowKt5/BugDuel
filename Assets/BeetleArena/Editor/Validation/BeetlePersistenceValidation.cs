@@ -6,7 +6,7 @@ using BugDuel.Domain;
 using UnityEditor;
 using UnityEngine;
 
-/// <summary>只操作唯一临时目录，不读写用户档案；覆盖结构拒绝与原子替换失败边界。</summary>
+/// <summary>Operates exclusively in a unique temporary directory without touching user saves; covers structural rejection and atomic replacement failures.</summary>
 public static class BeetlePersistenceValidation
 {
     static void Require(bool condition, string message) { if (!condition) throw new Exception(message); }
@@ -17,7 +17,7 @@ public static class BeetlePersistenceValidation
         throw new Exception(message);
     }
 
-    [MenuItem("Tools/Beetle Arena/Validate Roster Persistence")]
+    [MenuItem("Tools/甲壳虫斗/验证/存档与数据/名册持久化", false, 660)]
     public static void Run()
     {
         string directory = Path.Combine(Path.GetTempPath(), "BugDuel-Persistence-" + Guid.NewGuid().ToString("N"));
@@ -51,7 +51,7 @@ public static class BeetlePersistenceValidation
                 restored.ErrorCode + " / " + restored.ErrorMessage + "\nJSON: " + File.ReadAllText(path));
             Require(first.Individuals[0].MotherId == null && first.Individuals[0].FatherId == null,
                 "Optional parent strings did not round trip as absent parents");
-            // 真正的非空亲缘必须保留；只有精确空字符串可还原为 absent。
+            // Genuine non-empty lineage must be preserved; only strictly empty strings may be restored as absent.
             var inherited = BeetleSaveMapper.Export(individual);
             inherited.Id = "child-1";
             inherited.MotherId = "mother-1"; inherited.FatherId = "father-1";
@@ -135,7 +135,7 @@ public static class BeetlePersistenceValidation
             File.WriteAllText(path, accepted);
             report.AppendLine("PASS: corrupt/missing/duplicate JSON data and unknown/absent versions rejected without modifying files.");
 
-            // Windows 的共享模式可明确禁止删除/替换；Unix 允许替换仍被打开的 inode。
+            // Windows file share modes can explicitly forbid delete/replace; Unix allows unlinking open inodes.
             if (Application.platform == RuntimePlatform.WindowsEditor)
             {
                 using (var locked = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read))
@@ -153,7 +153,7 @@ public static class BeetlePersistenceValidation
         }
         finally
         {
-            // 所有删除目标均由本次 GUID 目录与固定文件名构造，不递归删除或枚举删除别人的文件。
+            // All deletion targets constructed from unique GUID folder and static filename, never recursively deleting foreign files.
             if (File.Exists(path)) File.Delete(path);
             if (File.Exists(neighbor)) File.Delete(neighbor);
             if (Directory.Exists(directory) && Directory.GetFileSystemEntries(directory).Length == 0) Directory.Delete(directory);

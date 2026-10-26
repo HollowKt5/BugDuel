@@ -9,7 +9,7 @@ using UnityEngine.InputSystem;
 
 public static class CampaignBindingLocalizationValidation
 {
-    [MenuItem("Tools/Beetle Arena/Validate Control Binding Localization")]
+    [MenuItem("Tools/甲壳虫斗/验证/本地化/按键绑定文本", false, 640)]
     public static void Run()
     {
         bool previousEnglish=CampaignLocalization.English;

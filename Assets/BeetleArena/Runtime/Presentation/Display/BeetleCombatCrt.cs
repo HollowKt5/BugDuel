@@ -82,7 +82,7 @@ namespace BeetleArena
                 if(source)ditherMaterial.CopyPropertiesFromMaterial(source);
                 // Direct selection, never a second pass through the CRT material.
                 output.material = ditherMaterial;
-                ditherMaterial.SetFloat(PixelSize, BeetleDisplayPreferences.GetPixelSize(sceneName));
+                ditherMaterial.SetFloat(PixelSize, BeetleDisplayPreferences.DitherPixelScale(BeetleDisplayPreferences.GetPixelSize(sceneName)));
                 return;
             }
             if (!effectMaterial)

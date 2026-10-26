@@ -13,7 +13,7 @@ public static class HusbandryLightingSetup
     public const string BackdropMaterialPath = HusbandryTerrariumSetup.MaterialFolder + "/Backdrop.mat";
     public const string PoolMaterialPath = HusbandryTerrariumSetup.MaterialFolder + "/SpotlightPool.mat";
 
-    [MenuItem("Tools/Beetle Arena/Apply Fixed Husbandry Lighting")]
+    [MenuItem("Tools/甲壳虫斗/画面与资源/材质与灯光/应用养殖固定灯光", false, 303)]
     public static void Apply() => Apply(false);
 
     /// <param name="migrateLegacyLights">Explicitly reset the two existing lights to the fixed-light defaults.</param>

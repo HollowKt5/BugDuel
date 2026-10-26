@@ -1,11 +1,11 @@
-using System;
+﻿using System;
 using System.IO;
 using System.Linq;
 using BeetleArena;
 using UnityEditor;
 using UnityEngine;
 
-/// <summary>验证真实网格的骨长、接触、双地图完整比赛；生成渲染截图供人工检查。</summary>
+/// <summary>Validates physical mesh bone lengths, contacts, and full matches on dual maps; generates render screenshots for inspection.</summary>
 public static class BeetleImportedValidation
 {
     static float worstDepth;
@@ -59,7 +59,7 @@ public static class BeetleImportedValidation
         }
     }
 
-    // 检查最终蒙皮后的顶点，不把碰撞代理没有重叠等同于可见模型绝对没有穿透。
+    // Inspects final skinned vertices; collider clearance alone does not guarantee zero penetration across visible meshes.
     public static float MeasureRenderedMesh(BeetleMatchController match)
     {
         float maximum = 0; var baked = new Mesh();
@@ -72,7 +72,7 @@ public static class BeetleImportedValidation
                     else { var filter=renderer.GetComponent<MeshFilter>(); if(!filter)continue; mesh=filter.sharedMesh; }
                     var vertices=mesh.vertices;
                     for(int i=0;i<vertices.Length;i+=3) {
-                        // BakeMesh 默认包含缩放，因此避免通过 renderer 的缩放二次放大。
+                        // BakeMesh inherently accounts for scale; avoids compounding scale via renderer transform.
                         Vector3 v=skinned ? renderer.transform.position + renderer.transform.rotation * vertices[i] : renderer.transform.TransformPoint(vertices[i]);
                         if(!float.IsFinite(v.sqrMagnitude))throw new Exception("Nonfinite skinned vertex: "+renderer.name);
                         if(match.ActiveSurface.Sample(new Vector2(v.x,v.z),out var hit)) {

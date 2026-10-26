@@ -10,7 +10,7 @@ using UnityEngine.SceneManagement;
 
 public static class CareGroundingValidation
 {
-    [MenuItem("Tools/Beetle Arena/Validate Husbandry Ground Contact")]
+    [MenuItem("Tools/甲壳虫斗/验证/养殖/足部与甲壳接地", false, 544)]
     public static void Run()
     {
         if(EditorApplication.isPlaying)throw new InvalidOperationException("Stop Play before rig validation.");

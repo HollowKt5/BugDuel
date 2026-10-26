@@ -7,10 +7,10 @@ using UnityEditor;
 using UnityEditor.SceneManagement;
 using UnityEngine;
 
-/// <summary>对真实模型执行托举连续性回归。检查固定步、三个插值位置及显示对模拟的隔离。</summary>
+/// <summary>Lift continuity regression on production models. Validates fixed steps, three interpolation samples, and presentation isolation.</summary>
 public static class BeetleLiftContinuityValidation
 {
-    [MenuItem("Tools/Beetle Arena/Validate Lift Continuity")]
+    [MenuItem("Tools/甲壳虫斗/验证/战斗/挑举连续性", false, 509)]
     public static void Run()
     {
         if (EditorApplication.isPlaying) throw new InvalidOperationException("Stop Play before validation.");
@@ -65,7 +65,7 @@ public static class BeetleLiftContinuityValidation
         report.AppendLine($"PASS: delayed struggle, continuous acceleration {match.settings.struggleStartHz:F2} -> {last:F2} Hz, landing reset.");
     }
 
-    // 同一受控托举分别运行无显示、每步三次插值显示。对比完整根轨迹，而非只比较结局。
+    // Evaluates identical controlled lift under headless vs. 3x interpolated rendering. Compares full root trajectories rather than final outcomes only.
     static void ValidateRenderIsolation(BeetleMatchController match, StringBuilder report)
     {
         var reference = new Vector3[600];
@@ -128,7 +128,7 @@ public static class BeetleLiftContinuityValidation
                 var b = sim.Fighters[i];
                 if (b.HasFallen) continue;
                 float step = Vector3.Distance(before[i], Position(b)); maxStep = Mathf.Max(maxStep, step);
-                // 自由落体允许按实际速度移动；这里拦截无速度来源的整虫突跳。
+                // Freefall moves according to actual velocity; this assertion catches unphysical whole-body position teleports.
                 float allowed = match.Contacts.MotionBudget(i) + .0002f;
                 if (step > allowed) throw new Exception($"Root jump: arena={arena}, seed={seed}, time={sim.Elapsed:F2}, step={step:F4}.");
             }

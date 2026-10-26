@@ -15,7 +15,7 @@ using CampaignSpecimen=BeetleArena.Campaign.CampaignSpecimen;
 public static class CampaignSceneBuilder
 {
     const string Folder="Assets/Scenes/Campaign";
-    [MenuItem("Tools/Beetle Arena/Install Campaign Flow")]
+    [MenuItem("Tools/甲壳虫斗/场景与安装/安装战役流程", false, 202)]
     public static void Install()
     {
         if(EditorApplication.isPlaying)throw new InvalidOperationException("Stop Play before installing scenes.");

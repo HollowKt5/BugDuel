@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
@@ -13,9 +13,9 @@ using Object=UnityEngine.Object;
 namespace BeetleArena.EditorTools
 {
     /// <summary>
-    /// 编辑器专用、有类型白名单的现场图编码器。保存共享引用、readonly实例字段和随机源内部状态。
-    /// 不使用 TypeNameHandling，不执行构造函数，不允许从文件指定任意 CLR 类型。
-    /// 不支持的字段直接报错，避免以“加载成功”掩盖遗漏状态。兼容范围由快照指纹限定。
+    /// Editor-only, type-whitelisted scene graph serializer. Preserves shared references, readonly instance fields, and RNG internal state.
+    /// Does not use TypeNameHandling, avoids invoking constructors, and disallows arbitrary CLR types from file.
+    /// Unsupported fields fail explicitly to avoid masking missed state behind " load success\. Compatibility is bounded by snapshot fingerprints.
     /// </summary>
     internal sealed class BeetleDebugGraph
     {
@@ -138,7 +138,7 @@ namespace BeetleArena.EditorTools
         public void Load(JArray input)
         {
             if(input.Count>50000)throw new InvalidOperationException("Snapshot node limit exceeded.");
-            // 三遍：分配→对象字段/数组→字典。所有引用先存在，字典键也已完全恢复。
+            // Three-pass: Allocate -> Object fields/arrays -> Dictionaries. All references exist and dictionary keys are fully restored first.
             for(int i=0;i<input.Count;i++)
             {
                 var n=(JObject)input[i];var type=ResolveType(n["type"]);object value;

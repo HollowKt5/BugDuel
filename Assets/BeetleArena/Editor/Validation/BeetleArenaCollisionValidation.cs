@@ -7,17 +7,17 @@ using UnityEditor;
 using UnityEditor.SceneManagement;
 using UnityEngine;
 
-// 实际场景接触验证：覆盖强制重叠、挑飞概率与边界、落地/落台、完整自动对局。
-// 输出到 Artifacts/BeetleArena；采样通过不代表所有随机种子和极端姿态都绝对无穿透。
+// Physical scene contact validation: forced overlaps, throw probabilities and limits, landing/ring-outs, full automated matches.
+// Outputs to Artifacts/BeetleArena; passing samples does not claim all seeds and extreme poses are penetration-free.
 public static class BeetleArenaCollisionValidation
 {
-    [MenuItem("Tools/Beetle Arena/Validate Clash Actions")]
-    // 菜单入口：复制游戏场景并以 Additive 加载，在副本上运行测试，finally 恢复原活动场景。
-    // 测试还会调用 RefreshPresentation 保存参数约束和字形资源，因此不是完全只读操作。
+    [MenuItem("Tools/甲壳虫斗/验证/战斗/碰撞动作", false, 502)]
+    // Menu entry: duplicates game scene, loads additively, runs tests on replica, restores original active scene in finally.
+    // Test also invokes RefreshPresentation to save parameter constraints and glyph assets; not strictly read-only.
     public static void RunInEditor()
     {
         if (EditorApplication.isPlaying) throw new InvalidOperationException("Stop play before validation.");
-        // 临时场景资产路径；结束时通过 AssetDatabase 删除，保持资源数据库与磁盘一致。
+        // Temporary scene asset path; deleted via AssetDatabase on completion to synchronize asset database with disk.
         const string temporary = "Assets/BeetleArena/Generated/ClashValidationScene.unity";
         var previous = UnityEngine.SceneManagement.SceneManager.GetActiveScene();
         if (!AssetDatabase.CopyAsset(BeetleArenaSceneBuilder.ScenePath, temporary))
@@ -38,14 +38,14 @@ public static class BeetleArenaCollisionValidation
             AssetDatabase.DeleteAsset(temporary);
         }
     }
-    // 批处理入口：直接打开游戏场景并验证；会替换当前加载场景，交互使用应选 RunInEditor。
+    // Batchmode entry: opens game scene directly and validates; replaces active scene; interactive workflows should use RunInEditor.
     public static void Run()
     {
         EditorSceneManager.OpenScene(BeetleArenaSceneBuilder.ScenePath);
         var match = UnityEngine.Object.FindFirstObjectByType<BeetleMatchController>();
         RunChecks(match);
     }
-    // 验证主流程：绑定 HUD，先做静态重叠与挑飞专项，再做四场真实接触对局。
+    // Main validation flow: binds HUD, executes static overlap and throw suites, then runs four physical contact matches.
     static void RunChecks(BeetleMatchController match)
     {
         match.hud.Bind(match);
@@ -55,7 +55,7 @@ public static class BeetleArenaCollisionValidation
         int shapeCount = match.actors[0].GetComponent<BeetleContactRig>().shapes.Length;
         Require(shapeCount >= 24 && match.actors.All(a => a.animator.importedRig), "Missing imported model collision rig");
         report.AppendLine($"Imported-model collision proxies per beetle: {shapeCount}; arena colliders: {match.arenaContacts.Length}.");
-        // 四个相对朝向×十种动作构造 40 组明显重叠，要求重复求解后深度小于 0.003 世界单位。
+        // 4 relative headings x 10 actions construct 40 distinct overlaps; requires depth < 0.003 world units after iterative solving.
         foreach (float angle in new[] { 0f, 45f, 90f, 180f })
         foreach (var action in new[] { BeetleAction.Brace, BeetleAction.PryWindup, BeetleAction.Pry, BeetleAction.Stagger,
             BeetleAction.Probe, BeetleAction.ChargeWindup, BeetleAction.Charge, BeetleAction.HornLock, BeetleAction.Toss, BeetleAction.Launched })
@@ -78,10 +78,10 @@ public static class BeetleArenaCollisionValidation
         float min = 300, max = 0, total = 0, penetration = 0;
         int completed = 0, contacts = 0;
         int probes = 0, charges = 0, locks = 0;
-        // 统计普通 AI 对局里的合格挑飞机会，防止功能只在强制测试设置下可触发。
+        // Tallies eligible throw opportunities in natural AI matches, verifying the feature triggers outside forced test setups.
         int naturalTossOpportunities = 0;
         bool capturedProbe = false, capturedCharge = false, capturedLock = false;
-        // 完整场次用于有限回归覆盖；验证墙钟耗时包含加速循环、截图和检查，不能当作游戏帧率。
+        // Complete matches provide bounded regression coverage; wall-clock time includes accelerated loops, screenshots, and assertions, not gameplay FPS.
         const int samples = 4;
         for (int sample = 0; sample < samples; sample++)
         {
@@ -109,7 +109,7 @@ public static class BeetleArenaCollisionValidation
                 if (sample == 0 && (tick == 450 || tick == 1800 || tick == 3500))
                     Capture(match, "ContactCloseup-" + tick + ".png");
                 // Check the rendered interpolation, not just fixed-step endpoints.
-                // 每十步抽样检查 alpha=0.5 的插值姿态；不是穷举所有插值系数和每个渲染帧。
+                // Samples interpolated poses at alpha=0.5 every ten steps; does not exhaustively test all alphas across all render frames.
                 if (tick % 10 == 0)
                 {
                     foreach (var actor in match.actors) actor.Render(.5f, match.Simulation.Elapsed, .02f);
@@ -136,12 +136,12 @@ public static class BeetleArenaCollisionValidation
         Require(completed == samples, "Contact-constrained matches failed to finish");
         Require(contacts > 0 && penetration < .003f, "Visible inter-beetle penetration");
         Require(probes > 0 && charges > 0 && locks > 0, "New exchanges never made actual contact");
-        // 这里只要求自然对局存在判定机会；小概率事件不保证四场里必然抽中。
+        // Only requires evaluation opportunities to exist in natural combat; low-probability events are not guaranteed to trigger in 4 matches.
         Require(naturalTossOpportunities > 0, "Ordinary matches never allow a toss opportunity");
         report.AppendLine("ALL COLLISION CHECKS PASSED"); File.WriteAllText(path, report.ToString());
     }
-    // 复制设置后执行概率和极端条件测试；对临时副本将概率改为 0/1，避免污染实际比赛资产。
-    // finally 恢复原设置并释放副本，即使断言失败也执行清理。
+    // Clones settings prior to testing probabilities and edge conditions; sets probability to 0/1 on transient copy to avoid mutating assets.
+    // Restores original settings and frees copy in finally, executing cleanup even upon assertion failure.
     static void ValidateToss(BeetleMatchController match, StringBuilder report)
     {
         var original = match.settings;
@@ -149,8 +149,8 @@ public static class BeetleArenaCollisionValidation
         try
         {
             int successes = 0;
-            // 构造 512 次合格抬举，检查低概率分布和单次攻击只抽一次；范围按默认 8% 调参设计。
-            // 如果人为大改资产里的概率，频率断言需要相应调整，它不是通用概率参数测试。
+            // Evaluates 512 eligible lifts, checking low-probability distribution and single-roll per attack; tuned for default 8% probability.
+            // Manually altering probability assets requires updating frequency assertions; not a generalized distribution test.
             for (int seed = 0; seed < 512; seed++)
             {
                 var sim = new BeetleSimulation(settings, seed);
@@ -173,7 +173,7 @@ public static class BeetleArenaCollisionValidation
             Require(disabled.Fighters[0].Tosses == 0, "Zero probability still tossed");
             Require(disabled.Fighters[0].Throws > 0, "Zero burst probability incorrectly disabled ordinary throws");
             settings.tossChance = 1;
-            // 把概率设为 1 后逐项破坏条件，验证轻触、腾空、低体力、自身不稳、冷却、无接触均不能挑飞。
+            // Sets probability to 1 and invalidates conditions individually, verifying probes, airborne, low stamina, imbalance, cooldown, and non-contact reject throws.
             foreach (string blocked in new[] { "probe", "airborne", "tired", "unstable", "cooldown", "no contact" })
             {
                 var sim = new BeetleSimulation(settings, 71);
@@ -192,7 +192,7 @@ public static class BeetleArenaCollisionValidation
             }
             report.AppendLine("PASS: burst gates remain valid; zero burst probability still allows ordinary lever throws.");
             match.settings = settings;
-            // 在真实碰撞模型中分别设置台中央与台边的抬举，检验落回台面和飞出台边两条路径。
+            // Tests lifts at arena center vs edge using physical colliders, verifying landing on ring vs flying off rim.
             foreach (bool edge in new[] { false, true })
             {
                 match.StartMatch(71);
@@ -202,7 +202,7 @@ public static class BeetleArenaCollisionValidation
                 match.Simulation.SetGround(match.ActiveSurface);
                 for(int i=0;i<2;i++)match.actors[i].Bind(match.Simulation.Fighters[i],settings,match.ActiveSurface);
                 match.Contacts.Solve(match.Simulation, .02f);
-                // 先完整低头入角、建立承重，再等待释放；成功猛挑不再发生在普通接触的第一帧。
+                // Pitches down into horn engagement and establishes support before releasing; successful explosive toss no longer occurs on frame 1 of contact.
                 for(int tick=0;tick<300 && match.Simulation.Fighters[0].Tosses==0;tick++)
                 {
                     foreach(var actor in match.actors)actor.BeforeStep();
@@ -210,7 +210,7 @@ public static class BeetleArenaCollisionValidation
                 }
                 var victim = match.Simulation.Fighters[1];
                 Require(match.Simulation.Fighters[0].Tosses == 1 && victim.Airborne, "Connected forced pry did not launch");
-                // 刚腾空不能直接判负；必须等实际高度跌到落台阈值才结束比赛。
+                // Liftoff does not immediately trigger loss; requires actual height falling below ring-out threshold before concluding match.
                 Require(!victim.HasFallen && match.Simulation.Phase == MatchPhase.Fighting, "Launch incorrectly awarded victory");
                 float peak = 0, depth = 0;
                 for (int tick = 0; tick < 150; tick++)
@@ -224,7 +224,7 @@ public static class BeetleArenaCollisionValidation
                     if (!edge && tick == 18) Capture(match, "RareToss-Airborne.png");
                 }
                 Require(peak > .5f && depth < .003f, "Launch height or airborne collision failed");
-                // 出手方向由杠杆接触决定，边缘也可能向台内反抛，中央也可能飞出台外。
+                // Launch trajectory is governed by lever contact geometry; edge contacts can throw inward, center contacts can throw outward.
                 Require(victim.HasFallen || !victim.Airborne, "Throw never completed flight");
                 if(victim.HasFallen) Require(victim.Height < victim.LastSupportHeight-settings.fallDepth, "Ring-out ignored height threshold");
                 report.AppendLine($"PASS: origin={(edge ? "edge" : "center")}, fallen={victim.HasFallen}, peak={peak:F2}, overlap={depth:F6}.");
@@ -232,8 +232,8 @@ public static class BeetleArenaCollisionValidation
         }
         finally { match.settings = original; UnityEngine.Object.DestroyImmediate(settings); }
     }
-    // 测试夹具：把攻击者放到抬举生效阶段，把防守者设为弱支撑；跳过正常 AI 寻找机会过程。
-    // physical 区分真实长角模型与简化身体模型所需的初始距离。
+    // Test fixture: stages attacker into active lift phase and defender into weak support, bypassing normal AI setup.
+    // physical distinguishes initial separation required for physical horn models vs simplified body capsules.
     static void PreparePry(BeetleSimulation sim, bool physical)
     {
         var a = sim.Fighters[0]; var b = sim.Fighters[1];
@@ -244,17 +244,17 @@ public static class BeetleArenaCollisionValidation
         b.Action = BeetleAction.Brace; b.ActionTime = 0; b.ActionDuration = 10;
         b.Balance = .3f; b.Stamina = 35;
     }
-    // 一次成功托举只抽一次概率，猛挑冲量在脱角时施加；数据测试必须推进完整的承重阶段。
+    // Valid lift rolls probability once; explosive impulse applies upon release; headless tests must advance full load-bearing phase.
     static void FinishSupportedLift(BeetleSimulation sim)
     {
         for(int tick=0;tick<200 && sim.Fighters[1].Lift.Supported;tick++)sim.Step(.02f);
     }
-    // 空求解器测试替身：让模拟走需要接触标记的分支，但不提供接触，用来验证禁止隔空挑飞。
+    // Null-solver test double: guides simulation through contact-gated branches without contact, verifying airborne throws cannot trigger in a vacuum.
     sealed class NoContact : IBeetleContactSolver { public void Solve(BeetleSimulation simulation, float dt) { } }
-    // 统一抛出带原因的测试异常，由菜单桥接或批处理入口负责记录。
+    // Throws standardized test exceptions with diagnostic causes, recorded by menu bridge or batch runner.
     static void Require(bool value, string message) { if (!value) throw new InvalidOperationException(message); }
-    // 拍摄当前测试姿态的近景。临时设为第 31 层，使相机只看测试场景中的对象。
-    // finally 恢复所有层、相机状态、HUD 和渲染目标，并释放临时纹理，避免影响用户场景。
+    // Captures closeup of active test pose. Temporarily assigns layer 31 so camera observes test scene objects exclusively.
+    // Restores all layers, camera state, HUD, and render targets in finally, releasing temporary textures to avoid polluting user scenes.
     static void Capture(BeetleMatchController match, string filename)
     {
         var camera = match.spectatorCamera.GetComponent<Camera>();

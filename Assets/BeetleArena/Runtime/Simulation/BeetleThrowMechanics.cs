@@ -1,20 +1,20 @@
-using UnityEngine;
+﻿using UnityEngine;
 
 namespace BeetleArena
 {
-    // 保留已有枚举值；档位顺序通过 TierNumber 映射，不依赖枚举整数大小。
+    // Preserves existing enum values; tier progression is mapped via TierNumber independent of underlying enum integers.
     public enum BeetleThrowKind { None, ShortPry, ArcThrow, Overhead, QuickPry, HighArc, PowerOverhead }
 
     /// <summary>
-    /// 杠杆撬投的纯计算层。接触层提供已接受的抬头转角、力臂和切向方向；
-    /// 只在有效接触且确实抬头时积分功和冲量，静止顶住不能无限蓄力。
-    /// τ=F_in*l_in，F_out=τ/l_out，W=∫τ dθ，J=∫F_out dt。
-    /// 游戏使用归一化单位与效率上限，不是生物力学实验的数值拟合。
-    /// 杠杆依据：Weber et al. 2023, doi:10.1016/j.cub.2023.08.066。
+    /// Pure computational layer for leverage-based prying and throwing. The contact layer supplies accepted head pitch angle, moment arm, and tangential direction;
+    /// Integrates work and impulse only during valid contact accompanied by actual head elevation; stationary pushing cannot charge infinitely.
+    /// τ = F_in * l_in, F_out = τ / l_out, W = ∫τ dθ, J = ∫F_out dt.
+    /// Uses normalized units and efficiency caps rather than empirical biomechanical fittings.
+    /// Leverage foundation: Weber et al. 2023, doi:10.1016/j.cub.2023.08.066.
     /// </summary>
     public static class BeetleThrowMechanics
     {
-        // 仅增强原本会翻滚的远抛。先按原始出手判断，避免加速反过来扩大触发范围。
+        // Only amplifies distance throws that would naturally tumble. Evaluates initial launch conditions first to prevent acceleration from expanding trigger boundaries.
         public const float TumblingLaunchSpeedMultiplier = 3f;
         public const float MinimumTumbleRange = 4f;
 
@@ -43,14 +43,14 @@ namespace BeetleArena
             if (quality <= 0 || delta <= .00001f)
                 return;
 
-            // 持续顶举也消耗爆发储备，与入角/推顶使用同一发力规则，不能绕过体力策略。
+            // Sustained lifting also depletes burst reserves under the same force exertion rules as engagement and driving push, adhering strictly to stamina policy.
             float effort = BeetleEnergyPolicy.AttackEffort(attacker) * lift.Effort;
             if (attacker.CheerRemaining > 0)
                 effort *= 1 + settings.cheerEffortBonus;
             float inputArm = settings.throwInputArm * attacker.Traits.size;
             float torque = settings.throwMuscleForce * attacker.Traits.strength * effort * inputArm
                 * Mathf.Lerp(.55f, 1, attacker.Footing) * Mathf.Lerp(.6f, 1, attacker.Balance);
-            // 尚未脱足时克服抓地；已失去支撑后只保留小幅损耗。
+            // Overcomes grip while tarsi remain grounded; retains minor dissipation once support is broken.
             float resistance = defender.Lift.GripReleased ? .08f :
                 .35f * defender.Traits.grip * defender.Footing * Mathf.Lerp(.3f, 1, defender.Balance);
             lift.OutputForce = Mathf.Max(0, torque / lift.LeverArm - resistance);
@@ -103,7 +103,7 @@ namespace BeetleArena
             }
         }
 
-        /// <summary>按连续出手速度和实际方向划为六档；四个不等距阈值均可配置。</summary>
+        /// <summary>Discretized into six tiers by continuous launch speed and direction; four non-uniform thresholds are configurable.</summary>
         public static BeetleThrowKind Classify(BeetleMatchSettings settings, float speed, bool backwards)
         {
             if (backwards)
@@ -115,14 +115,14 @@ namespace BeetleArena
             return speed < settings.throwHighArcSpeed ? BeetleThrowKind.ArcThrow : BeetleThrowKind.HighArc;
         }
 
-        /// <summary>输出连续速度和仰角。六档不把同档所有接触固定成同一条轨迹。</summary>
+        /// <summary>Outputs continuous velocity and launch angle. Six tiers do not quantize all intra-tier contacts into identical trajectories.</summary>
         public static Vector3 Release(BeetleMatchSettings settings, BeetleState defender)
         {
             var lift = defender.Lift;
             float mass = Mathf.Max(.1f, defender.Traits.mass);
             float speedFromWork = Mathf.Sqrt(2 * lift.Work * settings.throwEfficiency / mass);
             float speedFromImpulse = lift.Impulse / mass;
-            // 功限制能量，冲量限制短促/滑脱接触；长时间但不抬头仍不会产生额外速度。
+            // Work bounds total energy while impulse limits brief or glancing contacts; sustained posture without pitch elevation yields no additional speed.
             float speed = Mathf.Min(speedFromWork, speedFromImpulse + .4f * speedFromWork);
             speed = Mathf.Clamp(speed, settings.throwMinimumSpeed, settings.throwMaximumSpeed);
             Vector3 forward = new Vector3(lift.Direction.x, 0, lift.Direction.y).normalized;
@@ -130,10 +130,10 @@ namespace BeetleArena
             float elevation = Mathf.Atan2(Mathf.Max(.12f, tangent.y), Vector3.Dot(tangent, forward)) * Mathf.Rad2Deg;
             bool overhead = lift.HeadSweep >= settings.throwOverheadSweep &&
                 lift.Work / mass >= settings.throwOverheadWork && lift.PeakAngularSpeed >= settings.throwOverheadAngularSpeed;
-            // 低能量接触提前滑离，不能一直挂在角上翻到身后。高能量才保留向后切向分量；
-            // 限制过平的反抛，给真实身体越过攻击者的高度余量，碰撞仍完整开启。
+            // Low-energy contacts slip free early instead of dangling along the horn into backflips. High energy retains backward tangential components;
+            // restricts excessively flat backward throws to provide height clearance for clearing the attacker's body while collisions remain fully active.
             float ordinaryLimit = Mathf.Lerp(38, 82, Mathf.Clamp01(lift.Work / mass / 32));
-            // 后扬到强反抛之间连续增加允许仰角，跨档不突然切换轨迹。
+            // Continuously increases permissible launch elevation between pitch-back and backward launch without abrupt trajectory snaps across tiers.
             float overheadLimit = Mathf.Lerp(100, 128, Mathf.InverseLerp(settings.throwHighArcSpeed, settings.throwMaximumSpeed, speed));
             // Strong releases travel outward instead of spending almost all speed vertically.
             // This explicit game gain is continuous and applies only after a real supported lift.

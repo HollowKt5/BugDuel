@@ -1,21 +1,21 @@
-using UnityEngine;
+﻿using UnityEngine;
 
 namespace BeetleArena
 {
     [RequireComponent(typeof(Camera))]
-    // 正交观察镜头：轻微跟随双方中点、按距台中心的展开程度缩放，保留擂台全局视野。
+    // Orthographic observation camera: subtly tracks fighter midpoint, scales with radial spread from arena center, preserving global ring framing.
     public sealed class ArenaCamera : MonoBehaviour
     {
-        // 镜头相对观察中心的固定世界偏移，决定俯视角度与观察方向。
+        // Fixed world offset from look target, defining viewing angle and perspective direction.
         [SerializeField] public Vector3 viewOffset = new Vector3(9, 12, -13);
-        // 正交视野的半高度基准；数值越大看到的范围越宽。
+        // Baseline orthographic half-size; larger values yield a wider field of view.
         [SerializeField, Range(4, 12)] public float overviewSize = 6.25f;
         [Header("Oblique follow framing (60 degrees above ground)")]
         [SerializeField, Min(4)] public float followHeight = 16;
         [SerializeField, Range(2, 8)] public float followSize = 4.2f;
         [SerializeField, Range(.4f, .65f)] public float followViewportHeight = .56f;
         Camera cameraComponent;
-        // 平滑后的观察中心，独立于甲虫根节点，减少交锋抖动传到镜头。
+        // Smoothed focus center decoupled from beetle root nodes, dampening combat jitter before it reaches camera.
         Vector3 focus;
         float viewDistance, viewportOffset;
         Quaternion viewRotation;
@@ -28,7 +28,7 @@ namespace BeetleArena
             if (!cameraComponent) ResetView();
             ViewMode = (ViewMode + 1) % 3;
         }
-        // 换局时恢复台面中心和初始正交尺寸，避免沿用上一局落台后的镜头状态。
+        // Resets to arena center and initial orthographic size upon match transitions, preventing inheriting post-ring-out camera states.
         public void ResetView()
         {
             cameraComponent = GetComponent<Camera>();
@@ -42,7 +42,7 @@ namespace BeetleArena
             viewRotation = Quaternion.LookRotation(-viewOffset, Vector3.up);
             transform.SetPositionAndRotation(focus + viewOffset, viewRotation);
         }
-        // 每帧由控制器显式调用；dt=0 时跟随平滑量为零，适应本地暂停。
+        // Invoked explicitly by controller per frame; zero follow smoothing when dt=0 accommodates local pausing.
         public void Tick(BeetleSimulation simulation, float dt)
         {
             if (simulation == null) return;
@@ -51,18 +51,18 @@ namespace BeetleArena
 
         public void Tick(in BeetleCameraFrame frame, float dt)
         {
-            // 零时间与无效时间不初始化/改变镜头；暂停和回放检查保持完全静止。
+            // Zero or invalid dt bypasses camera mutation, keeping camera perfectly stationary during pause and replay validation.
             if (!float.IsFinite(dt) || dt <= 0) return;
             if (!cameraComponent) ResetView();
             var a = frame.First; var b = frame.Second;
-            // 限制跟随中心最多偏离台中心 1.4 单位，避免某只落台后镜头追出整个擂台。
+            // Clamps focus target within 1.4 units of arena center, preventing camera from chasing fallen fighters entirely off-screen.
             Vector2 aPosition = new Vector2(a.Center.x, a.Center.z), bPosition = new Vector2(b.Center.x, b.Center.z);
             Vector2 middle = Vector2.ClampMagnitude((aPosition + bPosition) * .5f, 1.4f);
             Vector3 target = new Vector3(middle.x, .2f, middle.y);
             if (frame.Resolving) target = new Vector3(0, .2f, 0);
-            // 依据选手离台中心最远距离调整取景；这不是两只之间的直接距离。
+            // Adjusts framing based on peak distance of either fighter from arena center (distinct from inter-fighter distance).
             float spread = Mathf.Max(aPosition.magnitude, bPosition.magnitude);
-            // 集中在中央时稍微推近，靠近边沿时退回全景；指数平滑避免跳变。
+            // Pushes slightly closer when centered, zooms out to panoramic framing near edges; exponential smoothing prevents pops.
             float zoom = Mathf.Lerp(overviewSize - .75f, overviewSize, Mathf.InverseLerp(1.4f, 4.5f, spread));
             Vector3 offset = viewOffset;
             int defeatIndex = DefeatFocus >= 0 && DefeatFocus < 2 ? DefeatFocus : -1;
@@ -85,13 +85,13 @@ namespace BeetleArena
             focus = Vector3.Lerp(focus, target, 1 - Mathf.Exp(-dt * (following || framingThrow ? 8 : 1.5f)));
             cameraComponent.orthographicSize = Mathf.Lerp(cameraComponent.orthographicSize, zoom, 1 - Mathf.Exp(-dt));
             viewDistance = Mathf.Lerp(viewDistance, offset.magnitude, 1 - Mathf.Exp(-dt * 8));
-            // 保持世界上方向；单虫视角随其转向平滑绕到后方，不继承胸部翻滚。
+            // Preserves world up-vector; single-beetle tracking orbits smoothly behind heading without inheriting thoracic roll.
             Quaternion rotation = Quaternion.LookRotation(-offset, Vector3.up);
             viewRotation = Quaternion.Slerp(viewRotation, rotation, 1 - Mathf.Exp(-dt * 8));
-            // 焦点仅平滑一次，位置与旋转共享同一视图过渡；构图将主体放在画面略高于中心处。
+            // Smooths focus once; position and rotation share a single view transition, framing subject slightly above screen center.
             float targetViewportOffset = subjectFollow ? followViewportHeight - .5f : 0;
             viewportOffset = Mathf.Lerp(viewportOffset, targetViewportOffset, 1 - Mathf.Exp(-dt * 8));
-            // 由朝向推导位置，避免位置Lerp与旋转Slerp沿不同轨迹导致焦点在画面里画弧。
+            // Derives position from orientation to prevent position Lerp and rotation Slerp from tracing divergent arcs in view space.
             transform.SetPositionAndRotation(focus - (viewRotation * Vector3.forward) * viewDistance -
                 (viewRotation * Vector3.up) * (2 * cameraComponent.orthographicSize * viewportOffset), viewRotation);
             // Heavy throws can rise above the old fixed overview. Fit both complete bodies
@@ -105,7 +105,7 @@ namespace BeetleArena
                 FitSubject(frame.Subject(defeatIndex >= 0 ? defeatIndex : ViewMode - 1));
         }
 
-        // 快速抛飞时平滑焦点会落后，必要时立即放宽视野，不能让所跟随的主体飞出画面。
+        // Fast ballistic throws outpace smoothed focus; widens framing immediately when necessary so tracked subject never leaves screen.
         void FitSubject(in BeetleCameraSubject subject)
         {
             Vector3 local = transform.InverseTransformPoint(subject.Center);

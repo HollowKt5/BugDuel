@@ -6,7 +6,7 @@ using BeetleArena;
 using UnityEditor;
 using UnityEngine;
 
-/// <summary>验证实际分开的网格、无表面遗漏、纹理接缝以及蒙皮后的切口连续性。</summary>
+/// <summary>Validates physically separated meshes, surface completeness, texture seams, and post-skinning seam continuity.</summary>
 public static class BeetleHeadSplitValidation
 {
     static void Require(bool value,string message) {if(!value)throw new Exception(message);}
@@ -21,7 +21,7 @@ public static class BeetleHeadSplitValidation
         var mesh=new Mesh();try {renderer.BakeMesh(mesh,false);return mesh.vertices.Select(v=>renderer.transform.position+renderer.transform.rotation*v).ToArray();}
         finally {UnityEngine.Object.DestroyImmediate(mesh);}
     }
-    [MenuItem("Tools/Beetle Arena/Validate Split Head Meshes")]
+    [MenuItem("Tools/甲壳虫斗/验证/模型与动作/头部网格拆分", false, 701)]
     public static void Run()
     {
         var report=new StringBuilder("SPLIT HEAD MESH VALIDATION\n"+DateTimeOffset.Now.ToString("o")+"\n");

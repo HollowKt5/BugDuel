@@ -1,43 +1,43 @@
-using System;
+﻿using System;
 using UnityEngine;
 
 namespace BeetleArena
 {
     [Serializable]
-    // 单条腿的绑定信息与步态缓存。真实模型的额外骨骼数据保存在 BeetleModelRig。
-    // 它描述的是两段式 IK 加足节、爪、刺的结构；不是 Unity Animator 的人形骨骼配置。
+    // Binding metadata and gait cache for a single leg. Supplementary bone data for skinned models is stored in BeetleModelRig.
+    // Represents a 2-segment analytical IK rig with tarsus, claws, and tibial spines; not a humanoid Unity Animator configuration.
     public sealed class BeetleLegRig
     {
-        // hip/knee/ankle 是关节点；upper/lower/foot 是连接关节的几何体腿段。
+        // hip/knee/ankle denote joint pivots; upper/lower/foot denote geometric leg segments connecting joints.
         public Transform hip, upper, knee, lower, ankle, foot;
-        // 脚端的爪和胫节上的刺作为附属部件，求完主腿关节后再放置。
+        // Distal claws and tibial spines are accessory parts positioned after solving primary leg joints.
         public Transform[] claws, teeth;
-        // hipInBody 使用 bodyPivot 局部坐标；restAnkle 使用 model 局部坐标，不能混用。
+        // hipInBody uses bodyPivot local space; restAnkle uses model local space; must not be conflated.
         public Vector3 hipInBody, restAnkle;
-        // 建模阶段单位缩放下记录的两段长度；求解时乘 visualScale×size 换成世界长度。
+        // Segment lengths recorded under unit scale during modeling; scaled by visualScale * size during solve for world lengths.
         public float upperLength, lowerLength;
-        // 正式模型的爪尖参考点到足节最低顶点的距离，避免骨骼落地时爪网格埋入台面。
+        // Offset from claw reference point to lowest tarsal vertex, preventing claw meshes from clipping through floor when bones land.
         public float soleOffset;
-        // side：左 -1、右 +1；pair：前 0、中 1、后 2。用于弯曲方向、活动区域和步态相位。
+        // side: Left -1, Right +1; pair: Front 0, Middle 1, Hind 2. Dictates bend poles, workspace limits, and gait phases.
         public int side, pair;
-        // 以下是运行时缓存，不写入预制体。planted 为世界坐标；迈步期间它也记录抬起的脚目标。
-        // stepFrom/stepTo 是本次迈步的世界起终点，身体移动时不会自动跟着改变。
+        // Runtime cache not serialized into prefabs. planted is world-space; during swing phase it tracks the airborne target.
+        // stepFrom/stepTo represent world endpoints of the current step and do not automatically move with the body.
         [NonSerialized]
         public Vector3 planted, stepFrom, stepTo;
-        // 归一化迈步进度，通常从 0 累加到 1；不是以秒为单位的累计时间。
+        // Normalized step progress (0..1); not accumulated seconds.
         [NonSerialized]
         public float stepTime;
-        // 单步启动时固定时长；速度在迈步中改变也不会突然改变脚端运动速度。
+        // Step duration is fixed at launch; velocity shifts during swing do not cause abrupt speed jumps in foot motion.
         [NonSerialized]
         public float stepDuration;
         [NonSerialized]
         public bool stepping;
-        // 上一步真实脚端以及落地接续轨迹，均为世界坐标。
+        // World-space positions for the previous physical foot placement and landing continuation trajectory.
         [NonSerialized]
         public Vector3 lastFoot, landingFrom;
         [NonSerialized]
         public float landingBlend;
-        // 可插拔动作退出后统一把脚端平滑交还步态；模块删除也不会留下悬空脚点。
+        // Pluggable motion modules smoothly surrender foot targets to gait on exit, preventing floating feet upon module disposal.
         [NonSerialized]
         public bool moduleOwned;
         [NonSerialized]
@@ -52,25 +52,25 @@ namespace BeetleArena
         public float tumbleFrameWeight;
     }
 
-    // 程序动画总入口：战斗状态→身体/头角姿态→脚部目标轨迹→真实骨骼 IK。
-    // 它消费战斗状态，不负责攻击结算、重力或胜负；动画产生的重叠交给接触求解器修正。
+    // Procedural animation pipeline: combat state -> body/head pitch & roll -> foot trajectory -> analytical bone IK.
+    // Consumes combat state without driving attack resolution, gravity, or outcomes; overlaps are resolved by ContactSolver.
     public sealed class BeetleProceduralAnimator : MonoBehaviour
     {
         [Header("Model articulation")]
-        // model 管整体视觉缩放；bodyPivot 控制身体俯仰/侧倾；headPivot 控制头角抬举。
+        // model controls visual scale; bodyPivot controls body pitch/roll; headPivot drives head/horn elevation.
         public Transform model, bodyPivot, headPivot;
         public BeetleModelRig importedRig;
         public Transform[] antennae;
         public BeetleLegRig[] legs;
         public Renderer[] shellRenderers;
-        // 身体静止局部位置和触角初始局部旋转；叠加动画时从基准姿态出发，避免累计漂移。
+        // Resting local position of body and antenna rest rotation; additive animations evaluate relative to resting base, preventing drift.
         Vector3 bodyRest;
-        // 仅缓存动作产生的胸部高度；坡面避障随后叠加，不能从 Transform 读回并累积。
+        // Caches procedural thoracic height; slope terrain avoidance is layered additively without reading and accumulating from Transform.
         float bodyHeightOffset;
         Quaternion[] antennaRest;
         Vector3[] antennaAngles;
-        // size 是个体大小，scale 是最终视觉缩放；三个 Pitch/Roll 为平滑后的角度（度）。
-        // walkCycle 是连续步态相位。ground 与模拟共用，只采样当前有效擂台。
+        // size is fighter scale multiplier, scale is final visual scale; pitch/roll angles are smoothed in degrees.
+        // walkCycle is continuous gait phase. ground is shared with simulation, querying active arena surface.
         float size = 1, scale = .7f, bodyPitch, bodyRoll, headPitch, walkCycle;
         IBeetleGround ground;
         Vector3 previousPosition;
@@ -103,11 +103,11 @@ namespace BeetleArena
         Quaternion flightOrigin;
         float fallPitchStart, fallRollStart, floorPitchStart, floorRollStart;
         float FallRecovery(BeetleState b) => Ease(Mathf.Clamp01((b.Fall.GroundSeconds - .12f) / settings.fallRecoverySeconds));
-        // 对 SmoothStep 频率曲线解析积分：相位连续，速度也连续。
-        // 不能写成 time * Lerp(slow, fast, time)，那会额外加速并在切换处跳拍。
+        // Analytically integrates SmoothStep frequency curve: preserves continuous phase and velocity.
+        // Must not use time * Lerp(slow, fast, time), which would over-accelerate and stutter across transition boundaries.
         void UpdateStruggle(BeetleState state)
         {
-            // 已落台继续寻触；地面恢复也保留连续摆腿相位，不能判负时突然归零。
+            // Fallen fighters continue terrain probing; ground recovery preserves continuous leg swing phase rather than zeroing on disqualification.
             float t = state.Fall.Active ? Mathf.Max(0, Mathf.Max(state.Lift.UnsupportedTime,
                 state.Fall.UnsupportedSeconds) - settings.liftStruggleDelay) +
                 state.Fall.GroundSeconds : state.Airborne ? Mathf.Max(0, state.Lift.UnsupportedTime -
@@ -123,8 +123,8 @@ namespace BeetleArena
 
         float SoleHeight(BeetleLegRig leg) => importedRig ? (leg.soleOffset + importedRig.soleClearance) *
             Mathf.Abs(model.lossyScale.x) : .05f * size;
-        // 每局重新绑定时重置缩放、姿态、步态和落脚点。颜色通过 MaterialPropertyBlock 设置，
-        // 避免为两只甲虫复制材质。调用前 Actor 已把根节点放到本局初始位置。
+        // Resets scale, posture, gait, and footplants upon per-match rebind. Colors applied via MaterialPropertyBlock
+        // to avoid cloning materials across fighters. Actor places root at initial match spawn before this call.
         public void Initialize(BeetleTraits traits, BeetleMatchSettings settings, Color shellColor, IBeetleGround surface = null, float? visualScale = null)
         {
             this.settings = settings;
@@ -225,7 +225,7 @@ namespace BeetleArena
             }
         }
 
-        // 滑出台沿时，前后滑和侧滑继承不同转轴；已在空中的远抛不经过这个入口。
+        // Edge departure inherits different rotation axes for pitch vs roll slides; airborne ballistic throws bypass this path.
         void BeginEdgeTumble(BeetleState state)
         {
             edgeTumbling = flightSpinning = true;
@@ -274,7 +274,7 @@ namespace BeetleArena
         {
             flightSeconds += dt;
             UpdateLandingTuck(state, dt);
-            // 先离开托举角，再逐渐达到完整翻滚角速度。
+            // Clears lifting horns before ramping to full tumble angular velocity.
             float release = Ease(Mathf.InverseLerp(.06f, .22f, flightSeconds));
             float damping = Mathf.Exp(-.12f * flightSeconds);
             flightPitchAngle += flightPitchRate * release * damping * dt;
@@ -283,7 +283,7 @@ namespace BeetleArena
 
         void UpdateLandingTuck(BeetleState state, float dt)
         {
-            // 沿下降轨迹预测附近地表，仅在接近触地时收腿。
+            // Probes terrain along descending trajectory, tucking legs only when nearing ground impact.
             Vector2 ahead = state.Position + state.Velocity * .2f;
             float surface = ground != null && ground.Sample(ahead, out var hit) ? hit.height : settings.groundHeight;
             float clearance = Mathf.Max(0, bodyPivot.position.y - .38f * size - surface);
@@ -301,7 +301,7 @@ namespace BeetleArena
                 BackStruggleSeconds += dt;
             backRighting = Vector3.Dot(bodyPivot.up, model.up) < .35f;
             stableRightingSeconds = state.RightingStable ? stableRightingSeconds + dt : 0;
-            // 必须实际翻正并获得稳定支撑，才能交回步态；时间到不等于成功。
+            // Must right upright and establish stable ground support before restoring gait; elapsed timer does not equal success.
             if (stableRightingSeconds >= .2f)
             {
                 flightRecovering = false;
@@ -313,8 +313,8 @@ namespace BeetleArena
             }
         }
 
-        // time 用于连续摆动，dt 用于平滑和迈步进度；state 提供速度、动作阶段与受击反馈。
-        // 当前 ContactDriven 模式由 PoseSimulation 推进一次姿态，Render 不再重复推进脚步。
+        // time drives continuous idle sway, dt drives smoothing and step progress; state supplies velocity, phase, and impact reaction.
+        // Under ContactDriven mode, PoseSimulation advances pose once per fixed step; Render no longer advances gait.
         public void Pose(BeetleState state, float time, float dt)
         {
             if (!initialized || legs == null)
@@ -339,10 +339,10 @@ namespace BeetleArena
 
             float phase = state.ActionProgress;
             float targetHead = 12f, pitch = 0, roll = state.RollVisual;
-            // 发力的视觉权重：影响身体下压和细微扭动；不是实际攻击力或足部摩擦力。
+            // Visual exertion weight: scales thoracic crouch and subtle twisting; not physical attack impulse or tarsal friction.
             float strain = 0;
-            // 按动作设目标姿态：试探小幅点头，蓄力低头，抬举/挑飞快速扬角，腾空加入侧倾。
-            // 角度正负依赖当前模型坐标轴；换 FBX 必须重新校准枢轴和骨骼初始方向。
+            // Maps actions to target poses: subtle nod for probes, crouch for windup, rapid pitch-up for lift/toss, roll for airborne.
+            // Pitch sign depends on local model axes; new FBX assets require recalibrating pivot directions.
             switch (state.Action)
             {
                 case BeetleAction.Assess:
@@ -369,7 +369,7 @@ namespace BeetleArena
                     strain = 1.65f;
                     break;
                 case BeetleAction.HornLock:
-                    // 交角时短促尝试发力，中间保持支撑；不再持续高频机械颤动。
+                    // Pulses short exertion bursts during clinches with intermediate bracing, avoiding sustained high-frequency mechanical vibration.
                     float effort = InsectMotionTiming.Bout(time + state.Index * .83f, .93f, 227);
                     targetHead = 24 + effort * 26;
                     pitch = 3 + effort * 9;
@@ -389,13 +389,13 @@ namespace BeetleArena
                     targetHead = Mathf.Lerp(20, 82, Ease(phase));
                     strain = .5f;
                     break;
-                // 入角阶段保持头角低位，只有真正触及对方身体下缘才切换到 Lifting 扬角。
+                // Keeps horn low during engagement; transitions to Lifting pitch-up only upon contacting opponent's underbody.
                 case BeetleAction.Pry:
                     targetHead = 82;
                     strain = .7f;
                     break;
                 case BeetleAction.Lifting:
-                    // 明确扬起真实头角，接触锚点随骨骼运动，再由物理约束带起对手。
+                    // Explicitly raises cephalic horn; contact anchors move with bone, and physical constraints elevate defender.
                     float raise = Ease(Mathf.Clamp01(state.ActionTime / settings.liftRaiseSeconds));
                     targetHead = Mathf.Lerp(64, -85, raise);
                     pitch = -6 * raise;
@@ -407,7 +407,7 @@ namespace BeetleArena
                     roll = state.Lift.Roll;
                     break;
                 case BeetleAction.ReleaseLift:
-                    // 收角与后撤同步，让对方沿角面滑离，避免一帧恢复低头姿态把受击者横向顶走。
+                    // Retracts horn synchronously with retreat, sliding opponent down horn face to prevent snapping down and shoving defender sideways.
                     targetHead = 30;
                     pitch = Mathf.Lerp(releaseBodyStart, 0, Ease(phase));
                     break;
@@ -436,7 +436,7 @@ namespace BeetleArena
                 case BeetleAction.Stagger:
                     pitch = -state.LiftVisual * 17;
                     break;
-                // 失足/判负的身体运动在下方从实际进入姿态接续，不设置固定“死亡”侧躺角。
+                // Fall and loss tumbling blends continuously from entry pose without locking into a fixed canned death orientation.
                 case BeetleAction.Falling:
                 case BeetleAction.Defeated:
                     targetHead = 16;
@@ -458,7 +458,7 @@ namespace BeetleArena
             var modulePose = state.Motion.PoseSample();
             if (state.Fall.Active)
             {
-                // 使用独立固定步时钟：比赛 Finished 后 Elapsed 停止，跌落和翻正仍须继续。
+                // Uses independent fixed-step clock: Elapsed stops on match Finished, but tumbling and righting must continue.
                 if (!fallingPose)
                 {
                     fallPitchStart = bodyPitch;
@@ -489,7 +489,7 @@ namespace BeetleArena
                 }
                 else
                     floorPose = false;
-                // Finished 阶段不再衰减旧的 LiftVisual/ImpactVisual，已在上方覆盖这些旧目标。
+                // Suspends decay of legacy LiftVisual/ImpactVisual during Finished state, as targets have already been overwritten above.
             }
             else
             {
@@ -500,8 +500,8 @@ namespace BeetleArena
             roll += modulePose.BodyRoll;
             targetHead += modulePose.HeadPitch;
             strain += modulePose.Strain;
-            // 指数平滑让姿态逐渐靠近目标，减少状态切换时跳变；dt=0 时保留原姿态。
-            // 模块可选择较快关节响应，但抬举/抛出/跌落保留原参数和接触接续。
+            // Exponential smoothing approaches targets gradually, eliminating pops across state transitions; preserves pose when dt=0.
+            // Modules can request faster joint response, but lift/throw/fall preserve baseline timing and contact continuity.
             float response = state.Action == BeetleAction.Module && modulePose.PoseResponse >
                 0 ? Mathf.Clamp(modulePose.PoseResponse, 13, 29) : InsectMuscleAnimation.Response(state, 13);
             float blend = 1 - Mathf.Exp(-dt * response);
@@ -513,14 +513,14 @@ namespace BeetleArena
                 pitch *= Mathf.Lerp(.85f, 1.25f, state.Traits.drivePreference);
             if (state.Action == BeetleAction.Lifting)
                 targetHead = liftingHeadStart - state.LiftSweepTarget * state.LiftStrokeProgress;
-            // 出手保留已接受的抬头姿态，再短促跟随；不能切到固定低头角度反向撞回受击者。
+            // Throw release maintains accepted elevated pitch with brief follow-through, preventing snapping down into defender.
             if (state.Action == BeetleAction.Toss)
             {
                 targetHead = releaseHeadStart - 8 * Mathf.Sin(phase * Mathf.PI);
                 pitch = Mathf.Lerp(releaseBodyStart, -8, Ease(phase));
             }
 
-            // 提前松脱/未完全抬起时也从实际头角开始收角，不能假定已经扬到 -85 度。
+            // Premature release or partial lifts recover from actual head pitch rather than assuming full -85 deg elevation.
             if (state.Action == BeetleAction.ReleaseLift)
                 targetHead = Mathf.Lerp(releaseHeadStart, importedRig ? (30 - 12) * importedRig.headMotionScale : 30, Ease(phase));
             // During a jam withdrawal keep the accepted horn/chest pitch while backing
@@ -534,13 +534,13 @@ namespace BeetleArena
             headPitch = Mathf.Lerp(headPitch, targetHead, blend);
             bodyPitch = Mathf.Lerp(bodyPitch, pitch, blend);
             bodyRoll = Mathf.Lerp(bodyRoll, roll, blend);
-            // 步态频率随平面速度提升；相位仍需配合落脚误差，静止时不会单凭相位不断迈步。
+            // Gait frequency scales with planar speed; phase requires foot placement error; stationary state will not step continuously on phase alone.
             walkCycle += dt * Mathf.Lerp(.8f, 2.4f, Mathf.Clamp01(speed));
-            // 外骨骼不做持续整胸呼吸起伏；静置重心变化由支撑模块负责。
+            // Exoskeleton does not perform continuous thoracic breathing heave; resting center of mass shifts are handled by support module.
             float bob = Mathf.Sin(walkCycle * Mathf.PI * 4) * Mathf.Min(speed, 1) * .018f;
             float landingCompression = state.Fall.OnFloor ? Mathf.Sin(Mathf.PI *
                 Mathf.Clamp01(state.Fall.GroundSeconds / .24f)) * Mathf.Min(.1f, state.Fall.ImpactSpeed * .012f) : 0;
-            // 蓄力开始/退出时胸部高度也渐变，避免快速招募表现变成整虫一帧上下跳。
+            // Thoracic height interpolates gradually on windup enter/exit, preventing rapid recruitment visuals from popping the body vertically in one frame.
             bodyHeightOffset = Mathf.Lerp(bodyHeightOffset, flightRecovering ? 0 : bob - strain * .055f -
                 landingCompression + modulePose.BodyHeight, 1 - Mathf.Exp(-dt * 22));
             bodyPivot.localPosition = bodyRest + Vector3.up * bodyHeightOffset;
@@ -585,19 +585,19 @@ namespace BeetleArena
 
             if (importedRig && !state.Airborne && !state.HasFallen)
                 importedRig.AvoidFeelerGround(ground, dt);
-            // 统计已经在摆动的腿，供后面的抬腿预算使用。预算限制新增迈步，不会强行中断旧迈步。
+            // Tallies legs currently in swing phase for the swing budget below. Budget restricts new steps without interrupting active swings.
             int steppingCount = 0;
             foreach (var leg in legs)
                 if (leg.stepping)
                     steppingCount++;
-            // 只有速度足够快且未进入承诺动作时使用三足交替节奏；强行发力时采用谨慎步态。
+            // Uses alternating tripod rhythm only when moving fast enough and uncommitted; forced exertion switches to cautious gait.
             bool catching = !state.Airborne && !state.HasFallen && speed > .12f && (state.ImpactVisual > .08f || state.Balance < .45f);
             bool fast = speed > .55f && !state.Committed && !catching;
-            // 根节点单次跳动超过 2 世界单位时重置落脚缓存，避免从遥远旧位置拉出长腿。
+            // Resets footplant cache if root teleports > 2 world units in a single step, preventing hyper-extended legs from dragging from distant origins.
             bool teleported = Vector3.Distance(previousPosition, transform.position) > 2;
             foreach (var leg in legs)
             {
-                // 名义落脚点随身体平移/转向；已落脚的 planted 尽量停留在世界原位，形成支撑期。
+                // Nominal foot targets translate/rotate with body; grounded planted targets stay world-locked to establish stance phase.
                 leg.tumbleFrameWeight = 0;
                 Vector3 nominal = NominalFoot(leg);
                 if (importedRig && !state.Airborne && !state.HasFallen)
@@ -620,8 +620,8 @@ namespace BeetleArena
                 }
 
                 leg.moduleOwned = ownsLeg;
-                // 腾空时取消地面迈步，改为局部空间中的不同相位摆动，表现收腿和挣扎。
-                // 被挑飞时振幅较大，已落台时较小；该分支不产生推进身体的真实力。
+                // Airborne state suspends grounded gait in favor of phase-offset local oscillations portraying flailing and tucking.
+                // Amplitude is larger when tossed airborne and smaller after ring-out settlement; does not generate physical propelling forces.
                 if (flightSpinning || flightRecovering)
                 {
                     // Far throws use a compact body-relative pose. Do not mix world-space
@@ -677,8 +677,8 @@ namespace BeetleArena
                 else if (state.Airborne || state.HasFallen)
                 {
                     leg.stepping = false;
-                    // 脚端目标跟随被撬起的胸腹姿态。先抬前足、中足，后足尽量留在原支点抓地。
-                    // 支点失去之后才收腿/挣扎；不会因设了 Airborne 就让六条腿同时离地。
+                    // Tarsal targets follow pried thoracic/abdominal tilt. Front and middle legs lift first; hind legs grip existing pivot as long as possible.
+                    // Tucks/struggles only after pivot is broken; setting Airborne does not snap all six legs airborne simultaneously.
                     float cycle = strugglePhase + leg.pair * 2.2f + leg.side * 1.1f;
                     float amplitude = .36f * StruggleWeight;
                     Vector3 curl = new Vector3(-leg.side * .15f, .26f, -.08f * (1 - leg.pair));
@@ -691,7 +691,7 @@ namespace BeetleArena
                     ankle = bodyPivot.TransformPoint(leg.restAnkle - bodyRest + curl + kick);
                     if (state.Fall.Active)
                     {
-                        // 初始伸展寻触，继而左右错相的伸-屈动作。只有触及台外地面后才混向支撑足位。
+                        // Initial extension search followed by out-of-phase extension-flexion. Blends into stance targets only after contacting out-of-ring terrain.
                         float ft = state.Fall.Time;
                         float reach = 1 - Ease(Mathf.Clamp01(ft / settings.fallReachSeconds));
                         float search = (1 - reach) * .16f;
@@ -704,7 +704,7 @@ namespace BeetleArena
                             float recovery = FallRecovery(state);
                             Vector3 support = model.TransformPoint(leg.restAnkle);
                             support.y = settings.groundHeight + SoleHeight(leg);
-                            // 分侧/前中后错开寻触；恢复完成后稳定撑地，避免六足同步划水或永久蹬腿。
+                            // Staggers tactile probing across sides and front/mid/hind pairs; braces stably upon recovery, avoiding synchronized paddling or endless flailing.
                             float probe = Mathf.Max(0, Mathf.Sin(legPhase)) * .10f * (1 - recovery);
                             support.y += probe;
                             float settle = Ease(Mathf.Clamp01(state.Fall.GroundSeconds / .24f));
@@ -712,7 +712,7 @@ namespace BeetleArena
                             ankle.y = Mathf.Max(ankle.y, settings.groundHeight + SoleHeight(leg));
                         }
 
-                        // 空中接续旧脚端，且限制 IK 目标速度；接触求解仍会检查所有腿和角。
+                        // Airborne preserves continuity with prior foot targets and limits IK target speed; contact solver still verifies all legs and horns.
                         ankle = Vector3.MoveTowards(leg.lastFoot, ankle, (4 * size + speed + Mathf.Abs(state.VerticalVelocity)) * dt);
                     }
 
@@ -723,7 +723,7 @@ namespace BeetleArena
                         ankle = Vector3.Lerp(leg.planted, ankle, letGo);
                     }
 
-                    // 台面上方的爪不得穿入表面；台外保持自然悬空，不把脚吸回台边。
+                    // Claws above arena surface must not penetrate terrain; out-of-ring tarsi dangle naturally without snapping to arena rim.
                     if (!state.HasFallen && ground != null && ground.Sample(new Vector2(ankle.x, ankle.z), out _))
                         ankle.y = Mathf.Max(ankle.y, FootHeight(ankle, leg));
                 }
@@ -756,13 +756,13 @@ namespace BeetleArena
 
                     // Contact correction and fast turns can leave a planted foot on
                     // the wrong side of its own abdomen. Replant before solving IK.
-                    // 碰撞修正或急转可能让旧脚点跨入身体内侧，或离名义位置过远。
-                    // 一般偏离通过较快的补步追回；只有真实传送/严重越过身体才直接重置。
+                    // Collision corrections or abrupt yaw may displace old footplants across body centerline or beyond reach.
+                    // Standard deviations trigger accelerated recovery steps; only severe teleportation or centerline crossing resets instantly.
                     Vector3 localPlant = model.InverseTransformPoint(leg.planted);
                     float plantError = Vector3.Distance(leg.planted, nominal);
                     bool urgent = localPlant.x * leg.side < (importedRig ? Mathf.Abs(leg.restAnkle.x) * .55f : 1.10f) ||
                         plantError > .40f * size;
-                    // 长足节中足的剩余可达空间比统一位置阈值小得多，提前补步恢复弯曲余量。
+                    // Middle legs with longer tarsi have narrower reachable margins than uniform thresholds, triggering early steps to preserve flex.
                     urgent |= importedRig && plantError > .04f * size && importedRig.SupportReach(leg, leg.planted, state, ground) > .96f;
                     if (localPlant.x * leg.side < 0 || plantError > 1.5f * size)
                     {
@@ -772,16 +772,16 @@ namespace BeetleArena
                         leg.stepping = false;
                     }
 
-                    // 快走分两组：左前+左后+右中，另一组相差半周期；慢走按腿序错开相位。
+                    // Tripod gait at high speeds: Left-Front + Left-Hind + Right-Middle, with opposite triplet out of phase; wave gait at low speeds.
                     float tripodOffset = ((leg.side < 0 && leg.pair != 1) || (leg.side > 0 && leg.pair == 1)) ? 0 : .5f;
                     float waveOffset = leg.side < 0 ? leg.pair / 3f : Mathf.Repeat(leg.pair / 3f + 1f / 3f, 1);
-                    // Repeat 把持续增长的相位折回 0～1；只有进入该腿的迈步窗口才允许启动一步。
+                    // Repeat wraps continuous phase into 0..1; initiates a step only when entering that leg's swing phase window.
                     float cycle = Mathf.Repeat(walkCycle + (fast ? tripodOffset : waveOffset), 1);
                     float error = Vector3.Distance(leg.planted, nominal);
-                    // 发力/撑地最多新增到 1 条摆动腿；普通快走上限 3，慢走上限 2。
+                    // Exertion and stance holding permit at most 1 swinging leg; standard tripod caps at 3, wave gait caps at 2.
                     int maxLifted = catching || state.Committed || state.Action == BeetleAction.Brace ? 1 : fast ? 3 : 2;
                     urgent |= catching && error > .05f * size;
-                    // 同时满足：未迈步、偏离名义位置超过 0.16×体型、轮到该腿、仍有抬腿名额。
+                    // Requires: not currently stepping, displacement > 0.16 * size from rest, leg phase window open, swing quota available.
                     bool oppositeHindBusy = leg.pair == 2 && (legs[leg.side < 0 ? 5 : 2].stepping || legs[leg.side <
                         0 ? 5 : 2].moduleOwned || state.Motion.SampleLeg(leg.side < 0 ? 5 : 2, out _) || legs[leg.side <
                         0 ? 5 : 2].moduleReturn < 1);
@@ -790,12 +790,12 @@ namespace BeetleArena
                         (catching ? 1 : urgent ? 3 : maxLifted))
                     {
                         leg.stepFrom = leg.planted;
-                        // 按当前速度预判 0.17 秒后的前方位置，让脚落在行进方向前方；开始一步后终点固定。
+                        // Predicts ground intercept 0.17s ahead along current velocity, planting foot forward; target latches once step begins.
                         leg.stepTo = nominal + new Vector3(state.Velocity.x, 0, state.Velocity.y) * .17f;
                         leg.stepTo.y = FootHeight(leg.stepTo, leg);
                         if (importedRig)
                             leg.stepTo = importedRig.PlanSupport(leg, leg.stepTo, state, ground);
-                        // 快慢招募只影响本次摆腿；支撑脚继续世界锁定，非六腿一起加速。
+                        // Speed transitions only affect current swing; grounded tarsi remain world-locked rather than accelerating all six legs.
                         float vigor = Mathf.Lerp(.82f, 1, state.BurstReserve);
                         leg.stepDuration = (catching ? .14f : urgent ? .12f : fast ? .16f : .22f) / vigor;
                         leg.stepDuration *= Mathf.Lerp(.93f, 1.07f, InsectMotionTiming.Value(Mathf.FloorToInt(walkCycle), slot + 331));
@@ -806,14 +806,14 @@ namespace BeetleArena
 
                     if (leg.stepping)
                     {
-                        // 每一步使用启动时确定的时长；除以该时长得到归一化进度。
+                        // Step duration is latched at launch; normalized progress is elapsed time divided by latched duration.
                         leg.stepTime += dt / Mathf.Max(.08f, leg.stepDuration);
                         float t = Mathf.Clamp01(leg.stepTime);
-                        // 水平路径用分段 Swing 曲线；竖直额外偏移 sin(πt)×0.13×体型。
-                        // t=0/1 时额外高度为零，t=0.5 最高；这条弧线生成 IK 的输入目标。
+                        // Horizontal trajectory follows segmented Swing curve; vertical offset adds sin(pi * t) * 0.13 * size.
+                        // Extra elevation is zero at t=0 and t=1, peaking at t=0.5; this arc serves as IK input.
                         leg.planted = Vector3.Lerp(leg.stepFrom, leg.stepTo, InsectMuscleAnimation.Swing(t)) +
                             Vector3.up * (Mathf.Sin(t * Mathf.PI) * (catching ? .22f : .13f) * size);
-                        // 跨越凸起时沿整条摆腿路径查地表，足尖留出抬脚余量，不仅检查起终点。
+                        // Samples terrain elevation along entire swing arc to provide foot clearance over convex bumps, not just endpoints.
                         leg.planted.y = Mathf.Max(leg.planted.y, FootHeight(leg.planted, leg) + Mathf.Sin(t * Mathf.PI) * .08f * size);
                         if (t >= 1)
                         {
@@ -825,7 +825,7 @@ namespace BeetleArena
                     ankle = leg.planted;
                 }
 
-                // 模块只交脚端意图，宿主统一做地面投影、速度约束和原有 IK/碰撞。
+                // Modules supply tarsal intent; host unifies ground projection, velocity clamping, and IK/collision passes.
                 if (leg.supportAnchored)
                 {
                     // Keep the accepted ground point in world space as the torso rises/drives.
@@ -849,7 +849,7 @@ namespace BeetleArena
                 }
                 else if (leg.moduleReturn < 1)
                 {
-                    // 从退出瞬间的实际脚位接续，避免插件取消时瞬间回到名义点。
+                    // Resumes from physical foot position at exit, preventing instantaneous snapping to rest position when plugins terminate.
                     leg.moduleReturn = Mathf.Min(1, leg.moduleReturn + dt / .18f);
                     Vector3 target = state.Fall.OnFloor ? model.TransformPoint(leg.restAnkle) : state.Airborne ? ankle : nominal;
                     if (state.Fall.OnFloor)
@@ -859,7 +859,7 @@ namespace BeetleArena
                     leg.stepping = false;
                 }
 
-                // 无论脚正在支撑、迈步还是腾空，都用同一个求解器连接腿根与脚踝目标。
+                // Connects leg base to ankle target using identical solver regardless of whether leg is grounded, stepping, or airborne.
                 if (EdgeReach > .01f && !state.Airborne && !state.HasFallen && !flightSpinning && !flightRecovering &&
                     leg.pair == 0 && !ownsLeg)
                 {
@@ -880,8 +880,8 @@ namespace BeetleArena
             previousPosition = transform.position;
         }
 
-        // 接触限制可能只接受部分姿态。下一步从实际接受的关节角继续，落地也使用实际脚尖。
-        // 地面 planted 仍是世界空间抓地点，不能随整虫修正一起平移，否则会滑步。
+        // Contact constraints may accept only partial pose advance. Next step resumes from actual accepted joint angles and foot tips.
+        // Grounded planted targets remain world-space anchor points; translating with whole-beetle corrections would cause foot slippage.
         public void AcceptSolvedPose(bool limited)
         {
             if (limited)
@@ -899,15 +899,15 @@ namespace BeetleArena
 
         Vector3 ActualFoot(BeetleLegRig leg, Vector3 fallback) => importedRig ? importedRig.bindings[(leg.side <
             0 ? 0 : 3) + leg.pair].tip.position : fallback;
-        // 接触约束的局部反馈：角下受力先让头关节退让，不能把一根角的接触全换算为根部后退。
+        // Local feedback for contact constraints: horn under-forces yield head joint first, avoiding translating entire root backwards.
         public void YieldHead(float degrees)
         {
-            // 接触重试先恢复候选 Transform，却不会回滚动画平滑缓存。
-            // 从本次实际试算姿态取角，避免失败的重试累计退让或覆盖插值后的偏航。
+            // Contact retries restore candidate Transforms without rolling back animation smoothing buffers.
+            // Samples angles from current candidate trial pose, preventing failed trials from accumulating retreat or overwriting yaw.
             headPitch = Mathf.DeltaAngle(0, headPivot.localEulerAngles.x);
             headYaw = Mathf.DeltaAngle(0, headPivot.localEulerAngles.y);
-            // 已经高于退让范围时保持原角度。直接 Max(-32, ...) 会把已扬到 -46 度
-            // 的头强行拉回 -32 度，瞬间重新顶入对手并引发整虫位置修正。
+            // Preserves angle when already above retreat threshold. Calling Max(-32, ...) blindly would pull a head already at -46 deg
+            // back to -32 deg, instantly re-penetrating opponent and triggering root position corrections.
             headPitch = Mathf.Min(headPitch, Mathf.Max(-55, headPitch - degrees));
             headPivot.localRotation = Quaternion.Euler(headPitch, headYaw, 0);
         }
@@ -936,7 +936,7 @@ namespace BeetleArena
             return true;
         }
 
-        // 可动腿被角/对方脚挡住时调整其 IK 目标，骨长不变；坚硬胸腹才承担整虫分离。
+        // Adjusts IK target when articulated legs are blocked by horns or opponent legs, preserving bone lengths; rigid thorax absorbs whole-body separation.
         public void YieldLeg(int index, Vector3 direction, BeetleState state)
         {
             var leg = legs[index];
@@ -952,7 +952,7 @@ namespace BeetleArena
             leg.lastFoot = ActualFoot(leg, target);
         }
 
-        // 把初始脚踝位置从模型局部空间变为世界坐标，再设定台面上的脚踝高度。
+        // Transforms initial ankle position from model local to world space, then establishes resting ankle height above ground.
         Vector3 NominalFoot(BeetleLegRig leg)
         {
             var foot = model.TransformPoint(leg.restAnkle);
@@ -970,7 +970,7 @@ namespace BeetleArena
         // While the body is supported, a foot beyond the rim is held above the
         // edge. Lowering its target through the stump wall made the whole compound
         // body get pushed sideways by its own misplaced foot.
-        // 查询足踝下方的真实台面；台外无命中时收在根部高度附近，不向森林地板伸长腿。
+        // Queries physical ground surface below ankle; off-ring misses tuck near root height rather than stretching to forest floor.
         float FootHeight(Vector3 p, BeetleLegRig leg = null)
         {
             float clearance = importedRig ? (importedRig.soleClearance + (leg == null ? 0 : leg.soleOffset)) * scale : .13f * size;
@@ -979,8 +979,8 @@ namespace BeetleArena
             return (ground.Sample(new Vector2(p.x, p.z), out var hit) ? hit.height : transform.position.y) + clearance;
         }
 
-        // 两段式解析 IK：已知腿根 A、目标 C、两段长度 a/b，反算中间关节 B。
-        // 所有三角形计算在世界空间完成；state 参数目前未参与这个方法的计算。
+        // Analytical two-bone IK: given hip A, target C, lengths a and b, computes intermediate joint B.
+        // Triangle calculations operate in world space; state parameter is reserved.
         void SolveLeg(BeetleLegRig leg, Vector3 target, BeetleState state)
         {
             if (importedRig)
@@ -989,7 +989,7 @@ namespace BeetleArena
                 return;
             }
 
-            // 先回到模型局部空间限制脚的活动区域：左右不越过身体内侧，前后不跨入相邻腿区域。
+            // Transforms into model local space to constrain reachable workspace: prevents crossing centerline or colliding with adjacent legs.
             Quaternion legFrame = Quaternion.Slerp(model.rotation, bodyPivot.rotation, leg.tumbleFrameWeight);
             Vector3 legOrigin = Vector3.Lerp(model.TransformPoint(bodyRest), bodyPivot.position, leg.tumbleFrameWeight);
             Vector3 localTarget = Quaternion.Inverse(legFrame) * (target - legOrigin) / scale + bodyRest;
@@ -997,35 +997,35 @@ namespace BeetleArena
             // Keep each leg in its anatomical sector instead of crossing neighbours.
             localTarget.z = Mathf.Clamp(localTarget.z, leg.restAnkle.z - .32f, leg.restAnkle.z + .32f);
             target = legOrigin + legFrame * ((localTarget - bodyRest) * scale);
-            // 解剖活动区限制改变了 XZ，必须重新校正支撑目标的 Y，避免限位后落入坡面。
+            // Workspace clamps alter XZ plane, requiring re-projecting support target Y to prevent clipping into slopes post-clamp.
             if (!state.Airborne && !state.HasFallen)
                 target.y = Mathf.Max(target.y, FootHeight(target));
             Vector3 hip = bodyPivot.TransformPoint(leg.hipInBody);
             float upper = leg.upperLength * scale, lower = leg.lowerLength * scale;
             Vector3 offset = target - hip;
-            // 三角形可达距离为 |a-b|～a+b；留 0.001 余量避免完全折叠或拉直。
-            // 超出范围时夹紧脚踝目标，因此最终脚点可能与输入目标存在偏差。
+            // Reachable distance spans |a - b| to a + b; leaves 0.001 margin to prevent hyperextension or total collapse singularities.
+            // Ankle target is clamped when out of reach, so final foot position may differ from input target.
             float distance = Mathf.Clamp(offset.magnitude, Mathf.Abs(upper - lower) + .001f, upper + lower - .001f);
             Vector3 direction = offset.sqrMagnitude > .00001f ? offset.normalized : Vector3.down;
             target = hip + direction * distance;
-            // 弯曲提示朝身体外侧、略向上，前后腿再带一点前后偏向。
-            // 投影到垂直于腿根→脚端的平面，确保后面的 along 与 bend 两个方向正交。
-            // 当前模型依赖固定姿态范围；若提示与目标方向平行，多段/FBX 版本需增加备用方向。
+            // Bend pole points outwards and slightly upwards, with slight fore/aft bias for front/hind legs.
+            // Projects onto plane orthogonal to hip-to-ankle vector, ensuring along and bend axes are strictly orthogonal.
+            // Relies on configured workspace; if pole aligns with target direction, multi-segment/FBX setups require fallback poles.
             Vector3 pole = legFrame * new Vector3(leg.side, .4f, (1 - leg.pair) * .18f);
             pole = Vector3.ProjectOnPlane(pole, direction).normalized;
-            // 余弦定理：中间关节在 A→C 方向的投影长度 x=(a²-b²+d²)/(2d)。
+            // Law of Cosines: projection of intermediate joint along A->C is x = (a^2 - b^2 + d^2) / (2d).
             float along = (upper * upper - lower * lower + distance * distance) / (2 * distance);
-            // 勾股定理：离开 A→C 直线的弯曲高度 h=√(a²-x²)；Max(0,...) 防浮点误差开负平方根。
+            // Pythagorean theorem: bend elevation from A->C axis is h = sqrt(a^2 - x^2); Max(0, ...) guards against negative square roots.
             float bend = Mathf.Sqrt(Mathf.Max(0, upper * upper - along * along));
-            // 最终中间关节 B=A+direction×x+pole×h；给定 pole 后选择了一个确定的弯曲平面。
+            // Final knee position: B = A + direction * x + pole * h; pole selects an unambiguous bend plane.
             Vector3 knee = hip + direction * along + pole * bend;
-            // 写入关节点，再把两段胶囊体接在关节点之间。此处直接改几何体，未驱动蒙皮骨骼。
+            // Writes joint positions and fits capsule colliders between joints; manipulates procedural primitives directly without skinned meshes.
             leg.hip.position = hip;
             leg.knee.position = knee;
             leg.ankle.position = target;
             Segment(leg.upper, hip, knee);
             Segment(leg.lower, knee, target);
-            // 主腿求解完成后，由脚踝构造脚趾、爪和胫刺位置；这些附属段不单独执行 IK。
+            // After primary leg solve, tarsus, claws, and spines are positioned from ankle; accessory segments do not solve separate IK.
             Vector3 footNormal = state.SurfaceNormal;
             if (!state.Airborne && ground != null && ground.Sample(new Vector2(target.x, target.z), out var footHit))
                 footNormal = footHit.normal;
@@ -1042,20 +1042,20 @@ namespace BeetleArena
             }
         }
 
-        // 把沿本地 Y 轴的胶囊体摆在两个世界端点之间：中点定位、朝向连线、调整长度。
-        // 这是当前基本几何体的驱动方式；FBX 骨骼通常应保留骨长并旋转骨骼。
+        // Aligns capsule along local Y axis between two world endpoints: midpoints, orient along delta, scale height.
+        // Drives basic primitives; FBX skeletons should retain bone lengths and rotate joints.
         static void Segment(Transform segment, Vector3 a, Vector3 b)
         {
             segment.position = (a + b) * .5f;
             segment.rotation = Quaternion.FromToRotation(Vector3.up, b - a);
             Vector3 s = segment.localScale;
-            // Unity 默认胶囊 Y 向总长为 2；再除父级世界 Y 缩放，避免模型整体缩放后长度被重复放大。
-            // 该换算依赖当前层级的缩放约定，不是任意非均匀缩放/剪切层级的通用解。
+            // Unity default capsule height is 2 along Y; divides by parent world Y scale to avoid compounding scale.
+            // Assumes uniform hierarchy scaling conventions, not arbitrary non-uniform shear hierarchies.
             s.y = Vector3.Distance(a, b) / (2 * Mathf.Max(.001f, segment.parent.lossyScale.y));
             segment.localScale = s;
         }
 
-        // 三次平滑函数 3t²-2t³：端点值为 0/1，端点一阶导数为 0，使插值起止速度平缓。
+        // Smoothstep polynomial 3t^2 - 2t^3: endpoints at 0/1 with zero first derivatives, ensuring smooth velocity transitions.
         static float Ease(float t)
         {
             t = Mathf.Clamp01(t);

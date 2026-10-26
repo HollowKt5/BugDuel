@@ -2,8 +2,8 @@ using UnityEngine;
 
 namespace BeetleArena
 {
-    // 一次托举的接触几何：局部锚点随真实骨骼转动。没有把受击者设为攻击者的子对象。
-    // 约束只在有效托举状态中保持，脱角后立即释放；所有碰撞体仍参与防穿透。
+    // Contact geometry for a lift: local anchors rotate with the actual bones without parenting the defender to the attacker.
+    // Constraints are held only during active lift states and released immediately upon disengagement; all colliders still participate in penetration prevention.
     public sealed class BeetleHornSupport
     {
         public int Attacker { get; private set; } = -1;
@@ -11,7 +11,7 @@ namespace BeetleArena
         Transform horn, receiver;
         Vector3 hornPoint, receiverPoint;
         float previousPitch; bool measurementReady;
-        /// <summary>只采样最终接受的模拟姿态；不得在显示帧或被拒绝的试算中调用。</summary>
+        /// <summary>Samples only the final accepted simulation pose; must not be called during display frames or rejected trials.</summary>
         public void Measure(BeetleSimulation sim, BeetleActor attacker, float dt)
         {
             if (!Active(sim) || dt <= 0) return;
@@ -41,16 +41,16 @@ namespace BeetleArena
                 for (int j = 0; j < target.shapes.Length; j++)
                 {
                     var role = target.Role(j);
-                    // 角尖互顶不是腹下承重；必须先低头入角，直到接触前胸/头部/腹部实体。
+                    // Horn-tip clashes do not constitute underbody support; the beetle must pitch down into horn engagement until contacting the prothorax, head, or abdomen body.
                     if (role != BeetleContactRole.Body || target.IsHorn(j)) continue;
                     var b = target.shapes[j];
-                    // 交替最近点覆盖胶囊与凸壳；贴合容差只接纳上一固定步刚分离的真实角接触。
+                    // Alternating closest-point queries cover capsules and convex hulls; fit tolerance only accepts genuine horn contact separated in the preceding fixed step.
                     Vector3 q = b.ClosestPoint(a.bounds.center);
                     Vector3 p = a.ClosestPoint(q);
                     q = b.ClosestPoint(p);
                     float gap = Vector3.Distance(p, q);
                     if (gap > .085f || p.y > q.y + .055f || (p.y + q.y) * .5f > b.bounds.center.y + .03f) continue;
-                    // 优先腹部/前胸承重，次选头部/角的下缘卡入；脚相碰永远不能启动托举。
+                    // Prioritizes abdominal/prothoracic weight-bearing, followed by head/lower horn margin engagement; leg-to-leg contact never initiates a lift.
                     float score = gap + (role == BeetleContactRole.Body ? 0 : .1f);
                     if (score >= best) continue;
                     best = score; chosenHorn = a; chosenTarget = b; contact = (p + q) * .5f;
@@ -71,7 +71,7 @@ namespace BeetleArena
         {
             if (!Active(sim) || dt <= 0) return;
             Vector3 correction = horn.TransformPoint(hornPoint) - receiver.TransformPoint(receiverPoint);
-            // 限速防止接触建立/骨骼姿态变化造成瞬移；碰撞约束随后仍可将物体推出实体表面。
+            // Clamps speed to prevent teleportation during contact acquisition or bone pose transitions; collision constraints subsequently push bodies off solid surfaces.
             target.Translate(Vector3.ClampMagnitude(correction, sim.Settings.liftFollowSpeed * dt));
         }
     }

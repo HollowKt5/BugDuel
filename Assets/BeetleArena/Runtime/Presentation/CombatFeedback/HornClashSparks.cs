@@ -1,9 +1,9 @@
-using UnityEngine;
+﻿using UnityEngine;
 using UnityEngine.Rendering;
 
 namespace BeetleArena
 {
-    /// <summary>可关闭的兵器火星表现。无灯光、伤害或物理作用；材质显式引用以保留构建依赖。</summary>
+    /// <summary>Toggleable weapon spark presentation. Contains no lights, damage, or physics; material explicitly referenced to preserve build dependencies.</summary>
     public sealed class HornClashSparks : MonoBehaviour
     {
         public const string PreferenceKey = "BugDuel.HornClashSparks.v1";
@@ -45,7 +45,7 @@ namespace BeetleArena
         public void SetEnabled(bool value, bool persist = true)
         {
             Initialize(); sparksEnabled = value;
-            if (!value) Clear(); // 关闭立即清除已有火星，不只阻止下一次发射。
+            if (!value) Clear(); // Disabling clears existing sparks immediately rather than merely halting the next emission.
             if (persist) { PlayerPrefs.SetInt(PreferenceKey, value ? 1 : 0); PlayerPrefs.Save(); }
         }
         public void Tick(float dt)
@@ -57,7 +57,7 @@ namespace BeetleArena
         {
             if (!isActiveAndEnabled) return;
             Initialize(); if (!sparksEnabled || !sparkMaterial) return;
-            // Unity 6 在刚 Stop/Clear 的系统上首次 EmitParams 可能丢弃发射；先建立暂停的模拟状态。
+            // Unity 6 may drop the first EmitParams on a freshly stopped/cleared ParticleSystem; establishes a paused simulation state first.
             if (particles.isStopped) particles.Simulate(0, true, true, false);
             normal = normal.sqrMagnitude > .001f ? normal.normalized : Vector3.right;
             Vector3 tangent = Vector3.Cross(normal, Vector3.up);
@@ -78,7 +78,7 @@ namespace BeetleArena
         }
         void OnDisable() => Clear();
         void OnDestroy() => ReleaseResources();
-        /// <summary>编辑器显式验证不依赖 MonoBehaviour 生命周期回调；释放可重复调用。</summary>
+        /// <summary>Explicit Editor validation decoupled from MonoBehaviour lifecycle callbacks; disposal is safe to invoke repeatedly.</summary>
         public void ReleaseResources()
         {
             initialized = false;

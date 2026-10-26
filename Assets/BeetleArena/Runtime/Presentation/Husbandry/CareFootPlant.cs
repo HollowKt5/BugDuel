@@ -12,6 +12,7 @@ namespace BeetleArena
         readonly Quaternion[] frames, landingFrames;
         readonly bool[] swinging;
         readonly float[] progress;
+        readonly float[] durations,heights;
         int nextTripod;
         int groomIndex=-1;
         float groomBlend,groomTime;
@@ -32,10 +33,10 @@ namespace BeetleArena
         {
             this.rig=rig;imported=rig.importedRig;GroundHeight=groundHeight;
             int n=rig.legs.Length;planted=new Vector3[n];from=new Vector3[n];to=new Vector3[n];frames=new Quaternion[n];landingFrames=new Quaternion[n];
-            swinging=new bool[n];progress=new float[n];
+            swinging=new bool[n];progress=new float[n];durations=new float[n];heights=new float[n];
         }
         public void Reset() { initialized=false;SupportCount=0;groomIndex=-1;groomBlend=groomTime=0; }
-        public void Present(CareState state,float dt)
+        public void Present(CareState state,float dt,float speed=0)
         {
             if(!imported)return;
             if(!initialized)
@@ -55,9 +56,17 @@ namespace BeetleArena
                 planted[groomIndex]=groomBase+Vector3.up*(groomBlend*(.12f+.025f*Mathf.Sin(groomTime*7)))-rig.model.forward*(groomBlend*.06f);
                 if(groomBlend<=0){planted[groomIndex]=groomBase;groomIndex=-1;}
             }
-            // Alternate tripods: left front/rear + right middle, then their opposite partners.
+            // Slow exploration uses short corrective steps. Faster travel retains the
+            // alternating tripods, while every stance foot stays anchored in world space.
             if(!busy&&groomIndex<0)
             {
+                int urgent=-1;float largest=.045f;
+                for(int i=0;i<planted.Length;i++)
+                {
+                    float distance=Vector3.Distance(planted[i],Nominal(i));
+                    if(distance>largest){largest=distance;urgent=i;}
+                }
+                bool tripod=speed>.14f||largest>.10f;
                 int chosen=-1;
                 for(int pass=0;pass<2&&chosen<0;pass++)
                 {
@@ -65,10 +74,11 @@ namespace BeetleArena
                     for(int i=0;i<planted.Length;i++)
                         if(Group(i)==group&&Vector3.Distance(planted[i],Nominal(i))>.06f){chosen=group;break;}
                 }
-                if(chosen>=0)
+                if(!tripod&&urgent>=0)BeginStep(urgent,speed);
+                else if(chosen>=0)
                 {
                     for(int i=0;i<planted.Length;i++)if(Group(i)==chosen)
-                    { swinging[i]=true;progress[i]=0;from[i]=planted[i];to[i]=Nominal(i);landingFrames[i]=rig.model.rotation; }
+                        BeginStep(i,speed);
                     nextTripod=1-chosen;
                 }
             }
@@ -77,9 +87,9 @@ namespace BeetleArena
             {
                 if(swinging[i])
                 {
-                    progress[i]=Mathf.Min(1,progress[i]+dt/.12f);
+                    progress[i]=Mathf.Min(1,progress[i]+dt/durations[i]);
                     float t=progress[i],smooth=t*t*(3-2*t);
-                    planted[i]=Vector3.Lerp(from[i],to[i],smooth)+Vector3.up*(Mathf.Sin(Mathf.PI*t)*.055f);
+                    planted[i]=Vector3.Lerp(from[i],to[i],smooth)+Vector3.up*(Mathf.Sin(Mathf.PI*t)*heights[i]);
                     planted[i].y=Mathf.Max(planted[i].y,GroundAt(planted[i])+rig.legs[i].soleOffset*Scale+.003f);
                     // The footfall was planned in this orientation, not the body's later heading.
                     if(t>=1){swinging[i]=false;planted[i]=to[i];frames[i]=landingFrames[i];}
@@ -100,6 +110,13 @@ namespace BeetleArena
             for(int i=0;i<planted.Length;i++)Solve(i,planted[i],frames[i]);
         }
         int Group(int i) => (rig.legs[i].pair+(rig.legs[i].side<0?0:1))%2;
+        void BeginStep(int i,float speed)
+        {
+            swinging[i]=true;progress[i]=0;from[i]=planted[i];to[i]=Nominal(i);landingFrames[i]=rig.model.rotation;
+            float length=Vector3.Distance(from[i],to[i]);
+            durations[i]=Mathf.Lerp(.19f,.12f,Mathf.Clamp01(speed/.24f));
+            heights[i]=Mathf.Clamp(length*.45f,.018f,.05f);
+        }
         Vector3 Nominal(int i)
         {
             var target=rig.model.TransformPoint(rig.legs[i].restAnkle);target.y=GroundAt(target)+rig.legs[i].soleOffset*Scale+.003f;

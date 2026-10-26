@@ -1,8 +1,8 @@
-using UnityEngine;
+﻿using UnityEngine;
 
 namespace BeetleArena
 {
-    // 模拟依赖的接触接口：实现可以读取并修正双方状态。缺省为空时走纯数据备用分离算法。
+    // Simulation contact dependency interface: implementations can inspect and mutate both fighter states. Falls back to pure-data separation when null.
     public interface IBeetleContactSolver
     {
         void Solve(BeetleSimulation simulation, float dt);
@@ -15,31 +15,31 @@ namespace BeetleArena
 
     // Kinematic articulated contact constraints. PhysX supplies narrow-phase convex
     // mesh contacts; this solver owns movement so animation cannot override a rigidbody.
-    // 细分凸网格的运动学接触求解器：PhysX 负责检测，代码负责位置和速度修正。
-    // 不是让动态 Rigidbody 自由碰撞；也没有逐脚求解摩擦、肌肉或真实角尖杠杆力。
+    // Kinematic contact solver over subdivided convex meshes: PhysX handles detection, code resolves position and velocity corrections.
+    // Does not use free-body dynamic Rigidbodies, nor does it solve per-tarsus friction, muscle actuators, or true horn-tip leverage.
     public sealed class BeetleContactSolver : IBeetleContactSolver, IBeetleLiftContacts, IBeetleMotionContacts,
         IBeetleForelegTargets, IBeetleDriveSupport, IBeetleForebodySupport, IBeetleRightingPose, IBeetlePairContacts
     {
-        // Actor 提供姿态，ContactRig 保存部件碰撞体，arena 保存树桩和地面的接触体。
+        // Actor provides pose; ContactRig holds part colliders; arena holds stump and ground colliders.
         readonly BeetleActor[] actors;
         readonly BeetleContactRig[] rigs;
         readonly Collider[] arena;
-        // 分离时保留的小间隙，降低刚好贴边时下一步反复穿入造成的抖动。
+        // Small separation margin retained to mitigate jitter caused by immediate re-penetration on grazing contacts.
         readonly float skin;
-        // 复用候选索引数组，减少每次求解中因临时集合带来的托管分配。
+        // Reusable candidate index buffer to eliminate heap allocations from temporary collections during each solve pass.
         readonly int[] candidatesA, candidatesB;
-        // 上一轮互碰分离后的余量；斜坡会把双方重新挤近，不能仅凭环境本轮未移动就提前结束。
+        // Residual margin from the prior mutual separation pass; ramps can squeeze bodies together, so environment quiescence alone does not permit early exit.
         float separationRemaining;
-        // 诊断值：记录 Separate 阶段测得的历史最大残余重叠，不代表所有时刻/所有物体的绝对上限。
+        // Diagnostic: tracks the peak residual overlap measured during Separate; not an absolute upper bound across all times or bodies.
         public float MaximumResidual { get; private set; }
 
-        // 记录 Solve 调用中出现甲虫相互接触的次数；不包含仅接触台面的情况。
+        // Tracks how many times Solve encountered mutual beetle-to-beetle contact, excluding arena-only contact.
         public int ContactFrames { get; private set; }
 
         public string LastWorstContact { get; private set; }
 
         Collider separationA, separationB;
-        // 诊断按需格式化。深接触重试只记录引用，不在每个候选更新时分配名称字符串。
+        // Formats diagnostics on demand. Deep contact retries only retain references, avoiding name string allocations on candidate updates.
         public string LastSeparationPair => separationA && separationB ? separationA.name + " / " + separationB.name : null;
         public Vector3 LastSeparationNormal { get; private set; }
 
@@ -58,9 +58,14 @@ namespace BeetleArena
         public int LimitedMotionSteps { get; private set; }
         public int ContactRetreatSteps { get; private set; }
         public int ContactHeadRetreatSteps { get; private set; }
+        // Count candidates, not wall-clock time: identical fixed steps must make
+        // identical choices on different machines and with different render rates.
+        public const int MaxRetreatTrialsPerStep = 6;
+        public int LastRetreatTrials { get; private set; }
+        int headRetreatCursor, rootRetreatCursor;
 
         public float AcceptedMotionFraction { get; private set; } = 1;
-        // 本次 Solve 真正使用的预算；落地后速度可能清零，诊断不能由事后速度重新猜测。
+        // Actual budget consumed during this Solve pass; post-landing velocity may clear to zero, so diagnostics must not reconstruct budgets from retrospective velocity.
         public float MotionBudget(int index) => motionBudget[index];
         public string LiftContact => hornSupport.ContactDescription;
         public float LiftAnchorError => hornSupport.Error;
@@ -73,7 +78,7 @@ namespace BeetleArena
             return hornSupport.TryCapture(attacker.Index, rigs[attacker.Index], rigs[defender.Index]);
         }
 
-        // 每局创建求解器，收集两套碰撞体并启用 ContactDriven，使姿态随固定模拟推进。
+        // Creates the solver per match, gathers both collider sets, and enables ContactDriven so poses advance synchronously with fixed simulation.
         public BeetleContactSolver(BeetleActor[] actors, Collider[] arena, float skin)
         {
             this.actors = actors;
@@ -90,16 +95,20 @@ namespace BeetleArena
                 actor.ContactDriven = true;
         }
 
-        // 先将 Actor 放到模拟位置并更新关节，再同步 PhysX 变换和包围盒，最后执行分离。
-        // 修正后的根节点位置写回模拟状态，成为下一步积分和落台判断的起点。
+        // Places Actor at simulation position and updates joints, syncs PhysX transforms and bounds, then executes separation.
+        // Corrected root positions are written back to simulation state as baselines for next integration step and ring-out evaluation.
         public void Solve(BeetleSimulation sim, float dt)
         {
+            LastRetreatTrials = 0;
+            // View projection also records normals. Only this fixed step's contacts
+            // may steer authoritative retreat candidates.
+            LastSeparationNormal = Vector3.zero;
             for (int i = 0; i < 2; i++)
             {
                 motion[i].Begin();
                 var b = sim.Fighters[i];
                 proposedVelocity[i] = b.Velocity;
-                // 保留真实抛物运动的速度；普通关节碰撞修正只有统一的整步预算。
+                // Preserves true ballistic velocities; generic joint collision corrections share a uniform full-step budget.
                 float physicalSpeed = new Vector3(b.Velocity.x, b.Airborne ? b.VerticalVelocity : 0, b.Velocity.y).magnitude;
                 motionBudget[i] = Mathf.Max(sim.Settings.contactMotionSpeed, physicalSpeed + .5f) * dt;
                 actors[i].PoseSimulation(sim.MotionTime, dt);
@@ -124,11 +133,11 @@ namespace BeetleArena
             if (dt > 0 && !MotionAccepted())
             {
                 LimitedMotionSteps++;
-                // 动画先试完整步；若多次分离累计成瞬移，则逐次缩小姿态推进量。
-                // 所有重试共用原始速度，拒绝的试算不能消耗或产生动量。
+                // First attempts the full motion step; if repeated separation results in teleportation, progressively scales down pose advance.
+                // All retries share the original velocity; rejected trials must neither consume nor generate momentum.
                 bool accepted = false;
-                // 中心轴可能几乎垂直接触法线：微小角叉重叠会被投影成大幅后退，
-                // 此时仅缩小步长仍无解。先用真实接触法线重试完整提案，再逐步缩小。
+                // Centroid axis can be nearly orthogonal to contact normal: minor horn tip overlaps would project into massive backwards translation,
+                // rendering pure step-size reduction useless. Retries the full proposal along true contact normal first, then scales down.
                 for (int attempt = 0; attempt <= 7; attempt++)
                 {
                     float fraction = Mathf.Pow(.5f, attempt);
@@ -140,8 +149,8 @@ namespace BeetleArena
 
                     Physics.SyncTransforms();
                     Cache();
-                    // 缩小整体姿态后重新求局部避让。不能把必要的头角退让也缩到几乎为零，
-                    // 否则互锁的叉角永远无法解开；每次重试都从同一姿态提案重建，不累计转角。
+                    // Re-evaluates local avoidance after scaling overall pose advance. Essential head/horn retreat must not be scaled to near zero,
+                    // or interlocked horns can never decouple; each retry rebuilds from the same pose proposal without accumulating rotations.
                     if (ArticulatedContact(sim.Fighters[0]) || ArticulatedContact(sim.Fighters[1]))
                         YieldArticulatedContacts(sim);
                     contact = Constrain(sim, true, true);
@@ -169,18 +178,21 @@ namespace BeetleArena
                     if (hadAccepted)
                         foreach (var m in retreatFallback) m.Begin();
                     accepted = false;
+                    Vector3 retreatNormal = Vector3.ProjectOnPlane(LastSeparationNormal, Vector3.up);
                     // A hooked horn may need a small neck movement before either root can
                     // retreat. Test these cheap joint-only routes before the full root/leg
                     // search; rejected trials do not write animation or foot caches.
-                    for (int candidate = 0; candidate < 2 && !accepted; candidate++)
+                    for (int candidate = 0; candidate < 6 && !accepted && LastRetreatTrials < 2; candidate++)
                     {
-                        int index = (Mathf.FloorToInt(sim.MotionTime / .8f) + candidate) % 2;
+                        int trial = headRetreatCursor;
+                        headRetreatCursor = (headRetreatCursor + 1) % 6;
+                        int index = trial % 2;
                         var state = sim.Fighters[index];
                         if (state.Airborne || state.HasFallen || state.IsOverturned || state.ContactBlockedSeconds < .3f ||
                             hornSupport.Active(sim) || state.Lift.Supported || actors[index].animator.IsRighting)
                             continue;
-                        for (int direction = 0; direction < 3 && !accepted; direction++)
-                            accepted = TryHeadBeforeRetreat(index, direction, sim, dt, out contact);
+                        LastRetreatTrials++;
+                        accepted = TryHeadBeforeRetreat(index, trial / 2, sim, dt, out contact);
                         if (accepted)
                         {
                             AcceptedMotionFraction = .02f;
@@ -191,13 +203,17 @@ namespace BeetleArena
                     // A valid root retreat can be rejected solely by the new articulated pose.
                     // Retry from the accepted joints, one animal at a time, through the same
                     // penetration and distance limits. No collider is disabled and no teleport occurs.
-                    // Keep an already valid rigid retreat unchanged. Only if those routes
-                    // fail, add local joint yielding, then a bounded downward neck rotation.
-                    // Re-solving legs on every valid retreat can start repeated correction loops.
-                    for (int pose = 0; pose < 3 && !accepted; pose++)
-                    for (int candidate = 0; candidate < 2 && !accepted; candidate++)
+                    // Each direction tries rigid joints, local yielding, then a bounded
+                    // downward neck rotation; a valid rigid retreat keeps its leg pose.
+                    // Resume the bounded search on later fixed steps. Start with the
+                    // actual separation normal, but retain every diagonal/pose route
+                    // for horn locks which cannot escape along that normal alone.
+                    const int rootCandidates = 9 * 3 * 2;
+                    for (int candidate = 0; candidate < rootCandidates && !accepted && LastRetreatTrials < MaxRetreatTrialsPerStep; candidate++)
                     {
-                        int index = (Mathf.FloorToInt(sim.MotionTime / .8f) + candidate) % 2;
+                        int trial = rootRetreatCursor;
+                        rootRetreatCursor = (rootRetreatCursor + 1) % rootCandidates;
+                        int index = trial % 2, pose = trial / 2 % 3, direction = trial / 6;
                         var state = sim.Fighters[index];
                         if (state.Airborne || state.HasFallen || state.IsOverturned || state.ContactBlockedSeconds < .3f)
                             continue;
@@ -214,50 +230,40 @@ namespace BeetleArena
                         away.y = 0;
                         away = away.sqrMagnitude > .000001f ? away.normalized : -actors[index].transform.forward;
                         Vector3 side = Vector3.Cross(Vector3.up, away);
-                        // A horn under an abdomen on a slope may only slide out diagonally:
-                        // backward and sideways alone both drive a different part into contact.
-                        // Sample those combined directions too, from the same accepted pose.
-                        for (int direction = 0; direction < 8 && !accepted; direction++)
+                        LastRetreatTrials++;
+                        if (pose == 2 && !actors[index].animator.TryLowerHeadForRetreat(Mathf.Min(4, 200 * dt)))
+                            continue;
+
+                        Vector3 forward = actors[index].transform.forward;
+                        Vector3 retreat = direction switch
                         {
-                            for (int i = 0; i < 2; i++)
-                            {
-                                motion[i].Apply(0);
-                                sim.Fighters[i].Velocity = proposedVelocity[i];
-                            }
-                            if (pose == 2 && !actors[index].animator.TryLowerHeadForRetreat(Mathf.Min(4, 200 * dt)))
-                                break;
-
-                            Vector3 forward = actors[index].transform.forward;
-                            Vector3 retreat = direction switch
-                            {
-                                0 => -forward,
-                                1 => away,
-                                2 => side,
-                                3 => -side,
-                                4 => -forward + side,
-                                5 => -forward - side,
-                                6 => forward + side,
-                                _ => forward - side
-                            };
-                            retreat.y = 0;
-                            retreat = retreat.normalized * Mathf.Min(.025f, motionBudget[index] * .4f);
-                            if (!sim.SampleGround(new Vector2(origin.x, origin.z), out var from) ||
-                                !sim.SampleGround(new Vector2(origin.x + retreat.x, origin.z + retreat.z), out var to) ||
-                                to.normal.y < .5f)
-                                continue;
-                            retreat.y = to.height - from.height;
-                            actors[index].transform.position += retreat;
-                            Physics.SyncTransforms();
-                            Cache();
-                            // Moving a frozen compound rig can wedge a front leg against a
-                            // horn even when the torso has room. Re-solve local joint contacts
-                            // at this retreat pose before attempting whole-body separation.
-                            if (pose != 0) YieldArticulatedContacts(sim);
-                            contact = Constrain(sim, true, true);
-                            Vector3 actual = actors[index].transform.position - origin;
-                            accepted = MotionAccepted() && Vector3.Dot(actual, retreat.normalized) > .002f;
-                        }
-
+                            0 => retreatNormal.sqrMagnitude > .000001f ? (index == 0 ? retreatNormal : -retreatNormal) : away,
+                            1 => -forward,
+                            2 => away,
+                            3 => side,
+                            4 => -side,
+                            5 => -forward + side,
+                            6 => -forward - side,
+                            7 => forward + side,
+                            _ => forward - side
+                        };
+                        retreat.y = 0;
+                        retreat = retreat.normalized * Mathf.Min(.025f, motionBudget[index] * .4f);
+                        if (!sim.SampleGround(new Vector2(origin.x, origin.z), out var from) ||
+                            !sim.SampleGround(new Vector2(origin.x + retreat.x, origin.z + retreat.z), out var to) ||
+                            to.normal.y < .5f)
+                            continue;
+                        retreat.y = to.height - from.height;
+                        actors[index].transform.position += retreat;
+                        Physics.SyncTransforms();
+                        Cache();
+                        // Moving a frozen compound rig can wedge a front leg against a
+                        // horn even when the torso has room. Re-solve local joint contacts
+                        // at this retreat pose before attempting whole-body separation.
+                        if (pose != 0) YieldArticulatedContacts(sim);
+                        contact = Constrain(sim, true, true);
+                        Vector3 actual = actors[index].transform.position - origin;
+                        accepted = MotionAccepted() && Vector3.Dot(actual, retreat.normalized) > .002f;
                         if (accepted)
                         {
                             AcceptedMotionFraction = .02f;
@@ -285,7 +291,7 @@ namespace BeetleArena
 
                 if (!accepted)
                 {
-                    // 上一步是已验证的安全姿态。暂缓受阻动作，不能强行平移整虫或关掉碰撞体。
+                    // The previous step was a verified safe pose. Suspends blocked actions without forcefully translating the beetle or disabling colliders.
                     for (int i = 0; i < 2; i++)
                     {
                         motion[i].Apply(0);
@@ -313,7 +319,7 @@ namespace BeetleArena
                     actors[i].transform.forward;
                 state.Heading = Mathf.Atan2(forward.x, forward.z) * Mathf.Rad2Deg;
                 ResolveLandingContact(i, sim, dt);
-                // 双方共用本次是否相互接触的结果。当前不记录具体接触部位、法线或接触点。
+                // Both fighters share mutual contact detection results for the current step. Does not track individual contact points or normals here.
                 state.TouchingOpponent = contact;
                 bool standing = !state.Airborne && !state.HasFallen && !state.IsOverturned;
                 bool barelyMoved = Vector3.Distance(motion[i].Start, p) < .005f;
@@ -353,7 +359,7 @@ namespace BeetleArena
                 actors[i].CaptureSimulationPose();
             }
 
-            // 所有回退/环境修正均已结束，才将这一步实际抬头做功计入撬投。
+            // Accumulates work done by head-raising into leverage mechanics only after all rollbacks and environment passes complete.
             if (hornSupport.Active(sim))
                 hornSupport.Measure(sim, actors[hornSupport.Attacker], dt);
             if (!viewInitialized || dt <= 0)
@@ -390,7 +396,7 @@ namespace BeetleArena
             return MotionAccepted() && turn > .1f && turn <= limit + .01f;
         }
 
-        // 只能对最终接受的姿态结算摩擦；试算与碰撞回退不得提前消耗动量。
+        // Resolves friction exclusively on the final accepted pose; trial evaluations and rollbacks must not dissipate momentum prematurely.
         void ResolveLandingContact(int index, BeetleSimulation sim, float dt)
         {
             var state = sim.Fighters[index];
@@ -409,8 +415,8 @@ namespace BeetleArena
             }
         }
 
-        // 将最终接受姿态向下探 3.5cm，确认支撑面接触；落台后只认台外地面。
-        // 用真实上向接触法线，不把擂台侧壁当作地面，也不靠渲染姿态消耗动量。
+        // Probes down 3.5cm from final accepted pose to verify supporting ground contact; post-ring-out only recognizes arena-floor geometry.
+        // Uses true upward contact normals; never treats ring walls as ground, nor allows render poses to drain momentum.
         bool TryLandingContact(BeetleContactRig rig, bool forestOnly, float floorHeight, out Vector3 contactNormal)
         {
             contactNormal = Vector3.up;
@@ -453,7 +459,7 @@ namespace BeetleArena
             return HasPartContact(attacker, kind, forelegSlot);
         }
 
-        // 动作启动检查当前真实几何，不把上一帧的命中缓存或求解回退当作仍在接触。
+        // Action startup verifies current true geometry, never relying on stale hit caches or solver rollbacks from the previous frame.
         public bool HasOpponentContact(int fighter)
         {
             return fighter >= 0 && fighter < 2 && HasPartContact(fighter, BeetleMotionContact.None, -1);
@@ -482,7 +488,7 @@ namespace BeetleArena
                     var ca = a.shapes[i];
                     var cb = b.shapes[j];
                     Vector3 toward = (cb.ClosestPoint(a.bounds[i].center) - a.bounds[i].center).normalized;
-                    // 接触求解保留 skin 间隙，向对方探测 2cm；无碰撞的动作仍可完成但无命中。
+                    // Contact resolution preserves skin margin and probes 2cm toward opponent; non-colliding actions still complete without triggering hits.
                     if (Physics.ComputePenetration(ca, ca.transform.position + toward * .02f, ca.transform.rotation, cb,
                         cb.transform.position, cb.transform.rotation, out _, out _))
                         return true;
@@ -528,8 +534,8 @@ namespace BeetleArena
             targetDistance = delta.magnitude;
             if (pushing)
             {
-                // 用已接受前腿与对方接触面的剩余间隙微调，避免脚端目标已到位、胫节仍差几厘米。
-                // 这里只修正 IK 意图；HasMotionContact 仍按原碰撞体与原容差认证命中。
+                // Fine-tunes target position using residual gap between accepted forelegs and opponent contact surface, closing the tibia gap.
+                // Only adjusts IK intent; HasMotionContact certifies hits using original colliders and tolerances.
                 Vector3 contactGap = Vector3.zero;
                 float nearestGap = .15f;
                 var ownRig = rigs[attacker];
@@ -550,7 +556,7 @@ namespace BeetleArena
                 }
                 delta += anim.model.InverseTransformVector(contactGap) * 2;
             }
-            // 推爪目标略压入接触面以克服跟随滞后；实际骨长和碰撞仍限制最终姿态。
+            // Press target slightly into contact surface to overcome tracking lag; bone lengths and collision still constrain the final pose.
             return Vector3.ClampMagnitude(delta + delta.normalized * (pushing ? .075f : .035f), .55f);
         }
 
@@ -746,12 +752,12 @@ namespace BeetleArena
             state.Lift.UnsupportedTime = state.Lift.GripReleased ? state.Lift.UnsupportedTime + dt : 0;
         }
 
-        // 渲染插值后再约束一次模型位置，覆盖两个安全端点之间仍可能重叠的情况。
-        // 此路径不修改模拟速度，也不把显示位置回写状态；下一步会重新按模拟数据摆放 Actor。
+        // Re-constrains model positions after render interpolation, covering potential inter-frame overlaps between two safe endpoints.
+        // Does not mutate simulation velocity or write visual positions back to state; Actor is reset to simulation data on next step.
         public void ProjectView(BeetleSimulation sim, float dt = BeetleSimulation.FixedStep)
         {
-            // 上一显示帧的安全姿态作为起点。回退固定步 alpha 会让画面倒跳；这里沿上一
-            // 实际显示姿态连续前进，时间步决定可移动距离。显示缓存不参与权威模拟。
+            // Starts from the safe pose of the previous display frame. Rolling back fixed-step alpha would cause visual snapping; advancing continuously
+            // from the last display pose bounds movement by frame dt. Display cache never participates in authoritative simulation.
             foreach (var m in viewMotion)
                 m.Propose();
             bool accepted = false;
@@ -761,7 +767,7 @@ namespace BeetleArena
                 if (attempt > 0)
                     foreach (var m in viewMotion)
                         m.Apply(Mathf.Pow(.5f, attempt - 1));
-                // 显示层也要有沿接触面解开的路径，否则模拟已恢复而画面仍停在旧姿态。
+                // Presentation layer requires surface-tangent decoupling paths as well, preventing visual pose stall while simulation has resumed.
                 Physics.SyncTransforms();
                 Cache();
                 Constrain(sim, false, attempt > 0);
@@ -797,8 +803,8 @@ namespace BeetleArena
                 actor.UpdateMarker();
         }
 
-        // 最多八轮交替处理甲虫互碰和环境碰撞；环境修正可能把甲虫重新挤向对方。
-        // 当环境不再移动模型时提前停止，避免每帧总是跑满迭代预算。
+        // Alternates up to eight iterations between beetle-beetle and environment collision; environment passes may push beetles back into each other.
+        // Exits early when environment stops moving the model to avoid exhausting iteration budget unnecessarily.
         bool Constrain(BeetleSimulation sim, bool changeVelocity, bool useContactNormals = true)
         {
             recordingContacts = changeVelocity;
@@ -819,8 +825,8 @@ namespace BeetleArena
                     break;
             }
 
-            // 最后一轮环境修正也可能重新挤入对手，不能沿用 Separate 之前的残余值。
-            // 将台面与双方全部代理的最终检测作为接受条件，防止岩台把不安全姿态存成回退点。
+            // The final environment pass might squeeze bodies back into opponent; cannot reuse residual values prior to Separate.
+            // Final acceptance requires passing both ring and inter-fighter checks, preventing unsafe poses from being saved as rollback baselines.
             separationRemaining = MeasurePenetration(false);
             recordingContacts = false;
             return contact;
@@ -841,22 +847,22 @@ namespace BeetleArena
                 acceptedForelegContacts |= 1 << (2 + right / 3);
         }
 
-        // 按当前姿态更新部件与整只甲虫的世界 AABB，供后面的宽阶段快速筛选。
+        // Updates component and whole-beetle world AABBs from current pose for broadphase culling.
         void Cache()
         {
             foreach (var rig in rigs)
                 rig.CacheBounds();
         }
 
-        // 双方沿中心连线的水平轴分离，最多 24 次。限制为水平修正，避免角的碰撞法线
-        // 把双方都无意推到空中；真正抬举由战斗规则显式给竖直速度。
+        // Separates along horizontal axis connecting centers for up to 24 iterations. Restricts correction to horizontal to prevent horn normals
+        // from unintentionally launching both into the air; true vertical lifts are explicitly driven by combat rules.
         bool Separate(BeetleSimulation sim, bool changeVelocity, bool useContactNormals)
         {
-            // 托举时沿真实三维接触法线解开重叠。旧算法强制水平分离，会把扬角的竖向接触
-            // 放大成后退，甚至在有向上速度时仍先把双方横向弹开。
+            // Resolves overlaps along true 3D contact normals during lifts. Legacy horizontal separation projected upward horn contacts
+            // into backward translation, bouncing fighters sideways even during upward velocity.
             if (hornSupport.Active(sim))
                 return SeparateSupported(sim);
-            // 脱角后直到身体姿态恢复，继续保留三维接触响应；不能在释放这一帧突然切回横推。
+            // Retains 3D contact response after horn release until posture recovers; must not abruptly snap back to planar pushing on release frame.
             if (hornSupport.Attacker >= 0 && Mathf.Abs(sim.Fighters[hornSupport.Defender].Lift.Pitch) > .01f)
             {
                 if (sim.Fighters[hornSupport.Defender].Airborne)
@@ -872,7 +878,7 @@ namespace BeetleArena
             if (insertingA || insertingB || useContactNormals)
             {
                 bool insertionContact = SeparateAlongContacts(sim, changeVelocity, insertingA || insertingB ? (insertingA ? 0 : 1) : -1);
-                // 交错的多条腿可能让逐接触投影互相抵消。只有剩余穿透超出容差才退回保守分离。
+                // Interlocking legs can cause per-contact projections to cancel out. Reverts to conservative separation only when residual penetration exceeds tolerance.
                 if (separationRemaining > .001f)
                     insertionContact |= SeparateCentered(sim, changeVelocity);
                 return insertionContact;
@@ -887,12 +893,12 @@ namespace BeetleArena
             Vector3 axis = rigs[0].transform.position - rigs[1].transform.position;
             axis.y = 0;
             axis = axis.sqrMagnitude > .000001f ? axis.normalized : Vector3.right;
-            // A 的位移权重使用 B.mass/(A.mass+B.mass)：A 越重，自身被移开的比例越小。
+            // Displacement weight for A is B.mass / (A.mass + B.mass): heavier A incurs a smaller fraction of the separation displacement.
             float aWeight = sim.Fighters[1].Traits.mass / (sim.Fighters[0].Traits.mass + sim.Fighters[1].Traits.mass);
             for (int iteration = 0; iteration < 24; iteration++)
             {
                 float push = RequiredSeparation(axis, out float depth);
-                // 小于容差则停止；单次修正量也限幅，减轻复杂接触突然大幅弹开。
+                // Halts below tolerance; clamps single-pass correction magnitude to mitigate violent bounce on complex multi-contact manifolds.
                 if (depth <= .0005f)
                     break;
                 contact = true;
@@ -906,8 +912,8 @@ namespace BeetleArena
             RequiredSeparation(axis, out float residual);
             separationRemaining = residual;
             MaximumResidual = Mathf.Max(MaximumResidual, residual);
-            // 模拟阶段移除两者沿分离轴继续靠近的相对速度；切向速度保留。
-            // 这里只消除相互挤入，不负责产生攻击推力，后者由 Simulation.ApplyHit 计算。
+            // Removes relative closing velocity along separation axis during simulation; tangential velocity is preserved.
+            // Only eliminates interpenetration; offensive push impulse is computed separately by Simulation.ApplyHit.
             if (contact && changeVelocity)
             {
                 Vector2 n = new Vector2(axis.x, axis.z);
@@ -923,13 +929,13 @@ namespace BeetleArena
         }
 
         static bool Inserting(BeetleState state) => state.Action == BeetleAction.PryWindup || state.Action == BeetleAction.Pry;
-        // 托举与脱角仍允许头/腿局部退让。仅在入角时启用会使岩台高低差下的叉角互锁，
-        // 受击者无法沿任何小步安全抬起，最终整只虫子僵住到托举结束。
+        // Head/leg local retreat remains permitted during lift and release. Enabling it only on engagement caused interlocked horns on uneven terrain,
+        // leaving defender unable to lift safely on any step and locking the beetle rigid until lift expired.
         static bool ArticulatedContact(BeetleState state) => Inserting(state) || state.Action == BeetleAction.Lifting ||
             state.Action == BeetleAction.ReleaseLift || state.Action == BeetleAction.Disengage || state.ContactBlockedSeconds >= .3f;
         void YieldArticulatedContacts(BeetleSimulation sim)
         {
-            // 每步只处理一轮局部退让，之后重新同步实际胶囊体；绝不关闭或忽略它们的碰撞。
+            // Executes one round of local retreat per step, followed by re-syncing capsule colliders; never disables or ignores collision.
             var a = rigs[0];
             var b = rigs[1];
             int changedLegsA = 0, changedLegsB = 0;
@@ -987,9 +993,9 @@ namespace BeetleArena
             }
         }
 
-        // 入角阶段还在地面上：沿真实法线的水平投影侧向滑开，让叉角可以从旁边通过。
-        // 旧的中心轴投影丢失了侧向滑动，近乎竖直的接触反而被放大成整虫倒退。
-        // attacker=-1 表示普通动作的受阻重试，按双方质量分摊，不给固定编号让路特权。
+        // Ground engagement phase: slides laterally along horizontal projection of true normal, allowing horns to pass around obstacles.
+        // Legacy centroid-axis projection lost lateral glide, magnifying near-vertical contacts into full-body backward retreat.
+        // attacker = -1 represents blocked retreat for generic actions, split proportionally by mass without assigning precedence.
         bool SeparateAlongContacts(BeetleSimulation sim, bool changeVelocity, int attacker)
         {
             bool contact = false;
@@ -1090,11 +1096,11 @@ namespace BeetleArena
                 if (deepest < .0005f)
                     break;
                 contact = true;
-                // 攻击者六足提供地面反力，受击者沿分离法线响应；不把攻击者一同抬到空中。
+                // Attacker's six legs provide ground reaction force while defender responds along separation normal, without lifting attacker airborne.
                 if (correction.y < 0 && b.transform.position.y < sim.Fighters[hornSupport.Defender].SurfaceHeight + .12f)
                 {
-                    // 受击者仍贴台面时，不能沿斜向下的角碰撞法线把它压进地里，
-                    // 再让地面把它弹回原处。攻击者在水平面退让，解除这组互相抵消的约束。
+                    // When defender remains grounded on the arena, downward-sloping horn normals must not push it into the floor only to bounce back.
+                    // Attacker retreats horizontally to resolve these mutually canceling constraints.
                     Vector3 horizontal = new Vector3(correction.x, 0, correction.z);
                     float fraction = horizontal.magnitude / Mathf.Max(.00001f, correction.magnitude);
                     if (fraction > .05f)
@@ -1135,8 +1141,8 @@ namespace BeetleArena
                 out normal, out depth);
         }
 
-        // 先检查整只甲虫包围盒，再挑出可能相交的部件，最后对部件对进行精确凸体检测。
-        // 先用 AABB 排除远离部件，仅精确检测可能接触的代理对。
+        // Broadphase checks whole-beetle bounding boxes first, culls distant parts via part AABB, and evaluates exact convex collisions.
+        // Culls distant parts via AABB broadphase, precisely testing only candidate proxy pairs.
         float RequiredSeparation(Vector3 axis, out float maximumDepth, bool describe = false)
         {
             float result = 0;
@@ -1152,7 +1158,7 @@ namespace BeetleArena
                         continue;
                     var ca = a.shapes[i];
                     var cb = b.shapes[j];
-                    // ComputePenetration 只返回分离法线与深度，不会自动移动碰撞体。
+                    // ComputePenetration returns separation normal and penetration depth without mutating collider transforms.
                     if (!Penetrates(a, i, b, j, out Vector3 normal, out float depth))
                         continue;
                     RecordPartContact(i, j);
@@ -1167,16 +1173,16 @@ namespace BeetleArena
                     }
 
                     maximumDepth = Mathf.Max(maximumDepth, depth);
-                    // 检测深度沿法线给出，而本求解器沿水平中心轴移动，因此除以法线与轴的夹角余弦。
-                    // 分母下限 0.15 避免接近垂直时数值爆炸；后续迭代逐步消除余下重叠。
+                    // Penetration depth is normal-aligned while solver translates along horizontal centroid axis; scales by dot product cosine.
+                    // Denominator clamped to 0.15 minimum to prevent division explosion on near-orthogonal vectors; subsequent iterations resolve residual overlap.
                     result = Mathf.Max(result, depth / Mathf.Max(.15f, Mathf.Abs(Vector3.Dot(normal, axis))));
                 }
 
             return result;
         }
 
-        // 每轮找部件与树桩/地面最深的重叠，沿其法线移动整只甲虫，最多 16 次。
-        // 用于防止关节动作插入台面；平移后由 ContactRig 同步平移缓存包围盒。
+        // Resolves deepest part-stump/ground overlap along contact normal up to 16 iterations per pass.
+        // Prevents articulated joints from penetrating arena; ContactRig translates cached bounds synchronously with root translation.
         bool ResolveArena(BeetleContactRig rig)
         {
             bool moved = false;
@@ -1205,8 +1211,8 @@ namespace BeetleArena
 #endif
                             deepest = depth;
                             correction = normal * (depth + skin);
-                            // 凹凸地表顶部采用竖直脱离：侧向分离会把细触角推入邻接三角形，反复抵消修正。
-                            // 除以法线 Y 保持法线方向的分离距离；侧壁仍沿原始法线推出，不能借此爬回台顶。
+                            // Resolves uneven terrain tops vertically: lateral separation pushes thin antennae into adjacent triangles, canceling corrections.
+                            // Scales separation by normal Y; steep side walls still push along raw normal to prevent climbing back onto ring crests.
                             if (surface is MeshCollider mesh && !mesh.convex && normal.y > .5f)
                                 correction = Vector3.up * ((depth + skin) / normal.y);
                         }
@@ -1222,14 +1228,14 @@ namespace BeetleArena
             return moved;
         }
 
-        // 验证工具用的当前残余深度测量：包含甲虫之间以及每只甲虫与环境之间的接触。
-        // 会更新 LastWorstContact 帮助定位问题，但不是持续执行的性能分析器。
+        // Residual depth measurement used by validation tools: includes beetle-to-beetle and beetle-to-environment contacts.
+        // Updates LastWorstContact to aid debugging; not an active continuous profiler.
         public float MeasurePenetration(bool describe = true)
         {
             Physics.SyncTransforms();
             Cache();
             RequiredSeparation(Vector3.right, out float depth, describe);
-            // 游戏循环只测数值；详细部件名按验证工具请求生成，避免每次接触复查分配诊断字符串。
+            // Game loop measures raw numerical penetration; detailed part names are generated on demand by validation tools to avoid diagnostic allocations.
             if (describe)
                 LastWorstContact = "between beetles";
             foreach (var rig in rigs)

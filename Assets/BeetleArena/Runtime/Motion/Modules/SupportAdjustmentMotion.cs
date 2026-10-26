@@ -1,4 +1,4 @@
-using UnityEngine;
+﻿using UnityEngine;
 namespace BeetleArena
 {
     [CreateAssetMenu(menuName = "Beetle Arena/Motions/Support Adjustment")]
@@ -10,8 +10,8 @@ namespace BeetleArena
         public override BeetleMotionChannel Channel => BeetleMotionChannel.SupportOverlay;
         public override bool CanStart(in BeetleMotionContext c) =>
             c.Fallen ? c.OnFloor && c.FloorTime > 1.8f : c.Grounded && c.Speed < .3f && !c.Committed && c.Impact < .025f;
-        // 单足换支撑：先卸载该侧，再低幅提足落回，最后收回重心。数值为动画调参。
-        // 相位固定窗 + 个体错相；不随逐帧 Footing 改变窗口长度，避免曲线跳变。
+        // Unilateral support shift: unloads that side first, lifts foot with low amplitude to replant, then shifts center of mass. Tuned for animation.
+        // Fixed phase window with individual phase offsets; window duration does not fluctuate with per-frame Footing, avoiding curve popping.
         static void Adjustment(in BeetleMotionContext c, out int slot, out float load, out float lift)
         {
             const float window = 1.9f;
@@ -21,9 +21,9 @@ namespace BeetleArena
             float span = Mathf.Lerp(.65f, .9f, InsectMotionTiming.Value(n, 114));
             float p = Mathf.Clamp01((c.Time - n * window - start) / span);
             float ramp = c.Fallen ? Mathf.SmoothStep(0, 1, Mathf.Clamp01((c.FloorTime - 1.8f) / .5f)) : 1;
-            // 站稳后保留小调整，低支撑/低平衡时适度增加；不声称是逐足肌肉动力学。
+            // Subtle adjustments retained when grounded, moderately increased during low support or imbalance; does not claim per-leg muscle dynamics.
             float need = Mathf.Lerp(.65f, 1, Mathf.Clamp01(1 - c.Footing + 1 - c.Balance));
-            // 胜者赛后仍有可辨识的换足活动；只补偿 Winner，不放大交锋中的休息摆动。
+            // Winner retains discernible post-match stepping; compensates Winner only without amplifying idle sway during active combat.
             if (c.Action == BeetleAction.Winner) need *= 1.3f;
             if (c.Touching) need *= .65f;
             load = Mathf.SmoothStep(0, 1, p / .22f) * (1 - Mathf.SmoothStep(0, 1, (p - .72f) / .28f)) * ramp * need;

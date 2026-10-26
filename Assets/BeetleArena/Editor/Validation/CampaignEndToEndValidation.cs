@@ -28,7 +28,7 @@ public static class CampaignEndToEndValidation
         EditorApplication.playModeStateChanged+=OnPlay;
         EditorApplication.update+=()=>{if(SessionState.GetString(Key,"").Length>0&&EditorApplication.isPlaying)EditorApplication.QueuePlayerLoopUpdate();};
     }
-    [MenuItem("Tools/Beetle Arena/Validate Complete Campaign Play Flow")]
+    [MenuItem("Tools/甲壳虫斗/验证/战役流程/完整战役流程", false, 560)]
     public static void Run()
     {
         if(EditorApplication.isPlaying)throw new InvalidOperationException("Stop Play before isolated campaign validation.");
@@ -171,7 +171,7 @@ public sealed class CampaignEndToEndDriver:MonoBehaviour
     {
         app=CampaignApp.Ensure();CampaignLocalization.Select(0);yield return OnPage(CampaignPage.MainMenu);yield return Wait(()=>!CampaignLocalization.English,"Chinese acceptance labels");
         Check(app.Session==null&&Path.GetFullPath(app.SaveDirectory)==Path.GetFullPath(CampaignApp.StorageOverride),"fresh MainMenu uses isolated saves and has no active journey");
-        yield return Click("开始");yield return OnPage(CampaignPage.Saves);
+        yield return Click("开始 / 存档");yield return OnPage(CampaignPage.Saves);
         yield return Click(SlotButton(0,"新建存档"));yield return Wait(()=>app.Modal&&Modal&&Modal.GetComponentInChildren<TMP_InputField>(),"new journey naming");
         Modal.GetComponentInChildren<TMP_InputField>().text="流程验收 Ada";yield return Click("开始旅程");yield return OnPage(CampaignPage.Greenhouse);
         Check(app.ReadSlot(0).state.playerName=="流程验收 Ada"&&!app.NeedsPlayerName,"real new-game naming durably creates the journey before entering the greenhouse");
@@ -199,7 +199,8 @@ public sealed class CampaignEndToEndDriver:MonoBehaviour
         yield return Click("领取全部附件");yield return Idle();
         Check(app.Session.State.mail.Single(mail=>mail.id==mailId).claimed&&app.Session.InventoryCount(food)==stock+3&&app.ReadSlot(0).state.mail.Single(mail=>mail.id==mailId).claimed,
             "opening the actual delivery and claiming attachments durably moves the order into the warehouse");
-        yield return KeyPress(Key.Escape);yield return Wait(()=>!app.Modal,"mailbox close");yield return Click("返回温室");yield return OnPage(CampaignPage.Greenhouse);
+        yield return KeyPress(Key.Escape);yield return Wait(()=>!app.Modal,"mailbox close");yield return Click("温室");yield return OnPage(CampaignPage.Greenhouse);
+        yield return Click("照料");yield return null;yield return null;
         yield return Click(Buttons.Single(button=>button.name.StartsWith("红薯 ×",StringComparison.Ordinal)));yield return Idle();
         Check(app.Session.InventoryCount(food)==stock+2&&app.Session.Beetle(id).meal!=null,"greenhouse feed button consumes one claimed supply and places a meal");
         yield return Wait(()=>!app.Busy&&app.Session.Beetle(id).meal==null,"actual greenhouse feeding",150);
@@ -223,11 +224,11 @@ public sealed class CampaignEndToEndDriver:MonoBehaviour
         yield return KeyPress(Key.Escape);yield return Wait(()=>app.Modal,"arena exit confirmation");clock=controller.RoundClock;motion=controller.Simulation.MotionTime;
         Tick(bridge,10);yield return new WaitForSecondsRealtime(.2f);
         Check(controller.RoundClock==clock&&controller.Simulation.MotionTime==motion&&app.Session.State.clock.elapsedDays==battleDay,"a visible arena modal freezes both round time and simulation without advancing husbandry");
-        yield return Capture("02-Arena-Paused");yield return Click("取消");yield return Wait(()=>!app.Modal,"resume arena");
+        yield return Capture("02-Arena-Paused");yield return Click("完成");yield return Wait(()=>!app.Modal,"resume arena");
         yield return Wait(()=>controller.RoundClock>clock,"round clock resumes after closing its modal");
         Check(app.SaveSlot(1)&&app.ReadSlot(1).state.battle.id==matchId,"mid-match manual snapshot preserves the original reservation and seed");
-        yield return KeyPress(Key.Escape);yield return Wait(()=>app.Modal,"leave arena confirmation");yield return Click("确定");yield return OnPage(CampaignPage.MainMenu);
-        yield return Click("开始");yield return OnPage(CampaignPage.Saves);yield return Click(SlotButton(1,"读取"));yield return OnPage(CampaignPage.Greenhouse);
+        yield return KeyPress(Key.Escape);yield return Wait(()=>app.Modal,"leave arena settings");yield return Click("返回主菜单");yield return OnPage(CampaignPage.MainMenu);
+        yield return Click("开始 / 存档");yield return OnPage(CampaignPage.Saves);yield return Click(SlotButton(1,"读取"));yield return OnPage(CampaignPage.Greenhouse);
         Check(app.Session.State.battle.id==matchId&&app.Session.State.battle.seed==seed&&app.Session.State.coins==funds-fee&&!app.CalendarRunning,
             "reload preserves the pending match without charging again or advancing the campaign calendar");
         yield return Click("联赛");yield return OnPage(CampaignPage.League);yield return Click("重返赛场");yield return OnPage(CampaignPage.Arena);
@@ -265,22 +266,27 @@ public sealed class CampaignEndToEndDriver:MonoBehaviour
             "loading a completed match preserves one reward and emits no fresh currency delta");
 
         // This isolated workflow shortens development only; production durations remain unchanged.
-        var originalLifeRules=app.Session.State.lifeRules.Copy();string motherId=app.Session.State.beetles.Single(b=>b.female).id;
+        var originalLifeRules=app.Session.State.lifeRules.Copy();
         Check(app.Execute(s=>
         {
             s.ConfigureClock(86400,1,true);
             s.ConfigureLifeRules(new CampaignLifeRules {eggDays=1,larva1Days=1,larva2Days=1,larva3Days=3,prepupaDays=1,pupaDays=1,dormantDays=1,adultDays=180});
             foreach(var b in s.State.beetles){b.hearts=b.maxHearts;b.nutrition=100;b.overturned=false;}
-            s.State.selectedId=id;
+            s.State.selectedId=id;s.State.random=0x12345678;
         }),"prepare healthy parents and a short development cycle only in the isolated workflow");yield return Idle();
         int residents=app.Session.State.beetles.Count;funds=app.Session.State.coins;
-        yield return Click("育种");yield return null;yield return Click("将当前甲虫设为亲本");yield return null;
-        yield return Click("配种 100 G · 1 个后代");yield return Idle();
+        var breedingOffer=app.Session.BreedingOffer(id,0);string motherId=breedingOffer.Mother.id;
+        yield return Click("育种中心");yield return OnPage(CampaignPage.Breeding);
+        yield return Click(Buttons.Where(button=>button.name=="选择配种").OrderByDescending(button=>ScreenPoint(button.GetComponent<RectTransform>()).y).First());
+        // Freeze the random fixture inside the confirmation modal; background care can
+        // consume the shared RNG while travelling from the greenhouse to the center.
+        Check(app.Execute(s=>s.State.random=0x12345678),"seed the isolated successful-breeding branch while care is paused");yield return Idle();
+        yield return Click("确定");yield return Idle();
         string childId=app.Session.State.selectedId;var child=app.Session.Beetle(childId);
-        Check(childId!=id&&child.stage==CampaignLifeStage.Egg&&child.father==id&&child.mother==motherId&&app.Session.State.beetles.Count==residents+1&&app.Session.State.coins==funds-100&&
+        Check(childId!=id&&child.stage==CampaignLifeStage.Egg&&child.father==id&&child.mother==motherId&&app.Session.State.beetles.Count==residents+1&&app.Session.State.coins==funds-breedingOffer.Fee&&
             app.ReadSlot(0).state.beetles.Single(b=>b.id==childId).stage==CampaignLifeStage.Egg,
-            "real parent selection and breeding buttons charge once and durably produce an owned egg with both parent IDs");
-        yield return Click("日常照料");yield return null;funds=app.Session.State.coins;
+            "center breeding charges the quoted fee once and durably produces an owned egg with both parent IDs");
+        yield return Click("温室");yield return OnPage(CampaignPage.Greenhouse);funds=app.Session.State.coins;
         yield return Click("选用营养与温控方案");yield return Idle();
         Check(app.Session.Beetle(childId).feed==1&&app.Session.Beetle(childId).climate==1&&app.Session.State.coins==funds-app.Session.Catalog.feeds[1].cost,
             "the egg care panel saves the chosen nutrition and temperature plan with its exact fee");
@@ -339,7 +345,7 @@ public sealed class CampaignEndToEndDriver:MonoBehaviour
 
         // The actual result is never rewritten. A single honor bit enables this independent sales branch.
         Check(app.Execute(s=>{var b=s.Beetle(id);b.championships|=1;b.hearts=b.maxHearts;b.nutrition=100;b.overturned=false;s.State.selectedId=id;s.ConfigureClock(86400,1,true);}),"prepare one champion honor for the independent auction branch");yield return Idle();
-        yield return Click("冠军拍卖");yield return OnPage(CampaignPage.Auction);yield return Click("只拍卖一次首配权");yield return Idle();
+        yield return Click("市场");yield return OnPage(CampaignPage.Market);yield return Click("拍卖");yield return null;yield return null;yield return Click("冠军拍卖");yield return null;yield return null;yield return Click("只拍卖一次首配权");yield return Idle();
         Check(app.Session.State.auction!=null&&app.ReadSlot(0).state.auction!=null,"champion auction entry creates a durable sale while keeping its beetle");
         while(app.Session.State.auction.round<app.Session.State.auction.rounds){yield return Click("下一轮举牌");yield return Idle();}
         long bid=app.Session.State.auction.bid;funds=app.Session.State.coins;yield return Click("落槌成交");yield return Idle();

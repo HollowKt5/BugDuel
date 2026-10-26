@@ -10,7 +10,10 @@ using UnityEngine.SceneManagement;
 /// <summary>Delete only known generated intermediates with no asset, source or generator GUID references.</summary>
 public static class BeetleGeneratedAssetCleanup
 {
-    [MenuItem("Tools/Beetle Arena/Clean Unused Generated Intermediates")]
+    [MenuItem("Tools/甲壳虫斗/维护与清理/预览未引用的生成资源", false, 799)]
+    public static void Preview() => Debug.Log(Run(false));
+
+    [MenuItem("Tools/甲壳虫斗/维护与清理/清理未引用的生成资源", false, 800)]
     public static void Clean() => Debug.Log(Run(true));
 
     public static string Run(bool apply)

@@ -1,10 +1,10 @@
-using UnityEngine;
+﻿using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.SceneManagement;
 
 namespace BeetleArena
 {
-    /// <summary>场景切换入口；养殖档案的保存由养殖应用控制器负责。</summary>
+    /// <summary>Scene transition gateway; saving husbandry saves is handled by husbandry application controller.</summary>
     public sealed class BeetleNurseryNavigation : MonoBehaviour
     {
         public const string NurseryScenePath = "Assets/Scenes/BeetleNursery.unity";

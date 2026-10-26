@@ -37,7 +37,7 @@ public static class RetroPresentationValidation
         if(folder.Length>0)CampaignApp.StorageOverride=folder;
         EditorApplication.playModeStateChanged+=OnPlay;
     }
-    [MenuItem("Tools/Beetle Arena/Validate Retro Presentation")]
+    [MenuItem("Tools/甲壳虫斗/验证/界面与画面/复古表现", false, 606)]
     public static void Run()
     {
         if(EditorApplication.isPlayingOrWillChangePlaymode)throw new InvalidOperationException("Stop Play before presentation validation.");

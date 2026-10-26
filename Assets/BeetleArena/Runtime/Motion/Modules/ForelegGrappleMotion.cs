@@ -1,4 +1,4 @@
-using UnityEngine;
+﻿using UnityEngine;
 namespace BeetleArena
 {
     [CreateAssetMenu(menuName = "Beetle Arena/Motions/Foreleg Grapple (Golofa reference)")]
@@ -6,7 +6,7 @@ namespace BeetleArena
     {
         [Range(.15f, .4f)] public float footLift = .28f;
         [Range(.3f, .8f)] public float footReach = .66f;
-        // 扒回短于伸出：中后足先承重，前足伸出、接触、向后下方收回。
+        // Retraction is shorter than extension: middle and hind legs bear weight first, while foreleg extends, contacts, and pulls downward-backward.
         static float Reach(float p) => Mathf.SmoothStep(0, 1, Mathf.InverseLerp(.05f, .34f, p));
         static float Rake(float p) => Mathf.SmoothStep(0, 1, Mathf.InverseLerp(.56f, .72f, p));
         public override void SetDefaults()
@@ -14,8 +14,8 @@ namespace BeetleArena
             evidence = "Cross-species adaptation: Eberhard, Golofa porteri, Psyche 84:292-298 (1977 volume, published 1978), figures 1a-c. Not established for Trypoxylus; constrained to current leg reach. https://repository.si.edu/bitstreams/a06da26f-32ea-4bd7-b73a-b72a12d0d6f9/download";
             duration = 1.1f; cooldown = 2.8f; weight = .9f;
         }
-        // Eberhard 的 Golofa porteri 观察：前足包围/向后下方扒拉，非人类拳击。
-        // 当前 Trypoxylus 外形仅作跨物种保守移植；资产 evidence 明确标注，可独立移除。
+        // Eberhard's observations of Golofa porteri: forelegs envelop and pull downward-backward, unlike humanoid boxing.
+        // Current Trypoxylus morphology is a conservative cross-species adaptation; clearly noted in asset evidence and independently removable.
         public override string DisplayName => "前足探抵 · 扒拉解围";
         public override BeetleMotionChannel Channel => BeetleMotionChannel.Combat;
         public override BeetleMotionFamily Family => BeetleMotionFamily.Foreleg;
@@ -36,7 +36,7 @@ namespace BeetleArena
             int active = c.ForelegSide < 0 ? 0 : 3;
             float reach = Reach(phase), rake = Rake(phase);
             float recover = 1 - Mathf.SmoothStep(0, 1, Mathf.InverseLerp(.76f, 1, phase));
-            // 只举一条前足，避免把短前腿模型套成长臂 Golofa 或人类拳击。
+            // Raises only a single foreleg, avoiding imposing long-armed Golofa or humanoid boxing onto short-legged models.
             offset = new Vector3(c.ForelegSide * (.40f * reach - .62f * rake) * recover,
                 footLift * 1.6f * reach * (1 - .75f * rake) * recover,
                 (footReach * reach - (footReach + .38f) * rake) * recover);

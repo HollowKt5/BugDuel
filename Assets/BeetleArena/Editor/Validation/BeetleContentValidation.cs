@@ -13,7 +13,7 @@ public static class BeetleContentValidation
 {
     static void Require(bool condition, string message) { if (!condition) throw new Exception(message); }
 
-    [MenuItem("Tools/Beetle Arena/Validate Content Reload And Habitats")]
+    [MenuItem("Tools/甲壳虫斗/验证/存档与数据/内容重载与栖息地", false, 666)]
     public static void Run()
     {
         var scene = SceneManager.GetActiveScene();

@@ -6,7 +6,7 @@ using BeetleArena;
 using UnityEditor;
 using UnityEngine;
 
-/// <summary>实际烘焙颚片蒙皮，检查固定切口、独立运动、复位及数值安全。</summary>
+/// <summary>Bakes mandible skinning in editor, validating fixed seams, independent motion, reset, and numerical safety.</summary>
 public static class BeetleJawValidation
 {
     static void Require(bool ok,string message){if(!ok)throw new Exception(message);}
@@ -15,7 +15,7 @@ public static class BeetleJawValidation
         var mesh=new Mesh();try{r.BakeMesh(mesh,false);return mesh.vertices.Select(v=>r.transform.position+r.transform.rotation*v).ToArray();}
         finally{UnityEngine.Object.DestroyImmediate(mesh);}
     }
-    [MenuItem("Tools/Beetle Arena/Validate Jaw Split")]
+    [MenuItem("Tools/甲壳虫斗/验证/模型与动作/颚部拆分", false, 703)]
     public static void Run()
     {
         var report=new StringBuilder("JAW VALIDATION\n"+DateTimeOffset.Now.ToString("o")+"\n");

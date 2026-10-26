@@ -1,7 +1,7 @@
-using UnityEngine;
+﻿using UnityEngine;
 namespace BeetleArena
 {
-    /// <summary>共用局部 TRS 值类型。只保存数值，不拥有时钟；两个姿态缓冲仍独立拥有自己的数组。</summary>
+    /// <summary>Shared local TRS value type. Stores raw transforms without clock ownership; pose buffers maintain independent backing arrays.</summary>
     internal readonly struct BeetleLocalPose
     {
         readonly Vector3 position, scale;

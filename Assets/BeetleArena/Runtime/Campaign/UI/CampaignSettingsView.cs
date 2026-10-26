@@ -70,7 +70,9 @@ namespace BeetleArena.Campaign
                 Btn(p,"恢复默认按键",40,525,280,50,()=>{app.Controls.RemoveAllBindingOverrides();OpenSettings();});
             }
             Label(p,"设置即时生效，关闭时自动保存。",40,632+extraHeight,960,34,18,muted);
-            Btn(p,"完成",40,680+extraHeight,970,54,()=>{BeetleDisplayPreferences.Save();CloseModal();QueueRefresh();});SelectFirst(p);
+            bool canReturn=page!=CampaignPage.MainMenu&&page!=CampaignPage.Saves;
+            Btn(p,"完成",40,680+extraHeight,canReturn?630:970,54,()=>{BeetleDisplayPreferences.Save();CloseModal();QueueRefresh();});
+            if(canReturn)Btn(p,"返回主菜单",690,680+extraHeight,320,54,()=>{CloseModal();app.Go(CampaignPage.MainMenu);});SelectFirst(p);
         }
         void SettingRow(RectTransform p,string title,float y,string value,Action click,bool enabled=true){Label(p,title,40,y+10,500,55,24);Btn(p,value,560,y,450,58,click,enabled);}
         void Slider(RectTransform p,string title,float y,float value,Action<float> changed)
@@ -95,10 +97,10 @@ namespace BeetleArena.Campaign
                 display.texture=backdrop.Frame;display.raycastTarget=false;BeetleCombatCrt.Attach(display);
             }
             Label(p,"当前场景的实时画面预览",40,279,470,25,17,muted);
-            Label(p,"像素尺寸",550,301,460,34,22);
+            Label(p,"像素档位",550,301,460,34,22);
             UI.Button pixelButton=null,spotlightButton=null;TMPro.TMP_Text description=null,glassDescription=null;RetroFilterDropdown dropdown=null,glassDropdown=null;
-            pixelButton=Btn(p,BeetleDisplayPreferences.PixelSize+" 像素",550,341,460,52,()=>
-            { int[] sizes={1,2,3,4,6};BeetleDisplayPreferences.PixelSize=sizes[(Array.IndexOf(sizes,BeetleDisplayPreferences.PixelSize)+1)%sizes.Length];RefreshControls(); },BeetleDisplayPreferences.IsDither(BeetleDisplayPreferences.Style));
+            pixelButton=Btn(p,BeetleDisplayPreferences.PixelSizeLabel,550,341,460,52,()=>
+            { BeetleDisplayPreferences.NextPixelSize();RefreshControls(); },BeetleDisplayPreferences.IsDither(BeetleDisplayPreferences.Style));
             pixelButton.name="FilterPixelSize";
             description=Label(p,RetroFilterDropdown.Description(BeetleDisplayPreferences.Style),550,409,460,66,20,muted);
             dropdown=RetroFilterDropdown.Attach(filterButton,_=>RefreshControls(),(RectTransform)p.parent);
@@ -122,7 +124,7 @@ namespace BeetleArena.Campaign
                 pixelButton.interactable=BeetleDisplayPreferences.IsDither(BeetleDisplayPreferences.Style);
                 var pixelLabel=pixelButton.GetComponentInChildren<TMPro.TMP_Text>();
                 pixelLabel.color=pixelButton.interactable?ink:muted;
-                CampaignLocalization.Bind(pixelLabel,BeetleDisplayPreferences.PixelSize+" 像素");
+                CampaignLocalization.Bind(pixelLabel,BeetleDisplayPreferences.PixelSizeLabel);
                 CampaignLocalization.Bind(description,RetroFilterDropdown.Description(BeetleDisplayPreferences.Style));
             }
         }

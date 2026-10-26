@@ -1,6 +1,7 @@
 using System;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using DG.Tweening;
 using TMPro;
 using UnityEngine;
 using UnityEngine.EventSystems;
@@ -100,10 +101,10 @@ namespace BeetleArena.Campaign
             }
             if(app)app.Modal=false;
             if(pageInteraction){pageInteraction.interactable=!app.Busy;pageInteraction.blocksRaycasts=true;}
-            if(focusBeforeModal && focusBeforeModal.activeInHierarchy && EventSystem.current)EventSystem.current.SetSelectedGameObject(focusBeforeModal);
+            if(EventSystem.current)EventSystem.current.SetSelectedGameObject(!RetroUiNavigation.PointerMode&&focusBeforeModal&&focusBeforeModal.activeInHierarchy?focusBeforeModal:null);
             focusBeforeModal=null;closingModal=false;
             if(page==CampaignPage.Greenhouse&&root)ApplySidebar();
         }
-        static void SelectFirst(Transform parent) { var b=parent.GetComponentsInChildren<UI.Button>().FirstOrDefault(x=>x.interactable);if(b&&EventSystem.current)EventSystem.current.SetSelectedGameObject(b.gameObject); }
+        static void SelectFirst(Transform parent) { if(RetroUiNavigation.PointerMode)return;var b=parent.GetComponentsInChildren<UI.Button>().FirstOrDefault(x=>x.IsInteractable());if(b&&EventSystem.current)EventSystem.current.SetSelectedGameObject(b.gameObject); }
     }
 }

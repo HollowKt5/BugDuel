@@ -12,7 +12,7 @@ public static class SceneDisplayValidation
     public const string Output="Artifacts/SceneDisplay";
     const string Fixture="Assets/BeetleArena/Editor/Validation/Fixtures/SceneDisplayTest.shader";
 
-    [MenuItem("Tools/Beetle Arena/Validate Scene Display Editor")]
+    [MenuItem("Tools/甲壳虫斗/验证/界面与画面/场景画面编辑器", false, 610)]
     public static void Run()
     {
         if(EditorApplication.isPlaying)throw new InvalidOperationException("Run editor validation outside Play mode.");
@@ -48,7 +48,7 @@ public static class SceneDisplayValidation
                 Check(BeetleDisplayPreferences.GetPixelSize("CampaignGreenhouse")==2&&BeetleDisplayPreferences.GetPixelSize("CampaignArena")==6,"pixel sizes remain independent");
                 var greenhouseMaterial=profile.Find("CampaignGreenhouse").ditherMaterial;
                 greenhouseMaterial.SetFloat("_PixelSize",4);greenhouseMaterial.SetFloat("_DitherStrength",.25f);
-                Check(BeetleDisplayPreferences.GetPixelSize("CampaignGreenhouse")==4&&
+                Check(BeetleDisplayPreferences.GetPixelSize("CampaignGreenhouse")==3&&
                       profile.Find("CampaignArena").ditherMaterial!=greenhouseMaterial,"material Inspector pixel changes affect only their own scene");
                 BeetleDisplayPreferences.SetStyle("CampaignGreenhouse",BeetleDisplayStyle.Clean);
                 Check(BeetleDisplayPreferences.GetStyle("CampaignArena")==BeetleDisplayStyle.Crt,"player override does not change another scene");
@@ -67,8 +67,8 @@ public static class SceneDisplayValidation
                 BeetleDisplayPreferences.SetPixelSize("CampaignGreenhouse",5);
                 BeetleDisplayPreferences.SetStyle("CampaignGreenhouse",BeetleDisplayStyle.DenseDither);
                 BeetleDisplayPreferences.SetPixelSize("CampaignGreenhouse",6);
-                Check(PlayerPrefs.GetInt(BeetleDisplayPreferences.ScenePixelSizeKey("CampaignGreenhouse"))==5&&
-                      PlayerPrefs.GetInt(BeetleDisplayPreferences.SceneDensePixelSizeKey("CampaignGreenhouse"))==6,
+                Check(PlayerPrefs.GetInt(BeetleDisplayPreferences.ScenePixelSizeKey("CampaignGreenhouse"))==3&&
+                      PlayerPrefs.GetInt(BeetleDisplayPreferences.SceneDensePixelSizeKey("CampaignGreenhouse"))==3,
                     "soft and dense player pixel overrides coexist independently");
                 WorldDisplayEditorService.Apply(profile,"CampaignGreenhouse",dense,2);
                 Check(BeetleDisplayPreferences.GetStyle("CampaignGreenhouse")==BeetleDisplayStyle.DenseDither&&

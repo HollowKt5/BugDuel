@@ -6043,6 +6043,238 @@ MonoBehaviour:
     m_Key: husbandry_spotlight
     m_Metadata:
       m_Items: []
+  - m_Id: 1745296872624128
+    m_Key: interface_ccf02c1e1e12
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1745296918761472
+    m_Key: interface_9c97ba95e92c
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1745296918761473
+    m_Key: interface_39c4761e3acd
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1745296918761474
+    m_Key: interface_2b10ed19d7eb
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1745296918761475
+    m_Key: interface_cf3b8f9e68fd
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1745296918761476
+    m_Key: interface_1e914647a0d9
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1745296918761477
+    m_Key: interface_bc3709751e6f
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1745296918761478
+    m_Key: interface_a04380e12a4b
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1745296918761479
+    m_Key: interface_71a4da8c9f43
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1745296918761480
+    m_Key: interface_694080d65e17
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1745296918761481
+    m_Key: interface_9d6d8029a5ec
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1745296918761482
+    m_Key: interface_e81b9a1ebe9f
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1745296918761483
+    m_Key: interface_8bf9b5f2624f
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1745296918761484
+    m_Key: interface_7e3a3f65e3cb
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1745296918761485
+    m_Key: interface_f169fa31a39b
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1745296918761486
+    m_Key: interface_8a348a3e2b1b
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1745296918761487
+    m_Key: interface_202fef150e38
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1745296918761488
+    m_Key: interface_e5afbe44146f
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1745296918761489
+    m_Key: interface_bbd0fee6f039
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1745296918761490
+    m_Key: interface_611ba6135313
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1745296918761491
+    m_Key: interface_49d303f26066
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1745296918761492
+    m_Key: interface_b4c90e750656
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1745296918761493
+    m_Key: interface_6a386f9ca3e2
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1745296918761494
+    m_Key: interface_bb6d995724f4
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1745296918761495
+    m_Key: interface_cefdf764cd74
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1745296918761496
+    m_Key: interface_a0cbb70625d7
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1745296918761497
+    m_Key: interface_6e46f1dbda9b
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1745296918761498
+    m_Key: interface_23d7a1f70fdd
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1745296918761499
+    m_Key: interface_fd1a1ff91bc0
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1745296918761500
+    m_Key: interface_4785abff9012
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1745296918761501
+    m_Key: interface_39ffd9e2f5d9
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1745296918761502
+    m_Key: interface_d8dbfa0982c8
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1745296918761503
+    m_Key: interface_f59b5809a521
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1745296918761504
+    m_Key: interface_f1a511fb0014
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1745296918761505
+    m_Key: interface_b3618392e28b
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1745296918761506
+    m_Key: interface_33efe4bdbf58
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1745296918761507
+    m_Key: interface_ed4fd66a3c46
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1745296918761508
+    m_Key: interface_c632f6e241c7
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1745296918761509
+    m_Key: interface_92c91802315e
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1745296918761510
+    m_Key: interface_751d6ddba1e9
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1745296918761511
+    m_Key: interface_61f96c6aac6a
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1745296918761512
+    m_Key: interface_c7bb349bcce1
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1745296918761513
+    m_Key: interface_f33c920ed8a3
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1745296918761514
+    m_Key: interface_ab7997fdbce6
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1745296918761515
+    m_Key: interface_7941f90da688
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1745296918761516
+    m_Key: interface_87e65fda0323
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1745296918761517
+    m_Key: interface_515c49bec45c
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1745296918761518
+    m_Key: interface_2a93d846ec38
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1745296918761519
+    m_Key: interface_999616542215
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1745296918761520
+    m_Key: interface_17d94ac74a0d
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1745296918761521
+    m_Key: interface_137cc8524514
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1756096857296896
+    m_Key: interface_continue
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1802146569703424
+    m_Key: greenhouse_house_title
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1802146607452160
+    m_Key: greenhouse_beetle_info
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1802146607452161
+    m_Key: greenhouse_mail_icon
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1802146607452162
+    m_Key: greenhouse_tank
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1815335709626368
+    m_Key: display_pixel_level
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1815335755763712
+    m_Key: display_pixel_level_value
+    m_Metadata:
+      m_Items: []
   m_Metadata:
     m_Items: []
   m_KeyGenerator:

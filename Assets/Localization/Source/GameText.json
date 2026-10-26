@@ -626,7 +626,7 @@
     {
       "key": "t_60acd00c6859",
       "zh": "冠军拍卖",
-      "en": "Auction",
+      "en": "Champion auctions",
       "sites": [
         "Assets\\BeetleArena\\Runtime\\Campaign\\UI\\CampaignGreenhouseView.cs:29",
         "Assets\\BeetleArena\\Runtime\\Campaign\\UI\\CampaignLeagueView.cs:73",
@@ -728,7 +728,7 @@
     {
       "key": "t_fc9b7887772c",
       "zh": "虫舍管理",
-      "en": "Management",
+      "en": "Greenhouse management",
       "sites": [
         "Assets\\BeetleArena\\Runtime\\Campaign\\UI\\CampaignGreenhouseView.cs:44"
       ]
@@ -2005,11 +2005,12 @@
     },
     {
       "key": "t_ecfe7762e21c",
-      "zh": "甲虫秘境 2003 - 四季甲虫商店与集市 [",
-      "en": "BUG DUEL 2003 - Seasonal beetle store & market [",
+      "zh": "甲壳虫斗 2003 - 四季甲虫商店与集市 [",
+      "en": "Betles Duel 2003 - Seasonal beetle store & market [",
       "sites": [
         "Assets\\BeetleArena\\Runtime\\Campaign\\UI\\CampaignMarketView.cs:30"
-      ]
+      ],
+      "source": "甲虫秘境 2003 - 四季甲虫商店与集市 ["
     },
     {
       "key": "t_26e1dcefb08f",
@@ -2739,7 +2740,7 @@
     },
     {
       "key": "t_b4a6080bb96f",
-      "zh": "甲虫秘境",
+      "zh": "甲壳虫斗",
       "en": "Beetle Sanctuary",
       "sites": [
         "Assets\\BeetleArena\\Runtime\\Campaign\\UI\\CampaignMenuView.cs:17"
@@ -2748,11 +2749,12 @@
     },
     {
       "key": "t_6e85c6f5e5a8",
-      "zh": "甲虫决斗 · 虫舍日记",
-      "en": "Beetle duels / Greenhouse journal",
+      "zh": "甲壳虫斗 · 虫舍日记",
+      "en": "Betles Duels / Greenhouse journal",
       "sites": [
         "Assets\\BeetleArena\\Runtime\\Campaign\\UI\\CampaignMenuView.cs:19"
-      ]
+      ],
+      "source": "甲虫决斗 · 虫舍日记"
     },
     {
       "key": "t_5a23726267ec",
@@ -3269,8 +3271,8 @@
     },
     {
       "key": "t_83919c9f2f7c",
-      "zh": "甲虫决斗  /  虫舍日记",
-      "en": "BUG DUEL  /  Nursery Diary",
+      "zh": "甲壳虫斗  /  虫舍日记",
+      "en": "Betles Duel  /  Nursery Diary",
       "sites": [
         "Assets\\BeetleArena\\Runtime\\Campaign\\UI\\CampaignView.cs:155"
       ],
@@ -5942,7 +5944,7 @@
     {
       "key": "t_b884f6b81296",
       "zh": "交易市场",
-      "en": "Trading market",
+      "en": "Marketplace",
       "sites": [
         "CampaignMailbox / inventory delivery UI"
       ]
@@ -6592,7 +6594,7 @@
     {
       "key": "t_55914e1c50df",
       "zh": "仓库",
-      "en": "Storage",
+      "en": "Warehouse",
       "sites": [
         "CampaignMailbox / inventory delivery UI"
       ]
@@ -10213,7 +10215,7 @@
     {
       "key": "t_c05fb3644ec1",
       "zh": "制作标本 {0} 金币",
-      "en": "Preserve specimen · {0} G",
+      "en": "Preserve · {0} G",
       "sites": [
         "Assets/BeetleArena/Domain/Campaign/CampaignLifecycle.cs",
         "Assets/BeetleArena/Runtime/Campaign/UI/CampaignTimeSettingsView.cs",
@@ -10900,7 +10902,7 @@
     {
       "key": "t_684f81398559",
       "zh": "操作暂停",
-      "en": "Paused for interaction",
+      "en": "Paused",
       "sites": [
         "Assets/BeetleArena/Domain/Campaign/CampaignLifecycle.cs",
         "Assets/BeetleArena/Runtime/Campaign/UI/CampaignTimeSettingsView.cs",
@@ -11407,7 +11409,7 @@
     {
       "key": "t_b91171fddd5e",
       "zh": "取出并布置",
-      "en": "Take out and place",
+      "en": "Place",
       "sites": [
         "Assets/BeetleArena/Runtime/Campaign/UI/CampaignConstructionView.cs",
         "Assets/BeetleArena/Runtime/Campaign/Presentation/Construction/CampaignConstructionController.cs",
@@ -12206,11 +12208,12 @@
     },
     {
       "key": "locale_8df2706255b2",
-      "zh": "甲虫决斗",
+      "zh": "甲壳虫斗",
       "en": "BUG COMBAT",
       "sites": [
         "Localization audit 2026-10-23"
-      ]
+      ],
+      "source": "甲虫决斗"
     },
     {
       "key": "locale_45a5248129f5",
@@ -13545,6 +13548,376 @@
         "Assets/BeetleArena/Runtime/Campaign/UI/CampaignSettingsView.cs",
         "Assets/BeetleArena/Runtime/Presentation/UI/BeetleFeedbackSettings.cs"
       ]
-    }
+    },
+    {
+      "key": "interface_ccf02c1e1e12",
+      "source": "甲壳虫斗",
+      "zh": "甲壳虫斗",
+      "en": "Betles Duel",
+      "sites": []
+    },
+    {
+      "key": "interface_9c97ba95e92c",
+      "source": "甲壳虫斗 · 市场",
+      "zh": "甲壳虫斗 · 市场",
+      "en": "Betles Duel · Market",
+      "sites": []
+    },
+    {
+      "key": "interface_39c4761e3acd",
+      "source": "开始 / 存档",
+      "zh": "开始 / 存档",
+      "en": "Start / Saves",
+      "sites": []
+    },
+    {
+      "key": "interface_2b10ed19d7eb",
+      "source": "育种中心",
+      "zh": "育种中心",
+      "en": "Breeding Center",
+      "sites": []
+    },
+    {
+      "key": "interface_cf3b8f9e68fd",
+      "source": "中心提供母虫，支付配种费；母虫不归玩家所有。",
+      "zh": "中心提供母虫，支付配种费；母虫不归玩家所有。",
+      "en": "Choose a center-owned female and pay the breeding fee. The female stays at the center.",
+      "sites": []
+    },
+    {
+      "key": "interface_1e914647a0d9",
+      "source": "已选父本",
+      "zh": "已选父本",
+      "en": "Selected sire",
+      "sites": []
+    },
+    {
+      "key": "interface_bc3709751e6f",
+      "source": "选择父本",
+      "zh": "选择父本",
+      "en": "Select sire",
+      "sites": []
+    },
+    {
+      "key": "interface_a04380e12a4b",
+      "source": "没有可用的雄性成虫",
+      "zh": "没有可用的雄性成虫",
+      "en": "No adult males available",
+      "sites": []
+    },
+    {
+      "key": "interface_71a4da8c9f43",
+      "source": "中心母虫 {0}",
+      "zh": "中心母虫 {0}",
+      "en": "Center female {0}",
+      "sites": []
+    },
+    {
+      "key": "interface_694080d65e17",
+      "source": "价格档位基础失败率 {0}% · 随机运气修正 {1}%",
+      "zh": "价格档位基础失败率 {0}% · 随机运气修正 {1}%",
+      "en": "Price tier base failure {0}% · Random luck modifier {1}%",
+      "sites": []
+    },
+    {
+      "key": "interface_9d6d8029a5ec",
+      "source": "最终失败率 {0}%（最高 30%）",
+      "zh": "最终失败率 {0}%（最高 30%）",
+      "en": "Final failure chance {0}% (30% maximum)",
+      "sites": []
+    },
+    {
+      "key": "interface_e81b9a1ebe9f",
+      "source": "选择配种",
+      "zh": "选择配种",
+      "en": "Breed",
+      "sites": []
+    },
+    {
+      "key": "interface_8bf9b5f2624f",
+      "source": "支付 {0} G，使用「{1}」配种？\n随机失败率 {2}%；失败不退费。\n成功获得 1 枚卵；雄虫下周可再次配种。",
+      "zh": "支付 {0} G，使用「{1}」配种？\n随机失败率 {2}%；失败不退费。\n成功获得 1 枚卵；雄虫下周可再次配种。",
+      "en": "Pay {0} G to breed with {1}?\nRandom failure chance: {2}%. No refund on failure.\nSuccess yields one egg. The sire can breed again next week.",
+      "sites": []
+    },
+    {
+      "key": "interface_7e3a3f65e3cb",
+      "source": "失败不退费。配种后雄虫需休息至下一周。",
+      "zh": "失败不退费。配种后雄虫需休息至下一周。",
+      "en": "No refund on failure. The sire rests until next week.",
+      "sites": []
+    },
+    {
+      "key": "interface_f169fa31a39b",
+      "source": "需要健康、饱食且未占用的雄虫，并预留 1 个温室栏位。",
+      "zh": "需要健康、饱食且未占用的雄虫，并预留 1 个温室栏位。",
+      "en": "Requires a healthy, fed, available male and one free greenhouse slot.",
+      "sites": []
+    },
+    {
+      "key": "interface_8a348a3e2b1b",
+      "source": "母虫服务不存在",
+      "zh": "母虫服务不存在",
+      "en": "Female service unavailable",
+      "sites": []
+    },
+    {
+      "key": "interface_202fef150e38",
+      "source": "请选择雄虫",
+      "zh": "请选择雄虫",
+      "en": "Select a male",
+      "sites": []
+    },
+    {
+      "key": "interface_e5afbe44146f",
+      "source": "母虫服务已刷新，请重新选择",
+      "zh": "母虫服务已刷新，请重新选择",
+      "en": "Offers have refreshed. Select a female again.",
+      "sites": []
+    },
+    {
+      "key": "interface_bbd0fee6f039",
+      "source": "本次配种失败，费用不退还。雄虫下周可再次配种。",
+      "zh": "本次配种失败，费用不退还。雄虫下周可再次配种。",
+      "en": "Breeding failed. The fee is non-refundable. The sire can breed again next week.",
+      "sites": []
+    },
+    {
+      "key": "interface_611ba6135313",
+      "source": "配种成功，获得 1 枚卵。",
+      "zh": "配种成功，获得 1 枚卵。",
+      "en": "Breeding succeeded. One egg received.",
+      "sites": []
+    },
+    {
+      "key": "interface_49d303f26066",
+      "source": "入住 {0}/{1}  ·  预留 {2}",
+      "zh": "入住 {0}/{1}  ·  预留 {2}",
+      "en": "Residents {0}/{1} · Reserved {2}",
+      "sites": []
+    },
+    {
+      "key": "interface_b4c90e750656",
+      "source": "甲虫名册",
+      "zh": "甲虫名册",
+      "en": "Beetle roster",
+      "sites": []
+    },
+    {
+      "key": "interface_6a386f9ca3e2",
+      "source": "照料",
+      "zh": "照料",
+      "en": "Care",
+      "sites": []
+    },
+    {
+      "key": "interface_bb6d995724f4",
+      "source": "管理",
+      "zh": "管理",
+      "en": "Manage",
+      "sites": []
+    },
+    {
+      "key": "interface_cefdf764cd74",
+      "source": "建造",
+      "zh": "建造",
+      "en": "Build",
+      "sites": []
+    },
+    {
+      "key": "interface_a0cbb70625d7",
+      "source": "暂无甲虫",
+      "zh": "暂无甲虫",
+      "en": "No beetles",
+      "sites": []
+    },
+    {
+      "key": "interface_6e46f1dbda9b",
+      "source": "暂无标本",
+      "zh": "暂无标本",
+      "en": "No specimens",
+      "sites": []
+    },
+    {
+      "key": "interface_23d7a1f70fdd",
+      "source": "甲虫",
+      "zh": "甲虫",
+      "en": "Beetles",
+      "sites": []
+    },
+    {
+      "key": "interface_fd1a1ff91bc0",
+      "source": "养殖用品",
+      "zh": "养殖用品",
+      "en": "Rearing supplies",
+      "sites": []
+    },
+    {
+      "key": "interface_4785abff9012",
+      "source": "景观",
+      "zh": "景观",
+      "en": "Decorations",
+      "sites": []
+    },
+    {
+      "key": "interface_39ffd9e2f5d9",
+      "source": "捕虫与扩展",
+      "zh": "捕虫与扩展",
+      "en": "Catching & upgrades",
+      "sites": []
+    },
+    {
+      "key": "interface_d8dbfa0982c8",
+      "source": "标本",
+      "zh": "标本",
+      "en": "Specimens",
+      "sites": []
+    },
+    {
+      "key": "interface_f59b5809a521",
+      "source": "暂无物品",
+      "zh": "暂无物品",
+      "en": "No items",
+      "sites": []
+    },
+    {
+      "key": "interface_f1a511fb0014",
+      "source": "未选择甲虫",
+      "zh": "未选择甲虫",
+      "en": "No beetle selected",
+      "sites": []
+    },
+    {
+      "key": "interface_b3618392e28b",
+      "source": "投喂",
+      "zh": "投喂",
+      "en": "Feed",
+      "sites": []
+    },
+    {
+      "key": "interface_33efe4bdbf58",
+      "source": "回售",
+      "zh": "回售",
+      "en": "Sell back",
+      "sites": []
+    },
+    {
+      "key": "interface_ed4fd66a3c46",
+      "source": "安装展柜",
+      "zh": "安装展柜",
+      "en": "Install cabinet",
+      "sites": []
+    },
+    {
+      "key": "interface_c632f6e241c7",
+      "source": "入住温室",
+      "zh": "入住温室",
+      "en": "Move to greenhouse",
+      "sites": []
+    },
+    {
+      "key": "interface_92c91802315e",
+      "source": "主题 ▾",
+      "zh": "主题 ▾",
+      "en": "Theme ▾",
+      "sites": []
+    },
+    {
+      "key": "interface_751d6ddba1e9",
+      "source": "明暗",
+      "zh": "明暗",
+      "en": "Light / Dark",
+      "sites": []
+    },
+    {
+      "key": "interface_61f96c6aac6a",
+      "source": "商店",
+      "zh": "商店",
+      "en": "Shop",
+      "sites": []
+    },
+    {
+      "key": "interface_c7bb349bcce1",
+      "source": "拍卖",
+      "zh": "拍卖",
+      "en": "Auctions",
+      "sites": []
+    },
+    {
+      "key": "interface_f33c920ed8a3",
+      "source": "{0} 件",
+      "zh": "{0} 件",
+      "en": "{0} items",
+      "sites": []
+    },
+    {
+      "key": "interface_ab7997fdbce6",
+      "source": "本周暂无现货",
+      "zh": "本周暂无现货",
+      "en": "No stock this week",
+      "sites": []
+    },
+    {
+      "key": "interface_7941f90da688",
+      "source": "查看 / 订购",
+      "zh": "查看 / 订购",
+      "en": "View / Order",
+      "sites": []
+    },
+    {
+      "key": "interface_87e65fda0323",
+      "source": "公开竞价",
+      "zh": "公开竞价",
+      "en": "Public auctions",
+      "sites": []
+    },
+    {
+      "key": "interface_515c49bec45c",
+      "source": "方案已选定",
+      "zh": "方案已选定",
+      "en": "Plan selected",
+      "sites": []
+    },
+    {
+      "key": "interface_2a93d846ec38",
+      "source": "成虫喂食",
+      "zh": "成虫喂食",
+      "en": "Adult food",
+      "sites": []
+    },
+    {
+      "key": "interface_999616542215",
+      "source": "食盆有食物",
+      "zh": "食盆有食物",
+      "en": "Food available",
+      "sites": []
+    },
+    {
+      "key": "interface_17d94ac74a0d",
+      "source": "进食完成",
+      "zh": "进食完成",
+      "en": "Meal completed",
+      "sites": []
+    },
+    {
+      "key": "interface_137cc8524514",
+      "source": "已放置{0}",
+      "zh": "已放置{0}",
+      "en": "Placed {0}",
+      "sites": []
+    },
+    {
+      "key": "interface_continue",
+      "source": "继续",
+      "zh": "继续",
+      "en": "Continue",
+      "sites": []
+    },
+    {"en":"Terrarium","key":"greenhouse_house_title","source":"甲虫舍","sites":[],"zh":"虫箱"},
+    {"en":"Beetle info","key":"greenhouse_beetle_info","sites":[],"zh":"甲虫信息"},
+    {"en":"Mail","key":"greenhouse_mail_icon","sites":[],"zh":"信"},
+    {"en":"Terrarium","key":"greenhouse_tank","sites":[],"zh":"虫箱"},
+    {"en":"Pixel level","key":"display_pixel_level","sites":[],"zh":"像素档位"},
+    {"en":"Level {0}","key":"display_pixel_level_value","sites":[],"zh":"{0} 档"}
   ]
 }

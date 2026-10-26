@@ -1,4 +1,4 @@
-using UnityEngine;
+﻿using UnityEngine;
 
 namespace BeetleArena
 {
@@ -29,11 +29,11 @@ namespace BeetleArena
             float extend = Mathf.SmoothStep(0, 1, Mathf.InverseLerp(.22f, .44f, phase));
             float release = 1 - Mathf.SmoothStep(0, 1, Mathf.InverseLerp(.72f, 1, phase));
             float load = Smooth(Mathf.InverseLerp(0, .22f, phase)) * release;
-            // 一只后足承担主要支撑时仍可保持已抬起的胸部；发力大小继续由真实支撑比例缩放。
-            // 直接把 14° 乘以单足支撑 .55 会降到 7.7°，反而低于伸前足所需的 8° 门槛。
+            // A single hind leg can maintain thoracic elevation while bearing primary support; output force scales with actual support fraction.
+            // Directly multiplying 14 deg by single-leg support 0.55 drops to 7.7 deg, falling below the 8 deg threshold required to reach forelegs forward.
             float rearLoad = c.RearSupport > .4f ? Mathf.Lerp(.75f, 1, c.RearSupport) : c.RearSupport;
             // Accepted chest pose, not the requested pose, authorizes lifting a foreleg.
-            // 起手已经确认真实接触；抬胸短暂松角时完成本次短推，实际命中仍由前足几何认证。
+            // Startup verifies true physical contact; thoracic rise completes the short push during brief horn disengagement, while hit is certified by foreleg geometry.
             bool supportedRise = c.ContactConfirmedAtStart && c.ForebodyRaised && c.RearSupport > .4f;
             float push = supportedRise ? extend * release : 0;
             return new BeetleMotionSample

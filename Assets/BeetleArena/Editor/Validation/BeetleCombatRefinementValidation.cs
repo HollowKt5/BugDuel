@@ -96,7 +96,7 @@ public static class BeetleCombatRefinementValidation
             UnityEngine.Object.DestroyImmediate(image); UnityEngine.Object.DestroyImmediate(rt);
         }
     }
-    [MenuItem("Tools/Beetle Arena/Validate Combat Refinements")]
+    [MenuItem("Tools/甲壳虫斗/验证/战斗/战斗调优", false, 503)]
     public static void RunMenu() => Run();
     public static void Run(int firstArena = 0)
     {

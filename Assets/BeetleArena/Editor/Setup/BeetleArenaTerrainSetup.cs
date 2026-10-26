@@ -8,12 +8,12 @@ using UnityEditor.SceneManagement;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
-/// <summary>给现有游戏增量安装可切换的平地、岩台及两张凹槽擂台。</summary>
+/// <summary>Incrementally installs toggleable flat, rock, and furrowed arenas into existing project.</summary>
 public static class BeetleArenaTerrainSetup
 {
     const string Folder = "Assets/BeetleArena/Generated";
 
-    [MenuItem("Tools/Beetle Arena/Install Switchable Arenas")]
+    [MenuItem("Tools/甲壳虫斗/场景与安装/战斗模块/安装可切换场地", false, 220)]
     public static void Install()
     {
         if (EditorApplication.isPlaying) throw new InvalidOperationException("Stop play before installing arenas.");
@@ -38,7 +38,7 @@ public static class BeetleArenaTerrainSetup
         }
     }
 
-    // 也供原场景生成器调用，保证后续重新 Build 不丢失新擂台。重复安装复用已有对象。
+    // Also called by scene builder to ensure subsequent rebuilds do not lose new arenas. Re-running reuses existing GameObjects.
     public static void Configure(BeetleMatchController match)
     {
         if (match.arenas == null || match.arenas.Length < 2)
@@ -63,7 +63,7 @@ public static class BeetleArenaTerrainSetup
                 RockMaterial("Rock surface", new Color(.39f,.48f,.43f)),
                 RockMaterial("Rock contour", new Color(.33f,.41f,.37f)),
                 RockMaterial("Rock cliff", new Color(.18f,.25f,.24f)) };
-            // 静态非凸网格保留凹凸表面；不能设 convex，否则谷地会被凸包填平。
+            // Non-convex mesh preserves furrowed undulations; must not set convex, which would fill valleys into a hull.
             var collider = uneven.gameObject.AddComponent<MeshCollider>(); collider.sharedMesh = mesh;
             collider.convex = false; collider.isTrigger = false;
             uneven.supportColliders = new Collider[] { collider };
@@ -78,7 +78,7 @@ public static class BeetleArenaTerrainSetup
         }
         EnsureButton(match.hud);
         match.SelectArena(0);
-        // 编辑状态也正确站在台面；正式 Play 时仍会根据当前种子重新绑定。
+        // Positions contestants properly on arena surface in edit mode; Play mode rebinds based on active seed.
         var sim = new BeetleSimulation(match.settings, match.settings.initialSeed);
         sim.SetGround(match.ActiveSurface);
         for (int i = 0; i < 2; i++)
@@ -86,7 +86,7 @@ public static class BeetleArenaTerrainSetup
         EditorUtility.SetDirty(match); EditorUtility.SetDirty(match.hud);
     }
 
-    // 缓坡、低谷和斜向脊线，约一世界单位高差；波长大于步长，让六足可在坡面上交替支撑。
+    // Gentle slopes, valleys, and diagonal ridges with ~1 world unit relief; wavelength exceeds gait stride to allow alternate support.
     static float Height(float x, float z) => .48f + .34f * Mathf.Sin(x * .55f)
         + .20f * Mathf.Cos(z * .70f) + .16f * Mathf.Sin(x * .45f + z * .65f);
 
@@ -156,7 +156,7 @@ public static class BeetleArenaTerrainSetup
             {
                 int a = 1 + (ring - 1) * segments + i, b = a + segments;
                 int d = 1 + (ring - 1) * segments + (i + 1) % segments, c = d + segments;
-                // 稀疏地层色带帮助远景读出坡面方向，几何面与碰撞使用完全相同的顶点。
+                // Sparse stratigraphy color bands assist reading slope direction from afar; geometry and collision share identical vertices.
                 triangles[ring % 6 == 0 ? 1 : 0].AddRange(new[] { a, b, c, a, c, d });
             }
         int sideStart = vertices.Count;
@@ -198,7 +198,7 @@ public static class BeetleArenaTerrainSetup
     {
         if (!hud.arenaButton)
         {
-            // 复用原按钮的字体、主题和交互样式，仅新建一个入口；布局不会触碰已有控件。
+            // Reuses font, theme, and styling of original buttons to spawn new entry; layout leaves existing controls intact.
             var button = UnityEngine.Object.Instantiate(hud.pauseButton, hud.transform);
             button.name = "Switch arena"; hud.arenaButton = button;
             var rect = button.GetComponent<RectTransform>();
@@ -210,7 +210,7 @@ public static class BeetleArenaTerrainSetup
             textRect.offsetMin = new Vector2(5, 3); textRect.offsetMax = new Vector2(-5, -3);
             hud.arenaText.fontSize = 17; hud.arenaText.text = "擂台：平地木桩  [T]\n切换并重开";
         }
-        // 只补本功能会显示的字符，不因代码注释变多而重新收集整项目字形。
+        // Supplements glyphs displayed by this feature only, avoiding re-scanning entire codebase.
         var font = hud.arenaText.font;
         font.atlasPopulationMode = AtlasPopulationMode.DynamicOS;
         font.TryAddCharacters("擂台：平地木桩起伏岩台切换并重开T半圆槽视角琥珀上方墨甲全景C击败慢镜头关V好斗体长敏捷总分高中低0123456789/400mm压角蓄势扬头顶击", out string missing);

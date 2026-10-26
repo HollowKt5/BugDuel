@@ -120,7 +120,7 @@ public static class CampaignTradingValidation
     }
 
 #if UNITY_EDITOR
-    [MenuItem("Tools/Beetle Arena/Validate Campaign Trading")]
+    [MenuItem("Tools/甲壳虫斗/验证/战役流程/交易规则", false, 566)]
     public static void Run()
     {
         RunDomain();var s=Session();string p=Preserve(s);s.EditSpecimen(p,"归档甲虫","锹甲纪念","2026-10-22",1,-45);s.PlaceSpecimen(p,11);

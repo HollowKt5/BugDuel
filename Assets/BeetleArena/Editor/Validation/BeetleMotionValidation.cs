@@ -6,10 +6,10 @@ using BeetleArena;
 using UnityEditor;
 using UnityEngine;
 
-/// <summary>时间连续性验证：跨固定步边界、同一插值重复求值、以及不同渲染频率下的模拟隔离。</summary>
+/// <summary>Temporal continuity validation: fixed-step boundary crossing, repeated evaluation at identical alpha, and render rate invariance.</summary>
 public static class BeetleMotionValidation
 {
-    [MenuItem("Tools/Beetle Arena/Validate Motion Continuity")]
+    [MenuItem("Tools/甲壳虫斗/验证/模型与动作/动作连续性", false, 706)]
     public static void Run()
     {
         if (EditorApplication.isPlaying) throw new InvalidOperationException("Stop play first.");
@@ -22,7 +22,7 @@ public static class BeetleMotionValidation
             {
                 match.SelectArena(mode); match.StartMatch(7319);
                 while (match.Simulation.Phase == MatchPhase.Countdown) match.Simulation.Step(.02f);
-                // 观察每个部件的位置，而非只观察根节点，以便检出原先关节以 50 Hz 跳动的问题。
+                // Observes position of each component rather than root alone, catching issues where joints previously jittered at 50 Hz.
                 var joints = match.actors.SelectMany(a => a.animator.model.GetComponentsInChildren<Transform>(true)).ToArray();
                 var end = new Vector3[joints.Length]; var middle = new Vector3[joints.Length];
                 float boundary = 0, repeat = 0, penetration = 0, legacyJump = 0;
@@ -34,7 +34,7 @@ public static class BeetleMotionValidation
                     match.Simulation.Step(.02f);
                     foreach (var a in match.actors) a.Render(0, match.Simulation.Elapsed, .02f);
                     for (int i = 0; i < joints.Length; i++) boundary = Mathf.Max(boundary, Vector3.Distance(end[i], joints[i].position));
-                    // 模拟旧写法：根节点在上一步，关节却已是新一步；用于量化所修复的时序不一致。
+                    // Simulates legacy bug where root lagged on previous step while joints advanced to new step; quantifies timing fix.
                     foreach (var a in match.actors)
                     {
                         var p = a.transform.position; var r = a.transform.rotation;
@@ -52,7 +52,7 @@ public static class BeetleMotionValidation
                 report.AppendLine($"Arena {mode}: 900 fixed steps, {joints.Length} transforms. Old root-only boundary jump={legacyJump:F6}; full-pose boundary error={boundary:F6}; repeat error={repeat:F6}; penetration={penetration:F6}.");
                 File.WriteAllText("Artifacts/BeetleArena/MotionValidation.txt", report.ToString());
                 if (boundary > .0001f || repeat > .0001f || penetration > .006f) throw new Exception(report.ToString());
-                // 相同种子/固定步，分别每步渲染一次与四次，检查渲染没有污染权威位置。
+                // Identical seed and fixed step evaluated at 1x vs 4x render calls per step, confirming rendering never pollutes authoritative positions.
                 Vector3[] first = null;
                 for (int run = 0; run < 2; run++)
                 {

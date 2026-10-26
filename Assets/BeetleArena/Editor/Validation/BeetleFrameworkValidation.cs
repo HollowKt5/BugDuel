@@ -4,10 +4,10 @@ using System.Text;
 using UnityEditor;
 using UnityEngine;
 
-/// <summary>只验证，不重建正式场景或覆盖参数资产。适用于菜单和 -executeMethod。</summary>
+/// <summary>Pure validation; does not rebuild production scenes or overwrite settings assets. Suitable for menus and -executeMethod.</summary>
 public static class BeetleFrameworkValidation
 {
-    [MenuItem("Tools/Beetle Arena/Validate Extension Framework")]
+    [MenuItem("Tools/甲壳虫斗/验证/架构与性能/扩展框架", false, 741)]
     public static void Run()
     {
         var report = new StringBuilder("EXTENSION FRAMEWORK / " + DateTimeOffset.Now.ToString("o") + "\n");

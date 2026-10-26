@@ -1,4 +1,4 @@
-using UnityEngine;
+﻿using UnityEngine;
 namespace BeetleArena
 {
     [CreateAssetMenu(menuName = "Beetle Arena/Motions/Horn Feint")]
@@ -19,7 +19,7 @@ namespace BeetleArena
         }
         public override bool CanStart(in BeetleMotionContext c) => c.Fighting && c.Grounded && !c.OpponentAirborne &&
             c.Distance > 2.8f && c.Distance < 4.4f && c.Facing > .7f && c.Stamina > .23f && c.Balance > .4f;
-        // 短前探、短停顿、快速收角、较长复位；打破原先缓慢对称的正弦摆动。
+        // Brief probe forward, brief hesitation, rapid horn retraction, extended reset; breaks legacy slow symmetric sine oscillations.
         static float Dip(float phase) => phase < .30f ? Mathf.SmoothStep(0, 1, Mathf.InverseLerp(.13f, .30f, phase)) :
             1 - Mathf.SmoothStep(0, 1, Mathf.InverseLerp(.43f, .62f, phase));
         public override BeetleMotionSample Sample(in BeetleMotionContext c, float phase)
@@ -38,7 +38,7 @@ namespace BeetleArena
             int lead = c.Side < 0 ? 0 : 3;
             if (slot % 3 == 0)
             {
-                // 一足先短促探步，另一足在收角阶段换位；不同时抬起两只前足。
+                // One leg probes forward first, while the other shifts stance during horn retraction; never lifts both forelegs simultaneously.
                 bool first = slot == lead;
                 float start = first ? 0 : .40f, end = first ? .36f : .83f;
                 float t = Mathf.InverseLerp(start, end, phase);
@@ -47,7 +47,7 @@ namespace BeetleArena
                     footLift * p, (first ? footReach : -footReach * .55f) * p);
                 return phase >= start && phase <= end;
             }
-            // 后足贴地向后撑，虚晃也有可见的发力链，但不产生攻击冲量。
+            // Hind legs brace backward against ground; feints display a legible force chain without generating offensive impulse.
             bool left = phase < .5f;
             float drive = Mathf.Sin(Mathf.PI * Mathf.Clamp01(left ? phase * 2 : (phase - .5f) * 2));
             offset = new Vector3(0, 0, -.14f * drive);

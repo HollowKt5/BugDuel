@@ -5,7 +5,7 @@ using UnityEngine;
 
 namespace BeetleArena
 {
-    /// <summary>显式目录；缺失/重复 ID 都报错，不悄悄将旧存档映射到另一物种。</summary>
+    /// <summary>Explicit catalog: errors on missing/duplicate IDs without silently remapping legacy saves to another species.</summary>
     [CreateAssetMenu(menuName = "BugDuel/Species Catalog", fileName = "BeetleSpeciesCatalog")]
     public sealed class BeetleSpeciesCatalog : ScriptableObject
     {

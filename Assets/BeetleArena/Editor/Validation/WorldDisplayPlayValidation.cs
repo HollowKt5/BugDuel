@@ -23,7 +23,7 @@ public static class WorldDisplayPlayValidation
         EditorApplication.playModeStateChanged+=OnPlay;
         EditorApplication.update+=()=>{if(SessionState.GetString(Key,"").Length>0&&EditorApplication.isPlaying)EditorApplication.QueuePlayerLoopUpdate();};
     }
-    [MenuItem("Tools/Beetle Arena/Validate World Display Play Flow")]
+    [MenuItem("Tools/甲壳虫斗/验证/界面与画面/各场景画面效果", false, 609)]
     public static void Run()
     {
         if(EditorApplication.isPlaying)throw new InvalidOperationException("Stop Play before isolated display validation.");

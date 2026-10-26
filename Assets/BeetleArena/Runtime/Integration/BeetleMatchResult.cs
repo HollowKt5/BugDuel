@@ -1,9 +1,9 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 
 namespace BeetleArena
 {
-    /// <summary>胜负确定时冻结；结束后的落地展示不能改变结算。消费者按 MatchId 幂等处理。</summary>
+    /// <summary>Frozen upon match decision; post-match settlement presentation cannot alter results. Consumers process idempotently by MatchId.</summary>
     public sealed class BeetleMatchResult
     {
         public string MatchId { get; }
@@ -26,7 +26,7 @@ namespace BeetleArena
     public sealed class BeetleFighterResult
     {
         public int Index { get; }
-        // 随机展示对局没有持久个体 ID；禁止通过选手槽位反查养殖个体。
+        // Exhibition matches lack persistent entity IDs; resolving husbandry individuals from contestant slots is prohibited.
         public string IndividualId { get; }
         public string SpeciesId { get; }
         public float RemainingStaminaFraction { get; }

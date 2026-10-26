@@ -135,7 +135,7 @@ namespace BeetleArena.Campaign
             var box=MBox("NumberInput",parent,x,y,width,height,CampaignRetroTheme.Panel,CampaignRetroTheme.Border,2);
             var background=box.GetComponent<UnityEngine.UI.Image>();background.raycastTarget=true;
             var viewport=Rect("TextArea",box,8,4,width-16,height-8);Component<UnityEngine.UI.RectMask2D>(viewport);
-            var text=Component<TextMeshProUGUI>(Rect("Value",viewport,0,0,width-16,height-8));text.font=font;text.fontSize=18;text.color=CampaignRetroTheme.Ink;text.alignment=TextAlignmentOptions.MidlineLeft;text.textWrappingMode=TextWrappingModes.NoWrap;text.raycastTarget=false;
+            var text=Component<TextMeshProUGUI>(Rect("Value",viewport,0,0,width-16,height-8));text.font=font;text.fontSize=CampaignLocalization.PointSize(18);text.color=CampaignRetroTheme.Ink;text.alignment=TextAlignmentOptions.MidlineLeft;text.textWrappingMode=TextWrappingModes.NoWrap;text.raycastTarget=false;
             var input=Component<TMP_InputField>(box);input.targetGraphic=background;input.textViewport=viewport;input.textComponent=text;input.contentType=TMP_InputField.ContentType.IntegerNumber;input.lineType=TMP_InputField.LineType.SingleLine;input.characterLimit=15;input.caretColor=CampaignRetroTheme.Ink;input.customCaretColor=true;input.selectionColor=new Color(.2f,.4f,.8f,.4f);input.text=value;return input;
         }
 

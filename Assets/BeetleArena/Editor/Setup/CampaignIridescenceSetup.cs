@@ -17,7 +17,7 @@ public static class CampaignIridescenceSetup
     public const string Folder = "Assets/BeetleArena/Generated/MenuIridescence";
     public const string ProbeName = "Menu shell reflection studio";
 
-    [MenuItem("Tools/Beetle Arena/Apply Menu Iridescent Shell")]
+    [MenuItem("Tools/甲壳虫斗/画面与资源/材质与灯光/应用菜单虹彩甲壳", false, 302)]
     public static void Apply()
     {
         if (EditorApplication.isPlaying) throw new InvalidOperationException("Stop Play before editing menu materials.");

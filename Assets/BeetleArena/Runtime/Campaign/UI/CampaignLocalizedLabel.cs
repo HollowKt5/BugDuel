@@ -9,12 +9,26 @@ namespace BeetleArena.Campaign
     {
         TMP_Text label;
         string source,applied;
-        void Awake()=>label=GetComponent<TMP_Text>();
+        float pointSize,minimumSize,maximumSize;
+        bool initialized;
+        void Awake()=>EnsureLabel();
+        void EnsureLabel()
+        {
+            if(initialized)return;
+            label=GetComponent<TMP_Text>();pointSize=label.fontSize;minimumSize=label.fontSizeMin;maximumSize=label.fontSizeMax;initialized=true;
+        }
+        internal void SetFontSize(float size,float minimum)
+        {EnsureLabel();pointSize=maximumSize=size;minimumSize=minimum;ApplyFontSize();}
+        void ApplyFontSize()
+        {
+            label.fontSize=CampaignLocalization.PointSize(pointSize);
+            label.fontSizeMin=CampaignLocalization.PointSize(minimumSize);label.fontSizeMax=CampaignLocalization.PointSize(maximumSize);
+        }
         void OnEnable(){CampaignLocalization.Changed+=Refresh;if(label&&source!=null)Refresh();}
         void OnDisable()=>CampaignLocalization.Changed-=Refresh;
         public void SetSource(string value)
         {
-            if(!label)label=GetComponent<TMP_Text>();
+            EnsureLabel();
             if(source==value&&label.text==applied&&label.font==CampaignLocalization.Font)return;
             source=value;Refresh();
         }
@@ -27,6 +41,7 @@ namespace BeetleArena.Campaign
         {
             if(!label)return;
             var font=CampaignLocalization.Font;if(font&&label.font!=font)label.font=font;
+            ApplyFontSize();
             applied=CampaignLocalization.Text(source??label.text);label.text=applied;
         }
     }

@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
 using BeetleArena;
@@ -8,9 +8,9 @@ using UnityEngine;
 using UnityEngine.SceneManagement;
 
 /// <summary>
-/// Editor 验证独占的临时场景与参数副本。用 using 包住整个验证（包括写报告），
-/// 正常完成、断言失败或构造中途失败都会清理；绝不直接打开并关闭用户的原场景。
-/// 动作模块资产仍是只读共享引用，测试若修改模块自身字段，须自行创建/销毁模块副本。
+/// Temporary scene and parameter duplicate dedicated to Editor validation. Wraps entire validation (including reports) in a using block;
+/// cleans up upon successful completion, assertion failures, or mid-construction aborts; never directly opens and closes user scenes.
+/// Motion module assets remain read-only shared references; tests mutating module fields must construct/destroy their own copies.
 /// </summary>
 public sealed class BeetleValidationScene : IDisposable
 {
@@ -27,7 +27,7 @@ public sealed class BeetleValidationScene : IDisposable
         previous = SceneManager.GetActiveScene();
         try
         {
-            // 遇到上次遗留或用户已有同名资产时生成新路径，不覆盖、不删除已有文件。
+            // Generates unique path when encountering leftover or pre-existing user assets with identical names, avoiding overwriting/deleting files.
             path = AssetDatabase.GenerateUniqueAssetPath("Assets/BeetleArena/Generated/" + name + ".unity");
             ownsAsset = AssetDatabase.CopyAsset(BeetleArenaSceneBuilder.ScenePath, path);
             if (!ownsAsset) throw new InvalidOperationException("Cannot copy validation scene: " + path);
@@ -65,8 +65,8 @@ public sealed class BeetleValidationScene : IDisposable
                 });
             if (Scene.IsValid() && Scene.isLoaded)
             {
-                // 普通 MonoBehaviour 在 Edit Mode 手动 Initialize 后未必收到 OnDestroy。
-                // 单个组件释放失败也继续清理其它组件、场景和参数副本。
+                // Standard MonoBehaviours manually initialized in Edit Mode do not reliably receive OnDestroy.
+                // Continues cleaning up remaining components, scenes, and parameter duplicates even if an individual component teardown fails.
                 Attempt(() =>
                 {
                     foreach (var root in Scene.GetRootGameObjects())
@@ -90,7 +90,7 @@ public sealed class BeetleValidationScene : IDisposable
         }
         finally
         {
-            // 失败保留可重试状态，不能把尚未释放的资源误记成已清理。
+            // Preserves retryable state on failure, avoiding mistakenly marking unreleased resources as cleaned.
             disposed = !(Scene.IsValid() && Scene.isLoaded) && !Settings && !ownsAsset;
             disposing = false;
         }
@@ -113,13 +113,13 @@ public sealed class BeetleValidationScene : IDisposable
             return;
         }
         RequireOwnedGuid();
-        // CloseScene 结束场景生命周期，但导入/读取场景时缓存的文件句柄仍可能占用文件。
-        // 显式同步释放后再删除；立即退出与异常退出均不依赖编辑器再跑一帧。
+        // CloseScene concludes scene lifecycle, though cached file handles from import/read may hold file locks.
+        // Synchronously releases before deleting; immediate and exceptional exits avoid depending on the editor executing subsequent frames.
         AssetDatabase.ReleaseCachedFileHandles();
         if (!AssetDatabase.DeleteAsset(path))
         {
-            // 原生删除失败时保留严格所有权检查，而不是把失败悄悄记成已清理。
-            // 仅对本实例复制且仍拥有的单个场景兜底；绝不枚举、删除目录或删其它资产。
+            // Retains strict ownership checks when native deletion fails, rather than silently logging failure as cleaned.
+            // Acts as fallback exclusively for the single scene cloned and owned by this instance; never enumerates, deletes directories, or touches other assets.
             RequireOwnedGuid();
             if (Scene.IsValid() && Scene.isLoaded)
                 throw new InvalidOperationException("Validation scene reopened during cleanup: " + path);

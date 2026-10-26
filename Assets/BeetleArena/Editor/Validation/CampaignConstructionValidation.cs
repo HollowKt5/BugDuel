@@ -137,7 +137,7 @@ public static class CampaignConstructionValidation
     }
 
 #if UNITY_EDITOR
-    [MenuItem("Tools/Beetle Arena/Validate Campaign Construction")]
+    [MenuItem("Tools/甲壳虫斗/验证/战役流程/建造规则", false, 562)]
     public static void Run()
     {
         RunDomain();var s=Session();string beetle=s.State.beetles[0].id;string placed=s.PlaceDecoration(beetle,CampaignDecorations.Driftwood,1,3,90);Supply(s,CampaignDecorations.Arch,2);

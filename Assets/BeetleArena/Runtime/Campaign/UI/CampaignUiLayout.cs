@@ -16,7 +16,7 @@ namespace BeetleArena.Campaign
             if(created || name!="Content")rt.anchoredPosition=new Vector2(x,-y);
             rt.sizeDelta=new Vector2(w,h);return rt;
         }
-        static T Component<T>(Transform target) where T:UnityEngine.Component => target.GetComponent<T>() ?? target.gameObject.AddComponent<T>();
+        static T Component<T>(Transform target) where T:UnityEngine.Component => target.TryGetComponent<T>(out var component) ? component : target.gameObject.AddComponent<T>();
         static void Stretch(RectTransform rt) { rt.anchorMin=Vector2.zero;rt.anchorMax=Vector2.one;rt.offsetMin=rt.offsetMax=Vector2.zero; }
         static void CenterFrame(RectTransform rt) { rt.anchorMin=rt.anchorMax=rt.pivot=new Vector2(.5f,.5f);rt.anchoredPosition=Vector2.zero;rt.sizeDelta=new Vector2(1600,900); }
         RectTransform Panel(Transform parent,float x,float y,float w,float h,bool clear=false,string name="Panel")
@@ -27,8 +27,8 @@ namespace BeetleArena.Campaign
         }
         TMP_Text Label(Transform parent,string text,float x,float y,float w,float h,int size=22,Color? color=null)
         {
-            var rt=Rect("Text",parent,x,y,w,h);var t=Component<TextMeshProUGUI>(rt);t.font=font;t.fontSize=size;t.color=color??ink;t.textWrappingMode=TextWrappingModes.Normal;t.overflowMode=TextOverflowModes.Ellipsis;t.raycastTarget=false;
-            t.enableAutoSizing=CampaignLocalization.English;t.fontSizeMin=Mathf.Min(size,Mathf.Max(9,size*.75f));t.fontSizeMax=size;
+            var rt=Rect("Text",parent,x,y,w,h);var t=Component<TextMeshProUGUI>(rt);t.font=CampaignLocalization.Font?CampaignLocalization.Font:font;t.color=color??ink;t.textWrappingMode=TextWrappingModes.Normal;t.overflowMode=TextOverflowModes.Ellipsis;t.raycastTarget=false;
+            t.enableAutoSizing=CampaignLocalization.English;CampaignLocalization.SetFontSize(t,size,Mathf.Min(size,Mathf.Max(9,size*.75f)));
             t.richText=false;CampaignLocalization.Bind(t,text);return t;
         }
         UI.Button Btn(Transform parent,string text,float x,float y,float w,float h,Action action,bool enabled=true)

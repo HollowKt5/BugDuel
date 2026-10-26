@@ -3,11 +3,11 @@ using UnityEngine;
 
 namespace BeetleArena
 {
-    /// <summary>仅负责 Inspector 编写；领域服务消费 ToDefinition 的不可变副本，不读取共享资产。</summary>
+    /// <summary>Authoring container for Inspector; domain services consume immutable ToDefinition copies rather than reading shared assets directly.</summary>
     [CreateAssetMenu(menuName = "BugDuel/Species Definition", fileName = "BeetleSpecies")]
     public sealed class BeetleSpeciesAsset : ScriptableObject
     {
-        [Tooltip("存档外键。发布后保持不变；不能使用显示名、资源路径或数组位置代替。")]
+        [Tooltip("Save foreign key. Invariant post-release; cannot substitute display name, resource path, or array index.")]
         public string speciesId = "example-horn-beetle";
         public string displayName = "示例角斗甲虫";
         [Min(1)] public float adultLengthMm = 55, adultMassGrams = 8;

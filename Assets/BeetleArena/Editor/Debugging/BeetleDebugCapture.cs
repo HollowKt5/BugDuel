@@ -1,10 +1,10 @@
-using System.IO;
+﻿using System.IO;
 using System.Linq;
 using UnityEngine;
 
 namespace BeetleArena.EditorTools
 {
-    /// <summary>为问题现场输出实际相机画面。临时隔离渲染层，finally恢复所有对象与相机属性。</summary>
+    /// <summary>Outputs actual camera frame for a bug scene. Temporarily isolates render layer; finally restores all objects and camera properties.</summary>
     public static class BeetleDebugCapture
     {
         public static string Save(BeetleMatchController match,string path)
@@ -12,7 +12,7 @@ namespace BeetleArena.EditorTools
             var camera=match.spectatorCamera.GetComponent<Camera>();
             var own=match.gameObject.scene.GetRootGameObjects().SelectMany(r=>r.GetComponentsInChildren<Transform>(true)).ToArray();
             var layers=own.Select(t=>t.gameObject.layer).ToArray();int mask=camera.cullingMask;
-            // Unity拥有的隐藏预览对象可能位于同一层，因此也按所属场景排除外部Renderer。
+            // Unity's internal hidden preview objects may reside on the same layer, so external Renderers are excluded by scene membership.
             var others=UnityEngine.Object.FindObjectsByType<Renderer>(FindObjectsInactive.Include,FindObjectsSortMode.None).Where(r=>r.gameObject.scene!=match.gameObject.scene && r.enabled).ToArray();
             var lights=UnityEngine.Object.FindObjectsByType<Light>(FindObjectsInactive.Include,FindObjectsSortMode.None).Where(l=>l.gameObject.scene!=match.gameObject.scene && l.enabled).ToArray();
             var target=new RenderTexture(1280,720,24);var pixels=new Texture2D(1280,720,TextureFormat.RGB24,false);

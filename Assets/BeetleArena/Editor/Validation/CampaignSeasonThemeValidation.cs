@@ -11,7 +11,7 @@ public static class CampaignSeasonThemeValidation
 {
     public const string Output="Artifacts/SeasonTheme/Result.txt";
 
-    [MenuItem("Tools/Beetle Arena/Validate Calendar Season Theme")]
+    [MenuItem("Tools/甲壳虫斗/验证/界面与画面/日历季节主题", false, 602)]
     public static void Run()
     {
         Directory.CreateDirectory(Path.GetDirectoryName(Output));

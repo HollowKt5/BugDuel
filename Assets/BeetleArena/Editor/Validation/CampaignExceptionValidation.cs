@@ -16,7 +16,7 @@ public static class CampaignExceptionValidation
         public void LogFormat(LogType type,UnityEngine.Object context,string format,params object[] args) => OtherLogs++;
     }
 
-    [MenuItem("Tools/Beetle Arena/Validate Campaign Exceptions")]
+    [MenuItem("Tools/甲壳虫斗/验证/战役流程/异常恢复", false, 572)]
     public static void Run()
     {
         var owner=new GameObject("Campaign exception validation") { hideFlags=HideFlags.HideAndDontSave };

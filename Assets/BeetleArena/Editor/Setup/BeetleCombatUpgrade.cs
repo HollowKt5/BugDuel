@@ -7,7 +7,7 @@ using UnityEngine;
 
 public static class BeetleCombatUpgrade
 {
-    [MenuItem("Tools/Beetle Arena/Apply Combat Refinements")]
+    [MenuItem("Tools/甲壳虫斗/场景与安装/战斗模块/应用战斗调优", false, 223)]
     public static void Apply()
     {
         if (EditorApplication.isPlaying) throw new System.InvalidOperationException("Stop play before applying refinements.");

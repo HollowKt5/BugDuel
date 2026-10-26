@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.IO;
 using UnityEditor;
 using UnityEditor.Build.Reporting;
@@ -6,18 +6,18 @@ using UnityEditor.SceneManagement;
 using UnityEngine;
 using BeetleArena;
 
-// 供 Unity -batchmode -executeMethod 调用的入口集合，成功/失败分别用退出码 0/1。
-// CollisionOnly/ValidateOnly 不构建玩家程序；只有显式调用 BuildWindows 才会打包。
+// Entry point collection for Unity -batchmode -executeMethod; returns exit code 0 on success, 1 on failure.
+// CollisionOnly and ValidateOnly do not build player executables; packaging occurs only upon explicit BuildWindows invocation.
 public static class BeetleArenaBatch
 {
-    // 准备场景后运行实际网格接触、挑飞与完整对局验证，然后退出编辑器。
+    // Prepares the scene, runs mesh contact, throw, and full match validation, then exits editor.
     public static void CollisionOnly()
     {
         try { Prepare(); BeetleArenaCollisionValidation.Run(); EditorApplication.Exit(0); }
         catch (Exception ex) { Debug.LogException(ex); EditorApplication.Exit(1); }
     }
-    // 遍历开局时间、升级时长和后期推力组合，每组跑 64 个纯数据种子，输出节奏统计 CSV。
-    // 不接入场景碰撞，因此这些结果只能用于粗调，不能代替实际模型对局时长。
+    // Sweeps permutations of opening duration, escalation duration, and late push multipliers, running 64 headless seeds per group to output pacing CSV.
+    // Bypasses scene collisions; results serve for rough tuning only and cannot substitute physical match durations.
     public static void PacingSweep()
     {
         try
@@ -53,7 +53,7 @@ public static class BeetleArenaBatch
         }
         catch (Exception ex) { Debug.LogException(ex); EditorApplication.Exit(1); }
     }
-    // 较早的半径/推顶/抬举组合扫描工具；参数网格是实验值，不会直接修改共享比赛资产。
+    // Early radius/push/lift permutation scanner; parameter grid contains experimental values and does not mutate shared match assets directly.
     public static void TuningSweep()
     {
         try
@@ -86,14 +86,14 @@ public static class BeetleArenaBatch
         }
         catch (Exception ex) { Debug.LogException(ex); EditorApplication.Exit(1); }
     }
-    // 生成/刷新场景后只运行纯数据规则验证，适合检查体型、鼓励、数值边界和落台规则。
+    // Generates/refreshes scene and executes headless rules validation only; validates sizing, encouragement, numerical bounds, and ring-out rules.
     public static void ValidateOnly()
     {
         try { Prepare(); BeetleArenaValidation.Run(); EditorApplication.Exit(0); }
         catch (Exception exception) { Debug.LogException(exception); EditorApplication.Exit(1); }
     }
-    // 显式的 Windows 打包入口：先跑数据与碰撞验证，再构建开发版并保存构建报告。
-    // 会修改 PlayerSettings；--beetleOutput 可指定 exe 输出位置。
+    // Explicit Windows build entry: executes data and collision validation, builds development player, and writes build report.
+    // Mutates PlayerSettings; --beetleOutput specifies executable output path.
     public static void BuildWindows()
     {
         try
@@ -117,8 +117,8 @@ public static class BeetleArenaBatch
         }
         catch (Exception exception) { Debug.LogException(exception); EditorApplication.Exit(1); }
     }
-    // 准备过程会把已有 MatchSettings 的部分旧参数恢复为此处基准值，并重建游戏场景。
-    // 因此它有资源写入副作用，不是只读验证；批处理先打开 SampleScene 避免重建已加载的目标场景。
+    // Preparation resets select parameters in existing MatchSettings to baseline values and rebuilds the game scene.
+    // Has asset-write side effects (not read-only validation); opens SampleScene first to avoid rebuilding an actively loaded target scene.
     static void Prepare()
     {
         if (Application.isBatchMode) EditorSceneManager.OpenScene("Assets/Scenes/SampleScene.unity");

@@ -71,20 +71,35 @@ namespace BeetleArena.EditorTools
             Undo.RecordObject(profile,"Apply scene screen effect");
             if(setting==null){setting=new SceneDisplaySetting{sceneName=sceneName};profile.scenes.Add(setting);}
             setting.style=style;setting.customMaterial=style==BeetleDisplayStyle.Custom?material:null;
-            int selectedPixels=Mathf.Clamp(pixels,1,6);
+            int selectedPixels=Mathf.Clamp(pixels,1,dither?3:6);
             if(style!=BeetleDisplayStyle.DenseDither)setting.pixelSize=selectedPixels;
             if(dither)
             {
                 if(style==BeetleDisplayStyle.DenseDither)setting.denseDitherMaterial=material;
                 else setting.ditherMaterial=material;
                 Undo.RecordObject(material,"Apply scene screen material");
-                material.SetFloat("_PixelSize",selectedPixels);
+                material.SetFloat("_PixelSize",BeetleDisplayPreferences.DitherPixelScale(selectedPixels));
                 EditorUtility.SetDirty(material);AssetDatabase.SaveAssetIfDirty(material);
             }
             EditorUtility.SetDirty(profile);AssetDatabase.SaveAssetIfDirty(profile);
             BeetleDisplayPreferences.UseSceneDefault(sceneName);BeetleDisplayPreferences.ReloadProfile();
             if(EditorApplication.isPlaying)BeetleCombatDisplay.InstallScene(UnityEngine.SceneManagement.SceneManager.GetSceneByName(sceneName));
             EditorApplication.QueuePlayerLoopUpdate();SceneView.RepaintAll();
+        }
+        public static void ApplyThreePixelLevelDefaults()
+        {
+            var profile=EnsureProfile();Undo.RecordObject(profile,"Use second dither pixel level by default");
+            foreach(var setting in profile.scenes)
+            {
+                setting.pixelSize=2;
+                foreach(var material in new[]{setting.ditherMaterial,setting.denseDitherMaterial})
+                {
+                    if(!material||!material.HasProperty("_PixelSize"))continue;
+                    Undo.RecordObject(material,"Use 2px dither default");material.SetFloat("_PixelSize",2);
+                    EditorUtility.SetDirty(material);AssetDatabase.SaveAssetIfDirty(material);
+                }
+            }
+            EditorUtility.SetDirty(profile);AssetDatabase.SaveAssetIfDirty(profile);BeetleDisplayPreferences.ReloadProfile();
         }
         // Run once after importing the new shader; rerunning keeps authored choices and edits.
         public static int EnsureDenseDitherMaterials()

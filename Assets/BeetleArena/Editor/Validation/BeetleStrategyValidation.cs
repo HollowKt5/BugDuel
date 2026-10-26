@@ -5,7 +5,7 @@ using BeetleArena;
 using UnityEditor;
 using UnityEngine;
 
-/// <summary>战略/体力合约：用真实 Step 验证状态机、打空窗口、低体力选择及暂停式零步采样。</summary>
+/// <summary>Strategy and stamina contract: validates state machine, whiff punish windows, low-stamina tactics, and paused zero-step sampling.</summary>
 public static class BeetleStrategyValidation
 {
     static void Require(bool value, string reason) { if (!value) throw new Exception(reason); }
@@ -21,7 +21,7 @@ public static class BeetleStrategyValidation
         a.IntentTime = b.IntentTime = 1;
         return sim;
     }
-    [MenuItem("Tools/Beetle Arena/Validate Strategy And Energy")]
+    [MenuItem("Tools/甲壳虫斗/验证/战斗/策略与体力", false, 501)]
     public static void Run()
     {
         using var fixture = new BeetleValidationScene("StrategyValidation");
@@ -29,7 +29,7 @@ public static class BeetleStrategyValidation
         var report = new StringBuilder("STRATEGY / ENERGY CONTRACTS\n" + DateTimeOffset.Now.ToString("o") + "\n");
         try
         {
-            // 给对手一个已经可见的收招窗口；无需等待全局 Clash，也不直接指定胜者。
+            // Grants opponent a visible recovery punish window; does not await global Clash or predetermine winner.
             var sim = Ready(s); var a = sim.Fighters[0]; var b = sim.Fighters[1];
             b.ExposureRemaining = .6f; b.Stamina = 25; a.Stamina = 85;
             sim.Step(.02f);
@@ -83,11 +83,11 @@ public static class BeetleStrategyValidation
             Require(a.ExposureRemaining >= s.missedAttackExposure - .03f && a.Action == BeetleAction.Brace, "Missed strike lacks recovery window");
             report.AppendLine("PASS: a missed strike retains an exposed recovery window.");
 
-            // 连续强发力耗尽爆发余量；卸载才可重新招募。只调动作，不向体力强行灌值。
+            // Sustained heavy output depletes burst reserves; unloading required before re-recruiting. Only tunes actions, never forces stamina values.
             sim = Ready(s); a = sim.Fighters[0]; b = sim.Fighters[1];
             b.Position = new Vector2(50, 0); a.Position = Vector2.zero;
             a.Action = BeetleAction.HornLock; a.ActionTime = 0; a.ActionDuration = 5;
-            // 以 Charge 测实际每秒消耗；大擂台避免测试被落台结算截断。
+            // Measures real per-second burn via Charge; oversized arena prevents tests from being cut short by ring-out rulings.
             s.arenaRadius = 100; a.Action = BeetleAction.Charge; a.ActionDuration = 3;
             for (int i = 0; i < 100; i++) sim.Step(.02f);
             float used = a.BurstReserve;

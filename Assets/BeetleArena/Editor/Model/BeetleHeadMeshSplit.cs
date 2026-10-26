@@ -1,11 +1,11 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using UnityEngine;
 
 /// <summary>
-/// 当前模型的真实几何切分：按两个标定平面裁切三角形，生成互不共享 Mesh 的触角和口器。
-/// 穿过边界的面会补插值顶点，保留原表面和纹理；不把跨界整面简单删除。
-/// 两边复制相同的切口边缘，组装时接缝重合，不额外添加相互重叠的封口面。
+/// Geometric mesh slicing for current model: slices triangles along two calibration planes to generate decoupled antenna/mouthpart meshes.
+/// Boundary-straddling triangles are interpolated, preserving original surfaces and UVs without dropping triangles.
+/// Both halves duplicate cut seam edges so assembled seams align without overlapping caps.
 /// </summary>
 public static class BeetleHeadMeshSplit
 {
@@ -50,7 +50,7 @@ public static class BeetleHeadMeshSplit
             mesh.SetTriangles(triangles,0);mesh.RecalculateBounds();return mesh;
         }
     }
-    // 同一个半空间的正/反裁切构成完整分区；交点显式落在平面上，避免接缝浮点偏移。
+    // Positive and negative half-spaces form a complete partition; intersection vertices snap onto plane, avoiding seam floating-point drift.
     static List<Vertex> Clip(List<Vertex> polygon, int axis, float sign, float cut, bool inside)
     {
         var result=new List<Vertex>();
@@ -110,7 +110,7 @@ public static class BeetleHeadMeshSplit
         antenna=distal.Mesh(source.name+" antenna",uv2.Length==p.Length,colors.Length==p.Length,tangent.Length==p.Length);
         mouth=central.Mesh(source.name+" mouth",uv2.Length==p.Length,colors.Length==p.Length,tangent.Length==p.Length);
     }
-    /// <summary>前部中央口器再分区；其余表面保留为固定基部，所有边界补插值顶点。</summary>
+    /// <summary>Sub-partitions anterior central mouthparts; remaining surfaces stay as fixed base, with interpolated vertices along boundaries.</summary>
     public static void SplitJaw(Mesh source, out Mesh fixedBase, out Mesh left, out Mesh right)
     {
         var p=source.vertices;var n=source.normals;var uv=source.uv;var uv2=source.uv2;var t=source.tangents;var c=source.colors;

@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections;
 using System.IO;
 using UnityEngine;
@@ -7,15 +7,15 @@ using UnityEngine.EventSystems;
 namespace BeetleArena
 {
     // Opt-in standalone integration check. Normal games never execute this path.
-    // 独立运行程序的集成检查组件；必须显式传入 --beetle-smoke 才会执行。
-    // 普通玩家启动时立即禁用，不自动推进对局、不退出游戏。
+    // Integration smoke test component for standalone builds; executes only when --beetle-smoke is explicitly passed.
+    // Disables immediately on standard player launch without advancing matches or quitting the game.
     public sealed class ArenaStandaloneSmoke : MonoBehaviour
     {
-        // 截图/报告输出目录，可用 --beetle-artifacts 指定；failed 累计日志中的运行错误。
+        // Screenshot/report output directory, configurable via --beetle-artifacts; failed tracks cumulative runtime errors.
         string destination;
         bool failed;
-        // 协程先等待场景初始化，再检查真实帧循环、按钮冷却、暂停、落台、重赛和新配对。
-        // 每段 try/catch 把异常记录为失败并退出，供外部脚本读取退出码。
+        // Coroutine waits for scene initialization, then validates real frame loops, button cooldowns, pause, ring-out, rematch, and pairings.
+        // Each try/catch logs exceptions as failure and exits with appropriate process exit codes for automated harnesses.
         IEnumerator Start()
         {
             var args = Environment.GetCommandLineArgs();
@@ -24,7 +24,7 @@ namespace BeetleArena
             for (int i = 0; i + 1 < args.Length; i++) if (args[i] == "--beetle-artifacts") destination = args[i + 1];
             Directory.CreateDirectory(destination);
             Application.logMessageReceived += CaptureError;
-            // 让同场景的 MatchController.Start 有机会完成初始化，避免依赖组件 Start 的相对顺序。
+            // Yields to allow MatchController.Start in the same scene to complete initialization, decoupling from component execution order.
             yield return null;
             var match = GetComponent<BeetleMatchController>();
             try
@@ -37,7 +37,7 @@ namespace BeetleArena
             }
             catch (Exception ex) { Fail(ex); yield break; }
             // Let the actual frame loop, animation, camera, input system and HUD run together.
-            // 前七秒由正常 Update 推进，覆盖真实的动画、镜头和 UI；之后才使用加速测试循环。
+            // First seven seconds advance via normal Update to cover real animation, camera, and UI; fast-forward loop begins thereafter.
             yield return new WaitForSecondsRealtime(7);
             try
             {
@@ -47,7 +47,7 @@ namespace BeetleArena
                 match.hud.pauseButton.onClick.Invoke(); if (!match.IsPaused) throw new Exception("Pause wiring");
             }
             catch (Exception ex) { Fail(ex); yield break; }
-            // 记录暂停瞬间的模拟时间，等待真实时间后应完全不变，以验证暂停有效。
+            // Records simulation time at pause; verifies pause effectiveness by ensuring simulation time remains unchanged over real time.
             float pausedTime = match.Simulation.Elapsed;
             yield return new WaitForSecondsRealtime(.3f);
             try
@@ -75,8 +75,8 @@ namespace BeetleArena
             }
             catch (Exception ex) { Fail(ex); }
         }
-        // 测试专用快速推进：按相同固定步长执行模拟、显示约束和镜头，不等待真实时间。
-        // 结束后留最多 80 步让落台对象沉降；此耗时不能作为实际游戏 FPS。
+        // Test-only fast-forward: executes simulation, display constraints, and camera at identical fixed steps without awaiting real time.
+        // Allows up to 80 steps post-match for fallen objects to settle; duration must not be construed as gameplay FPS.
         static void Advance(BeetleMatchController match, float seconds)
         {
             int settling = 0;
@@ -88,7 +88,7 @@ namespace BeetleArena
             }
             match.hud.Refresh();
         }
-        // 把相机画面渲染到临时 RenderTexture 后保存 PNG；finally 恢复渲染目标并释放临时对象。
+        // Renders camera output to temporary RenderTexture and writes PNG; finally restores render target and releases temporary RT.
         void Capture(BeetleMatchController match, string name)
         {
             var camera = match.spectatorCamera.GetComponent<Camera>();
@@ -107,15 +107,15 @@ namespace BeetleArena
                 Destroy(pixels); Destroy(target);
             }
         }
-        // 收集 Error/Exception/Assert 到报告文件；普通 Log/Warning 不令本检查失败。
+        // Collects Error/Exception/Assert into report file; standard Log/Warning messages do not fail the smoke test.
         void CaptureError(string text, string stack, LogType type)
         {
             if (type != LogType.Error && type != LogType.Exception && type != LogType.Assert) return;
             failed = true; File.AppendAllText(Path.Combine(destination, "RuntimeErrors.txt"), text + "\n" + stack + "\n");
         }
-        // 记录无法继续的异常并以非零退出码结束独立程序。
+        // Logs unrecoverable exception and terminates standalone process with non-zero exit code.
         void Fail(Exception ex) { File.WriteAllText(Path.Combine(destination, "RuntimeValidation.txt"), "FAILED: " + ex); Application.Quit(1); }
-        // 移除全局日志回调，避免组件销毁后仍被调用。
+        // Deregisters global log callback to prevent invocations after component destruction.
         void OnDestroy() => Application.logMessageReceived -= CaptureError;
     }
 }

@@ -9,7 +9,7 @@ namespace BeetleArena
     {
         public string sceneName;
         public BeetleDisplayStyle style=BeetleDisplayStyle.OrderedDither;
-        [Range(1,6)] public int pixelSize=3;
+        [Range(1,6)] public int pixelSize=2;
         public Material ditherMaterial;
         public Material denseDitherMaterial;
         public Material customMaterial;

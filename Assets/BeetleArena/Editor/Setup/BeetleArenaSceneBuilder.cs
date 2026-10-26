@@ -12,22 +12,22 @@ using UnityEngine.Rendering;
 using UnityEngine.Rendering.Universal;
 using UnityEngine.SceneManagement;
 
-// 通过 Unity Editor API 生成可运行的甲虫对战场景、关节化预制体、材质和 HUD。
-// 模型交给 BeetleImportedModelBuilder 按 bug.fbx 建立骨架；场景通过 Unity API 生成。
+// Generates runnable beetle combat scene, articulated prefabs, materials, and HUD via Unity Editor APIs.
+// Delegates model rigging to BeetleImportedModelBuilder based on bug.fbx; constructs scene via Unity APIs.
 public static class BeetleArenaSceneBuilder
 {
-    // 场景与生成资源的固定目标路径；重新 Build 会覆盖这些生成结果，应把手工定制另行管理。
+    // Target paths for scenes and generated assets; rebuilding overwrites these generated files, so custom tweaks should be managed separately.
     public const string ScenePath = "Assets/Scenes/BeetleArena.unity";
     public const string AssetFolder = "Assets/BeetleArena/Generated";
-    // 双方 UI/阵营标记的主题色；身体材质的个体色由 Actor.Initialize 路径设置。
+    // Theme colors for contestant UI/faction markers; individual body material colors are assigned via Actor.Initialize.
     static readonly Color Amber = new Color(.91f, .58f, .25f);
     static readonly Color Teal = new Color(.37f, .76f, .70f);
-    // 本次构建复用的字体、填充条 Sprite 和台面碰撞体引用；不是运行时单例服务。
+    // Fonts, fill bar Sprites, and arena colliders reused during this build pass; not a runtime singleton service.
     static TMP_FontAsset font;
     static Sprite whiteSprite;
     static Collider[] stageContacts;
 
-    // 只补字体字形、校验并保存参数资产，不重新生成场景层级；用于新增动作标签后刷新资源。
+    // Supplements font glyphs, validates, and saves settings assets without regenerating scene hierarchy; refreshes assets after adding motion tags.
     public static void RefreshPresentation()
     {
         MakeFont();
@@ -36,12 +36,12 @@ public static class BeetleArenaSceneBuilder
         AssetDatabase.SaveAssets();
     }
 
-    [MenuItem("Tools/Beetle Arena/Build Game Scene")]
-    // 主生成流程：准备资源→建台面和相机→建双方 Actor→绑定控制器/HUD/输入→保存场景与预制体。
-    // 使用临时 Additive 场景并在 finally 恢复原活动场景；还会设置 Play 启动场景和构建场景列表。
+    [MenuItem("Tools/甲壳虫斗/场景与安装/生成战斗场景", false, 200)]
+    // Main generation pipeline: prepare assets -> build arena & camera -> spawn contestants -> bind controller/HUD/input -> save scene & prefabs.
+    // Uses a temporary Additive scene and restores original active scene in finally; configures Playmode scene and Build Settings scene list.
     public static void Build()
     {
-        // TMP 必需资源尚未导入时发起导入并退出；待导入完成再重试，避免创建无字体引用的 UI。
+        // Prompts import and exits if essential TMP assets are missing; retries after import to avoid creating UI without font references.
         if (!TMP_Settings.instance)
         {
             TMP_PackageResourceImporter.ImportResources(true, false, false);
@@ -58,7 +58,7 @@ public static class BeetleArenaSceneBuilder
             AssetDatabase.CreateAsset(settings, AssetFolder + "/MatchSettings.asset");
         }
         settings.Validate();
-        // 获取原始 FBX；保持源文件不变，生成可复用的骨架和网格派生资产。
+        // Retrieves raw FBX; preserves source file while generating reusable skeletal rig and mesh derivative assets.
         var source = AssetDatabase.LoadAssetAtPath<GameObject>("Assets/bug.fbx");
         if (!source) throw new InvalidOperationException("The imported bug.fbx model is missing.");
 
@@ -76,7 +76,7 @@ public static class BeetleArenaSceneBuilder
             camera.backgroundColor = new Color(.075f, .11f, .085f);
             // This project already has a clean renderer alongside its default
             // fullscreen outline renderer. Select it only for this scene's camera.
-            // 查找项目已有的无 RendererFeature 的 URP 渲染器，只为本场景相机选择，减少默认描边影响。
+            // Finds existing URP renderer without RendererFeatures specifically for scene camera, reducing default outline interference.
             var pipeline = GraphicsSettings.currentRenderPipeline as UniversalRenderPipelineAsset;
             if (pipeline)
             {
@@ -90,7 +90,7 @@ public static class BeetleArenaSceneBuilder
             var spectator = cameraObject.GetComponent<ArenaCamera>();
             spectator.ResetView();
 
-            // 在编辑器中把所有运行时依赖显式绑定，避免开始游戏后反复按名称查找对象。
+            // Binds all runtime dependencies explicitly in editor, avoiding repeated runtime GameObject.Find queries.
             var controller = new GameObject("Match Director").AddComponent<BeetleMatchController>();
             controller.gameObject.AddComponent<ArenaStandaloneSmoke>();
             controller.settings = settings;
@@ -105,7 +105,7 @@ public static class BeetleArenaSceneBuilder
             var eventObject = new GameObject("Event System", typeof(EventSystem), typeof(InputSystemUIInputModule));
             eventObject.GetComponent<InputSystemUIInputModule>().AssignDefaultActions();
 
-            // 生成可在编辑器直接看到的初始姿态；进入 Play 后控制器仍会按实际种子重新创建本局。
+            // Spawns resting initial pose visible in Editor; MatchController re-rolls actual in-match lineup upon entering Play mode.
             BeetleArenaTerrainSetup.Configure(controller);
             BeetleCombatUpgrade.Configure(controller);
             var simulation = new BeetleSimulation(settings, settings.initialSeed);
@@ -126,7 +126,7 @@ public static class BeetleArenaSceneBuilder
             BeetleFeedbackSetup.Configure(controller);
             BeetleSceneHierarchy.Organize(controller);
             EditorSceneManager.SaveScene(scene, ScenePath);
-            // 保存第一只的关节化结构为可复用预制体；运行时外观差异由绑定状态/材质属性决定。
+            // Saves first contestant's articulated rig as reusable prefab; runtime visual differentiation handled by bound state / material properties.
             PrefabUtility.SaveAsPrefabAsset(controller.actors[0].gameObject, AssetFolder + "/ArticulatedBeetle.prefab");
             var scenes = EditorBuildSettings.scenes.Where(s => s.path != ScenePath).ToList();
             scenes.Insert(0, new EditorBuildSettingsScene(ScenePath, true));
@@ -142,7 +142,7 @@ public static class BeetleArenaSceneBuilder
         }
     }
 
-    // 从正式模型生成骨架 Actor，额外绑定原游戏阵营标记。
+    // Constructs skeletal Actor from production model, binding original game faction markers.
     static BeetleActor BuildActor(GameObject source, int index, BeetleMatchSettings settings)
     {
         var actor = BeetleImportedModelBuilder.BuildActor(source, index);
@@ -152,7 +152,7 @@ public static class BeetleArenaSceneBuilder
         return actor;
     }
 
-    // 建立树桩台面、年轮、边沿纹理、地面和环境灯光；只有两块主要接触体参与环境分离。
+    // Builds stump arena, annual rings, bark trim, floor, and environment lights; only two primary colliders participate in environment separation.
     static void BuildStage(float radius, float groundHeight)
     {
         var wood = Material("Cut wood", new Color(.40f, .265f, .14f), .24f);
@@ -161,7 +161,7 @@ public static class BeetleArenaSceneBuilder
         var stump = Primitive("Stump - ring-out surface", PrimitiveType.Cylinder, new Vector3(0, -.50f, 0), new Vector3(radius * 2, .5f, radius * 2), bark);
         var stumpVolume = new GameObject("Arena solid contact volume");
         stumpVolume.transform.SetParent(stump.transform, false);
-        // 碰撞体顶部略抬高以覆盖可见木面/年轮，避免脚踩到装饰层下面。
+        // Slightly elevates collider top to encompass visible wood surface / rings, preventing tarsi from stepping below decorative surfaces.
         stumpVolume.transform.localPosition = new Vector3(0, .03f, 0);
         var stumpCollider = stumpVolume.AddComponent<MeshCollider>();
         stumpCollider.sharedMesh = stump.GetComponent<MeshFilter>().sharedMesh;
@@ -188,10 +188,10 @@ public static class BeetleArenaSceneBuilder
         var groundCollider = ground.AddComponent<BoxCollider>();
         // A deep solid ground prevents a falling/rolling thin appendage from
         // choosing the underside of a thin floor as its nearest escape direction.
-        // 厚地面向下延伸，让落下的细角/足部从上方脱离重叠，避免薄板下表面成为最近分离方向。
+        // Floor extends downwards so fallen horns/tarsi separate upwards, preventing thin floor undersides from becoming nearest separation normal.
         groundCollider.center = new Vector3(0, -50, 0); groundCollider.size = new Vector3(10, 100, 10); groundCollider.isTrigger = true;
         stageContacts = new Collider[] { stumpCollider, groundCollider };
-        // 环境石块独立固定种子，重建场景保持一致，也不消耗比赛随机源。
+        // Environment rocks seeded with fixed RNG, maintaining consistency on scene rebuilds without consuming combat RNG.
         var random = new System.Random(88);
         var stone = Material("Forest stones", new Color(.16f, .19f, .15f), .08f);
         for (int i = 0; i < 18; i++)
@@ -205,8 +205,8 @@ public static class BeetleArenaSceneBuilder
         Light("Cool forest rim", new Vector3(5, 7, 5), new Color(.62f, .79f, .9f), 1.1f);
     }
 
-    // 构建 Canvas/uGUI 界面并写入运行时引用：双方状态卡、鼓励按钮、阶段提示和结算面板。
-    // 使用相机空间 Canvas 与 1600×900 参考尺寸；坐标由锚点、像素偏移和大小共同确定。
+    // Builds Canvas / uGUI hierarchy and writes runtime references: fighter cards, encourage buttons, phase banners, and result screen.
+    // Uses Camera-space Canvas with 1600x900 reference resolution; coordinates defined by anchors, pixel offsets, and dimensions.
     static BeetleArenaHud BuildHud(Camera camera)
     {
         var go = new GameObject("Spectator HUD", typeof(RectTransform), typeof(Canvas), typeof(UnityEngine.UI.CanvasScaler), typeof(UnityEngine.UI.GraphicRaycaster), typeof(BeetleArenaHud));
@@ -221,7 +221,7 @@ public static class BeetleArenaSceneBuilder
         Label("Subtitle", root, "FOREST DUEL  /  自主格斗观察席", new Vector2(.5f, 1), new Vector2(0, -78), new Vector2(500, 30), 15, new Color(.65f, .72f, .66f), TextAlignmentOptions.Center);
         hud.clock = Label("Match clock", root, "00:00", new Vector2(.5f, 1), new Vector2(0, -123), new Vector2(220, 45), 31, Color.white, TextAlignmentOptions.Center);
         hud.roundText = Label("Round", root, "第 01 场 · 体型差不超过 8%", new Vector2(.5f, 1), new Vector2(0, -164), new Vector2(470, 30), 16, new Color(.74f, .75f, .66f), TextAlignmentOptions.Center);
-        // 左右两套卡片共用布局逻辑，通过锚点和 pivot 镜像定位，索引与两名选手保持一致。
+        // Left and right contestant cards share layout logic, mirrored via anchors and pivots, matching contestant indexing.
         hud.fighters = new FighterHud[2];
         for (int i = 0; i < 2; i++)
         {
@@ -257,12 +257,12 @@ public static class BeetleArenaSceneBuilder
         rematchLabel.color = new Color(.90f, .92f, .82f);
         hud.nextButton = Button("Next match", result, new Vector2(1, 0), new Vector2(-24, 24), new Vector2(218, 48), Amber, "下一场 · 随机配对", out _);
         hud.nextButton.GetComponent<RectTransform>().pivot = new Vector2(1, 0);
-        // 初始隐藏结算界面，由 HUD.Refresh 根据 Finished 阶段决定显示。
+        // Settlement panel is hidden on launch; HUD.Refresh determines visibility based on Finished phase.
         result.gameObject.SetActive(false);
         return hud;
     }
 
-    // UI 基础工厂：设置父节点、固定锚点、pivot、像素偏移和尺寸；parent 下不保留世界变换。
+    // UI primitive factory: sets parent, fixed anchors, pivot, pixel offsets, and size; parent does not retain world transforms.
     static RectTransform Rect(string name, Transform parent, Vector2 anchor, Vector2 position, Vector2 size)
     {
         var rt = new GameObject(name, typeof(RectTransform)).GetComponent<RectTransform>();
@@ -270,14 +270,14 @@ public static class BeetleArenaSceneBuilder
         rt.pivot = anchor; rt.anchoredPosition = position; rt.sizeDelta = size;
         return rt;
     }
-    // 在 RectTransform 上添加背景 Image，默认不拦截鼠标，只有按钮背景重新开启射线目标。
+    // Adds background Image to RectTransform; raycastTarget false by default, enabled only on button backgrounds.
     static RectTransform Panel(string name, Transform parent, Vector2 anchor, Vector2 position, Vector2 size, Color color)
     {
         var rt = Rect(name, parent, anchor, position, size);
         var image = rt.gameObject.AddComponent<UnityEngine.UI.Image>(); image.color = color; image.raycastTarget = false;
         return rt;
     }
-    // 创建 TMP 标签并绑定中文字体；使用固定字号与省略号溢出策略，文本本身不挡点击。
+    // Spawns TMP label and binds Chinese font; uses fixed font size and ellipsis overflow; text does not block raycasts.
     static TMP_Text Label(string name, Transform parent, string value, Vector2 anchor, Vector2 position, Vector2 size, float fontSize, Color color, TextAlignmentOptions alignment = TextAlignmentOptions.TopLeft)
     {
         var rt = Rect(name, parent, anchor, position, size);
@@ -286,7 +286,7 @@ public static class BeetleArenaSceneBuilder
         text.enableAutoSizing = false; text.overflowMode = TextOverflowModes.Ellipsis;
         return text;
     }
-    // 生成背景与水平 Filled 前景，返回前景 Image 给 HUD 控制 fillAmount。
+    // Generates background and horizontal Filled foreground Image for HUD fillAmount control.
     static UnityEngine.UI.Image Bar(string name, Transform parent, Vector2 position, Vector2 size, Color color)
     {
         var back = Panel(name, parent, new Vector2(0, 1), position, size, new Color(.15f, .19f, .16f));
@@ -295,7 +295,7 @@ public static class BeetleArenaSceneBuilder
         fill.fillMethod = UnityEngine.UI.Image.FillMethod.Horizontal; fill.fillOrigin = 0; fill.fillAmount = 1;
         return fill;
     }
-    // 创建可点击背景、按钮过渡色和居中文字；out 参数把标签交给 HUD 动态改文案。
+    // Spawns clickable background, button color transitions, and centered label; out parameter exposes label for dynamic HUD updates.
     static UnityEngine.UI.Button Button(string name, Transform parent, Vector2 anchor, Vector2 position, Vector2 size, Color color, string caption, out TMP_Text text)
     {
         var rt = Panel(name, parent, anchor, position, size, color);
@@ -306,9 +306,9 @@ public static class BeetleArenaSceneBuilder
         return button;
     }
 
-    // 创建或补充静态中文 TMP 字体。临时启用系统字体动态填字，保存时恢复 Static，
-    // 并把材质/图集保存为子资源。依赖本机 Microsoft YaHei 或 Microsoft YaHei UI。
-    // 注意：当前按全部 C# 源文本收集字符，包含注释；大量中文注释在下次运行本方法时也会进入字形集合。
+    // Creates or supplements static Chinese TMP font. Temporarily enables dynamic system font filling, restoring to Static on save,
+    // saving material and atlas as sub-assets. Depends on Microsoft YaHei or Microsoft YaHei UI.
+    // Note: Scans C# source text for characters; English comments keep atlas compact.
     public static TMP_FontAsset MakeFont()
     {
         string path = AssetFolder + "/ArenaCJK.asset";
@@ -316,7 +316,7 @@ public static class BeetleArenaSceneBuilder
         if (existing)
         {
             string updatedCharacters = string.Concat(Directory.GetFiles("Assets/BeetleArena", "*.cs", SearchOption.AllDirectories).Select(File.ReadAllText));
-            // 沿用原字体资产 GUID，补字后标记图集与材质脏状态，避免重建字体导致已有 UI 引用失效。
+            // Preserves original font asset GUID and marks atlas/material dirty to avoid invalidating existing UI references on font rebuild.
             existing.atlasPopulationMode = AtlasPopulationMode.DynamicOS;
             existing.TryAddCharacters(new string(updatedCharacters.Distinct().ToArray()), out string missingUpdated);
             existing.atlasPopulationMode = AtlasPopulationMode.Static;
@@ -342,7 +342,7 @@ public static class BeetleArenaSceneBuilder
         EditorUtility.SetDirty(asset);
         return asset;
     }
-    // 生成并缓存 2×2 白色 Sprite，供 Image 的水平填充模式使用；纹理作为 Sprite 子资源保存。
+    // Generates and caches 2x2 white Sprite for Image horizontal fill mode; texture is saved as a Sprite sub-asset.
     static Sprite MakeWhiteSprite()
     {
         string path = AssetFolder + "/HudPixel.asset";
@@ -352,26 +352,26 @@ public static class BeetleArenaSceneBuilder
         var sprite = Sprite.Create(texture, new Rect(0, 0, 2, 2), new Vector2(.5f, .5f)); sprite.name = "HUD solid fill";
         AssetDatabase.CreateAsset(sprite, path); AssetDatabase.AddObjectToAsset(texture, sprite); return sprite;
     }
-    // 仅在资源目录不存在时通过 AssetDatabase 创建，确保 Unity 同步生成目录元数据。
+    // Creates directory via AssetDatabase only if missing, ensuring Unity synchronizes folder metadata.
     static void Folder(string parent, string name) { if (!AssetDatabase.IsValidFolder(parent + "/" + name)) AssetDatabase.CreateFolder(parent, name); }
-    // 按名称复用生成目录里的材质，更新基础色和卡通预设并标记保存。
+    // Reuses materials in generated folder by name, updating base color and toon preset before marking dirty.
     static Material Material(string name, Color color, float smoothness)
     {
         string path = AssetFolder + "/Materials/" + name + ".mat";
         var material = AssetDatabase.LoadAssetAtPath<Material>(path);
         if (!material) { material = new Material(Shader.Find("Universal Render Pipeline/Lit")); AssetDatabase.CreateAsset(material, path); }
         material.SetColor("_BaseColor", color);
-        // 重建场景仍走同一套卡通材质预设，避免生成器把效果改回 Lit。
+        // Scene rebuild retains identical toon material preset, preventing generator from reverting to Lit.
         BeetleArenaToonSetup.Configure(material);
         EditorUtility.SetDirty(material); return material;
     }
-    // 创建可见基本几何体并移除默认碰撞体；接触体随后集中配置，避免重复参与碰撞。
+    // Spawns visible primitive geometry and removes default colliders; colliders configured centrally to prevent duplicate collisions.
     static GameObject Primitive(string name, PrimitiveType type, Vector3 position, Vector3 scale, Material material)
     {
         var go = GameObject.CreatePrimitive(type); go.name = name; go.transform.position = position; go.transform.localScale = scale;
         go.GetComponent<Renderer>().sharedMaterial = material; UnityEngine.Object.DestroyImmediate(go.GetComponent<Collider>()); return go;
     }
-    // 创建朝向世界原点的方向光并启用软阴影；位置仅用于确定朝向，不产生距离衰减。
+    // Spawns directional light facing world origin with soft shadows; position defines direction only without distance attenuation.
     static void Light(string name, Vector3 position, Color color, float intensity)
     {
         var light = new GameObject(name).AddComponent<UnityEngine.Light>(); light.type = LightType.Directional;

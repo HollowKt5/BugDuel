@@ -4,14 +4,14 @@ using UnityEngine;
 namespace BeetleArena
 {
     public enum BeetleContactRole { Leg, Body, HeadHorn }
-    // 真实模型的不可见碰撞代理。shapes 用于物理，surfaces 仅保存可见网格用于诊断。
-    // 蒙皮 Renderer.bounds 不能作为独立腿段代理的包围盒，两组数组无需一一对应。
+    // Invisible collision proxies for the actual model. shapes are used for physics; surfaces retain visible meshes for diagnostics only.
+    // Skinned Renderer.bounds cannot serve as bounding boxes for individual leg proxies; the two arrays do not require 1:1 correspondence.
     public sealed class BeetleContactRig : MonoBehaviour
     {
         /// <summary>
-        /// 模型接触语义，与对象名称和数组顺序无关。新物种应显式绑定；未绑定的旧模型保留名称回退。
-        /// legIndex 按左前/中/后、右前/中/后排列，非腿部忽略此字段。
-        /// weapon 标识角部反馈；它不会凭空授予大颚等尚未实现的攻击机制。
+        /// Model contact semantics, independent of GameObject names and array ordering. New species should use explicit bindings; unbound legacy models retain name fallbacks.
+        /// legIndex is ordered Left Front/Middle/Hind, Right Front/Middle/Hind; ignored for non-leg parts.
+        /// weapon identifies horn feedback; it does not grant unimplemented attack mechanics like mandibles out of nowhere.
         /// </summary>
         [Serializable]
         public sealed class ShapeBinding
@@ -22,13 +22,13 @@ namespace BeetleArena
             public bool weapon;
         }
 
-        // 由模型生成器绑定的胶囊及凸网格代理，随各自骨骼运动。
+        // Capsule and convex mesh proxies bound by the model builder, moving with their respective bones.
         public Collider[] shapes;
         [Tooltip("Optional explicit collision semantics. Unbound shapes retain legacy name mapping; unknown names are body contacts.")]
         public ShapeBinding[] shapeBindings = Array.Empty<ShapeBinding>();
-        // 保留源模型的可见 Renderer，便于验证完整模型是否正确迁移。
+        // Retains visible Renderers from the source model to verify correct migration of the full model.
         public Renderer[] surfaces;
-        // 运行时部件 AABB 缓存，worldBounds 是它们合并后的整只甲虫 AABB。
+        // Runtime part AABB cache; worldBounds is the unified AABB covering the entire beetle.
         [NonSerialized] public Bounds[] bounds;
         [NonSerialized] public Bounds worldBounds;
         // Cache references only. Read exact world poses for narrow-phase tests so repeated
@@ -58,13 +58,13 @@ namespace BeetleArena
                 (!present || ReferenceEquals(shape, binding.shape) && role == binding.role &&
                     legIndex == binding.legIndex && weapon == binding.weapon);
         }
-        // 模型构建器已有明确命名。每局首次缓存分类一次，避免每个接触对做字符串判断。
+        // Model builders supply canonical names. Cached once per match on first access to avoid string matching across collision pairs.
         public BeetleContactRole Role(int index) => roles[index];
         public int LegIndex(int index) => legIndices[index];
-        // 胸角在物理解算中仍属 Body，但表现采样可把它识别为角；不修改原枚举或序列化值。
+        // Thoracic horns remain Body for physics resolution, but presentation sampling recognizes them as weapons; preserves enum and serialized values.
         public bool IsHorn(int index) => weapons[index];
 
-        /// <summary>重命名旧模型部件后显式失效；代理和显式绑定更新会自动识别，不在热路径读 name。</summary>
+        /// <summary>Explicitly invalidates after renaming legacy model parts; proxies and explicit binding updates are auto-detected, avoiding reading name on hot paths.</summary>
         public void InvalidateShapeMetadata() => classifiedShapes = null;
         void OnValidate() => InvalidateShapeMetadata();
         bool ShapeMetadataCurrent()
@@ -80,7 +80,7 @@ namespace BeetleArena
         void EnsureShapeMetadata()
         {
             if (ShapeMetadataCurrent()) return;
-            // 校验失败后保持缓存无效，修复配置后下一次调用可安全重建。
+            // Keeps cache invalid on validation failure; safely rebuilt on next call once configuration is resolved.
             classifiedShapes = null;
             roles = new BeetleContactRole[shapes.Length];
             legIndices = new int[shapes.Length]; weapons = new bool[shapes.Length];
@@ -88,7 +88,7 @@ namespace BeetleArena
             for (int i = 0; i < count; i++)
             {
                 var binding = shapeBindings[i];
-                // Inspector 新添加的空行可暂存；有 collider 的绑定必须明确且有效。
+                // Empty rows added in the Inspector can be staged; bindings with colliders assigned must be explicit and valid.
                 if (binding == null || !binding.shape) continue;
                 if (binding.role != BeetleContactRole.Leg && binding.role != BeetleContactRole.Body &&
                     binding.role != BeetleContactRole.HeadHorn)
@@ -129,7 +129,7 @@ namespace BeetleArena
             int offset = name.StartsWith("Left ", StringComparison.Ordinal) ? 0 :
                 name.StartsWith("Right ", StringComparison.Ordinal) ? 3 : -1;
             if (offset < 0) return -1;
-            // 只接受模型构建器的足节名称；例如 Left front mandible 仍是未知器官。
+            // Only accepts segment names from the model builder; e.g. "Left front mandible" remains an unknown organ.
             string part = name.Substring(offset == 0 ? 5 : 6);
             int pair, prefixLength;
             if (part.StartsWith("front ", StringComparison.Ordinal)) { pair = 0; prefixLength = 6; }
@@ -140,7 +140,7 @@ namespace BeetleArena
             return segment == "femur contact" || segment == "tibia contact" || segment == "tarsus contact" ||
                 segment == "contact" ? offset + pair : -1;
         }
-        // 调用方先 Physics.SyncTransforms，再读取代理 Collider.bounds；不逐帧分配数组。
+        // Callers must call Physics.SyncTransforms before reading proxy Collider.bounds; avoids per-frame array allocations.
         public void CacheBounds()
         {
             if (shapes == null || shapes.Length == 0) throw new InvalidOperationException("No collision shapes bound.");
@@ -156,8 +156,8 @@ namespace BeetleArena
             worldBounds = bounds[0];
             for (int i = 1; i < bounds.Length; i++) worldBounds.Encapsulate(bounds[i]);
         }
-        // 仅整体平移时，根节点与缓存 AABB 同量平移即可，不必重读每个 Renderer。
-        // 若改变局部关节/旋转/缩放，必须重新 CacheBounds，不能只调用本方法更新缓存。
+        // For pure root translation, translating the root and cached AABBs by the same delta suffices without querying every Renderer.
+        // If local joints, rotations, or scales change, CacheBounds must be called again; this method only translates existing bounds.
         public void Translate(Vector3 movement)
         {
             transform.position += movement;

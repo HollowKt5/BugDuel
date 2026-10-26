@@ -1,119 +1,119 @@
-using UnityEngine;
+﻿using UnityEngine;
 
 namespace BeetleArena
 {
     [CreateAssetMenu(menuName = "Beetle Arena/Match Settings")]
-    // 集中配置资产：Inspector 调整比赛尺寸、运动、节奏、鼓励和挑飞参数。
-    // 修改共享资产会影响后续比赛；这些默认值是游戏调校，不是现实生物测量结果。
+    // Central configuration asset: Inspector tuning for arena size, motion, pacing, encouragement, and throw parameters.
+    // Mutating shared assets affects subsequent matches; defaults represent gameplay tuning, not empirical biological measurements.
     public sealed class BeetleMatchSettings : ScriptableObject
     {
         [Header("Arena / world units")]
-        // 圆形台面半径，世界单位；与场景树桩和落台/足部支撑计算对应。
+        // Circular arena radius in world units; aligns with stump geometry and ring-out/tarsal support queries.
         [Min(3.5f)] public float arenaRadius = 5.2f;
-        // 每只甲虫距离中心的初始距离，双方实际初始间距为它的两倍。
+        // Initial distance of each beetle from center; actual initial separation is twice this value.
         [Min(1f)] public float spawnDistance = 2.3f;
-        // 基础模型视觉缩放，最终再乘个体 size；改变后需要重新检查触及距离与碰撞。
+        // Base model visual scale, subsequently scaled by fighter size; recalibrate reach and collisions if modified.
         [Min(.1f)] public float visualScale = .70f;
         [Tooltip("Model-local nominal foot contacts, in left-front/middle/hind then right-front/middle/hind order.")]
-        // 正式模型的六个实测脚位。空数组保留旧模型的备用支撑布局。
+        // Measured foot locations for production model. Empty array retains fallback stance layout for legacy models.
         public Vector3[] supportFootOffsets = new Vector3[0];
-        // 根节点低于台面这一深度才标记落台，避免擦边或短暂腾空立即判负。
+        // Root depth below arena rim before latching ring-out, preventing edge grazes or transient jumps from triggering premature loss.
         [Min(.1f)] public float fallDepth = .75f;
-        // 台外地面 Y 高度（台面为 0），用于已落台对象的沉降和地面生成。
+        // Out-of-ring floor Y elevation (arena rim is Y=0), used for settlement of fallen fighters and ground generation.
         public float groundHeight = -3.4f;
         [Header("Pluggable motion modules / order is stable selection order")]
-        // 资产列表即注册表：删掉引用或关闭模块后立即停止使用，空列表回到原有战斗。
+        // Asset list acts as registry: removing reference or disabling module halts usage immediately; empty list reverts to baseline combat.
         public BeetleMotionModule[] motionModules = System.Array.Empty<BeetleMotionModule>();
         [Range(0, 1)] public float moduleActionChance = .42f;
         [Header("Round finish / normalized game rules")]
         [Range(0, 1)] public float forelegActionChance = .48f;
-        // 竖直运动的游戏重力加速度；数值借用常见重力值，但整体世界比例不是毫米单位。
+        // Vertical game gravity acceleration; uses standard gravity magnitudes, though world scale is not metric millimeter-based.
         [Min(1f)] public float gravity = 9.81f;
         [Header("Matched size variation")]
-        // 个体体型随机区间下界，1 表示基准大小。
+        // Lower bound for fighter size randomization range; 1 denotes baseline size.
         [Range(.85f, 1f)] public float minimumSize = .96f;
-        // 个体体型随机区间上界；配对时还会额外受 maximumSizeDifference 限制。
+        // Upper bound for fighter size randomization range; pairing is additionally constrained by maximumSizeDifference.
         [Range(1f, 1.15f)] public float maximumSize = 1.04f;
         [Range(0, .15f), Tooltip("Maximum (larger/smaller - 1); 0.08 means 8%.")]
-        // 较大体型/较小体型-1 的上限，0.08 表示双方相差最多约 8%。
+        // Upper limit for (LargerSize / SmallerSize) - 1; 0.08 caps size disparity between fighters at ~8%.
         public float maximumSizeDifference = .08f;
-        // 基准展示体长（毫米），按 size 线性缩放；不作为场景 Transform 的直接长度。
+        // Baseline display body length (mm), scaled linearly with size; does not represent direct scene Transform dimension.
         [Min(1)] public float referenceLengthMm = 55f;
-        // 基准展示质量（克），按 size³ 缩放；模拟运动使用独立归一化质量。
+        // Baseline display mass (grams), scaled with size^3; simulation motion uses independent normalized kinematic mass.
         [Min(1)] public float referenceMassGrams = 8f;
         [Header("Locomotion and contest")]
-        // 基础平面移动速度，实际速度还受灵活性、体力和动作倍率影响。
+        // Base planar movement speed; actual speed is scaled by agility, stamina, and action multipliers.
         [Min(.1f)] public float walkSpeed = .95f;
-        // 基础转向速度，单位度/秒；承诺动作期间会进一步降低。
+        // Base turn rate (degrees/sec); dampened further during committed actions.
         [Min(1)] public float turnSpeed = 145f;
-        // 推顶冲量基准，最终乘发力、退让程度与比赛升级系数。
+        // Base push impulse, scaled by effort, concession factor, and match escalation multiplier.
         [Min(.1f)] public float shoveImpulse = 3.6f;
-        // 托举力量基准，4.3 为标准力量；按比例影响是否能克服抓地，不直接产生后推冲量。
+        // Base lifting strength; 4.3 is standard force; scales traction overcome without directly imparting backward push impulse.
         [Min(.1f)] public float pryImpulse = 4.3f;
-        // 完全恢复动作每秒恢复的体力点数，撑地或退让使用它的部分比例。
+        // Stamina recovery rate during full rest (points/sec); stance holding or retreat uses a fraction of this rate.
         [Min(.1f)] public float staminaRecovery = 16f;
-        // 发力/受威胁期间每秒积累的疲劳基准，比赛升级后可放大。
+        // Base fatigue accumulation rate during effort/threat (points/sec); amplified by match escalation.
         [Range(0, 2)] public float fatiguePerSecond = .12f;
         [Header("Bout pacing / seconds, not a forced result timer")]
-        // 长局升级开始前的秒数；与每轮 probingSeconds 的短试探阶段不同。
+        // Delay before late-match escalation begins; distinct from short-cycle probingSeconds.
         [Min(0)] public float openingSeconds = 12f;
-        // 从开局推力系数平滑过渡到最终系数所需的秒数，不是结束比赛的倒计时。
+        // Duration over which push force multiplier transitions from opening to late-match scale; not a match-ending countdown.
         [Min(10)] public float escalationSeconds = 55f;
-        // 开局攻击位移倍率，让早期推挤较克制；有效落台仍会立即进入结算。
+        // Opening attack displacement multiplier for restrained early pushing; valid ring-out still immediately triggers match resolution.
         [Range(.05f, 1f)] public float openingDisplacement = .75f;
-        // 长局后期攻击位移倍率，增加推出台面的机会，不能保证固定时长结束。
+        // Late-match attack displacement multiplier, increasing ring-out opportunities without guaranteeing fixed-duration termination.
         [Range(1f, 3f)] public float finalDisplacement = 2.25f;
         [Header("Exchange rhythm / seconds")]
-        // 短周期里的轻触试探持续秒数。
+        // Duration of light probing contact during short-cycle pacing.
         [Min(2)] public float probingSeconds = 7f;
-        // 短周期里的激烈交锋持续秒数，允许冲顶、角力和抬举。
+        // Duration of intense engagement in short-cycle pacing, permitting charges, clinches, and lifts.
         [Min(2)] public float clashSeconds = 9f;
-        // 降级重整窗口的时长基准（不强制双方同时休息）；再次接触发力可提前结束。
+        // Duration of regrouping window (does not force simultaneous rest); renewed contact exertion can exit early.
         [Min(.4f)] public float exchangeRecoverySeconds = 1.35f;
         [Header("Individual recovery / game tuning, not measured biology")]
-        // 个体恢复达到当前可用上限的这个比例即可退出，不再等到 84%。
+        // Exits recovery once stamina reaches this fraction of current available ceiling, rather than waiting for 84%.
         [Range(.25f, .7f)] public float recoveryResumeFraction = .58f;
-        // 短暂卸力的最小时长与单次连续恢复的硬上限；受逼近可更早转为撑地。
+        // Minimum duration of brief unloading and hard cap for single continuous recovery; threat proximity prompts earlier stance holding.
         [Range(.2f, .8f)] public float recoveryMinimumSeconds = .35f;
         [Range(.8f, 4f)] public float recoveryMaximumSeconds = 2.2f;
-        // 退出后先观察/撑地/接近，防止同帧重新进入恢复而绕过上限。
+        // Observes, braces, or approaches upon exit, preventing re-entering recovery within the same frame to bypass caps.
         [Range(.3f, 2f)] public float recoveryRetrySeconds = .85f;
-        // 轻触试探相对普通推顶的发力倍率，试探不进入挑飞判定。
+        // Effort multiplier for light probe relative to standard push; probes do not evaluate throw transitions.
         [Range(.1f, .6f)] public float probeForceMultiplier = .3f;
-        // 重冲顶的额外发力倍率；仍需对准、进入有效窗口且实际接触才结算。
+        // Extra effort multiplier for heavy charge; still requires alignment, active window, and physical contact to resolve.
         [Range(1f, 2f)] public float chargeForceMultiplier = 1.35f;
-        // 冲顶准备时长基准，实际选择动作时加入小幅随机变化。
+        // Baseline charge windup duration, slightly perturbed by random variance during action selection.
         [Min(.2f)] public float chargeWindupSeconds = .65f;
-        // 一次顶角僵持的目标持续时间；分离或对手腾空时可提前结束。
+        // Target duration of a horn clinch; exits early upon separation or opponent liftoff.
         [Min(.3f)] public float hornLockSeconds = 1.15f;
         [Range(.05f,.6f), Tooltip("Normalized pry phase at which actual contact may transfer the lifting impulse.")]
-        // 正式模型长角抬起后很快离开接触点，发力窗口应在抬举起始段开启。
+        // Long cephalic horn breaks contact rapidly upon lifting; active force window should open during initial elevation.
         public float pryContactStart = .16f;
         [Header("Horn-supported lift / seconds and degrees")]
-        // 托举先围绕接触点抬起前部，再持续承重。随后加速扬角并撬投；失败入角可以撤退。
+        // Lift elevates anterior body around contact pivot, maintains load-bearing stance, accelerates into pitch snap and throw; failed entry retreats.
         [Range(.3f, 1f)] public float liftRaiseSeconds = .65f;
         [Range(.25f, 1.2f)] public float liftHoldSeconds = .9f;
         [Range(20, 55)] public float liftedBodyPitch = 42f;
         [Range(.5f, 4f)] public float liftFollowSpeed = 2.8f;
-        // 累计实际离开地面的时间，含角支撑阶段；0.7 秒之后逐渐六足挣扎。
+        // Accumulated time off ground, including horn support phase; initiates tarsal struggling past 0.7s.
         [Min(0)] public float liftStruggleDelay = .7f;
-        // 频率单位为每秒周期数。失去支撑 0.7 秒后，从缓慢试探逐渐加快。
+        // Frequency in cycles per second. Gradually accelerates from slow tactile probing after 0.7s of lost support.
         [Min(.1f)] public float struggleStartHz = .65f;
         [Min(.1f)] public float struggleMaxHz = 3.2f;
         [Min(.1f)] public float struggleRampSeconds = 1.1f;
-        // 动画造成的接触分离总位移预算（世界单位/秒），不是单次迭代上限。
-        // 超限时缩小本步姿态变化，再重新检测全部碰撞体，而非截断推出距离后留下穿模。
+        // Total contact separation displacement budget from animation (world units/sec); not a per-iteration cap.
+        // Scales down step pose advance when exceeded and re-evaluates all colliders, rather than truncating push-out distance and leaving overlaps.
         [Range(1, 6)] public float contactMotionSpeed = 4f;
-        // 顶举持续受阻时主动收角，不让双方冻结到原托举计时结束。
+        // Retracts horn actively when lift is continually obstructed, avoiding freezing both fighters until lift duration expires.
         [Range(.1f, .4f)] public float liftBlockedReleaseSeconds = .16f;
         [Header("Ring-out recovery / artistic timing, not measured species constants")]
-        // 失足后短暂伸腿寻触，随后错相摆腿；落地后先缓冲，再撑起。与 0.7s 托举挣扎门槛分开。
+        // Briefly probes for ground upon footing loss, followed by out-of-phase leg swing; buffers landing before pushing up. Decoupled from 0.7s struggle threshold.
         [Range(.08f, .5f)] public float fallReachSeconds = .18f;
         [Range(.4f, 3f)] public float fallRecoverySeconds = 1.35f;
         // Used only with actual surface contact during post-landing sliding (table or forest).
         [Range(1, 12)] public float fallSlideDamping = 5.5f;
         [Header("Lever throw / normalized game units")]
-        // 力矩来自肌肉输入力 × 输入力臂；实际输出力臂由角的接触几何测量。
+        // Torque derives from muscle input force * input lever arm; actual output moment arm is measured from horn contact geometry.
         [Min(1)] public float throwMuscleForce = 34f;
         [Min(.05f)] public float throwInputArm = .42f;
         [Range(.1f,1)] public float throwEfficiency = .68f;
@@ -126,7 +126,7 @@ namespace BeetleArena
         [Tooltip("Inspect throws more often: eligible pry selection 35-85%, extra burst 85%. Contact, support and energy gates remain active.")]
         public bool throwInspectionMode;
         [Header("Six throw tiers / nonuniform speed thresholds")]
-        // 前四档按速度分段，后两档还必须通过扬角/做功门槛并实际向后出手。
+        // First four tiers partitioned by velocity; final two tiers require meeting pitch angle / work thresholds with backward trajectory.
         [Min(.1f)] public float throwQuickSpeed = 3.15f;
         [Min(.1f)] public float throwArcSpeed = 4.35f;
         [Min(.1f)] public float throwHighArcSpeed = 5.65f;
@@ -144,43 +144,43 @@ namespace BeetleArena
         [Range(.2f, 1)] public float missedAttackExposure = .62f;
         [Range(.5f, 8)] public float failedPryRetrySeconds = 3.5f;
         [Header("Contest stamina")]
-        // 重冲顶状态的体力消耗速率（点/秒），不是一次动作的固定扣除额。
+        // Stamina burn rate during heavy charge (points/sec), not a one-off fixed deduction.
         [Min(1)] public float chargeStaminaCost = 27f;
-        // 持续角力期间的体力消耗速率（点/秒）。
+        // Stamina burn rate during continuous clinch (points/sec).
         [Min(1)] public float hornLockStaminaCost = 8f;
         [Header("Extra burst effort / all successful lifts already throw")]
         [Range(0, 1), Tooltip("One roll per eligible, connected pry; not a per-frame or per-match probability.")]
-        // 每次满足全部条件的有效抬举只抽一次概率；不是每帧概率，也不是每局发生率。
-        // 设为 0 仅关闭额外爆发概率，所有成功离地并完成做功的顶举仍然抛出。
+        // Evaluates probability roll once per valid lift satisfying all criteria; neither per-frame probability nor per-match incidence.
+        // Setting to 0 only disables explosive burst probability; all lifts achieving genuine liftoff and completing work still throw.
         public float tossChance = .08f;
-        // 挑飞要求的剩余体力/初始耐力最低比例；还需付得起固定挑飞消耗。
+        // Minimum ratio of remaining stamina / initial endurance required for throw; must also afford fixed throw stamina cost.
         [Range(0, 1)] public float tossMinimumStamina = .35f;
-        // 挑飞成功后额外扣除的体力点数，与按秒计算的普通动作消耗不同。
+        // Fixed stamina points deducted upon successful throw, distinct from per-second action burn rates.
         [Min(0)] public float tossStaminaCost = 12f;
-        // 成功挑飞后双方都获得的冷却秒数，防止紧接着连续挑飞。
+        // Cooldown seconds granted to both fighters following a successful throw, preventing instant ping-pong tosses.
         [Min(0)] public float tossCooldownSeconds = 12f;
         [Header("Encouragement: intentionally a game mechanic")]
-        // 一次鼓励后再次允许点击的间隔秒数。
+        // Minimum interval in seconds between allowed encouragement clicks.
         [Min(.1f)] public float cheerCooldown = 6f;
-        // 鼓励发力加成持续秒数，与按钮冷却独立。
+        // Duration of encouragement effort bonus in seconds, independent of button cooldown.
         [Min(.1f)] public float cheerDuration = 3.5f;
-        // 鼓励对攻击发挥的乘法加成，0.13 对应乘以 1.13。
+        // Multiplicative bonus of encouragement to offensive effort: 0.13 corresponds to x1.13.
         [Range(0, .3f)] public float cheerEffortBonus = .13f;
-        // 鼓励被接受时立即恢复的体力点数，不超过当前疲劳限制后的体力上限。
+        // Stamina points instantly recovered upon accepted encouragement, capped at current fatigue-depressed stamina ceiling.
         [Range(0, 15)] public float cheerStamina = 5f;
         [Header("Match")]
-        // 开局准备时间；倒计时期间不能鼓励或进行正常 AI 战斗。
+        // Match opening countdown; normal AI combat and encouragement are disabled during countdown.
         [Min(0)] public float countdownSeconds = 3f;
-        // 首次落台后等待另一方也落台的窗口；支持双方近乎同时掉落判平局。
+        // Grace window after first ring-out waiting to see if opponent also falls, supporting near-simultaneous draw rulings.
         [Range(.5f, 3f)] public float doubleFallWindow = 1.2f;
         [Tooltip("0 chooses a fresh seed each session. A nonzero seed reproduces a pairing.")]
-        // 配置 0 时由控制器选择新种子；非零复用同一初始随机起点，不能等同于记录整场录像。
+        // Seed 0 lets controller roll a new seed; non-zero reuses identical initial RNG starting point (not equivalent to full replay recording).
         public int initialSeed = 0;
 
-        // Inspector 修改资产后立即执行边界约束，避免误填参数导致明显无效配置。
+        // Validates parameter bounds immediately upon Inspector mutation to prevent accidental invalid configurations.
         void OnValidate() => Validate();
-        // 将参数限制到当前模型和规则能处理的范围；Inspector 的 Min/Range 之外也做代码保护。
-        // 调用方在正式启动比赛时也会执行一次；本函数不重新生成已经存在的场景几何体。
+        // Clamps parameters to ranges supported by current models and combat rules; provides code-level guards beyond Inspector Min/Range.
+        // Callers also invoke this on match start; does not regenerate existing scene geometry.
         public void Validate()
         {
             forelegActionChance = Mathf.Clamp01(forelegActionChance);
@@ -234,7 +234,7 @@ namespace BeetleArena
             throwWorkLimit = Mathf.Max(1, throwWorkLimit);
             throwMinimumSpeed = Mathf.Max(.1f, throwMinimumSpeed);
             throwMaximumSpeed = Mathf.Max(throwMinimumSpeed, throwMaximumSpeed);
-            // 保留每段最小宽度；参数越界时修正阈值，不修改已产生的出手速度。
+            // Preserves minimum tier segment widths; clamps thresholds on out-of-bounds parameters without mutating generated launch velocity.
             throwMaximumSpeed = Mathf.Max(throwMinimumSpeed + .4f, throwMaximumSpeed);
             throwQuickSpeed = Mathf.Clamp(throwQuickSpeed, throwMinimumSpeed + .1f, throwMaximumSpeed - .3f);
             throwArcSpeed = Mathf.Clamp(throwArcSpeed, throwQuickSpeed + .1f, throwMaximumSpeed - .2f);

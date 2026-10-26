@@ -1,15 +1,15 @@
-using System;
+﻿using System;
 using UnityEngine;
 
 namespace BeetleArena
 {
     [Serializable]
-    // 本局个体属性，在创建后按只读数据使用；与每步变化的 BeetleState 分离。
+    // Immutable per-match fighter attributes treated as read-only data post-instantiation; decoupled from per-step mutable BeetleState.
     public sealed class BeetleTraits
     {
-        // size 为基准体型倍率；lengthMm/massGrams 只供展示；mass 为归一化运动质量。
-        // strength/grip 分别控制发力和抓地，endurance 为耐力上限，aggression 为攻击倾向，
-        // agility 影响移动/转向，hornReach 用于简化接触模式的触及距离。
+        // size is base scale multiplier; lengthMm/massGrams are display attributes; mass is normalized kinematic mass.
+        // strength and grip control force exertion and traction; endurance is max stamina; aggression dictates offensive bias;
+        // agility affects movement and turning; hornReach simplifies reach in simplified contact mode.
         public float size, lengthMm, massGrams, mass, strength, grip, endurance, aggression, agility, hornReach;
         public float aggressionScore, lengthScore, hornScore, agilityScore, hornLengthMm;
         public float hornLengthFactor = 1;
@@ -18,10 +18,10 @@ namespace BeetleArena
         public float TotalScore => aggressionScore + lengthScore + hornScore + agilityScore;
         // N(240, 28²): the outer deciles start at z = ±1.28155.
         public string QualityBand => TotalScore >= 275.88f ? "高" : TotalScore <= 204.12f ? "低" : "中";
-        // 全部成员均为值类型；入口快照和每次重赛各自持有独立属性实例。
+        // All members are value types; entrance snapshots and individual rematches hold isolated trait instances.
         public BeetleTraits Copy() => (BeetleTraits)MemberwiseClone();
-        // 依据体型与同一个局内随机源生成属性。质量按 size³、力量按 size² 变化，
-        // 再给予小幅个体差异；这些是游戏近似，不是物种实验数据拟合。
+        // Procedurally derives attributes from body size and a shared in-match RNG source. Mass scales with size^3, strength with size^2,
+        // followed by minor individual variance; these are gameplay approximations, not species empirical data.
         public static BeetleTraits Create(float size, System.Random random, BeetleMatchSettings settings)
         {
             float Vary() => .95f + (float)random.NextDouble() * .10f;

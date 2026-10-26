@@ -1,10 +1,10 @@
-using UnityEngine;
+﻿using UnityEngine;
 
 namespace BeetleArena
 {
     /// <summary>
-    /// 只读表现采样器：固定步求解完成后检查真实角部代理，不改碰撞、状态、速度或随机源。
-    /// 文案事件不再触发声音；持续贴住时去抖，只有相对运动才补摩擦或重新敲击。
+    /// Read-only presentation sampler: inspects physical horn proxies following fixed-step solving without altering collision, state, velocity, or RNG.
+    /// Text events no longer trigger audio; debounces continuous contact, re-triggering friction or strike clicks only on relative movement.
     /// </summary>
     public sealed class BeetleContactFeedback : MonoBehaviour
     {
@@ -26,7 +26,7 @@ namespace BeetleArena
             LastContactPoint = Vector3.zero; LastHornClash = false;
             if (audioFeedback) audioFeedback.StopAll(); if (sparks) sparks.Clear();
         }
-        // 显式 Tick 不受 Unity enabled 自动拦截，停用组件时主动清理并丢弃速度历史。
+        // Explicit Tick bypasses Unity enabled callbacks; clears and discards velocity history when component is disabled.
         void OnDisable()
         {
             history = touching = false;
@@ -39,7 +39,7 @@ namespace BeetleArena
             if (!isActiveAndEnabled || dt <= 0 || !a || !b) return;
             if (sparks) sparks.Tick(dt);
             soundCooldown = Mathf.Max(0, soundCooldown - dt); sparkCooldown = Mathf.Max(0, sparkCooldown - dt);
-            // 求解器已同步 PhysX；更新最终姿态缓存而不移动任何 Collider。
+            // Solver has synchronized PhysX; refreshes final pose cache without translating any Colliders.
             a.CacheBounds(); b.CacheBounds();
             bool found = false, hornClash = false;
             Vector3 point = default, normal = Vector3.right;
@@ -52,7 +52,7 @@ namespace BeetleArena
                         for (int j = 0; j < b.shapes.Length; j++)
                         {
                             bool ha = Horn(a, i), hb = Horn(b, j);
-                            // 只采角-角/角-身体；腿碰木台不是兵器碰撞。
+                            // Samples horn-to-horn and horn-to-body contacts only; leg-to-wood contact is not weapon clash.
                             if ((!ha && !hb) || a.Role(i) == BeetleContactRole.Leg || b.Role(j) == BeetleContactRole.Leg) continue;
                             var ba = a.bounds[i]; ba.Expand(.05f); if (!ba.Intersects(b.bounds[j])) continue;
                             var ca = a.shapes[i]; var cb = b.shapes[j];
@@ -89,7 +89,7 @@ namespace BeetleArena
                 if (audioFeedback) audioFeedback.PlayContact(point, strength, !knock);
                 soundCooldown = knock ? .09f : .17f;
             }
-            // 火星不是每个固定步一团：真正角-角接触且存在较明显相对运动，最短间隔 0.16s。
+            // Sparks are not emitted every fixed step: requires genuine horn-to-horn contact with noticeable relative velocity (min 0.16s interval).
             if (hornClash && sparkCooldown <= 0 && (knock || sliding > .32f) && closing + sliding > .18f)
             { if (sparks) sparks.Burst(point, normal, strength); sparkCooldown = .16f; }
             previousClosing = closing;

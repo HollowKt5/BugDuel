@@ -29,7 +29,7 @@ public static class SpecimenTradingPlayValidation
         EditorApplication.update+=Tick;
     }
     static void Tick() { if(SessionState.GetString(Key,"").Length>0&&EditorApplication.isPlaying)EditorApplication.QueuePlayerLoopUpdate(); }
-    [MenuItem("Tools/Beetle Arena/Validate Specimen Trading Play Flow")]
+    [MenuItem("Tools/甲壳虫斗/验证/战役流程/标本交易实机流程", false, 567)]
     public static void Run()
     {
         if(EditorApplication.isPlaying)throw new InvalidOperationException("Stop Play before the isolated acceptance run.");

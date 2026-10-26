@@ -10,7 +10,7 @@ using UnityEngine.SceneManagement;
 public static class CampaignToonSetup
 {
     const string Folder="Assets/BeetleArena/Generated/CampaignMaterials";
-    [MenuItem("Tools/Beetle Arena/Apply Campaign Opaque UI and Toon World")]
+    [MenuItem("Tools/甲壳虫斗/画面与资源/材质与灯光/应用战役材质与界面底色", false, 301)]
     public static void Apply()
     {
         if(EditorApplication.isPlaying)throw new InvalidOperationException("Stop Play before changing scene materials.");

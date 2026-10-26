@@ -8,10 +8,10 @@ using UnityEditor;
 using UnityEditor.SceneManagement;
 using UnityEngine;
 
-// 保留真实攻击者的扬角动作，连续测量受击者响应；不能把攻击者改为 Brace 来验证一个空中跳跃。
+// Preserves attacker's physical horn lift animation, continuously measuring defender response; must not replace attacker with Brace to test jumps.
 public static class BeetleLiftValidation
 {
-    [MenuItem("Tools/Beetle Arena/Validate Horn Supported Lift")]
+    [MenuItem("Tools/甲壳虫斗/验证/战斗/角部支撑挑举", false, 508)]
     public static void Run() => RunCases(true);
     public static void RunCases(bool assertResults)
     {
@@ -83,9 +83,9 @@ public static class BeetleLiftValidation
                 report.AppendLine($"arena={arena}, contact={match.Contacts.LiftContact}, supported={supportedTicks*.02f:F2}s, rise={peak:F3}, travel={travel:F3}, step={step:F3}, anchorError={anchorError:F3}, unsupported={unsupported:F2}s, struggle={struggle:F3}, overlap={depth:F6}, end={b.Action}, fallen={b.HasFallen}");
                 report.AppendLine($"  max step after lift began={responseStep:F3}; knee motion during struggle=[{string.Join(",",legMotion.Select(v=>v.ToString("F1")))}]");
                 File.WriteAllText($"Artifacts/LiftRework/Trajectory-{arena}.csv",csv.ToString());
-                // 岩台这个初始站位可能被高低差/对方头角挡住；不能为了测试成功而隔空托举。
-                // 岩台自然对局另行要求发生实际托举。平地受控场景必须完整展示托举与落地。
-                // 成功撬投可能飞出台面；允许由落台规则结算，不能再要求每次轻放回原位。
+                // Rock arena initial spawn can be obstructed by slope or opponent horns; cannot fabricate mid-air lifts to pass tests.
+                // Rock arena natural combat requires actual lifts to occur. Flat controlled tests must demonstrate complete lift and landing.
+                // Successful prying throws may clear the rim; ring-out rulings are expected, eliminating legacy requirement of gentle return to stance.
                 bool badLift = supportedTicks>0 && (peak<.3f || unsupported<.7f || struggle<.1f || budgetExcess>.0002f || legMotion.Any(v=>v<2) || a.Throws==0);
                 if(assertResults && (badLift || arena==0 && supportedTicks==0 || depth>.003f))
                     throw new Exception("Supported lift trajectory failed: "+report);

@@ -20,7 +20,7 @@ public static class CampaignMailboxValidation
     {
         s.BuyFood(food);s.ClaimMail(s.State.mail.Last().id);
     }
-    [MenuItem("Tools/Beetle Arena/Validate Mailbox Data")]
+    [MenuItem("Tools/甲壳虫斗/验证/战役流程/邮件数据", false, 568)]
     public static void Run()
     {
         checks.Clear();var s=CampaignSession.New(CampaignCatalog.Defaults(),3184);s.State.coins=100000;

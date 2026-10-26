@@ -1724,8 +1724,8 @@
         },
         {
             "key": "t_ecfe7762e21c",
-            "source": "",
-            "zh": "甲虫秘境 2003 - 四季甲虫商店与集市 [",
+            "source": "甲虫秘境 2003 - 四季甲虫商店与集市 [",
+            "zh": "甲壳虫斗 2003 - 四季甲虫商店与集市 [",
             "en": "",
             "sites": []
         },
@@ -2355,14 +2355,14 @@
         {
             "key": "t_b4a6080bb96f",
             "source": "BUG DUEL  ·  甲虫秘境",
-            "zh": "甲虫秘境",
+            "zh": "甲壳虫斗",
             "en": "",
             "sites": []
         },
         {
             "key": "t_6e85c6f5e5a8",
-            "source": "",
-            "zh": "甲虫决斗 · 虫舍日记",
+            "source": "甲虫决斗 · 虫舍日记",
+            "zh": "甲壳虫斗 · 虫舍日记",
             "en": "",
             "sites": []
         },
@@ -2810,7 +2810,7 @@
         {
             "key": "t_83919c9f2f7c",
             "source": "BUG DUEL  /  虫舍日记",
-            "zh": "甲虫决斗  /  虫舍日记",
+            "zh": "甲壳虫斗  /  虫舍日记",
             "en": "",
             "sites": []
         },
@@ -9389,8 +9389,8 @@
         },
         {
             "key": "locale_8df2706255b2",
-            "source": "",
-            "zh": "甲虫决斗",
+            "source": "甲虫决斗",
+            "zh": "甲壳虫斗",
             "en": "",
             "sites": []
         },
@@ -10546,6 +10546,412 @@
             "key": "husbandry_spotlight",
             "source": "",
             "zh": "养殖聚光灯",
+            "en": "",
+            "sites": []
+        },
+        {
+            "key": "interface_ccf02c1e1e12",
+            "source": "甲壳虫斗",
+            "zh": "甲壳虫斗",
+            "en": "",
+            "sites": []
+        },
+        {
+            "key": "interface_9c97ba95e92c",
+            "source": "甲壳虫斗 · 市场",
+            "zh": "甲壳虫斗 · 市场",
+            "en": "",
+            "sites": []
+        },
+        {
+            "key": "interface_39c4761e3acd",
+            "source": "开始 / 存档",
+            "zh": "开始 / 存档",
+            "en": "",
+            "sites": []
+        },
+        {
+            "key": "interface_2b10ed19d7eb",
+            "source": "育种中心",
+            "zh": "育种中心",
+            "en": "",
+            "sites": []
+        },
+        {
+            "key": "interface_cf3b8f9e68fd",
+            "source": "中心提供母虫，支付配种费；母虫不归玩家所有。",
+            "zh": "中心提供母虫，支付配种费；母虫不归玩家所有。",
+            "en": "",
+            "sites": []
+        },
+        {
+            "key": "interface_1e914647a0d9",
+            "source": "已选父本",
+            "zh": "已选父本",
+            "en": "",
+            "sites": []
+        },
+        {
+            "key": "interface_bc3709751e6f",
+            "source": "选择父本",
+            "zh": "选择父本",
+            "en": "",
+            "sites": []
+        },
+        {
+            "key": "interface_a04380e12a4b",
+            "source": "没有可用的雄性成虫",
+            "zh": "没有可用的雄性成虫",
+            "en": "",
+            "sites": []
+        },
+        {
+            "key": "interface_71a4da8c9f43",
+            "source": "中心母虫 {0}",
+            "zh": "中心母虫 {0}",
+            "en": "",
+            "sites": []
+        },
+        {
+            "key": "interface_694080d65e17",
+            "source": "价格档位基础失败率 {0}% · 随机运气修正 {1}%",
+            "zh": "价格档位基础失败率 {0}% · 随机运气修正 {1}%",
+            "en": "",
+            "sites": []
+        },
+        {
+            "key": "interface_9d6d8029a5ec",
+            "source": "最终失败率 {0}%（最高 30%）",
+            "zh": "最终失败率 {0}%（最高 30%）",
+            "en": "",
+            "sites": []
+        },
+        {
+            "key": "interface_e81b9a1ebe9f",
+            "source": "选择配种",
+            "zh": "选择配种",
+            "en": "",
+            "sites": []
+        },
+        {
+            "key": "interface_8bf9b5f2624f",
+            "source": "支付 {0} G，使用「{1}」配种？\n随机失败率 {2}%；失败不退费。\n成功获得 1 枚卵；雄虫下周可再次配种。",
+            "zh": "支付 {0} G，使用「{1}」配种？\n随机失败率 {2}%；失败不退费。\n成功获得 1 枚卵；雄虫下周可再次配种。",
+            "en": "",
+            "sites": []
+        },
+        {
+            "key": "interface_7e3a3f65e3cb",
+            "source": "失败不退费。配种后雄虫需休息至下一周。",
+            "zh": "失败不退费。配种后雄虫需休息至下一周。",
+            "en": "",
+            "sites": []
+        },
+        {
+            "key": "interface_f169fa31a39b",
+            "source": "需要健康、饱食且未占用的雄虫，并预留 1 个温室栏位。",
+            "zh": "需要健康、饱食且未占用的雄虫，并预留 1 个温室栏位。",
+            "en": "",
+            "sites": []
+        },
+        {
+            "key": "interface_8a348a3e2b1b",
+            "source": "母虫服务不存在",
+            "zh": "母虫服务不存在",
+            "en": "",
+            "sites": []
+        },
+        {
+            "key": "interface_202fef150e38",
+            "source": "请选择雄虫",
+            "zh": "请选择雄虫",
+            "en": "",
+            "sites": []
+        },
+        {
+            "key": "interface_e5afbe44146f",
+            "source": "母虫服务已刷新，请重新选择",
+            "zh": "母虫服务已刷新，请重新选择",
+            "en": "",
+            "sites": []
+        },
+        {
+            "key": "interface_bbd0fee6f039",
+            "source": "本次配种失败，费用不退还。雄虫下周可再次配种。",
+            "zh": "本次配种失败，费用不退还。雄虫下周可再次配种。",
+            "en": "",
+            "sites": []
+        },
+        {
+            "key": "interface_611ba6135313",
+            "source": "配种成功，获得 1 枚卵。",
+            "zh": "配种成功，获得 1 枚卵。",
+            "en": "",
+            "sites": []
+        },
+        {
+            "key": "interface_49d303f26066",
+            "source": "入住 {0}/{1}  ·  预留 {2}",
+            "zh": "入住 {0}/{1}  ·  预留 {2}",
+            "en": "",
+            "sites": []
+        },
+        {
+            "key": "interface_b4c90e750656",
+            "source": "甲虫名册",
+            "zh": "甲虫名册",
+            "en": "",
+            "sites": []
+        },
+        {
+            "key": "interface_6a386f9ca3e2",
+            "source": "照料",
+            "zh": "照料",
+            "en": "",
+            "sites": []
+        },
+        {
+            "key": "interface_bb6d995724f4",
+            "source": "管理",
+            "zh": "管理",
+            "en": "",
+            "sites": []
+        },
+        {
+            "key": "interface_cefdf764cd74",
+            "source": "建造",
+            "zh": "建造",
+            "en": "",
+            "sites": []
+        },
+        {
+            "key": "interface_a0cbb70625d7",
+            "source": "暂无甲虫",
+            "zh": "暂无甲虫",
+            "en": "",
+            "sites": []
+        },
+        {
+            "key": "interface_6e46f1dbda9b",
+            "source": "暂无标本",
+            "zh": "暂无标本",
+            "en": "",
+            "sites": []
+        },
+        {
+            "key": "interface_23d7a1f70fdd",
+            "source": "甲虫",
+            "zh": "甲虫",
+            "en": "",
+            "sites": []
+        },
+        {
+            "key": "interface_fd1a1ff91bc0",
+            "source": "养殖用品",
+            "zh": "养殖用品",
+            "en": "",
+            "sites": []
+        },
+        {
+            "key": "interface_4785abff9012",
+            "source": "景观",
+            "zh": "景观",
+            "en": "",
+            "sites": []
+        },
+        {
+            "key": "interface_39ffd9e2f5d9",
+            "source": "捕虫与扩展",
+            "zh": "捕虫与扩展",
+            "en": "",
+            "sites": []
+        },
+        {
+            "key": "interface_d8dbfa0982c8",
+            "source": "标本",
+            "zh": "标本",
+            "en": "",
+            "sites": []
+        },
+        {
+            "key": "interface_f59b5809a521",
+            "source": "暂无物品",
+            "zh": "暂无物品",
+            "en": "",
+            "sites": []
+        },
+        {
+            "key": "interface_f1a511fb0014",
+            "source": "未选择甲虫",
+            "zh": "未选择甲虫",
+            "en": "",
+            "sites": []
+        },
+        {
+            "key": "interface_b3618392e28b",
+            "source": "投喂",
+            "zh": "投喂",
+            "en": "",
+            "sites": []
+        },
+        {
+            "key": "interface_33efe4bdbf58",
+            "source": "回售",
+            "zh": "回售",
+            "en": "",
+            "sites": []
+        },
+        {
+            "key": "interface_ed4fd66a3c46",
+            "source": "安装展柜",
+            "zh": "安装展柜",
+            "en": "",
+            "sites": []
+        },
+        {
+            "key": "interface_c632f6e241c7",
+            "source": "入住温室",
+            "zh": "入住温室",
+            "en": "",
+            "sites": []
+        },
+        {
+            "key": "interface_92c91802315e",
+            "source": "主题 ▾",
+            "zh": "主题 ▾",
+            "en": "",
+            "sites": []
+        },
+        {
+            "key": "interface_751d6ddba1e9",
+            "source": "明暗",
+            "zh": "明暗",
+            "en": "",
+            "sites": []
+        },
+        {
+            "key": "interface_61f96c6aac6a",
+            "source": "商店",
+            "zh": "商店",
+            "en": "",
+            "sites": []
+        },
+        {
+            "key": "interface_c7bb349bcce1",
+            "source": "拍卖",
+            "zh": "拍卖",
+            "en": "",
+            "sites": []
+        },
+        {
+            "key": "interface_f33c920ed8a3",
+            "source": "{0} 件",
+            "zh": "{0} 件",
+            "en": "",
+            "sites": []
+        },
+        {
+            "key": "interface_ab7997fdbce6",
+            "source": "本周暂无现货",
+            "zh": "本周暂无现货",
+            "en": "",
+            "sites": []
+        },
+        {
+            "key": "interface_7941f90da688",
+            "source": "查看 / 订购",
+            "zh": "查看 / 订购",
+            "en": "",
+            "sites": []
+        },
+        {
+            "key": "interface_87e65fda0323",
+            "source": "公开竞价",
+            "zh": "公开竞价",
+            "en": "",
+            "sites": []
+        },
+        {
+            "key": "interface_515c49bec45c",
+            "source": "方案已选定",
+            "zh": "方案已选定",
+            "en": "",
+            "sites": []
+        },
+        {
+            "key": "interface_2a93d846ec38",
+            "source": "成虫喂食",
+            "zh": "成虫喂食",
+            "en": "",
+            "sites": []
+        },
+        {
+            "key": "interface_999616542215",
+            "source": "食盆有食物",
+            "zh": "食盆有食物",
+            "en": "",
+            "sites": []
+        },
+        {
+            "key": "interface_17d94ac74a0d",
+            "source": "进食完成",
+            "zh": "进食完成",
+            "en": "",
+            "sites": []
+        },
+        {
+            "key": "interface_137cc8524514",
+            "source": "已放置{0}",
+            "zh": "已放置{0}",
+            "en": "",
+            "sites": []
+        },
+        {
+            "key": "interface_continue",
+            "source": "继续",
+            "zh": "继续",
+            "en": "",
+            "sites": []
+        },
+        {
+            "key": "greenhouse_house_title",
+            "source": "甲虫舍",
+            "zh": "虫箱",
+            "en": "",
+            "sites": []
+        },
+        {
+            "key": "greenhouse_beetle_info",
+            "source": "",
+            "zh": "甲虫信息",
+            "en": "",
+            "sites": []
+        },
+        {
+            "key": "greenhouse_mail_icon",
+            "source": "",
+            "zh": "信",
+            "en": "",
+            "sites": []
+        },
+        {
+            "key": "greenhouse_tank",
+            "source": "",
+            "zh": "虫箱",
+            "en": "",
+            "sites": []
+        },
+        {
+            "key": "display_pixel_level",
+            "source": "",
+            "zh": "像素档位",
+            "en": "",
+            "sites": []
+        },
+        {
+            "key": "display_pixel_level_value",
+            "source": "",
+            "zh": "{0} 档",
             "en": "",
             "sites": []
         }

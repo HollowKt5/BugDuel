@@ -7,7 +7,7 @@ public static class CampaignLifeStageVisualSetup
 {
     public const string ProfilePath = "Assets/BeetleArena/Resources/LifeStageVisuals.asset";
 
-    [MenuItem("Tools/Beetle Arena/Create Life Stage Visual Profile")]
+    [MenuItem("Tools/甲壳虫斗/画面与资源/养殖表现/创建生命阶段表现配置", false, 322)]
     public static void Install() => EnsureProfile();
 
     /// <summary>Creates only the missing profile; preserves all Inspector edits on repeat calls.</summary>

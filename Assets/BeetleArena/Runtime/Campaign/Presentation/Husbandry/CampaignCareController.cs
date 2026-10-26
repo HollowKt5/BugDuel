@@ -93,30 +93,5 @@ namespace BeetleArena.Campaign
                 }
             }
         }
-        public string Describe(string id)
-        {
-            var r=Find(id); if(r==null)return "观察中";
-            string status;
-            switch(r.Brain.State)
-            {
-                case CareState.Wandering: status="缓步游走";break;
-                case CareState.Inspecting: status="触角探索";break;
-                case CareState.SeekingFood: status="走向食盆";break;
-                case CareState.Eating: status=$"低头进食 {r.Brain.MealProgress:P0}";break;
-                case CareState.Grooming: status="清理触角";break;
-                case CareState.SeekingShelter: status="寻找休息处";break;
-                case CareState.Resting: status="安静休息";break;
-                case CareState.Startled: status="受惊停顿";break;
-                case CareState.Recovering: status="扶正后恢复";break;
-                case CareState.Struggling: status="翻倒挣扎 · 需要帮助";break;
-                case CareState.Growing:
-                    var individual=CampaignApp.Instance?.Session?.State.beetles.Find(b=>b.id==id);
-                    status=individual==null?"发育中":CampaignSession.StageName(individual.stage)+" · 静养观察";break;
-                case CareState.Dead: status="已死亡";break;
-                case CareState.Unavailable: status="挂牌 / 参赛 / 拍卖中";break;
-                default: status="静止观察";break;
-            }
-            return Paused ? status+" · 暂停" : status;
-        }
     }
 }

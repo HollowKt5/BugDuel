@@ -52,7 +52,7 @@ namespace BeetleArena
             inspecting = Mathf.Lerp(inspecting, state == CareState.Inspecting ? 1 : 0, blend);
             roll = Mathf.Lerp(roll, struggle ? 180 : state == CareState.Dead ? roll : 0, 1 - Mathf.Exp(-dt * 6));
             float rocking = struggle ? Mathf.Sin(time * 8) * 8 : 0;
-            float bob = dead ? 0 : Mathf.Abs(Mathf.Sin(gait)) * .018f * walking - resting * .04f;
+            float bob = dead ? 0 : Mathf.Sin(gait*2) * .006f * walking - resting * .04f;
             float height = Mathf.Lerp(bodyPosition.y, .57f, roll / 180) + Mathf.Abs(Mathf.Sin(roll * Mathf.Deg2Rad)) * .4f;
             rig.bodyPivot.localPosition = new Vector3(bodyPosition.x, height + bob, bodyPosition.z);
             rig.bodyPivot.localRotation = bodyRest * Quaternion.Euler(state == CareState.Startled ? -5 : eating * 2, 0, roll + rocking);
@@ -72,9 +72,9 @@ namespace BeetleArena
             }
             for (int i = 0; i < antennae.Length; i++)
                 rig.antennae[i].localRotation = antennae[i] * Quaternion.Euler(0, dead ? 0 :
-                    Mathf.Sin(time * (struggle ? 7 : 2) + i * 2) * (struggle ? 10 : (4 + inspecting * 10) * (1 - resting * .8f)), 0);
+                    (Mathf.Sin(time * (struggle ? 7 : 1.7f+i*.23f) + i * 2)+Mathf.Sin(time*.61f+i)*.35f) * (struggle ? 10 : (4 + inspecting * 10) * (1 - resting * .8f)), 0);
             if(roll>=12)Shell.Settle(rig.bodyPivot,Feet.GroundHeight,roll>120,Feet.SurfaceHeight);
-            if(!dead&&roll<12)Feet.Present(state,dt);else Feet.Reset();
+            if(!dead&&roll<12)Feet.Present(state,dt,speed);else Feet.Reset();
         }
     }
 }

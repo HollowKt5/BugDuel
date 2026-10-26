@@ -70,8 +70,8 @@ C 循环切换全景、琥珀上方跟随、墨甲上方跟随；V 或右侧按�
 | Generated/ArticulatedBeetle.prefab | 已绑定的真实模型甲虫 |
 | Generated/MatchSettings.asset | 比赛参数及模型脚位 |
 
-`Tools > Beetle Arena > Build Game Scene` 会重建生成场景和预制体；手工定制请另存。
-`Tools > Beetle Arena > Build Husbandry Scene` 创建独立养殖场景、安装擂台入口并加入 Build Settings；已有养殖场景时拒绝覆盖。
+`Tools > 甲壳虫斗 > 场景与安装 > 生成战斗场景` 会重建生成场景和预制体；手工定制请另存。
+`Tools > 甲壳虫斗 > 场景与安装 > 生成养殖场景` 创建独立养殖场景、安装擂台入口并加入 Build Settings；已有养殖场景时拒绝覆盖。
 模型绑定坐标在 `BeetleImportedModelBuilder`；骨骼求解在 `BeetleModelRig`；步态在 `BeetleProceduralAnimator`。
 
 ## 验证与备份

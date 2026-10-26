@@ -24,6 +24,7 @@ namespace BeetleArena
         CareGoal goal;
         int version = -1;
         uint random;
+        float turnSpeed;
         public CareLocomotion(uint seed, CareWalkArea enclosure = null)
         {
             random = seed == 0 ? 1 : seed;
@@ -34,10 +35,11 @@ namespace BeetleArena
         {
             if (enclosure == null || ReferenceEquals(area, enclosure)) return;
             area = enclosure; Position = area.KeepInside(Position); target = Position;
-            version = -1; Speed = 0; hasWanderTarget = false; path.Clear();
+            version = -1; Speed = turnSpeed = 0; hasWanderTarget = false; path.Clear();
         }
         public void Tick(CareStateMachine brain, float dt)
         {
+            if(dt<=0)return;
             if (version != brain.GoalVersion)
             {
                 version = brain.GoalVersion; goal = brain.Goal;
@@ -48,20 +50,30 @@ namespace BeetleArena
                     goal == CareGoal.Wander ? wanderTarget : Position;
                 area.FindPath(Position, target, path); waypoint = 0;
             }
-            while (waypoint < path.Count && Vector2.Distance(Position, path[waypoint]) < (waypoint == path.Count - 1 ? .015f : .0001f)) waypoint++;
+            while (waypoint < path.Count && Vector2.Distance(Position, path[waypoint]) < .015f) waypoint++;
+            // Look through a corner only after the swept body has a clear route to it.
+            while(waypoint+1<path.Count&&area.SegmentClear(Position,path[waypoint+1]))waypoint++;
             var delta = waypoint < path.Count ? path[waypoint] - Position : Vector2.zero;
             bool moving = goal != CareGoal.None && waypoint < path.Count && area.CanWalk;
             float desiredHeading = moving ? Angle(delta) : Heading;
             // Finish approaching from any direction before facing the dish. Facing early can stall the last few centimeters.
             if (!moving && goal == CareGoal.Food || brain.State == CareState.Eating)
                 desiredHeading = Angle(FoodPoint - Position);
-            Heading = Mathf.MoveTowardsAngle(Heading, desiredHeading, 40 * dt);
-            float alignment = Mathf.Clamp01(1 - Mathf.Abs(Mathf.DeltaAngle(Heading, desiredHeading)) / 75);
-            float desiredSpeed = moving ? (float)brain.Profile.walkSpeed * alignment : 0;
-            Speed = Mathf.MoveTowards(Speed, desiredSpeed, dt * .8f);
-            // Interruptions stop translation immediately; the pose presenter blends limbs separately.
-            if (!moving) Speed = 0;
-            if (moving) Position = Vector2.MoveTowards(Position, path[waypoint], Mathf.Min(Speed * dt, delta.magnitude));
+            float error=Mathf.DeltaAngle(Heading,desiredHeading);
+            turnSpeed=Mathf.MoveTowards(turnSpeed,Mathf.Clamp(error*3,-62,62),180*dt);
+            float turn=Mathf.Abs(turnSpeed*dt)>Mathf.Abs(error)?error:turnSpeed*dt;
+            Heading=Mathf.Repeat(Heading+turn+180,360)-180;
+            float alignment=Mathf.Clamp01(1-Mathf.Abs(Mathf.DeltaAngle(Heading,desiredHeading))/65);
+            float arrival=Mathf.Clamp01(delta.magnitude/.09f);
+            float desiredSpeed=moving?(float)brain.Profile.walkSpeed*alignment*arrival:0;
+            Speed=Mathf.MoveTowards(Speed,desiredSpeed,dt*(desiredSpeed>Speed?.32f:.7f));
+            if(!moving){Speed=0;return;}
+            // Translation follows the thorax heading; an uncleared corner stops the motor
+            // while it turns, rather than sliding the animal sideways through the route.
+            float radians=Heading*Mathf.Deg2Rad;
+            var step=new Vector2(Mathf.Sin(radians),Mathf.Cos(radians))*Mathf.Min(Speed*dt,delta.magnitude);
+            var next=Position+step;
+            if(area.SegmentClear(Position,next))Position=next;else Speed=0;
         }
         static float Angle(Vector2 v) => Mathf.Atan2(v.x, v.y) * Mathf.Rad2Deg;
         float Roll() { uint x = random; x ^= x << 13; x ^= x >> 17; x ^= x << 5; random = x; return x / ((float)uint.MaxValue + 1); }

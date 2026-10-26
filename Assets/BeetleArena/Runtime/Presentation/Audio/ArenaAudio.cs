@@ -1,8 +1,8 @@
-using UnityEngine;
+﻿using UnityEngine;
 
 namespace BeetleArena
 {
-    /// <summary>接触声表现：宽频干枝碰撞瞬态 + 独立短摩擦。合成参数为听感设计，不是甲虫录音测量。</summary>
+    /// <summary>Contact audio presentation: wideband dry branch impact transient + discrete brief friction. Synthesis parameters are tuned for acoustic aesthetic, not empirical beetle recordings.</summary>
     public sealed class ArenaAudio : MonoBehaviour
     {
         [Range(0, 1)] public float volume = .48f;
@@ -31,7 +31,7 @@ namespace BeetleArena
             Initialize(); strength = Mathf.Clamp01(strength);
             var v = voices[voiceIndex++ % voices.Length];
             var bank = scrape ? scrapes : knocks;
-            // 独立轮换，不消费 Unity.Random 或比赛随机源；每个声音拥有自己的空间位置和音调。
+            // Independent round-robin rotation without consuming Unity.Random or match RNG; each voice owns its spatial position and pitch.
             int index = variation++ % bank.Length;
             v.Stop(); v.transform.position = point;
             v.pitch = Mathf.Lerp(1.07f, .94f, strength) + (index % 3 - 1) * .017f;
@@ -47,8 +47,8 @@ namespace BeetleArena
             var clip = AudioClip.Create((scrape ? "Dry horn scrape " : "Woody horn knock ") + variant, data.Length, 1, 44100, false);
             clip.SetData(data, 0); return clip;
         }
-        // 参考 Aramaki/Kronland-Martinet 2004 的模态与阻尼思路：高频比低频更快消退。
-        // 约 0.105s 敲击，减弱窄带共鸣，以短瞬态和纤维二次碰触构成干枝质感。
+        // Modal synthesis and damping inspired by Aramaki/Kronland-Martinet 2004: higher frequencies decay faster than lower frequencies.
+        // ~0.105s strike, attenuating narrowband resonance; dry stick timbre is formed by short transients and secondary fibrous contacts.
         public static float[] Synthesize(int variant, bool scrape)
         {
             const int rate = 44100; float length = scrape ? .115f : .105f;
@@ -76,20 +76,20 @@ namespace BeetleArena
                     // Irregular secondary fibre contacts: dry branch clicks, no hollow pitched body.
                     float delay = .009f + variant * .0013f;
                     if (t > delay) sample += band * .30f * Mathf.Exp(-(t - delay) * 240);
-                    // 少量不规则微擦，只作为干脆敲击后的纹理，不连续喷噪声。
+                    // Minor irregular micro-scrapes provide texture following crisp impacts, without spraying continuous noise.
                     sample += band * .10f * Mathf.Exp(-t * 55) * Mathf.Pow(Mathf.Sin(t * 270), 2);
                 }
                 sample *= Mathf.Min(1, t / .0006f) * Mathf.Clamp01((length - t) / .006f);
                 data[i] = sample; peak = Mathf.Max(peak, Mathf.Abs(sample));
             }
-            // 给多声部叠加留余量；不在播放时做每帧波形生成。
+            // Preserves dynamic headroom for polyphonic voice summing; avoids per-frame waveform generation during playback.
             float gain = (scrape ? .44f : .72f) / Mathf.Max(.001f, peak);
             for (int i = 0; i < data.Length; i++) data[i] *= gain;
             return data;
         }
         void OnDisable() => StopAll();
         void OnDestroy() => ReleaseResources();
-        /// <summary>运行时销毁及 Editor 手动验证共用。幂等；释放后显式 Initialize 可重新创建。</summary>
+        /// <summary>Shared between runtime teardown and manual Editor validation. Idempotent; explicit Initialize rebuilds after disposal.</summary>
         public void ReleaseResources()
         {
             StopAll();

@@ -1,10 +1,10 @@
-using System.Linq;
+﻿using System.Linq;
 using UnityEditor;
 using UnityEngine;
 
 namespace BeetleArena.EditorTools
 {
-    /// <summary>仅Scene视图绘制；不生成场景对象、不增加碰撞体、不保存Gizmo资产。</summary>
+ /// <summary>Scene view drawing only; spawns no scene GameObjects, adds no colliders, writes no Gizmo assets.</summary>
     [InitializeOnLoad]
     public static class BeetleDebugSceneOverlay
     {

@@ -1,8 +1,8 @@
-using BeetleArena;
+﻿using BeetleArena;
 using UnityEditor;
 using UnityEngine;
 
-/// <summary>组件右键菜单的编辑器姿态验收；记录 Undo，可还原，不启动任何进食行为。</summary>
+ /// <summary>Editor pose preview via component context menu; records Undo, reversible, initiates no feeding behavior.</summary>
 public static class BeetleJawPreview
 {
     [MenuItem("CONTEXT/BeetleJawRig/Preview Open Jaw")]

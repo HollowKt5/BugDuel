@@ -14,7 +14,7 @@ public static class BeetleSpeciesIntegrationValidation
 {
     static void Require(bool condition, string message) { if (!condition) throw new Exception(message); }
 
-    [MenuItem("Tools/Beetle Arena/Validate Species Integration")]
+    [MenuItem("Tools/甲壳虫斗/验证/存档与数据/物种集成", false, 667)]
     public static void Run()
     {
         var scene = SceneManager.GetActiveScene();

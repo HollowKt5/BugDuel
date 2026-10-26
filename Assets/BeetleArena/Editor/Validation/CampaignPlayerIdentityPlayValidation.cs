@@ -28,7 +28,7 @@ public static class CampaignPlayerIdentityPlayValidation
         EditorApplication.playModeStateChanged+=OnPlay;
         EditorApplication.update+=()=>{if(SessionState.GetString(Key,"").Length>0&&EditorApplication.isPlaying)EditorApplication.QueuePlayerLoopUpdate();};
     }
-    [MenuItem("Tools/Beetle Arena/Validate Player Identity And Dialogs Play Flow")]
+    [MenuItem("Tools/甲壳虫斗/验证/战役流程/玩家身份与对话交互", false, 571)]
     public static void Run()
     {
         if(EditorApplication.isPlaying)throw new InvalidOperationException("Stop Play before isolated identity validation.");

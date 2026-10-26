@@ -30,7 +30,7 @@ namespace BeetleArena.Campaign
         }
         void MTitle(Transform parent,string title,float width)
         {
-            var bar=MBox("WindowTitle",parent,3,3,width,28,CampaignRetroTheme.Frame);Component<RetroBevel>(bar).Configure(0,Color.clear,Color.clear,true,CampaignRetroTheme.TitleTop,CampaignRetroTheme.TitleBottom);Component<CampaignMarketArtwork>(Rect("WindowIcon",bar,8,6,16,16)).SetKind(CampaignMarketArtwork.Kind.Rainbow);MText(bar,title,30,5,width-66,20,12,Color.white,true);
+            var bar=MBox("WindowTitle",parent,3,3,width,28,CampaignRetroTheme.Frame);Component<RetroBevel>(bar).Configure(0,Color.clear,Color.clear,true,CampaignRetroTheme.TitleTop,CampaignRetroTheme.TitleBottom);Component<CampaignMarketArtwork>(Rect("WindowIcon",bar,8,6,16,16)).SetKind(CampaignMarketArtwork.Kind.Rainbow);MText(bar,title,30,3,width-66,24,18,Color.white,true);
         }
         RectTransform MarketScroll(Transform parent,float x,float y,float width,float height,Color background)
         {

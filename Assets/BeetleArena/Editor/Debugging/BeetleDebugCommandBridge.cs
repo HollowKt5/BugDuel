@@ -1,11 +1,11 @@
-using System;
+﻿using System;
 using System.IO;
 using Newtonsoft.Json.Linq;
 using UnityEditor;
 
 namespace BeetleArena.EditorTools
 {
-    /// <summary>AI命令文件桥：写临时文件后原子重命名为request，读匹配id的response；同一时间只处理一个请求。</summary>
+    /// <summary>AI command file bridge: writes temp file then atomically renames to request; reads matching id response; processes one request at a time.</summary>
     [InitializeOnLoad]
     public static class BeetleDebugCommandBridge
     {

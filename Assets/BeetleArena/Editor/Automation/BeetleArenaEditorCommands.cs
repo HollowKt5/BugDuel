@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.IO;
 using System.Linq;
 using BeetleArena;
@@ -11,22 +11,22 @@ using UnityEngine.SceneManagement;
 
 // Small project-local automation entry point. Commands use Unity APIs, never scene YAML edits.
 [InitializeOnLoad]
-// 工程内的轻量编辑器自动化桥接：轮询 Temp 下的单个 JSON 请求，调用 Unity 编辑器 API。
-// 只在 Editor 编译；命令文件不是队列，调用者应等当前 id 的响应后再发下一条。
+// Lightweight in-project editor automation bridge: polls single JSON requests in Temp and invokes Unity Editor APIs.
+// Compiles in Editor only; command file is not a queue; caller should await response for current id before dispatching next request.
 public static class BeetleArenaEditorCommands
 {
-    // id 用于匹配响应，action 选择固定命令，seconds 用于时间参数；没有执行任意代码的入口。
+    // id matches response, action selects command, seconds supplies time parameter; no arbitrary code execution entry points.
     [Serializable] class Request { public string id, action; public float seconds; public int count; }
-    // 最多约每 0.4 秒轮询一次；编译或资源刷新期间暂不处理请求。
+    // Polls at most ~every 0.4s; halts request processing during script compilation or asset refreshes.
     static double nextPoll;
     static UnityEditor.PackageManager.Requests.AddRequest localeInstall;
-    // 从 Application.dataPath 的上级取得当前工程根目录，不依赖启动进程的工作目录。
+    // Resolves project root from parent of Application.dataPath without depending on launcher process working directory.
     static string Root => Directory.GetParent(Application.dataPath).FullName;
-    // 请求放在 Temp；执行前删除请求文件，避免域重载后重复执行同一动作。
+    // Requests reside in Temp; request file is deleted prior to execution to prevent duplicate execution across domain reloads.
     static string RequestPath => Path.Combine(Root, "Temp/BeetleArenaCommand.json");
-    // 响应覆盖写入，首行含 id 和 OK/ERROR。调用方必须核对 id，避免把旧结果误认作本次完成。
+    // Responses overwrite file with id and OK/ERROR on first line. Callers must verify id to avoid confusing stale results with current completion.
     static string ResponsePath => Path.Combine(Root, "Temp/BeetleArenaResponse.txt");
-    // InitializeOnLoad 触发静态初始化：注册轮询与错误日志，写出就绪时间戳供外部确认加载。
+    // InitializeOnLoad triggers static setup: registers polling and error logger, writes readiness timestamp for external confirmation.
     static BeetleArenaEditorCommands()
     {
         EditorApplication.update += Poll;
@@ -34,14 +34,14 @@ public static class BeetleArenaEditorCommands
         Directory.CreateDirectory(Path.Combine(Root, "Artifacts/BeetleArena"));
         File.WriteAllText(Path.Combine(Root, "Temp/BeetleArenaBridgeReady.txt"), DateTime.Now.ToString("O"));
     }
-    // 仅收集错误/异常/断言，并附时间与堆栈；普通消息不写入错误文件。
+    // Gathers Error/Exception/Assert only, with timestamp and stack trace; standard Log messages are omitted from error file.
     static void Log(string message, string stack, LogType type)
     {
         if (type != LogType.Error && type != LogType.Exception && type != LogType.Assert) return;
         File.AppendAllText(Path.Combine(Root, "Artifacts/BeetleArena/EditorErrors.txt"), DateTime.Now.ToString("O") + " " + message + "\n" + stack + "\n");
     }
-    // 读取→反序列化→删除请求→执行→写响应；请求文件暂不可读时留待下一轮。
-    // 长验证在编辑器主线程执行期间会阻塞本轮更新，不适合当运行时服务使用。
+    // Read -> Deserialize -> Delete request -> Execute -> Write response; unreadable files defer to next polling cycle.
+    // Lengthy validations block the editor main thread update loop; unsuitable for runtime background services.
     static void Poll()
     {
         if (EditorApplication.timeSinceStartup < nextPoll || EditorApplication.isCompiling || EditorApplication.isUpdating) return;
@@ -57,12 +57,16 @@ public static class BeetleArenaEditorCommands
         }
         catch (Exception ex) { File.WriteAllText(ResponsePath, request.id + " ERROR\n" + ex); Debug.LogException(ex); }
     }
-    // 命令分发：refresh/prepare 管导入，build/tune 写资源，play/stop/open 切场景或播放状态，
-    // inspect/capture 观察，advance/smoke/validate 等进行测试；build 指生成场景，不是打包 exe。
+    // Command dispatch: refresh/prepare handle imports, build/tune mutate assets, play/stop/open toggle scenes or playmode,
+    // inspect/capture monitor state, advance/smoke/validate run tests; build refers to generating scene, not packaging player.
     static string Execute(Request request)
     {
         switch (request.action)
         {
+            case "interface-setup": CampaignInterfaceSetup.Apply();return "Interface assets prepared.";
+            case "interface-data": CampaignInterfaceValidation.Run();return File.ReadAllText("Artifacts/InterfaceRework/Data.txt");
+            case "interface-play": CampaignInterfacePlayValidation.Run();return "Interface play acceptance started.";
+            case "display-three-levels": BeetleArena.EditorTools.WorldDisplayEditorService.ApplyThreePixelLevelDefaults();return "Dither defaults set to the second of three pixel levels.";
             case "defensive-review": DefensiveProgrammingValidation.Run(); return File.ReadAllText("Artifacts/DefensiveReview/Verification.txt");
             case "ui-click-settings":
                 var clickProfile = RetroUiAudioSetup.EnsureProfile();
@@ -87,6 +91,18 @@ public static class BeetleArenaEditorCommands
             case "crt-screen-preview": return BeetleCombatCrtSetup.PreviewSteadyScreen();
             case "retro-setup": CampaignRetroFontSetup.Apply();return "Retro font and CRT profile ready.";
             case "retro-validate": RetroPresentationValidation.Run();return "Retro presentation check started; see Artifacts/RetroUi/Result.txt.";
+            case "editor-menu-list":
+                var menuEntries = TypeCache.GetMethodsWithAttribute<MenuItem>()
+                    .Where(method => method.DeclaringType.Assembly == typeof(BeetleArenaEditorCommands).Assembly)
+                    .SelectMany(method => method.GetCustomAttributes(typeof(MenuItem), false).Cast<MenuItem>()
+                        .Where(menu => !menu.validate && menu.menuItem.StartsWith("Tools/", StringComparison.Ordinal))
+                        .Select(menu => new { menu.menuItem, menu.priority, Binding = method.DeclaringType.FullName + "." + method.Name }))
+                    .OrderBy(entry => entry.priority).ThenBy(entry => entry.menuItem).ToArray();
+                string menuReport = "Editor menu entries=" + menuEntries.Length + "\n" + string.Join("\n",
+                    menuEntries.Select(entry => entry.menuItem + "\t" + entry.priority + "\t" + entry.Binding));
+                Directory.CreateDirectory("Artifacts/EditorMenus");
+                File.WriteAllText("Artifacts/EditorMenus/Inventory.txt", menuReport);
+                return menuReport;
             case "cleanup-generated-audit": return BeetleGeneratedAssetCleanup.Run(false);
             case "cleanup-generated-apply": return BeetleGeneratedAssetCleanup.Run(true);
             case "horn-inspect": BeetleHornBindingValidation.Inspect(); return File.ReadAllText("Artifacts/HornBinding/Inspection.txt");
@@ -133,14 +149,14 @@ public static class BeetleArenaEditorCommands
             case "seed-case": return BeetleSeedSweepValidation.Start(Mathf.RoundToInt(request.seconds), 1);
             case "seed-sweep-stop": BeetleSeedSweepValidation.Stop(); return "Seed sweep stopped.";
             case "refresh": AssetDatabase.Refresh(); return "Refresh requested.";
-            // 只更新游戏材质；渲染验证在临时场景副本中进行。
+            // Updates game materials only; render validation runs in an isolated temporary scene copy.
             case "apply-toon": BeetleArenaToonSetup.Apply(); return "Toon materials saved.";
             case "install-terrain": BeetleArenaTerrainSetup.Install(); return "Switchable arenas saved.";
             case "validate-terrain": BeetleArenaTerrainValidation.Run(); return File.ReadAllText(Path.Combine(Root, "Artifacts/BeetleArena/TerrainValidation.txt"));
             case "validate-motion": BeetleMotionValidation.Run(); return File.ReadAllText(Path.Combine(Root, "Artifacts/BeetleArena/MotionValidation.txt"));
             case "switch-arena": Running().SwitchArena(); return Running().ArenaName;
             case "validate-toon": BeetleArenaToonSetup.Validate(); return File.ReadAllText(Path.Combine(Root, "Artifacts/BeetleArena/ToonValidation.txt"));
-            // 使用临时副本验证新动作和实际接触，避免直接改动正在编辑的游戏场景实例。
+            // Validates new motions and physical contact in a temporary copy to avoid modifying active game scene instances.
             case "validate-clashes":
                 BeetleArenaCollisionValidation.RunInEditor();
                 return File.ReadAllText(Path.Combine(Root, "Artifacts/BeetleArena/CollisionValidation.txt"));
@@ -151,7 +167,7 @@ public static class BeetleArenaEditorCommands
                 if (EditorApplication.isPlaying) throw new InvalidOperationException("Stop play before rebuilding.");
                 BeetleArenaSceneBuilder.Build(); return "Scene and articulated prefab saved.";
             case "validate": BeetleArenaValidation.Run(); return File.ReadAllText(Path.Combine(Root, "Artifacts/BeetleArena/SimulationValidation.txt"));
-            // 旧版快捷调参命令，会直接保存列出的资产数值；调用前应了解其写入范围。
+            // Legacy tuning shortcut command: writes listed asset values directly; verify scope before calling.
             case "tune":
                 var settings = AssetDatabase.LoadAssetAtPath<BeetleMatchSettings>(BeetleArenaSceneBuilder.AssetFolder + "/MatchSettings.asset");
                 settings.shoveImpulse = 2.7f; settings.pryImpulse = 4.3f; settings.fatiguePerSecond = .12f;
@@ -163,7 +179,7 @@ public static class BeetleArenaEditorCommands
                 EditorSceneManager.playModeStartScene = AssetDatabase.LoadAssetAtPath<SceneAsset>(BeetleArenaSceneBuilder.ScenePath);
                 EditorApplication.isPlaying = true; return "Play requested.";
             case "stop": EditorApplication.isPlaying = false; return "Stop requested.";
-            // 检测到任何已加载场景未保存时拒绝切换，避免静默丢失用户编辑。
+            // Rejects scene switching if any loaded scene has unsaved changes, preventing silent data loss.
             case "open":
                 for (int i = 0; i < SceneManager.sceneCount; i++) if (SceneManager.GetSceneAt(i).isDirty) return "Existing scene has unsaved edits. Play is configured to start BeetleArena.";
                 EditorSceneManager.OpenScene(BeetleArenaSceneBuilder.ScenePath); return "Opened game scene.";
@@ -179,18 +195,18 @@ public static class BeetleArenaEditorCommands
             default: throw new ArgumentException("Unknown command: " + request.action);
         }
     }
-    // 需要真实 Play 模式的命令共用前置检查；找不到已启动模拟就立即报错。
+    // Shared prerequisite checks for commands requiring active Play mode; throws immediately if no running simulation is found.
     static BeetleMatchController Running()
     {
         var controller = UnityEngine.Object.FindFirstObjectByType<BeetleMatchController>();
         if (!EditorApplication.isPlaying || !controller || controller.Simulation == null) throw new InvalidOperationException("Game is not running.");
         return controller;
     }
-    // 生成紧凑状态文本，供外部检查阶段、时间、胜者、位置与动作计数。
+    // Generates compact status readout for external inspection of phase, time, winner, positions, and action metrics.
     static string Describe(BeetleMatchController c) => $"phase={c.Simulation.Phase}; elapsed={c.Simulation.Elapsed:F2}; winner={c.Simulation.Winner}; paused={c.IsPaused}\n" +
         string.Join("\n", c.Simulation.Fighters.Select(f => $"{f.Index}: {f.Action}, position={f.Position}, height={f.Height:F2}, stamina={f.Stamina:F1}, shoves={f.Shoves}, pries={f.Pries}"));
-    // 按固定步长在一个编辑器调用内加速推进模拟、显示约束和相机，并在结算后短暂沉降。
-    // 直接改变当前运行中的对局，仅用于测试/调试，不是玩家快进功能。
+    // Fast-forwards simulation, presentation constraints, and camera by fixed steps within a single editor invocation, settling post-match.
+    // Mutates active match directly; strictly for testing and debugging, not a player feature.
     static void Advance(BeetleMatchController c, float seconds)
     {
         int settling = 0;
@@ -202,7 +218,7 @@ public static class BeetleArenaEditorCommands
         }
         c.hud.Refresh();
     }
-    // 读取运行中的相机并保存 1600×900 PNG；finally 恢复原渲染目标、释放临时纹理。
+    // Captures active camera and saves 1600x900 PNG; finally restores render target and releases temporary texture.
     static string Capture(string name)
     {
         var c = Running();
@@ -224,8 +240,8 @@ public static class BeetleArenaEditorCommands
         }
         return path;
     }
-    // 重开固定种子对局，检查事件系统、六足绑定、鼓励冷却、暂停按钮、落台结果及重赛。
-    // 会改变当前 Play 对局和输出截图/报告；不是只读健康检查。
+    // Restarts match with fixed seed, validating event system, tarsal bindings, encouragement cooldown, pause, ring-out, and rematch.
+    // Modifies active Play mode match and outputs screenshots/reports; not a read-only health check.
     static string Smoke()
     {
         var c = Running();

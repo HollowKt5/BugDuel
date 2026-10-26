@@ -6,10 +6,10 @@ using UnityEditor.SceneManagement;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
-/// <summary>增量装配音效/火星与设置面板。保留场景分组，不重新构建甲虫或旧 HUD。</summary>
+/// <summary>Incrementally assembles audio/sparks and settings panel. Preserves scene grouping without rebuilding beetles or existing HUD.</summary>
 public static class BeetleFeedbackSetup
 {
-    [MenuItem("Tools/Beetle Arena/Install Contact Feedback")]
+    [MenuItem("Tools/甲壳虫斗/场景与安装/战斗模块/安装接触反馈", false, 222)]
     public static void Install()
     {
         if (EditorApplication.isPlaying) throw new InvalidOperationException("Stop Play before installing feedback.");
@@ -58,7 +58,7 @@ public static class BeetleFeedbackSetup
         // Keep settings below view, slow-motion and nursery controls in the right column.
         var settingsRect=(RectTransform)ui.openButton.transform;
         settingsRect.anchoredPosition=new Vector2(-34,-186);settingsRect.sizeDelta=new Vector2(230,38);
-        // 只补新增文案字形，不为代码注释扩充整个字体图集。
+        // Supplements glyphs for new strings only, avoiding expanding font atlas for code comments.
         var f = match.hud.clock.font; f.atlasPopulationMode = AtlasPopulationMode.DynamicOS;
         f.TryAddCharacters("设置角斗碰撞火星兵器般的细小完成", out string missing); f.atlasPopulationMode = AtlasPopulationMode.Static;
         foreach(var texture in f.atlasTextures) if(texture) { if(!AssetDatabase.Contains(texture)) AssetDatabase.AddObjectToAsset(texture,f); EditorUtility.SetDirty(texture); }

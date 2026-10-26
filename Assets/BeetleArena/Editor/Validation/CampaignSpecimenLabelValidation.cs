@@ -49,7 +49,7 @@ public static class CampaignSpecimenLabelValidation
         restored.Validate();return checks;
     }
 #if UNITY_EDITOR
-    [MenuItem("Tools/Beetle Arena/Validate Specimen Label Provenance")]
+    [MenuItem("Tools/甲壳虫斗/验证/本地化/标本铭牌来源", false, 642)]
     public static void Run()
     {
         RunDomain();var s=CampaignSession.New(CampaignCatalog.Defaults(),2841);

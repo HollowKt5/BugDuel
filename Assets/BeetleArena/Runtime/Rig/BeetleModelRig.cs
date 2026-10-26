@@ -1,11 +1,11 @@
-using System;
+﻿using System;
 using UnityEngine;
 
 namespace BeetleArena
 {
     /// <summary>
-    /// 导入网格的骨架适配层。腿长、关节初始姿态及弯曲平面由建模配置生成并序列化。
-    /// 运行时只旋转骨骼；不移动关节、不缩放腿段、不修改原 FBX。
+    /// Skeletal adapter for imported meshes. Leg lengths, resting joint poses, and bend planes are generated and serialized from modeling config.
+    /// Rotates bones only at runtime; does not translate joints, scale leg segments, or mutate original FBX assets.
     /// </summary>
     public sealed class BeetleModelRig : MonoBehaviour
     {
@@ -90,7 +90,7 @@ namespace BeetleArena
             head.localRotation = Quaternion.Euler(pitch, yaw, 0); return pitch;
         }
 
-        /// <summary>触角靠近坡面时主动收起，避免用细触角的碰撞反过来顶起整只甲虫。</summary>
+        /// <summary>Retracts antennae proactively near terrain slopes, preventing thin antennae collisions from pushing the beetle body upward.</summary>
         public void AvoidFeelerGround(IBeetleGround ground, float dt)
         {
             if(ground==null || feelers==null)return;
@@ -109,7 +109,7 @@ namespace BeetleArena
                     if(depth<bestDepth) {bestDepth=depth;wanted=angle;}
                     if(depth<=0)break;
                 }
-                // 接近时快速避让、离开时缓慢放松，避免台面法线变化造成触角来回弹动。
+                // Evades rapidly on approach and relaxes slowly on departure, preventing antennae oscillation from varying arena surface normals.
                 float blend=1-Mathf.Exp(-dt*(wanted>f.avoidanceAngle?35:7));
                 f.avoidanceAngle=Mathf.Lerp(f.avoidanceAngle,wanted,blend);
                 f.pivot.rotation=rest*Quaternion.AngleAxis(f.avoidanceAngle,f.bendAxis);
@@ -118,14 +118,14 @@ namespace BeetleArena
                     if(ground.Sample(new Vector2(p.x,p.z),out var hit)) neededLift=Mathf.Max(neededLift,(hit.height+.025f*scale-p.y)/scale);
                 }
             }
-            // 根节点仍由物理模拟拥有。小幅抬高胸部姿态，再由六足 IK 保持原支撑点，
-            // 避免触角基部在陡坡上无论怎样旋转都低于地表；不把这一修正当成攻击位移。
+            // Root node remains owned by physical simulation. Elevates thoracic pose slightly while six-legged IK maintains original support anchors,
+            // preventing antenna bases on steep slopes from dipping below ground regardless of rotation; this correction does not count as combat displacement.
             float response=neededLift>postureLift?35:7;
             postureLift=Mathf.Lerp(postureLift,Mathf.Clamp(neededLift,0,.25f),1-Mathf.Exp(-dt*response));
             body.position+=Vector3.up*(postureLift*Mathf.Abs(model.lossyScale.x));
         }
 
-        /// <summary>当前脚点占用的髋踝可达比例；由步态提前补步，不能等 IK 硬限位才拖脚。</summary>
+        /// <summary>Current hip-to-ankle reach fraction consumed by foot placement; gait initiates recovery steps early rather than dragging feet until IK limits.</summary>
         public float SupportReach(BeetleLegRig leg, Vector3 target, BeetleState state, IBeetleGround ground)
         {
             var b = bindings[(leg.side < 0 ? 0 : 3) + leg.pair];
@@ -138,8 +138,8 @@ namespace BeetleArena
         }
 
         /// <summary>
-        /// 只在规划名义落点/新一步终点时收回不可达的水平距离，已锁定的支撑脚不逐帧滑动。
-        /// 足节很长的中足尤其需要此余量；保留地表高度，不用抬高悬空脚伪装落地。
+        /// Retracts unreachable horizontal reach only when planning nominal targets or step endpoints; world-locked support feet do not slide per frame.
+        /// Middle legs with long tarsi especially require this margin; preserves surface height without elevating dangling feet to fake touchdown.
         /// </summary>
         public Vector3 PlanSupport(BeetleLegRig leg, Vector3 target, BeetleState state, IBeetleGround ground)
         {
@@ -154,7 +154,7 @@ namespace BeetleArena
                 var frame = Quaternion.FromToRotation(Vector3.up, normal) * Quaternion.Euler(0, state.Heading, 0);
                 Vector3 offset = frame * (b.footOffsetInModel * scale);
                 Vector3 delta = target - offset - b.hip.position;
-                // 竖直本身已超出长度时交回最终 IK/碰撞约束，不让根位置在此被动画改写。
+                // Relinquishes control to final IK and collision constraints when vertical extension exceeds leg reach, preventing animation from rewriting root height.
                 if (Mathf.Abs(delta.y) >= reach) break;
                 float horizontal = Mathf.Sqrt(Mathf.Max(0, reach * reach - delta.y * delta.y));
                 Vector2 flat = new Vector2(delta.x, delta.z);
@@ -173,7 +173,7 @@ namespace BeetleArena
             int index = (leg.side < 0 ? 0 : 3) + leg.pair;
             var b = bindings[index];
             float scale = Mathf.Abs(model.lossyScale.x);
-            // 支撑点限制在本腿的活动扇区内。限制用模型实测脚位，避免继承几何体腿宽。
+            // Clamps support anchors within active workspace sector for this leg, using measured model foot placements rather than geometric leg widths.
             Quaternion legFrame = Quaternion.Slerp(model.rotation, body.rotation, leg.tumbleFrameWeight);
             Vector3 legOrigin = Vector3.Lerp(model.TransformPoint(bodyRest), body.position, leg.tumbleFrameWeight);
             Vector3 local = Quaternion.Inverse(legFrame) * (target - legOrigin) / scale + bodyRest;
@@ -192,7 +192,7 @@ namespace BeetleArena
                 target.y = Mathf.Max(target.y, hit.height + (soleClearance + leg.soleOffset) * scale);
                 normal = hit.normal;
             }
-            // 足节的原始弯曲形状保留，只让整个足节顺着坡面转动。
+            // Preserves natural curvature of tarsus, rotating the segment as a whole to conform to ground slope.
             Quaternion footFrame = Quaternion.FromToRotation(Vector3.up, normal) * Quaternion.Euler(0, state.Heading, 0);
             if (state.Airborne || state.HasFallen) footFrame = model.rotation;
             footFrame = Quaternion.Slerp(footFrame, body.rotation, leg.tumbleFrameWeight);
@@ -209,7 +209,7 @@ namespace BeetleArena
             if (leg.pair == 0 && leg.moduleOwned && state.Motion.Active is ForelegPushMotion)
                 bend = Vector3.Slerp(bend.normalized, (model.forward + model.up * .3f + model.right * leg.side * .12f).normalized, .8f);
             Vector3 pole = Vector3.ProjectOnPlane(bend, direction);
-            // 提示向量接近共线时沿用上一有效弯曲方向，最后用身体外侧轴作为备用。
+            // Retains previous valid bend direction when hint vector approaches collinearity, falling back to lateral body axis.
             if (pole.sqrMagnitude < 1e-6f) pole = Vector3.ProjectOnPlane(b.lastBend, direction);
             if (pole.sqrMagnitude < 1e-6f) pole = Vector3.ProjectOnPlane(model.right * leg.side, direction);
             if (pole.sqrMagnitude < 1e-6f) pole = Vector3.ProjectOnPlane(model.forward, direction);

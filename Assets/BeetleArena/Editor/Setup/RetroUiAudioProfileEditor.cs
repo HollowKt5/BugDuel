@@ -89,7 +89,7 @@ public static class RetroUiAudioSetup
 {
     public const string ProfilePath = "Assets/BeetleArena/Resources/UiClickSound.asset";
 
-    [MenuItem("Tools/Beetle Arena/UI Click Sound Settings")]
+    [MenuItem("Tools/甲壳虫斗/常用工具/界面点击音效", false, 103)]
     public static void SelectSettings()
     {
         Selection.activeObject = EnsureProfile();

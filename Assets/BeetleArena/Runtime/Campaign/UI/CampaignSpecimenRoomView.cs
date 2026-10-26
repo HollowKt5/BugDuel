@@ -30,22 +30,20 @@ namespace BeetleArena.Campaign
         {
             float width=root.rect.width,height=root.rect.height,margin=12,inner=width-24,gap=6,half=(inner-gap)/2;
             Panel(root,0,0,width,height);
-            var title=Panel(root,4,4,width-8,76);
+            var title=Panel(root,4,4,width-8,46);
             title.GetComponent<UnityEngine.UI.Image>().color=CampaignRetroTheme.Frame;
             Component<RetroBevel>(title).Configure(0,Color.clear,Color.clear,true,CampaignRetroTheme.TitleTop,CampaignRetroTheme.TitleBottom);
             Label(title,"标本室",12,9,width-32,32,23,Color.white);
-            Label(title,"虫舍博物馆 · 三行四列的收藏墙",12,43,width-32,25,15,Color.white);
+
             Btn(root,"返回温室",margin,90,half,36,()=>app.Go(CampaignPage.Greenhouse));
             Btn(root,"前往市场",margin+half+gap,90,half,36,()=>app.Go(CampaignPage.Market));
-            Label(root,$"收藏 {State.specimens.Count} 件  ·  上墙 {State.specimens.Count(s=>s.wallSlot>=0)}/12  ·  {State.coins:N0} G",margin,135,inner,29,17);
+            Label(root,$"收藏 {State.specimens.Count} 件  ·  上墙 {State.specimens.Count(s=>s.wallSlot>=0)}/12",margin,135,inner,29,17);
             Btn(root,specimenRoom.Arranging?"✓ 布展模式":"进入布展模式",margin,173,half,35,()=>{specimenRoom.SetArrange(!specimenRoom.Arranging);QueueRefresh();});
             Btn(root,"全墙 / 重置镜头",margin+half+gap,173,half,35,()=>specimenRoom.ResetView());
             var flow=Column(margin,220,inner,Mathf.Max(160,height-305));
             var selected=State.specimens.FirstOrDefault(s=>s.id==selectedSpecimenId);
             if(selected==null){selected=State.specimens.LastOrDefault();selectedSpecimenId=selected?.id;}
             specimenRoom.Select(selectedSpecimenId);
-            var hint=Card(flow,82);
-            Label(hint,specimenRoom.Arranging?"点选库存后点击墙位放置；拖动已有相框换位。\n右键转动 · 滚轮缩放 · 中键平移":"点击相框选择；右键转动、滚轮缩放、中键平移。\n开启布展，可换位、调整装框与铭牌。",10,10,inner-32,65,16,muted);
             if(selected!=null)DrawSpecimenInspector(flow,selected);
             var heading=Card(flow,43);Label(heading,"收藏库 · 选择一件标本",10,7,inner-32,30,20,accent);
             foreach(var record in State.specimens)
@@ -57,7 +55,7 @@ namespace BeetleArena.Campaign
             }
             if(State.specimens.Count==0)
             {
-                var empty=Card(flow,156);Label(empty,"收藏墙还在等待第一位住客。\n死亡甲虫可在温室制作成标本；\n也可从市场购买或参与竞拍。",12,14,inner-36,125,21,muted);
+                var empty=Card(flow,156);Label(empty,"暂无标本",12,14,inner-36,125,21,muted);
             }
             notice=Label(root,"",margin+8,height-66,inner-16,46,15);
         }
@@ -103,7 +101,7 @@ namespace BeetleArena.Campaign
             var field=Panel(parent,157,y,467,48);field.GetComponent<UnityEngine.UI.Image>().color=CampaignRetroTheme.Panel;
             var input=Component<TMP_InputField>(field);input.targetGraphic=field.GetComponent<UnityEngine.UI.Image>();input.characterLimit=limit;input.lineType=TMP_InputField.LineType.SingleLine;
             var viewport=Rect("Input viewport",field,9,5,449,38);Component<UnityEngine.UI.RectMask2D>(viewport);
-            var text=Component<TextMeshProUGUI>(Rect("Editable text",viewport,0,0,449,38));text.font=font;text.fontSize=20;text.color=ink;text.raycastTarget=false;text.richText=false;text.textWrappingMode=TextWrappingModes.NoWrap;
+            var text=Component<TextMeshProUGUI>(Rect("Editable text",viewport,0,0,449,38));text.font=font;text.fontSize=CampaignLocalization.PointSize(20);text.color=ink;text.raycastTarget=false;text.richText=false;text.textWrappingMode=TextWrappingModes.NoWrap;
             input.textViewport=viewport;input.textComponent=text;input.richText=false;input.text=value;return input;
         }
     }

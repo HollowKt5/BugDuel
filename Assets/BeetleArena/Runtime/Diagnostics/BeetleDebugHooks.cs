@@ -4,7 +4,7 @@ using UnityEngine;
 
 namespace BeetleArena
 {
-    /// <summary>仅编辑器编译的观察钩子。没有订阅者时不构造记录、不查询物理、不抽随机数。</summary>
+    /// <summary>Editor-only telemetry hooks. When no subscribers are listening, constructs no records, queries no physics, and draws no RNG.</summary>
     public static class BeetleDebugHooks
     {
         public static event Action<BeetleMatchController> Stepped;

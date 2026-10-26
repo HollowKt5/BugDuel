@@ -15,7 +15,7 @@ using UnityEngine.TextCore.LowLevel;
 public static class CampaignLocalizationSetup
 {
     const string Folder="Assets/Localization",Fonts=Folder+"/Fonts";
-    [MenuItem("Tools/Beetle Arena/Prepare Chinese and English")]
+    [MenuItem("Tools/甲壳虫斗/画面与资源/界面与字体/更新中英文本地化", false, 341)]
     public static void Apply()
     {
         if(EditorApplication.isPlaying)throw new InvalidOperationException("Stop Play before preparing language assets.");
@@ -64,11 +64,11 @@ public static class CampaignLocalizationSetup
         if(symbols)chinese.fallbackFontAssetTable.Add(symbols);
         string englishPath=Fonts+"/English.asset";
         if(!AssetDatabase.LoadAssetAtPath<TMP_FontAsset>(englishPath))AssetDatabase.CopyAsset("Assets/BeetleArena/Resources/RetroUiFont.asset",englishPath);
-        var english=AssetDatabase.LoadAssetAtPath<TMP_FontAsset>(englishPath);
+        var english=CampaignInterfaceSetup.PrepareEnglishFont();
         english.fallbackFontAssetTable=new List<TMP_FontAsset>{chinese};
         EditorUtility.SetDirty(chinese);EditorUtility.SetDirty(english);
         var fonts=LocalizationEditorSettings.GetAssetTableCollection(CampaignLocalization.FontTable)??LocalizationEditorSettings.CreateAssetTableCollection(CampaignLocalization.FontTable,Folder+"/Tables");
-        fonts.AddAssetToTable(new LocaleIdentifier("zh-Hans"),"ui",chinese);
+        fonts.AddAssetToTable(new LocaleIdentifier("zh-Hans"),"ui",english);
         fonts.AddAssetToTable(new LocaleIdentifier("en"),"ui",english);
         foreach(var table in fonts.AssetTables)EditorUtility.SetDirty(table);
         EditorUtility.SetDirty(fonts);EditorUtility.SetDirty(fonts.SharedData);

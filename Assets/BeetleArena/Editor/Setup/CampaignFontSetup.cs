@@ -7,7 +7,7 @@ using UnityEngine;
 
 public static class CampaignFontSetup
 {
-    [MenuItem("Tools/Beetle Arena/Update Campaign Font Coverage")]
+    [MenuItem("Tools/甲壳虫斗/画面与资源/界面与字体/补齐战役字形", false, 340)]
     public static void Apply()
     {
         if(EditorApplication.isPlaying)throw new InvalidOperationException("Stop Play before updating font assets.");

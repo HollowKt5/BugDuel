@@ -7,17 +7,17 @@ using UnityEditor.SceneManagement;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
-/// <summary>卡通材质安装与画面验证。只更新本游戏生成目录的材质，不替换场景、碰撞或 UI 材质。</summary>
+/// <summary>Installs toon materials and validates visual fidelity. Updates generated materials only, without replacing scene, collider, or UI materials.</summary>
 public static class BeetleArenaToonSetup
 {
     public const string ShaderName = "BeetleArena/Toon";
     static readonly string[] Folders = { "Assets/BeetleArena/Generated/Materials", "Assets/BeetleArena/Generated/ImportedModel" };
 
-    // 按资产 GUID 查找材质，因此更新后场景和预制体中已有的引用都会直接生效。
+    // Resolves materials by asset GUID so updates propagate immediately to scene and prefab references.
     static Material[] Materials() => AssetDatabase.FindAssets("t:Material", Folders)
         .Select(id => AssetDatabase.LoadAssetAtPath<Material>(AssetDatabase.GUIDToAssetPath(id))).ToArray();
 
-    [MenuItem("Tools/Beetle Arena/Apply Toon Materials")]
+    [MenuItem("Tools/甲壳虫斗/画面与资源/材质与灯光/应用战斗卡通材质", false, 300)]
     public static void Apply()
     {
         CheckShader();
@@ -27,14 +27,14 @@ public static class BeetleArenaToonSetup
         Debug.Log("Beetle Arena: toon materials applied.");
     }
 
-    /// <summary>场景/模型生成器共用的预设。基础贴图、UV 缩放保留，颜色由材质用途决定。</summary>
+    /// <summary>Shared presets for scene and model builders. Preserves base textures and UV tiling; colors dictate material roles.</summary>
     public static void Configure(Material material)
     {
         var shader = Shader.Find(ShaderName);
         if (!shader) throw new InvalidOperationException("Missing shader: " + ShaderName);
         Color original = material.HasProperty("_BaseColor") ? material.GetColor("_BaseColor") : Color.white;
         material.shader = shader;
-        // 清掉旧 Lit 的专用关键字，防止无效变体残留；这里所有材质都是不透明表面。
+        // Clears legacy Lit keywords to prevent stale shader variants; all materials here are opaque surfaces.
         material.shaderKeywords = Array.Empty<string>();
         material.renderQueue = -1;
         material.enableInstancing = true;
@@ -61,7 +61,7 @@ public static class BeetleArenaToonSetup
         material.SetColor("_OutlineColor", new Color(.025f, .031f, .034f));
         material.SetFloat("_OutlineWidth", beetle ? 1.6f : 1.0f);
 
-        // 用明亮的甲壳色搭配较暗的关节，避免在游戏远景里整只甲虫成为黑色剪影。
+        // Pairs bright carapace colors with darker joints, preventing the beetle from reading as a solid black silhouette at distance.
         switch (name)
         {
             case "Elytra chestnut": material.SetColor("_BaseColor", new Color(.72f, .30f, .085f)); break;
@@ -76,14 +76,14 @@ public static class BeetleArenaToonSetup
             case "Eyes": material.SetFloat("_OutlineWidth", .7f); material.SetFloat("_SpecStrength", 1); break;
             case "Eye highlights": material.SetFloat("_OutlineWidth", 0); break;
         }
-        // 台面年轮和阵营标记是很薄的几何图案；不对它们扩张外壳，避免形成黑色粗圈。
+        // Annual rings and faction markers are thin decals; outlines are omitted on them to avoid thick black halos.
         if (name.StartsWith("Growth ring", StringComparison.Ordinal) || name == "Rim marks"
             || name.EndsWith("marker", StringComparison.Ordinal) || name == "Forest floor" || name == "Display floor")
             material.SetFloat("_OutlineWidth", 0);
         EditorUtility.SetDirty(material);
     }
 
-    // shader 导入可能成功但某一通道编译失败，必须同时检查 ShaderUtil 的消息。
+    // Shader import may succeed while a specific pass fails compilation; must inspect ShaderUtil messages concurrently.
     static void CheckShader()
     {
         var shader = Shader.Find(ShaderName);
@@ -92,7 +92,7 @@ public static class BeetleArenaToonSetup
             throw new InvalidOperationException(string.Join("\n", ShaderUtil.GetShaderMessages(shader).Select(m => m.message)));
     }
 
-    [MenuItem("Tools/Beetle Arena/Validate Toon Rendering")]
+    [MenuItem("Tools/甲壳虫斗/验证/界面与画面/卡通渲染", false, 607)]
     public static void Validate()
     {
         if (EditorApplication.isPlaying) throw new InvalidOperationException("Stop play before toon validation.");
@@ -102,7 +102,7 @@ public static class BeetleArenaToonSetup
         if (!AssetDatabase.CopyAsset(BeetleArenaSceneBuilder.ScenePath, temporary))
             throw new InvalidOperationException("Could not copy scene for toon preview.");
         var scene = EditorSceneManager.OpenScene(temporary, OpenSceneMode.Additive);
-        // 非本次场景的灯光暂时关闭，防止另一个已打开的场景影响主光选择；结束恢复。
+        // Temporarily disables lights outside active scene to prevent multi-scene main light selection conflicts; restored on exit.
         var otherLights = UnityEngine.Object.FindObjectsByType<Light>(FindObjectsSortMode.None)
             .Where(l => l.gameObject.scene != scene && l.enabled).ToArray();
         var materials = Materials();
@@ -111,7 +111,7 @@ public static class BeetleArenaToonSetup
         bool asyncCompilation = ShaderUtil.allowAsyncCompilation;
         try
         {
-            // A/B 切阴影关键字会首次编译新变体；截图必须等编译，不能把临时缺失的绘制当效果差异。
+            // A/B keyword toggling triggers initial shader compilation; screenshots must await compilation rather than mistaking missing draws for differences.
             ShaderUtil.allowAsyncCompilation = false;
             SceneManager.SetActiveScene(scene);
             foreach (var light in otherLights) light.enabled = false;
@@ -142,7 +142,7 @@ public static class BeetleArenaToonSetup
             foreach (var material in materials) material.SetFloat("_SpecStrength", 0);
             int highlightPixels = Difference(full, Capture(camera, "ToonWithoutHighlight.png"));
             for (int i = 0; i < materials.Length; i++) materials[i].SetFloat("_SpecStrength", spec[i]);
-            // 关闭副本中的投影来验证实际阴影通道，而不是只核对材质属性数值。
+            // Disables shadows in temporary duplicate to validate shadow pass directly, rather than merely checking property values.
             foreach (var light in scene.GetRootGameObjects().SelectMany(r => r.GetComponentsInChildren<Light>())) light.shadows = LightShadows.None;
             int shadowPixels = Difference(full, Capture(camera, "ToonWithoutShadows.png"));
             CheckShader();
@@ -154,7 +154,7 @@ public static class BeetleArenaToonSetup
         }
         finally
         {
-            // A/B 截图临时改动的是共享材质，必须恢复；副本场景直接丢弃，不保存测试姿态。
+            // A/B captures mutate shared materials temporarily and must restore them; temporary test scenes are discarded without saving.
             for (int i = 0; i < materials.Length; i++)
             { materials[i].SetFloat("_OutlineWidth", widths[i]); materials[i].SetFloat("_SpecStrength", spec[i]); }
             foreach (var light in otherLights) if (light) light.enabled = true;
@@ -165,7 +165,7 @@ public static class BeetleArenaToonSetup
         }
     }
 
-    // 返回截图像素以做同姿态 A/B 比较，避免仅凭 Shader 导入成功就认定描边生效。
+    // Returns screenshot pixels for same-pose A/B diffing, rather than assuming outlines work purely based on shader import.
     static Color32[] Capture(Camera camera, string name)
     {
         var target = new RenderTexture(1600, 900, 24);
@@ -185,7 +185,7 @@ public static class BeetleArenaToonSetup
         }
     }
 
-    // 容许极小的色彩量化差；超过 8/255 的 RGB 总差才记作可见变化。
+    // Tolerates minor color quantization; total RGB delta exceeding 8/255 registers as visible difference.
     static int Difference(Color32[] a, Color32[] b)
     {
         int changed = 0;

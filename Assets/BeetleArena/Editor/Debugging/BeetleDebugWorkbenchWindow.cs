@@ -14,7 +14,7 @@ namespace BeetleArena.EditorTools
     public sealed class BeetleDebugWorkbenchWindow : EditorWindow
     {
         const string Folder="Assets/BeetleArena/Editor/Debugging/";
-        [MenuItem("Tools/Beetle Arena/Debug Workbench")]
+        [MenuItem("Tools/甲壳虫斗/常用工具/调试工作台", false, 100)]
         public static void Open()=>GetWindow<BeetleDebugWorkbenchWindow>("BugDuel 调试").Show();
         T Q<T>(string name) where T:VisualElement=>rootVisualElement.Q<T>(name);
         void Run(Action action){try{action();}catch(Exception e){Q<Label>("status").text=e.Message;Debug.LogWarning(e.Message);error=e.Message;}Refresh();}

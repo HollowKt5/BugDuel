@@ -9,13 +9,17 @@ namespace BeetleArena.Campaign
     {
         void DrawMarketAuctions(RectTransform window)
         {
+            MButton(window,"公开竞价",14,104,240,40,()=>{championAuction=false;QueueRefresh();},true,22,true,championAuction?CampaignRetroTheme.Window:CampaignRetroTheme.Frame,championAuction?ink:Color.white);
+            MButton(window,"冠军拍卖",264,104,240,40,()=>{championAuction=true;QueueRefresh();},true,22,true,championAuction?CampaignRetroTheme.Frame:CampaignRetroTheme.Window,championAuction?Color.white:ink);
+            if(championAuction){DrawAuction(window);return;}
             var panel=MBox("PublicAuctions",window,11,100,1562,773,CampaignRetroTheme.Panel,CampaignRetroTheme.Border,2);
+            panel.anchoredPosition=new Vector2(11,-154);panel.sizeDelta=new Vector2(1562,723);
             var heading=MBox("AuctionHeading",panel,2,2,1558,40,CampaignRetroTheme.Frame);
             MText(heading,"公开拍卖大厅 · 活体 / 装框标本",12,9,1000,25,14,Color.white,true);
             MText(heading,$"第 {State.week:00} 周拍品 · 每场 4 轮",1170,10,372,23,12,Color.white).alignment=TextAlignmentOptions.MidlineRight;
             MText(panel,"价高者优先：最高出价达到期望价，100% 成交；低于期望价时，越接近越容易成交。",16,53,1528,26,13,CampaignRetroTheme.Accent,true);
             MText(panel,"举牌金额暂存托管，被超价或流拍即退还。你决定何时推进轮次；进入下一周会结算未结束拍卖。",16,85,1528,24,12,CampaignRetroTheme.Muted);
-            var content=MarketScroll(panel,2,120,1558,624,CampaignRetroTheme.Grid);
+            var content=MarketScroll(panel,2,120,1558,574,CampaignRetroTheme.Grid);
             var grid=Component<UnityEngine.UI.GridLayoutGroup>(content);grid.constraint=UnityEngine.UI.GridLayoutGroup.Constraint.FixedColumnCount;grid.constraintCount=2;grid.cellSize=new Vector2(751,264);grid.spacing=new Vector2(12,12);grid.padding=new RectOffset(12,12,12,12);grid.childAlignment=TextAnchor.UpperLeft;
             Component<UnityEngine.UI.ContentSizeFitter>(content).verticalFit=UnityEngine.UI.ContentSizeFitter.FitMode.PreferredSize;
             foreach(var lot in State.marketAuctions)DrawMarketAuctionCard(content,lot);
@@ -24,7 +28,7 @@ namespace BeetleArena.Campaign
             MText(blind,"经典三轮举牌，成交后揭晓物种。\n此场采用固定举牌规则，每逢双数周开放。\n中途退出不扣金币，本周不能重新参加。",18,65,710,91,13,CampaignRetroTheme.Muted);
             MText(blind,State.pupaAuction==null?$"起拍 150 G · {(State.week%2==0?"本周开放":"下周开放")}":$"当前 {State.pupaAuction.bid:N0} G · 第 {State.pupaAuction.round}/3 轮",18,165,710,29,15,CampaignRetroTheme.Price,true);
             MButton(blind,State.pupaAuction==null?"进入神秘蛹盲拍":"继续神秘蛹盲拍",18,216,715,30,OpenMarketPupa,State.pupaAuction!=null||State.week%2==0&&State.lastPupaWeek!=State.week,12);
-            notice=MStatus(panel,10,748,1542,20);
+            notice=MStatus(panel,10,698,1542,20);
             Canvas.ForceUpdateCanvases();
         }
 

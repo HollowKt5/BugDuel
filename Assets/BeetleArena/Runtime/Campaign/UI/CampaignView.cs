@@ -19,7 +19,7 @@ namespace BeetleArena.Campaign
         public CampaignLeagueBridge leagueBridge;
         CampaignApp app;
         RectTransform canvas,root,modal;
-        TMP_Text notice,careLabel,behaviorLabel;
+        TMP_Text notice,careLabel;
         CampaignCareController careController;
         readonly CampaignUiTree tree=new CampaignUiTree();
         CanvasGroup pageInteraction;
@@ -41,6 +41,8 @@ namespace BeetleArena.Campaign
         void Start()
         {
             app=CampaignApp.Ensure();
+            if(page==CampaignPage.Auction) { page=CampaignPage.Market;RequestChampionAuction=true; }
+            if(page==CampaignPage.Market&&RequestChampionAuction) {marketTab=2;championAuction=true;RequestChampionAuction=false;}
             var retroFont=Resources.Load<TMP_FontAsset>("RetroUiFont");if(retroFont)font=retroFont;
             if(page!=CampaignPage.MainMenu && page!=CampaignPage.Saves && Session==null) { app.Go(CampaignPage.MainMenu);return; }
             if(page==CampaignPage.Arena)CreateRounded();
@@ -54,7 +56,7 @@ namespace BeetleArena.Campaign
                 BeetleCombatCrt.Attach(backdrop.output);
                 if(page==CampaignPage.Greenhouse)
                 {
-                    backdrop.SetViewport(new Rect(1f/3f,0,2f/3f,1));
+                    backdrop.SetViewport(new Rect(1f/6f,0,5f/6f,1));
                     observation=CampaignObservationCamera.Ensure(backdrop);
                     SetupConstruction();
                 }
@@ -79,7 +81,7 @@ namespace BeetleArena.Campaign
         {
             // Keep keyboard/controller navigation inside the visible portion of scrollable lists.
             var focus=EventSystem.current?EventSystem.current.currentSelectedGameObject:null;
-            if(modal && (!focus || !focus.transform.IsChildOf(modal))) { SelectFirst(modal); return; }
+            if(!RetroUiNavigation.PointerMode && modal && (!focus || !focus.transform.IsChildOf(modal))) { SelectFirst(modal); return; }
             if(!focus||focus==lastFocus)return;lastFocus=focus;
             var scroll=focus.GetComponentInParent<UI.ScrollRect>();if(!scroll||!scroll.viewport||!scroll.content)return;
             Canvas.ForceUpdateCanvases();var bounds=RectTransformUtility.CalculateRelativeRectTransformBounds(scroll.viewport,focus.transform);
@@ -90,7 +92,7 @@ namespace BeetleArena.Campaign
         {
             if(!app || !canvas) return;
             HandlePlayerIdentityPrompt();
-            if(page==CampaignPage.Greenhouse)ApplyConstructionRequest();
+            if(page==CampaignPage.Greenhouse){ApplyConstructionRequest();ReadGreenhousePointer();}
             if(dialogNotice)CampaignLocalization.Bind(dialogNotice,app.Message);
             if(lastCanvasSize!=canvas.rect.size) { lastCanvasSize=canvas.rect.size;QueueRefresh(); }
             if(pageInteraction)pageInteraction.interactable=!app.Busy&&!modal&&!(page==CampaignPage.Greenhouse&&sidebarCollapsed);
@@ -101,17 +103,16 @@ namespace BeetleArena.Campaign
             {
                 careLabelClock=0;
                 var b=State.beetles.Find(x=>x.id==State.selectedId); if(b!=null) CampaignLocalization.Bind(careLabel,Details(b));
-                if(!careController)careController=FindFirstObjectByType<CampaignCareController>();
-                if(behaviorLabel&&b!=null)CampaignLocalization.Bind(behaviorLabel,careController?careController.Describe(b.id):"观察中");
             }
             if(app.Busy || rebind!=null) return;
             if(page==CampaignPage.Market && !modal && HandleMarketShortcuts())return;
             if(app.Controls["Back"].WasPressedThisFrame())
-            { if(RetroFilterDropdown.ConsumeBack())return;if(modal) { if(modalBack!=null)modalBack();else CloseModal(); } else if(page==CampaignPage.Greenhouse&&HandleConstructionBack()){} else if(page!=CampaignPage.MainMenu) Confirm("返回主菜单？当前进度会自动保存。",()=>{if(Session!=null)app.SaveSlot(0);app.Go(CampaignPage.MainMenu);}); }
+            { if(RetroFilterDropdown.ConsumeBack())return;if(modal) { if(modalBack!=null)modalBack();else CloseModal(); } else if(page==CampaignPage.Greenhouse&&HandleGreenhouseBack()){} else OpenSettings(); }
             if(app.Controls["Help"].WasPressedThisFrame()) app.Manage(page,"Help");
         }
         void Rebuild()
         {
+            if(CampaignLocalization.Font)font=CampaignLocalization.Font;
             ink=CampaignRetroTheme.Ink;muted=CampaignRetroTheme.Muted;accent=CampaignRetroTheme.Accent;
             var selected=EventSystem.current?EventSystem.current.currentSelectedGameObject:null;
             if(!root)
@@ -120,8 +121,9 @@ namespace BeetleArena.Campaign
                 pageInteraction=root.gameObject.AddComponent<CanvasGroup>();
             }
             if(page==CampaignPage.Greenhouse || page==CampaignPage.SpecimenRoom)
-            { root.anchorMin=Vector2.zero;root.anchorMax=new Vector2(page==CampaignPage.Greenhouse?1f/3f:.28f,1);root.pivot=new Vector2(0,1);root.offsetMin=root.offsetMax=Vector2.zero;Canvas.ForceUpdateCanvases(); }
-            foreach(var t in thumbnails) if(t) Destroy(t); thumbnails.Clear(); careLabel=null;behaviorLabel=null;
+            { root.anchorMin=Vector2.zero;root.anchorMax=new Vector2(page==CampaignPage.Greenhouse?(1+warehouseProgress)/6f:.28f,1);root.pivot=new Vector2(0,1);root.offsetMin=root.offsetMax=Vector2.zero;Canvas.ForceUpdateCanvases(); }
+            if(page==CampaignPage.Market){Stretch(root);Canvas.ForceUpdateCanvases();}
+            foreach(var t in thumbnails) if(t) Destroy(t); thumbnails.Clear(); careLabel=null;
             tree.Begin();
             if(page==CampaignPage.Arena) { DrawArena(); EndRefresh(selected); return; }
             if(page==CampaignPage.Market) { DrawMarket();EndRefresh(selected);return; }
@@ -137,6 +139,7 @@ namespace BeetleArena.Campaign
                     case CampaignPage.Catching: DrawCatching();break;
                     case CampaignPage.League: DrawLeague();break;
                     case CampaignPage.Auction: DrawAuction();break;
+                    case CampaignPage.Breeding: DrawBreedingCenter();break;
                 }
             }
             notice=Label(root,"",50,845,1500,30,17,muted);
@@ -145,7 +148,7 @@ namespace BeetleArena.Campaign
         }
         void EndRefresh(GameObject selected)
         {
-            if(Session!=null&&(page==CampaignPage.Greenhouse||page==CampaignPage.SpecimenRoom))DrawCalendarHud();
+            if(Session!=null&&page==CampaignPage.SpecimenRoom)DrawCalendarHud();
             tree.End();
             EnsurePresentationHud();
             if(!sidebarCollapsed&&(!selected || !selected.activeInHierarchy || (selected.GetComponent<UI.Selectable>() is UI.Selectable control && !control.IsInteractable())))SelectFirst(root);
@@ -160,15 +163,12 @@ namespace BeetleArena.Campaign
         {
             Panel(root,32,100,1536,780,name:"ManagementPage");
             var nav=Panel(root,32,24,1536,64,name:"Navigation");
-            Label(nav,"甲虫决斗  /  虫舍日记",16,18,242,36,20,accent);
-            var pages=new[]{CampaignPage.Greenhouse,CampaignPage.Catching,CampaignPage.Market,CampaignPage.League,CampaignPage.Auction};
-            string[] names={"温室","捕虫队","市场","联赛","冠军拍卖"};
+            Label(nav,"甲壳虫斗",16,18,242,36,24,accent);
+            var pages=new[]{CampaignPage.Greenhouse,CampaignPage.Catching,CampaignPage.Market,CampaignPage.League,CampaignPage.Breeding};
+            string[] names={"温室","捕虫队","市场","联赛","育种中心"};
             for(int i=0;i<pages.Length;i++) { var p=pages[i]; Btn(nav,names[i],270+i*126,10,116,44,()=>app.Go(p),page!=p); }
-            Btn(nav,"存档",910,10,80,44,()=>app.Go(CampaignPage.Saves));
-            Btn(nav,"设置",1000,10,80,44,OpenSettings);
-            Btn(nav,"主菜单",1090,10,110,44,()=>{app.SaveSlot(0);app.Go(CampaignPage.MainMenu);});
+            Btn(nav,"主菜单",1090,10,110,44,()=>app.Go(CampaignPage.MainMenu));
             DrawCalendarClock(nav,1210,4,314,56);
-            Label(root,$"第 {State.week:00} 周    ·    {State.coins:N0} G    ·    温室 {State.beetles.Count}+{Session.Reserved}/{State.capacity}    ·    口碑 {State.reputation}",42,110,1200,35,24,ink);
         }
         void Title(string title,string subtitle) { Label(root,title,42,163,1180,48,32,ink); Label(root,subtitle,44,212,1480,32,18,muted); }
         void CreateRounded()

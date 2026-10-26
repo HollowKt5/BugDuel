@@ -1,8 +1,8 @@
-using UnityEngine;
+﻿using UnityEngine;
 
 namespace BeetleArena
 {
-    /// <summary>两份固定步姿态快照。显示插值只改 Transform，下一模拟步先恢复权威姿态。</summary>
+    /// <summary>Dual fixed-step pose snapshots. Display interpolation only mutates Transforms; authoritative pose is restored before next simulation step.</summary>
     public sealed class BeetlePoseBuffer
     {
         readonly Transform[] bones;
@@ -15,7 +15,7 @@ namespace BeetleArena
             for (int i = 0; i < bones.Length; i++) previous[i] = current[i] = new BeetleLocalPose(bones[i]);
         }
 
-        // 在 AI/IK 固定步之前调用，不能让上一可视帧的中间姿态进入下一步碰撞计算。
+        // Invoked prior to AI/IK fixed step to prevent intermediate poses from the previous visual frame from entering collision queries.
         public void BeginStep()
         {
             for (int i = 0; i < bones.Length; i++)
@@ -30,7 +30,7 @@ namespace BeetleArena
             for (int i = 0; i < bones.Length; i++) current[i] = new BeetleLocalPose(bones[i]);
         }
 
-        // 不推进 walkCycle/脚步计时，只混合两份既定结果；数组换局时分配，每帧零托管分配。
+        // Blends between two established results without advancing walkCycle or gait timers; arrays allocated per match, zero per-frame heap allocations.
         public void Render(float alpha)
         {
             alpha = Mathf.Clamp01(alpha);
@@ -40,7 +40,7 @@ namespace BeetleArena
             }
         }
 
-        // 只读引用供本 Actor 的接触缓冲复用层级枚举；消费者不能修改这个数组。
+        // Read-only reference allowing this Actor's contact buffer to reuse hierarchy enumeration; consumers must not mutate this array.
         internal Transform[] Bones => bones;
     }
 }

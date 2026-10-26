@@ -6,7 +6,7 @@ using UnityEngine;
 
 namespace BeetleArena
 {
-    /// <summary>养殖场景的应用入口：拥有时间、选择和存档策略，不参与比赛模拟或骨骼动画。</summary>
+    /// <summary>Application entry for husbandry scenes: owns timing, selection, and save policies; decoupled from match simulation or bone animation.</summary>
     public sealed class BeetleHusbandryController : MonoBehaviour
     {
         [Min(1)] public float secondsPerGameDay = 600;
@@ -29,7 +29,7 @@ namespace BeetleArena
         public void Initialize(string absoluteSavePath = null, bool loadSavedRoster = true)
         {
             if (Session != null) return;
-            SavePath = absoluteSavePath ?? Path.Combine(Application.persistentDataPath, "husbandry-roster.json");
+            SavePath = absoluteSavePath ?? Path.Combine(BeetleStoragePaths.PersistentData, "husbandry-roster.json");
             store = new BeetleRosterJsonStore(SavePath);
             ContentPath = Path.Combine(Path.GetDirectoryName(SavePath), "beetle-content.json");
             Session = new BeetleRosterSession(BeetleContentExamples.Create(), new Dictionary<string, BeetleCombatProfile>());
@@ -46,7 +46,7 @@ namespace BeetleArena
                 catch (Exception error) when (error is IOException || error is ArgumentException || error is InvalidOperationException ||
                     error is NotSupportedException || error is UnauthorizedAccessException)
                 {
-                    // 读档失败时不覆盖玩家原档；本次临时示例依然可操作。
+                    // Save load failures do not overwrite existing player saves; temporary session remains interactive.
                     CanSave = false;
                     Message = "存档读取失败，当前使用临时示例；原存档已保留。";
                     Debug.LogWarning("Husbandry save could not be restored: " + error.Message, this);
@@ -124,7 +124,7 @@ namespace BeetleArena
             if (saveSeconds >= 10) { saveSeconds = 0; TrySave(false); }
         }
 
-        /// <summary>显式场景时间；暂停/离线不扣生命。自动事故只产生领域命令，不控制动画。</summary>
+        /// <summary>Explicit scene clock; pausing/offline incurs no vitality penalties. Incidents generate domain commands without controlling animations.</summary>
         public void AdvanceSeconds(double seconds)
         {
             if (Session == null || IsPaused) return;

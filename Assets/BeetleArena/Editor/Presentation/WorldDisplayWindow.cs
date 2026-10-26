@@ -20,7 +20,7 @@ namespace BeetleArena.EditorTools
         T Q<T>(string name) where T:VisualElement=>rootVisualElement.Q<T>(name);
         string SceneName=>Path.GetFileNameWithoutExtension(scenes[Q<DropdownField>("scene").index]);
         Shader SelectedShader=>Q<DropdownField>("shader").index==0?null:shaders[Q<DropdownField>("shader").index-1];
-        [MenuItem("Tools/Beetle Arena/Scene Display Settings")]
+        [MenuItem("Tools/甲壳虫斗/常用工具/场景画面设置", false, 101)]
         public static void Open()=>GetWindow<WorldDisplayWindow>("场景画面").Show();
         void OnEnable()=>Undo.undoRedoPerformed+=OnUndo;
         void OnDisable()=>Undo.undoRedoPerformed-=OnUndo;
@@ -78,8 +78,8 @@ namespace BeetleArena.EditorTools
             {
                 var material=Q<ObjectField>("material").value as Material;
                 var style=WorldDisplayEditorService.StyleFor(SelectedShader);
-                int pixels=material&&material.HasProperty("_PixelSize")?Mathf.RoundToInt(material.GetFloat("_PixelSize")):
-                    style==BeetleDisplayStyle.DenseDither?1:profile.Find(SceneName)?.pixelSize??3;
+                int pixels=material&&material.HasProperty("_PixelSize")?(BeetleDisplayPreferences.IsDither(style)?BeetleDisplayPreferences.DitherPixelLevel(material.GetFloat("_PixelSize")):Mathf.RoundToInt(material.GetFloat("_PixelSize"))):
+                    profile.Find(SceneName)?.pixelSize??2;
                 WorldDisplayEditorService.Apply(profile,SceneName,SelectedShader,pixels,material);
                 ReadScene();Q<Label>("status").text="已保存并应用，仅影响所选场景。\n"+Q<Label>("status").text;
             }

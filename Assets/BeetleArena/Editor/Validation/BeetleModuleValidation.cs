@@ -7,11 +7,11 @@ using BeetleArena;
 using UnityEditor;
 using UnityEngine;
 
-/// <summary>模块独立性、真实接触与长时间活体反馈验证。临时场景/配置均不污染用户资产。</summary>
+/// <summary>Module modularity, physical contact, and sustained live feedback validation. Temporary scenes and configs leave user assets pristine.</summary>
 public static class BeetleModuleValidation
 {
     static void Require(bool value, string why) { if (!value) throw new Exception(why); }
-    [MenuItem("Tools/Beetle Arena/Validate Motion Modules")]
+    [MenuItem("Tools/甲壳虫斗/验证/模型与动作/动作模块", false, 705)]
     public static void Run()
     {
         if (EditorApplication.isPlaying) throw new Exception("Stop Play first");
@@ -49,7 +49,7 @@ public static class BeetleModuleValidation
         var module = ScriptableObject.CreateInstance<BeetleModuleValidationProbe>();
         try
         {
-            // 插入一个新类型而不改运行核心：新增/重复/空引用/移除/禁用/实例隔离。
+            // Injects a new type without modifying runtime core: addition, duplicate, null reference, removal, disabling, instance isolation.
             s.motionModules = new BeetleMotionModule[] { null, module, module };
             var sim = new BeetleSimulation(s, 7); var a = sim.Fighters[0]; var b = sim.Fighters[1];
             Require(a.Motion.TryStart(.5f), "New module cannot register");
@@ -129,7 +129,7 @@ public static class BeetleModuleValidation
         sim.SetGround(match.ActiveSurface);
         for (int i = 0; i < 2; i++) match.actors[i].Bind(sim.Fighters[i], match.settings, match.ActiveSurface);
         match.Contacts.Solve(sim, 0);
-        // 只为测试进入动作提供触碰历史；产生冲量仍必须通过真实几何探测。
+        // Seeds contact history solely to trigger action transitions; impulse generation still requires passing true geometry probes.
         a.TouchingOpponent = true; a.Motion.Refresh(sim, a);
         bool started = a.Motion.TryStart(.2f);
         if (!started) { report.AppendLine($"{module.name}, variant={variant}: geometry not eligible"); return 0; }
@@ -215,7 +215,7 @@ public static class BeetleModuleValidation
         {
             var counts = sim.Fighters.Select(b => b.Motion.Starts).ToArray();
             var old = sim.Fighters.Select(b => new Vector3(b.Position.x, b.Height, b.Position.y)).ToArray();
-            // 自然对局走正式固定步/显示入口；插值隔离另有低层专门测试。
+            // Natural combat traverses production fixed step / presentation entries; interpolation isolation has lower-level dedicated tests.
             match.AdvanceFixedStep(); match.Present(1, sim.MotionTime, .02f);
             for (int i = 0; i < 2; i++)
             {

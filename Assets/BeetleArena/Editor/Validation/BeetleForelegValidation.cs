@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -12,7 +12,7 @@ public static class BeetleForelegValidation
     public static void Pilot() => Batch(false);
     public static void Final() => Batch(true);
     public static void ContactsOnly() => Batch(false, true);
-    // 汇总验证复用同一组检查，由调用者统一报告和退出 Unity。
+    // Aggregated suite shares common checks; callers handle unified reporting and Unity exit codes.
     internal static void ContactsInProcess() => Batch(false, true, false);
     static void Require(bool condition, string reason) { if (!condition) throw new Exception(reason); }
     static void Batch(bool full, bool requireHits = false, bool exitBatch = true)
@@ -125,7 +125,7 @@ public static class BeetleForelegValidation
         sim.ContactSolver = probe;
         b.Position = a.Position + a.Forward * 3;
         a.Footing = a.Balance = 1;
-        a.TouchingOpponent = true; // 故意保留陈旧接触标记；启动必须查当前几何能力。
+        a.TouchingOpponent = true; // Deliberately retains stale contact flag; startup must verify active geometric capability.
         a.Motion.Refresh(sim, a);
         Require(!push.CanStart(a.Motion.Context), "Push starts from stale contact flag");
         a.Motion.EditorPreviewStart(push);

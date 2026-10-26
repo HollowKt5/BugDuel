@@ -90,13 +90,13 @@ namespace BeetleArena.Campaign
         void SetMarketMode(bool dark){CampaignRetroTheme.SetMode(dark);SetMarketThemeOpen(false);}
         void DrawMarketThemeMenu()
         {
-            var dismiss=Rect("MenuDismiss",root,0,0,1600,900);var hit=Component<UI.Image>(dismiss);hit.color=Color.clear;hit.raycastTarget=marketThemeOpen;var click=Component<UI.Button>(dismiss);click.onClick.RemoveAllListeners();click.onClick.AddListener(()=>SetMarketThemeOpen(false));click.transition=UI.Selectable.Transition.None;click.interactable=marketThemeOpen;marketThemeDismiss=click;
-            var dropdown=MBox("ThemeDropdown",root,17,65,268,166,MColor(0xffffff,0x252a30),MColor(0x716f64,0x4b5563),1);dropdown.GetComponent<UI.Image>().raycastTarget=true;
-            MText(dropdown,"当前季节（随游戏日历）",12,5,244,18,10,CampaignRetroTheme.Muted);
-            MText(dropdown,CampaignRetroTheme.SeasonName,12,29,244,24,13,CampaignRetroTheme.Ink,true);
-            MBox("ModeRule",dropdown,1,66,266,1,MColor(0xd0ccbe,0x181b1f));MText(dropdown,"色彩模式 (明暗)：",12,72,244,18,10,CampaignRetroTheme.Muted);
-            MButton(dropdown,(!CampaignRetroTheme.Dark?"✓  ":"    ")+"明亮浅色模式 (Light)",3,97,262,27,()=>SetMarketMode(false),true,12,true,MColor(0xffffff,0x252a30)).GetComponentInChildren<TMP_Text>().alignment=TextAlignmentOptions.MidlineLeft;
-            MButton(dropdown,(CampaignRetroTheme.Dark?"✓  ":"    ")+"经典暗色模式 (Dark)",3,129,262,27,()=>SetMarketMode(true),true,12,true,MColor(0xffffff,0x252a30)).GetComponentInChildren<TMP_Text>().alignment=TextAlignmentOptions.MidlineLeft;
+            var dismiss=Rect("MenuDismiss",root,0,0,root.rect.width,root.rect.height);var hit=Component<UI.Image>(dismiss);hit.color=Color.clear;hit.raycastTarget=marketThemeOpen;var click=Component<UI.Button>(dismiss);click.onClick.RemoveAllListeners();click.onClick.AddListener(()=>SetMarketThemeOpen(false));click.transition=UI.Selectable.Transition.None;click.interactable=marketThemeOpen;marketThemeDismiss=click;
+            var dropdown=MBox("ThemeDropdown",root,294,64,300,238,MColor(0xffffff,0x252a30),MColor(0x716f64,0x4b5563),1);dropdown.GetComponent<UI.Image>().raycastTarget=true;
+            MText(dropdown,"当前季节（随游戏日历）",12,8,276,27,17,CampaignRetroTheme.Muted);
+            MText(dropdown,CampaignRetroTheme.SeasonName,12,42,276,32,21,CampaignRetroTheme.Ink,true);
+            MBox("ModeRule",dropdown,1,88,298,1,MColor(0xd0ccbe,0x181b1f));MText(dropdown,"色彩模式 (明暗)：",12,99,276,27,18,CampaignRetroTheme.Muted);
+            MButton(dropdown,(!CampaignRetroTheme.Dark?"✓  ":"    ")+"明亮浅色模式 (Light)",3,134,294,42,()=>SetMarketMode(false),true,18,true,MColor(0xffffff,0x252a30)).GetComponentInChildren<TMP_Text>().alignment=TextAlignmentOptions.MidlineLeft;
+            MButton(dropdown,(CampaignRetroTheme.Dark?"✓  ":"    ")+"经典暗色模式 (Dark)",3,184,294,42,()=>SetMarketMode(true),true,18,true,MColor(0xffffff,0x252a30)).GetComponentInChildren<TMP_Text>().alignment=TextAlignmentOptions.MidlineLeft;
             marketThemeMotion=BeetlePanelMotion.Attach(dropdown.gameObject);
             marketThemeMotion.SetVisible(marketThemeOpen,hidden:QueueRefresh);
         }

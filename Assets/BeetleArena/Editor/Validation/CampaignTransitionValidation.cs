@@ -23,7 +23,7 @@ public static class CampaignTransitionValidation
         if(output.Length>0)CampaignApp.StorageOverride=Path.Combine(output,"Saves");
         EditorApplication.playModeStateChanged+=OnPlay;
     }
-    [MenuItem("Tools/Beetle Arena/Validate Campaign Transition Frames")]
+    [MenuItem("Tools/甲壳虫斗/验证/界面与画面/转场逐帧检查", false, 603)]
     public static void Validate() => Run(true);
     public static void Run(bool verify)
     {

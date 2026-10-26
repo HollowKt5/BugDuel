@@ -29,6 +29,7 @@ namespace BeetleArena.Campaign
         float nextFloat;
         bool built,subscribed,compact;
         public TMP_Text BalanceLabel => balance;
+        public bool FloatAbove { get; set; }
         public double DisplayedBalance => shown;
         public long TargetBalance { get; private set; }
         public long LastSequence { get; private set; }
@@ -66,19 +67,19 @@ namespace BeetleArena.Campaign
             }
             GetComponent<UnityEngine.UI.Image>().color=CampaignRetroTheme.Window;
             GetComponent<RetroBevel>().Configure(2,CampaignRetroTheme.LightEdge,CampaignRetroTheme.DarkEdge);
-            foreach(var text in GetComponentsInChildren<TMP_Text>(true))text.font=font;
+            foreach(var text in GetComponentsInChildren<TMP_Text>(true))text.font=CampaignLocalization.Font?CampaignLocalization.Font:font;
             var unit=transform.Find("CurrencyUnit").GetComponent<TMP_Text>();unit.color=CampaignRetroTheme.Price;
             unit.rectTransform.anchoredPosition=new Vector2(compact?8:12,compact?-2:-12);
             unit.rectTransform.sizeDelta=new Vector2(compact?20:32,compact?21:38);
-            unit.fontSize=unit.fontSizeMax=compact?16:26;unit.fontSizeMin=compact?14:18;
+            CampaignLocalization.SetFontSize(unit,compact?16:26,compact?14:18);
             float left=compact?34:50;
             balance.rectTransform.anchoredPosition=new Vector2(left,compact?-2:-11);
             balance.rectTransform.sizeDelta=new Vector2(-left-12,compact?21:39);
-            balance.fontSize=balance.fontSizeMax=compact?16:30;balance.fontSizeMin=compact?14:18;
+            CampaignLocalization.SetFontSize(balance,compact?16:30,compact?14:18);
             foreach(var item in floats)
             {
                 item.rect.sizeDelta=new Vector2(-(compact?34:55)-12,compact?24:28);
-                item.label.fontSize=item.label.fontSizeMax=compact?17:20;item.label.fontSizeMin=compact?14:18;
+                CampaignLocalization.SetFontSize(item.label,compact?17:20,compact?14:18);
             }
             balance.color=ink;
             if(owner==app&&subscribed)return;
@@ -88,7 +89,7 @@ namespace BeetleArena.Campaign
         {
             var rect=new GameObject(name,typeof(RectTransform)).GetComponent<RectTransform>();rect.SetParent(parent,false);
             rect.anchorMin=rect.anchorMax=rect.pivot=new Vector2(0,1);rect.anchoredPosition=new Vector2(x,-y);rect.sizeDelta=new Vector2(width,height);
-            var text=rect.gameObject.AddComponent<TextMeshProUGUI>();text.fontSize=size;text.fontSizeMin=18;text.fontSizeMax=size;
+            var text=rect.gameObject.AddComponent<TextMeshProUGUI>();CampaignLocalization.SetFontSize(text,size,18);
             text.enableAutoSizing=true;text.richText=false;text.textWrappingMode=TextWrappingModes.NoWrap;text.raycastTarget=false;return text;
         }
         void Subscribe()
@@ -133,7 +134,7 @@ namespace BeetleArena.Campaign
             var item=slot;var change=pending.Dequeue();item.sequence=change.Sequence;item.active=true;FloatsShown++;
             item.label.gameObject.SetActive(true);item.label.text=(change.Delta>0?"+":"−")+Math.Abs(change.Delta).ToString("N0");
             var color=change.Delta>0?gain:loss;item.label.color=color;
-            float x=(compact?34:55)-lane*8,y=-(compact?28:61)-lane*9,travel=compact?-24:38;item.rect.anchoredPosition=new Vector2(x,y);
+            float x=(compact?34:55)-lane*8,y=FloatAbove?28+lane*9:-(compact?28:61)-lane*9,travel=FloatAbove?28:compact?-24:38;item.rect.anchoredPosition=new Vector2(x,y);
             float progress=0;
             item.tween=DOTween.To(()=>progress,value=>
             {

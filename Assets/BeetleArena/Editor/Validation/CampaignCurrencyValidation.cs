@@ -22,7 +22,7 @@ public static class CampaignCurrencyValidation
         EditorApplication.playModeStateChanged+=OnPlay;
         EditorApplication.update+=()=>{if(SessionState.GetString(Key,"").Length>0&&EditorApplication.isPlaying)EditorApplication.QueuePlayerLoopUpdate();};
     }
-    [MenuItem("Tools/Beetle Arena/Validate Currency Feedback")]
+    [MenuItem("Tools/甲壳虫斗/验证/界面与画面/金币反馈", false, 601)]
     public static void Run()
     {
         if(EditorApplication.isPlaying)throw new InvalidOperationException("Stop Play before isolated currency validation.");

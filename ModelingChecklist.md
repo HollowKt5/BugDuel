@@ -36,7 +36,7 @@
 
 ## Inspector 配置与模型替换接口
 
-1. 执行 Unity 菜单 `Tools > Beetle Arena > Create Life Stage Visual Profile`，或由安装流程调用 `CampaignLifeStageVisualSetup.EnsureProfile()`。配置资产位于 `Assets/BeetleArena/Resources/LifeStageVisuals.asset`，重复执行不会覆盖已有编辑。
+1. 执行 Unity 菜单 `Tools > 甲壳虫斗 > 画面与资源 > 养殖表现 > 创建生命阶段表现配置`，或由安装流程调用 `CampaignLifeStageVisualSetup.EnsureProfile()`。配置资产位于 `Assets/BeetleArena/Resources/LifeStageVisuals.asset`，重复执行不会覆盖已有编辑。
 2. 打开配置资产的 `Stages` 数组。保留八个阶段各一条，修改 `bodyLength`、`startScale`、`bodyColor`、身体位置/旋转、容器尺寸与位置。通用颜色、卵数、幼虫节数、基质颗粒数和呼吸幅度均可编辑。
 3. `specimenPrefab` 可替换卵、L1/L2/L3、前蛹、蛹的程序身体；保留一个以 `Y=0` 为底的单位模型，最终乘 `bodyLength` 和阶段增长。默认身体颜色只用于程序几何；自定义模型直接使用其原材质。
 4. `environmentPrefab` 可替换相应阶段的程序容器。容器保持静止，不能作为虫的子物体跟随移动。模型不需要 Collider、Rigidbody 或任何游戏数据组件。

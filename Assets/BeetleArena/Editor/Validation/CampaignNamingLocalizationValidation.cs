@@ -8,7 +8,7 @@ using UnityEngine;
 
 public static class CampaignNamingLocalizationValidation
 {
-    [MenuItem("Tools/Beetle Arena/Validate Naming Localization")]
+    [MenuItem("Tools/甲壳虫斗/验证/本地化/玩家与甲虫姓名", false, 641)]
     public static void Run()
     {
         bool previousEnglish=CampaignLocalization.English;

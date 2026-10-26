@@ -16,7 +16,7 @@ public static class CampaignSaveCommitValidation
     static readonly FieldInfo Thumbnail=typeof(CampaignApp).GetField("latestThumbnail",Private);
     static readonly MethodInfo FinishCommit=typeof(CampaignApp).GetMethod("FinishCommit",Private);
 
-    [MenuItem("Tools/Beetle Arena/Validate Save Commit Isolation")]
+    [MenuItem("Tools/甲壳虫斗/验证/存档与数据/存档提交隔离", false, 662)]
     public static void Run()
     {
         if(EditorApplication.isPlaying)throw new InvalidOperationException("Stop Play before isolated save validation.");

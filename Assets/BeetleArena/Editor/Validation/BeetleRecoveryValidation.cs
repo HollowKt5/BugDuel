@@ -5,7 +5,7 @@ using BeetleArena;
 using UnityEditor;
 using UnityEngine;
 
-/// <summary>恢复出口回归。测试真实 Step/状态链，避免只验证一个策略布尔函数。</summary>
+/// <summary>Recovery exit regression: tests full Step/state chain rather than isolated tactical boolean predicates.</summary>
 public static class BeetleRecoveryValidation
 {
     static void Require(bool condition, string reason) { if (!condition) throw new Exception(reason); }
@@ -20,7 +20,7 @@ public static class BeetleRecoveryValidation
         b.Action = BeetleAction.Assess; b.ActionTime = 0; b.ActionDuration = 10;
         return sim;
     }
-    [MenuItem("Tools/Beetle Arena/Validate Recovery Pacing")]
+    [MenuItem("Tools/甲壳虫斗/验证/战斗/恢复节奏", false, 512)]
     public static void Run()
     {
         using var fixture = new BeetleValidationScene("RecoveryValidation");
@@ -29,7 +29,7 @@ public static class BeetleRecoveryValidation
         Directory.CreateDirectory("Artifacts/PacingReview");
         try
         {
-            // 关闭体力恢复，确保退出来自上限，而不是偶然回满体力。
+            // Disables stamina regen to verify exit occurs via ceiling threshold rather than fortuitous stamina refill.
             s.staminaRecovery = 0;
             var sim = Ready(s); var a = sim.Fighters[0]; a.Stamina = 1;
             float longest = 0;
@@ -51,7 +51,7 @@ public static class BeetleRecoveryValidation
             Require(a.Action == BeetleAction.Brace && a.RecoveryCooldown > 0, "Threat cannot interrupt rest");
             report.AppendLine("PASS: near windup interrupts resting into Brace in <=0.24s, without forced attack.");
 
-            // 状态机可以改变 AI 决策，但不能抢占已经开始的托举/冲顶链。
+            // State machine can influence AI decision-making, but cannot preempt active lift or strike chains.
             sim = Ready(s); a = sim.Fighters[0]; a.Action = BeetleAction.ChargeWindup;
             a.ActionDuration = .6f; a.ActionTime = 0; a.Stamina = 1; a.RecoveryTime = 100;
             sim.Step(.02f);

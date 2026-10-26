@@ -11,7 +11,7 @@ using UnityEngine;
 public static class CareBehaviorValidation
 {
     static readonly List<string> checks=new List<string>();
-    [MenuItem("Tools/Beetle Arena/Validate Husbandry Behavior")]
+    [MenuItem("Tools/甲壳虫斗/验证/养殖/自然行为", false, 542)]
     public static void Run()
     {
         checks.Clear();
