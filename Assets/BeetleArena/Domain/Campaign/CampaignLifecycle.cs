@@ -72,12 +72,12 @@ namespace BugDuel.Campaign
         {
             switch(id)
             {
-                case EggMedium:return "卵期使用：基质营养 +35，洁净度恢复至100。";
-                case Humus:return "L1 使用：基质营养 +45，洁净度恢复至100。";
-                case FermentedWood:return "L2 / L3 使用：基质营养 +60，洁净度恢复至100。";
-                case FungusBottle:return "L2 / L3 使用：营养与洁净度恢复至100，羽化体长额外 +5%（不叠加）。";
-                case PupaCell:return "预蛹、蛹、蛰伏期使用：保护30天，洁净度恢复至100，健康 +0.25。";
-                case AdultJelly:return "活动成虫使用：饱食 +40，健康 +0.5。蛰伏成虫尚不进食。";
+                case EggMedium:return "卵期 · 基质营养 +35\n洁净恢复至 100";
+                case Humus:return "L1 · 基质营养 +45\n洁净恢复至 100";
+                case FermentedWood:return "L2/L3 · 基质营养 +60\n洁净恢复至 100";
+                case FungusBottle:return "L2/L3 · 营养/洁净恢复至 100\n羽化体长 +5%（不叠加）";
+                case PupaCell:return "预蛹/蛹/蛰伏 · 保护 30 天\n洁净恢复至 100 · 健康 +0.25";
+                case AdultJelly:return "仅活动成虫 · 蛰伏不可用\n饱食 +40 · 健康 +0.5";
                 default:throw new CampaignRuleException("养殖用品不存在");
             }
         }
@@ -256,7 +256,7 @@ namespace BugDuel.Campaign
         }
         void LifeDeath(CampaignBeetle b,string reason)
         {
-            b.dead=true;b.hearts=0;b.listed=false;b.overturned=false;b.meal=null;b.hasMeal=false;
+            b.dead=true;b.hearts=0;b.listed=false;b.overturned=false;b.meal=null;b.hasMeal=false;b.foodResidue=false;
             State.offers.RemoveAll(o=>o.beetleId==b.id);Tell(CampaignDisplayText.Name(b)+reason+"。可以制作标本或遗弃遗体。");
         }
         void SetAutomaticStageName(CampaignBeetle b)

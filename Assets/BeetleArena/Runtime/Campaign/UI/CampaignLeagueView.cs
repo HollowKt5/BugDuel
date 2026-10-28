@@ -8,7 +8,7 @@ namespace BeetleArena.Campaign
     {
         void DrawLeague()
         {
-            Title("五级联赛 · 从树桩走向王座",$"体长决定参赛级别。默认 {Session.Catalog.seasonWins} 连胜夺冠，战败重置赛季进度；已有战斗系统负责胜负。");
+            Title("联赛",$"{Session.Catalog.seasonWins} 连胜夺冠 · 战败重置赛季胜场");
             var tiers=Column(40,265,760,550);var roster=Column(820,265,740,550);
             foreach(var t in Session.Catalog.leagues)
             {
@@ -18,7 +18,7 @@ namespace BeetleArena.Campaign
             if(State.battle!=null)
             {
                 var pending=Card(roster,210);Label(pending,"未完成赛事 · 报名费已支付",22,22,690,45,28,accent);
-                Label(pending,$"{CampaignLocalization.Name(Session.Beetle(State.battle.beetleId))} 对阵 林间挑战者\n从头重赛，同一对手与种子，不再扣报名费。",22,80,690,75,23);
+                Label(pending,$"{CampaignLocalization.Name(Session.Beetle(State.battle.beetleId))} 对阵 林间挑战者\n重赛不再收取报名费。",22,80,690,75,23);
                 Btn(pending,"重返赛场",22,160,330,40,()=>app.Go(CampaignPage.Arena));Btn(pending,"弃权",370,160,330,40,()=>Confirm("弃权按落败结算，报名费不退还。",()=>app.Execute(s=>s.Forfeit())));
             }
             foreach(var beetle in State.beetles.Where(b=>b.Adult(State.week)))
@@ -32,31 +32,35 @@ namespace BeetleArena.Campaign
         void DrawAuction(Transform parent=null)
         {
             if(!parent)Title("冠军拍卖","");
-            var champions=Column(16,parent?164:265,754,parent?710:550,parent,name:"Champions");var stage=Column(790,parent?164:265,790,parent?710:550,parent,name:"ChampionHistory");
+            var pageRect=parent?(RectTransform)parent:root;
+            float columnWidth=(pageRect.rect.width-48)/2,top=parent?164:265,height=parent?pageRect.rect.height-top-14:550;
+            var champions=Column(14,top,columnWidth,height,parent,name:"Champions");var stage=Column(34+columnWidth,top,columnWidth,height,parent,name:"ChampionHistory");
+            champions.rightInset=stage.rightInset=0;
+            float inner=columnWidth-48,buttonWidth=(inner-18)/2;
             if(State.auction==null)
             {
                 bool canStartAuction=State.battle==null&&State.pupaAuction==null;
                 foreach(var beetle in State.beetles.Where(b=>b.championships>0&&!b.dead))
                 {
-                    var b=beetle;var c=Card(champions,220);Label(c,$"{CampaignLocalization.Name(b)}   {b.length:0.0} mm",22,18,680,40,29,accent);
-                    Label(c,$"冠军身价 {b.value:N0} G\n{b.mutation}  ·  首配权 {(b.rightsSold?"已出售":"可出售")}",22,75,680,75,23);
-                    Btn(c,"拍卖冠军本体",22,160,325,42,()=>Confirm("本体成交后会离开温室，并获得持续血统分红。开始拍卖？",()=>app.Execute(s=>s.BeginAuction(b.id,false))),canStartAuction);
-                    Btn(c,"只拍卖一次首配权",365,160,335,42,()=>app.Execute(s=>s.BeginAuction(b.id,true)),canStartAuction&&!b.rightsSold);
+                    var b=beetle;var c=Card(champions,220);Label(c,$"{CampaignLocalization.Name(b)}   {b.length:0.0} mm",24,18,inner,40,29,accent);
+                    Label(c,$"冠军身价 {b.value:N0} G\n{b.mutation}  ·  首配权 {(b.rightsSold?"已出售":"可出售")}",24,75,inner,75,23);
+                    Btn(c,"拍卖冠军本体",24,160,buttonWidth,42,()=>Confirm("本体成交后会离开温室，并获得持续血统分红。开始拍卖？",()=>app.Execute(s=>s.BeginAuction(b.id,false))),canStartAuction);
+                    Btn(c,"只拍卖一次首配权",42+buttonWidth,160,buttonWidth,42,()=>app.Execute(s=>s.BeginAuction(b.id,true)),canStartAuction&&!b.rightsSold);
                 }
-                if(!State.beetles.Any(b=>b.championships>0&&!b.dead)){var c=Card(champions,225);Label(c,"红毯还在等你。\n先带一只甲虫赢下联赛总冠军吧！",24,35,670,100,29);Btn(c,"去联赛",24,160,670,43,()=>app.Go(CampaignPage.League));}
+                if(!State.beetles.Any(b=>b.championships>0&&!b.dead)){var c=Card(champions,156);Label(c,"暂无冠军甲虫",24,24,inner,40,29);Btn(c,"去联赛",24,91,inner,43,()=>app.Go(CampaignPage.League));}
             }
             else
             {
                 var a=State.auction;var b=Session.Beetle(a.beetleId);var c=Card(champions,405);
-                Label(c,(a.rights?"冠军首配权":"冠军本体")+"  /  "+CampaignLocalization.Name(b),25,25,670,70,31,accent);
-                Label(c,$"第 {a.round} / {a.rounds} 轮\n\n{a.bidder??"等待第一位买家"}\n当前举牌  {a.bid:N0} G",25,110,670,195,32);
-                Btn(c,a.round<a.rounds?"下一轮举牌":"落槌成交",25,335,670,50,()=>app.Execute(s=>{if(s.State.auction.round<s.State.auction.rounds)s.AdvanceAuction();else s.CloseAuction();}));
+                Label(c,(a.rights?"冠军首配权":"冠军本体")+"  /  "+CampaignLocalization.Name(b),24,25,inner,70,31,accent);
+                Label(c,$"第 {a.round} / {a.rounds} 轮\n\n{a.bidder??"等待第一位买家"}\n当前举牌  {a.bid:N0} G",24,110,inner,195,32);
+                Btn(c,a.round<a.rounds?"下一轮举牌":"落槌成交",24,335,inner,50,()=>app.Execute(s=>{if(s.State.auction.round<s.State.auction.rounds)s.AdvanceAuction();else s.CloseAuction();}));
             }
-            var header=Card(stage,120);Label(header,"历代标王名人堂",24,20,710,40,30,accent);Label(header,"每份血统每周参与1次模拟NPC赛事，分红为该级胜场奖10%。",24,73,710,32,20,muted);
+            var header=Card(stage,120);Label(header,"拍卖记录",24,20,inner,40,30,accent);Label(header,"每周 1 场血统分红 · 对应联赛胜场奖励的 10%",24,73,inner,32,20,muted);
             foreach(var h in State.hall.AsEnumerable().Reverse())
             {
-                var c=Card(stage,155);Label(c,$"{CampaignLocalization.Name(h)}  ·  {h.length:0.0} mm",22,18,710,38,27);
-                Label(c,$"第 {h.week} 周 · {(h.rights?"首配权":"冠军本体")} · {h.price:N0} G\n累计血统分红 {h.royalties:N0} G  /  {h.mutation}",22,75,710,70,23,muted);
+                var c=Card(stage,155);Label(c,$"{CampaignLocalization.Name(h)}  ·  {h.length:0.0} mm",24,18,inner,38,27);
+                Label(c,$"第 {h.week} 周 · {(h.rights?"首配权":"冠军本体")} · {h.price:N0} G\n累计血统分红 {h.royalties:N0} G  /  {h.mutation}",24,75,inner,70,23,muted);
             }
         }
         void DrawArena()
@@ -76,7 +80,7 @@ namespace BeetleArena.Campaign
             {
                 var card=ArenaResultPanel();
                 Label(card,app.Busy?"正在保存比赛结果…":"比赛结果尚未保存",30,24,640,55,34,accent);
-                Label(card,app.Message+"\n结果保存成功后才会发放奖励。系统会自动重试，也可手动重试。",30,95,640,135,23);
+                Label(card,app.Message+"\n保存后发放奖励，失败会自动重试。",30,95,640,135,23);
                 Btn(card,"重试保存",30,250,640,55,leagueBridge.RetrySettlement,!app.Busy);
             }
         }

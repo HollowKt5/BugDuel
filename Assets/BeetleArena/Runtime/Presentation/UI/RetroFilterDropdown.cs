@@ -17,6 +17,7 @@ namespace BeetleArena
         static int cancelledFrame=-1;
         readonly List<UnityEngine.UI.Button> options=new List<UnityEngine.UI.Button>();
         readonly List<TMP_Text> marks=new List<TMP_Text>();
+        readonly List<TMP_Text> labels=new List<TMP_Text>();
         readonly Vector3[] corners=new Vector3[4];
         RectTransform host,overlay;
         CanvasGroup popupGroup;
@@ -52,6 +53,8 @@ namespace BeetleArena
         {
             if(!trigger.TryGetComponent<RetroFilterDropdown>(out var dropdown))dropdown=trigger.gameObject.AddComponent<RetroFilterDropdown>();
             dropdown.Trigger=trigger;dropdown.IsGlassQualityDropdown=glassQuality;
+            var colors=trigger.colors;colors.normalColor=Color.white;colors.selectedColor=CampaignRetroTheme.HoverTint;
+            colors.highlightedColor=CampaignRetroTheme.HoverTint;colors.pressedColor=CampaignRetroTheme.PressedTint;colors.disabledColor=CampaignRetroTheme.DisabledTint;trigger.colors=colors;
             dropdown.host=popupHost?popupHost:(RectTransform)trigger.GetComponentInParent<Canvas>().rootCanvas.transform;
             dropdown.triggerLabel=trigger.GetComponentInChildren<TMP_Text>();
             var labelRect=dropdown.triggerLabel.rectTransform;labelRect.anchorMin=Vector2.zero;labelRect.anchorMax=Vector2.one;
@@ -63,13 +66,19 @@ namespace BeetleArena
                 var rect=dropdown.arrow.rectTransform;rect.anchorMin=rect.anchorMax=new Vector2(1,.5f);rect.pivot=new Vector2(1,.5f);
                 rect.anchoredPosition=new Vector2(-12,0);rect.sizeDelta=new Vector2(24,30);dropdown.arrow.alignment=TextAlignmentOptions.Center;
             }
-            dropdown.RefreshLabel();return dropdown;
+            dropdown.arrow.color=CampaignRetroTheme.Ink;dropdown.RefreshLabel();return dropdown;
         }
 
         public void RefreshLabel()
         {
             CampaignLocalization.Bind(triggerLabel,ChoiceName(CurrentValue));
-            for(int i=0;i<marks.Count;i++)marks[i].text=Values[i]==CurrentValue?"✓":"";
+            for(int i=0;i<marks.Count;i++)
+            {
+                bool current=Values[i]==CurrentValue;
+                marks[i].text=current?"✓":"";
+                options[i].targetGraphic.color=current?CampaignRetroTheme.Selection:CampaignRetroTheme.Button;
+                marks[i].color=labels[i].color=current?CampaignRetroTheme.SelectionInk:CampaignRetroTheme.Ink;
+            }
         }
         public void Toggle(){if(IsOpen)Close();else Open();}
         public void Open()
@@ -91,11 +100,13 @@ namespace BeetleArena
             {
                 var value=Values[i];var row=Rect((IsGlassQualityDropdown?"GlassOption-":"FilterOption-")+ChoiceId(value),PopupRect);row.anchorMin=new Vector2(0,1);row.anchorMax=Vector2.one;row.pivot=new Vector2(.5f,1);
                 row.anchoredPosition=new Vector2(0,-4-i*44);row.sizeDelta=new Vector2(-8,44);
-                var image=row.gameObject.AddComponent<UnityEngine.UI.Image>();image.color=CampaignRetroTheme.Button;image.raycastTarget=true;
+                bool current=value==CurrentValue;
+                var image=row.gameObject.AddComponent<UnityEngine.UI.Image>();image.color=current?CampaignRetroTheme.Selection:CampaignRetroTheme.Button;image.raycastTarget=true;
                 var button=row.gameObject.AddComponent<UnityEngine.UI.Button>();button.targetGraphic=image;
-                var colors=button.colors;colors.normalColor=Color.white;colors.highlightedColor=CampaignRetroTheme.Hex(0xc4d5f2);colors.selectedColor=colors.highlightedColor;colors.pressedColor=CampaignRetroTheme.Hex(0x9fb9e6);button.colors=colors;
-                var mark=Text(IsGlassQualityDropdown?"CurrentGlassQuality":"CurrentFilter",row,value==CurrentValue?"✓":"",20,CampaignRetroTheme.Ink);PlaceText(mark,10,26);
-                var label=Text(IsGlassQualityDropdown?"GlassLabel":"FilterLabel",row,ChoiceName(value),20,CampaignRetroTheme.Ink);PlaceText(label,40,-50);label.rectTransform.anchorMax=new Vector2(1,.5f);
+                var colors=button.colors;colors.normalColor=Color.white;colors.selectedColor=CampaignRetroTheme.HoverTint;colors.highlightedColor=CampaignRetroTheme.HoverTint;colors.pressedColor=CampaignRetroTheme.PressedTint;colors.disabledColor=CampaignRetroTheme.DisabledTint;button.colors=colors;
+                var ink=current?CampaignRetroTheme.SelectionInk:CampaignRetroTheme.Ink;
+                var mark=Text(IsGlassQualityDropdown?"CurrentGlassQuality":"CurrentFilter",row,current?"✓":"",20,ink);PlaceText(mark,10,26);
+                var label=Text(IsGlassQualityDropdown?"GlassLabel":"FilterLabel",row,ChoiceName(value),20,ink);PlaceText(label,40,-50);label.rectTransform.anchorMax=new Vector2(1,.5f);
                 var cancel=row.gameObject.AddComponent<RetroFilterDropdownCancel>();cancel.Owner=this;
                 button.onClick.AddListener(()=>
                 {
@@ -104,7 +115,7 @@ namespace BeetleArena
                     RefreshLabel();Close();
                     if(IsGlassQualityDropdown)glassSelected?.Invoke((BeetleGlassQuality)value);else selected?.Invoke((BeetleDisplayStyle)value);
                 });
-                options.Add(button);marks.Add(mark);
+                options.Add(button);marks.Add(mark);labels.Add(label);
             }
             for(int i=0;i<options.Count;i++)
                 options[i].navigation=new Navigation {mode=Navigation.Mode.Explicit,selectOnUp=options[(i+options.Count-1)%options.Count],selectOnDown=options[(i+1)%options.Count]};
@@ -167,7 +178,7 @@ namespace BeetleArena
         void DisposePopup()
         {
             if(overlay){overlay.gameObject.SetActive(false);Destroy(overlay.gameObject);}
-            overlay=null;PopupRect=null;popupGroup=null;motion=null;options.Clear();marks.Clear();
+            overlay=null;PopupRect=null;popupGroup=null;motion=null;options.Clear();marks.Clear();labels.Clear();
         }
         void OnDisable(){IsOpen=false;if(active==this)active=null;DisposePopup();}
         void OnDestroy(){if(Trigger)Trigger.onClick.RemoveListener(Toggle);}

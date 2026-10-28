@@ -13,8 +13,10 @@ namespace BeetleArena
         [SerializeField, HideInInspector] Transform[] panes = new Transform[0];
         [SerializeField, HideInInspector] Transform[] topRails = new Transform[0];
         [SerializeField, HideInInspector] Transform[] cornerSeams = new Transform[0];
+        [SerializeField, HideInInspector] Transform[] baseRails = new Transform[0];
 
         public float Height => height;
+        public float BottomY => bottomY;
         public int Revision { get; private set; }
 
         public void SetHeight(float value)
@@ -23,9 +25,18 @@ namespace BeetleArena
             ApplyHeight();
         }
 
-        public void Configure(Transform[] glassPanes, Transform[] upperRails, Transform[] seams)
+        public void Configure(Transform[] glassPanes, Transform[] upperRails, Transform[] seams, Transform[] lowerRails=null)
         {
             panes = glassPanes; topRails = upperRails; cornerSeams = seams;
+            if(lowerRails!=null)baseRails=lowerRails;
+            ApplyHeight();
+        }
+
+        public void SetBottom(float value)
+        {
+            // A deeper substrate extends the lower glass without moving the existing upper edge.
+            float top=bottomY+height;
+            bottomY=Mathf.Min(value,top-.1f);height=top-bottomY;
             ApplyHeight();
         }
 
@@ -39,6 +50,10 @@ namespace BeetleArena
             foreach (var rail in topRails)
             {
                 var position = rail.localPosition; position.y = bottomY + height; rail.localPosition = position;
+            }
+            foreach(var rail in baseRails)
+            {
+                var position=rail.localPosition;position.y=bottomY;rail.localPosition=position;
             }
             Revision++;
         }

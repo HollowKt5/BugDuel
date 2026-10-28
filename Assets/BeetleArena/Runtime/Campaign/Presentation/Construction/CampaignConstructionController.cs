@@ -28,20 +28,24 @@ namespace BeetleArena.Campaign
         public Vector3 SurfaceCenter => surfaceCenter;
         public Vector2 SurfaceSize => surfaceSize;
         public Quaternion SurfaceRotation => surfaceRotation;
+        public int PlacementRevision { get; private set; }
+        public IReadOnlyList<Vector2Int> AnimalOccupiedCells => animalOccupancy.Cells;
+        public bool IsAnimalCellBlocked(int x,int z) => animalOccupancy.Contains(x,z);
 
         readonly Dictionary<string, CampaignDecorationVisuals> visuals = new Dictionary<string, CampaignDecorationVisuals>();
         static readonly HashSet<string> templateScenery = new HashSet<string>
         { "ClimbingLog", "Leaf0", "Leaf1", "Leaf2", "Leaf3", "Leaf4", "Leaf5", "Leaf6" };
         readonly List<RaycastResult> uiHits = new List<RaycastResult>();
+        readonly CampaignConstructionOccupancy animalOccupancy=new CampaignConstructionOccupancy();
         CampaignApp app;
         CampaignBackdrop backdrop;
         CampaignObservationCamera observation;
         CampaignSpecimen specimen;
         CampaignConstructionHabitat habitat;
         Transform placedRoot;
-        GameObject grid, footprint;
-        Mesh gridMesh, footprintMesh;
-        Material gridMaterial, footprintMaterial;
+        GameObject grid, footprint, animalMarkers;
+        Mesh gridMesh, footprintMesh, animalMarkerMesh;
+        Material gridMaterial, footprintMaterial, animalMarkerMaterial;
         CampaignDecorationVisuals ghost;
         Vector3 surfaceCenter, ghostTarget;
         Vector2 surfaceSize;
@@ -72,6 +76,8 @@ namespace BeetleArena.Campaign
             gridMaterial = new Material(Shader.Find("BeetleArena/ConstructionPreview")) { name = "Construction grid" };
             gridMaterial.SetColor("_BaseColor", new Color(.48f, .91f, .78f, .32f));
             footprintMaterial = new Material(Shader.Find("BeetleArena/ConstructionPreview")) { name = "Construction footprint" };
+            animalMarkerMaterial=new Material(gridMaterial){name="Construction animal occupied cells",renderQueue=gridMaterial.renderQueue+2};
+            animalMarkerMaterial.SetColor("_BaseColor",new Color(.98f,.08f,.055f,.96f));
             Synchronize();
         }
 
@@ -80,9 +86,10 @@ namespace BeetleArena.Campaign
             if (Editing == value) return;
             if (!value) Cancel();
             Editing = value; app.Constructing = value;
-            if(value)specimen.SetConstructionHidden(true);
+            if(value){RefreshAnimalOccupancy();specimen.SetConstructionHidden(true);}
             else RestoreAnimal();
             if (grid) grid.SetActive(value);
+            if(animalMarkers)animalMarkers.SetActive(value);
             if (!value) { SelectedId = null; if (footprint) footprint.SetActive(false); }
             observation.SetConstructionView(value); Changed?.Invoke();
         }
@@ -177,6 +184,7 @@ namespace BeetleArena.Campaign
             int x = previewX, z = previewZ, rotation = PreviewRotation;
             bool accepted = app.Execute(session =>
             {
+                if(animalOccupancy.Overlaps(item,x,z,rotation))throw new CampaignRuleException("红色 X 标记了甲虫所在格子，请换一个位置");
                 string problem=habitat?.Problem(session.DecorationSpace(ownerId,item,x,z,rotation,move));
                 if(problem!=null)throw new CampaignRuleException(problem);
                 if (move == null) newId = session.PlaceDecoration(ownerId, item, x, z, rotation);
@@ -184,6 +192,7 @@ namespace BeetleArena.Campaign
             }, () =>
             {
                 if (!this) return;
+                PlacementRevision++;
                 awaitingCommit = false; Cancel(); SelectedId = newId;
                 Synchronize();
                 if (visuals.TryGetValue(newId, out var built))
@@ -245,6 +254,7 @@ namespace BeetleArena.Campaign
             if(previewState!=app.Session.State||checkedItem!=previewItem||checkedMove!=movingId||checkedX!=x||checkedZ!=z||checkedRotation!=PreviewRotation)
             {
                 checkedProblem=app.Session.DecorationPlacementProblem(beetleId,previewItem,x,z,PreviewRotation,movingId);
+                if(checkedProblem==null&&animalOccupancy.Overlaps(previewItem,x,z,PreviewRotation))checkedProblem="红色 X 标记了甲虫所在格子，请换一个位置";
                 if(checkedProblem==null&&habitat!=null)checkedProblem=habitat.Problem(app.Session.DecorationSpace(beetleId,previewItem,x,z,PreviewRotation,movingId));
                 if(checkedProblem==null&&movingId==null&&app.Session.InventoryCount(previewItem)<1)checkedProblem="仓库中没有这件景观，请先购买";
                 previewState=app.Session.State;checkedItem=previewItem;checkedMove=movingId;checkedX=x;checkedZ=z;checkedRotation=PreviewRotation;
@@ -336,6 +346,7 @@ namespace BeetleArena.Campaign
             if (SelectedId != null && records.All(p => p.id != SelectedId)) SelectedId = null;
             if (specimen.LifeStageDisplay == null || !specimen.LifeStageDisplay.HasStageEnvironment) specimen.RefreshConstructionArea();
             PlaceRestingAnimal();
+            if(Editing)RefreshAnimalOccupancy();
             observation.RefreshEnvironment(); RefreshFootprint(); Changed?.Invoke();
         }
 
@@ -395,6 +406,30 @@ namespace BeetleArena.Campaign
             AddQuad(corners, indices, -.5f, -.5f, 1, 1); footprintMesh.SetVertices(corners); footprintMesh.SetTriangles(indices, 0); footprintMesh.RecalculateNormals();
             footprint = new GameObject("CareConstructionFootprint", typeof(MeshFilter), typeof(MeshRenderer)); footprint.transform.SetParent(placedRoot, false);
             footprint.GetComponent<MeshFilter>().sharedMesh = footprintMesh; footprint.GetComponent<Renderer>().sharedMaterial = footprintMaterial; footprint.SetActive(false);
+            if(animalMarkers)Destroy(animalMarkers);if(animalMarkerMesh)Destroy(animalMarkerMesh);
+            animalMarkerMesh=new Mesh{name="Construction animal occupied cell crosses"};
+            animalMarkers=new GameObject("CareConstructionAnimalCells",typeof(MeshFilter),typeof(MeshRenderer));animalMarkers.transform.SetParent(placedRoot,false);
+            animalMarkers.transform.localPosition=Vector3.up*.055f;
+            animalMarkers.GetComponent<MeshFilter>().sharedMesh=animalMarkerMesh;animalMarkers.GetComponent<Renderer>().sharedMaterial=animalMarkerMaterial;
+            animalMarkers.SetActive(Editing);
+        }
+
+        void RefreshAnimalOccupancy()
+        {
+            var life=specimen.LifeStageDisplay;
+            Transform animal=life&&life.UsesAdultModel?specimen.rig.model:life?life.SpecimenRoot:null;
+            animalOccupancy.Capture(animal,surfaceCenter,surfaceSize,surfaceRotation);previewState=null;
+            if(!animalMarkerMesh)return;
+            var vertices=new List<Vector3>();var triangles=new List<int>();
+            float dx=surfaceSize.x/CampaignDecorations.Columns,dz=surfaceSize.y/CampaignDecorations.Rows,thickness=Mathf.Min(dx,dz)*.09f;
+            foreach(var cell in animalOccupancy.Cells)
+            {
+                float left=(cell.x+.16f)*dx-surfaceSize.x*.5f,right=(cell.x+.84f)*dx-surfaceSize.x*.5f;
+                float bottom=(cell.y+.16f)*dz-surfaceSize.y*.5f,top=(cell.y+.84f)*dz-surfaceSize.y*.5f;
+                AddStroke(vertices,triangles,new Vector2(left,bottom),new Vector2(right,top),thickness);
+                AddStroke(vertices,triangles,new Vector2(left,top),new Vector2(right,bottom),thickness);
+            }
+            animalMarkerMesh.Clear();animalMarkerMesh.SetVertices(vertices);animalMarkerMesh.SetTriangles(triangles,0);animalMarkerMesh.RecalculateNormals();animalMarkerMesh.RecalculateBounds();
         }
 
         void RefreshFootprint()
@@ -416,6 +451,13 @@ namespace BeetleArena.Campaign
             vertices.Add(new Vector3(x + width, 0, z + depth)); vertices.Add(new Vector3(x + width, 0, z));
             triangles.Add(n); triangles.Add(n + 1); triangles.Add(n + 2); triangles.Add(n); triangles.Add(n + 2); triangles.Add(n + 3);
         }
+        static void AddStroke(List<Vector3> vertices,List<int> triangles,Vector2 from,Vector2 to,float thickness)
+        {
+            var direction=(to-from).normalized;var offset=new Vector2(-direction.y,direction.x)*thickness*.5f;
+            int n=vertices.Count;Vector2 a=from-offset,b=from+offset,c=to+offset,d=to-offset;
+            vertices.Add(new Vector3(a.x,0,a.y));vertices.Add(new Vector3(b.x,0,b.y));vertices.Add(new Vector3(c.x,0,c.y));vertices.Add(new Vector3(d.x,0,d.y));
+            triangles.Add(n);triangles.Add(n+1);triangles.Add(n+2);triangles.Add(n);triangles.Add(n+2);triangles.Add(n+3);
+        }
 
         bool PointerOverUi(Vector2 position)
         {
@@ -433,6 +475,7 @@ namespace BeetleArena.Campaign
             if (placedRoot) Destroy(placedRoot.gameObject);
             if (gridMesh) Destroy(gridMesh); if (footprintMesh) Destroy(footprintMesh);
             if (gridMaterial) Destroy(gridMaterial); if (footprintMaterial) Destroy(footprintMaterial);
+            if(animalMarkerMesh)Destroy(animalMarkerMesh);if(animalMarkerMaterial)Destroy(animalMarkerMaterial);
         }
         void OnDisable()
         {if(initialized&&Editing)SetEditing(false);}

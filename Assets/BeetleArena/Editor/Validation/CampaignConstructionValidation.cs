@@ -137,10 +137,30 @@ public static class CampaignConstructionValidation
     }
 
 #if UNITY_EDITOR
+    static void VerifyAnimalOccupancy()
+    {
+        var body=GameObject.CreatePrimitive(PrimitiveType.Cube);body.name="Construction occupancy validation body";body.hideFlags=HideFlags.HideAndDontSave;
+        try
+        {
+            var occupancy=new CampaignConstructionOccupancy();body.transform.localScale=new Vector3(2,.2f,2);
+            occupancy.Capture(body.transform,Vector3.zero,new Vector2(12,10),Quaternion.identity);
+            Check(occupancy.Cells.Count==4&&occupancy.Contains(5,4)&&occupancy.Contains(6,5)&&!occupancy.Contains(4,4),"animal footprint marks every covered grid cell without reserving merely touching neighbours");
+            Check(occupancy.Overlaps(CampaignDecorations.Driftwood,4,4,0)&&!occupancy.Overlaps(CampaignDecorations.Stones,4,4,0),"placement rejection covers the whole decoration footprint rather than only its origin cell");
+            body.GetComponent<Renderer>().enabled=false;body.transform.rotation=Quaternion.Euler(0,45,0);
+            occupancy.Capture(body.transform,Vector3.zero,new Vector2(12,10),Quaternion.identity);
+            Check(occupancy.Cells.Count==12&&!occupancy.Contains(4,3)&&occupancy.Contains(4,4)&&occupancy.Contains(7,5),"hidden construction animal uses its rotated body outline instead of one central cell or a large bounding rectangle");
+            body.transform.SetPositionAndRotation(new Vector3(10,2,-4),Quaternion.Euler(0,135,0));
+            occupancy.Capture(body.transform,body.transform.position,new Vector2(12,10),Quaternion.Euler(0,90,0));
+            Check(occupancy.Cells.Count==12&&occupancy.Contains(4,4)&&!occupancy.Contains(4,3),"animal cell projection remains correct on translated and rotated construction surfaces");
+            occupancy.Capture(null,Vector3.zero,new Vector2(12,10),Quaternion.identity);
+            Check(occupancy.Cells.Count==0&&!occupancy.Contains(5,4),"leaving an animal surface clears all old occupied cells");
+        }
+        finally{UnityEngine.Object.DestroyImmediate(body);}
+    }
     [MenuItem("Tools/甲壳虫斗/验证/战役流程/建造规则", false, 562)]
     public static void Run()
     {
-        RunDomain();var s=Session();string beetle=s.State.beetles[0].id;string placed=s.PlaceDecoration(beetle,CampaignDecorations.Driftwood,1,3,90);Supply(s,CampaignDecorations.Arch,2);
+        RunDomain();VerifyAnimalOccupancy();var s=Session();string beetle=s.State.beetles[0].id;string placed=s.PlaceDecoration(beetle,CampaignDecorations.Driftwood,1,3,90);Supply(s,CampaignDecorations.Arch,2);
         string folder=Path.GetFullPath("Artifacts/Construction/TestSave");var repository=new CampaignSaveRepository(folder);
         s.RenamePlayer("验收玩家");repository.Write(0,new CampaignSave {state=CampaignSnapshots.Copy(s.State),catalog=s.Catalog});var saved=repository.Read(0);var restored=new CampaignSession(saved.state,saved.catalog);restored.Validate();
         Check(restored.State.constructionVersion==1&&restored.Decoration(beetle,placed).rotation==90&&restored.Decoration(beetle,placed).x==1,"real JSON save restores beetle ownership, cell and rotation");

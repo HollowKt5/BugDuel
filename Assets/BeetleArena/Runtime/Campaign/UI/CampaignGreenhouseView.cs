@@ -14,7 +14,8 @@ namespace BeetleArena.Campaign
         RectTransform greenhouseInfo,greenhouseFooter;
         UnityEngine.UI.Button greenhouseMail;
         CampaignSpecimen observedSpecimen;
-        readonly System.Collections.Generic.List<UnityEngine.EventSystems.RaycastResult> greenhouseHits=new System.Collections.Generic.List<UnityEngine.EventSystems.RaycastResult>();
+        CampaignBeetleGrabController beetleGrab;
+        public CampaignBeetleGrabController BeetleGrab=>beetleGrab;
         float GreenhouseColumnWidth=>canvas.rect.width/6f;
 
         void DrawGreenhouse()
@@ -24,16 +25,17 @@ namespace BeetleArena.Campaign
             var frame=Panel(root,0,0,width,height,name:"GreenhousePanel");Stretch(frame);
             var title=Panel(root,3,3,width-6,34,name:"GreenhouseTitle");
             title.anchorMax=new Vector2(1,1);title.sizeDelta=new Vector2(-6,34);
-            Component<RetroBevel>(title).Configure(0,Color.clear,Color.clear,true,CampaignRetroTheme.TitleTop,CampaignRetroTheme.TitleBottom);
-            Label(title,warehouseOpen?"仓库":"虫箱",9,2,width-24,30,21,Color.white);
-            var clock=DrawCalendarClock(root,7,44,width-14,56);
-            var clockRect=(RectTransform)clock.transform;clockRect.anchorMax=new Vector2(1,1);clockRect.sizeDelta=new Vector2(-14,56);
-            var clockLabel=clock.GetComponentInChildren<TMPro.TMP_Text>();clockLabel.rectTransform.anchorMax=new Vector2(1,1);clockLabel.rectTransform.sizeDelta=new Vector2(-20,56);
+            Component<RetroBevel>(title).Configure(1,CampaignRetroTheme.TitleHighlight,CampaignRetroTheme.TitleShadow,true,CampaignRetroTheme.TitleTop,CampaignRetroTheme.TitleBottom);
+            Label(title,warehouseOpen?"仓库":"虫箱",12,2,width-30,30,22,CampaignRetroTheme.TitleInk).alignment=TMPro.TextAlignmentOptions.MidlineLeft;
+            var clock=DrawCalendarClock(root,7,44,width-14,34,true);
+            var clockRect=(RectTransform)clock.transform;clockRect.anchorMax=new Vector2(1,1);clockRect.sizeDelta=new Vector2(-14,34);
+            var clockLabel=clock.GetComponentInChildren<TMPro.TMP_Text>();clockLabel.rectTransform.anchorMax=new Vector2(1,1);clockLabel.rectTransform.sizeDelta=new Vector2(-12,34);
+            clockLabel.rectTransform.anchoredPosition=new Vector2(6,0);clockLabel.enableAutoSizing=true;clockLabel.textWrappingMode=TMPro.TextWrappingModes.NoWrap;
 
             if(warehouseOpen)DrawWarehouseSidebar(width,height);
             else
             {
-                var nav=Column(7,108,width-14,height-200,root,"GreenhouseNavigation");nav.rightInset=0;nav.spacing=7;
+                var nav=Column(7,86,width-14,height-178,root,"GreenhouseNavigation");nav.rightInset=0;nav.spacing=7;
                 warehouseBody=(RectTransform)nav.content.parent.parent;Component<UnityEngine.CanvasGroup>(warehouseBody).alpha=warehouseAlpha;
                 void Link(string text,CampaignMarketArtwork.Kind art,Action action)
                 {
@@ -49,11 +51,8 @@ namespace BeetleArena.Campaign
                 Link("捕虫队",CampaignMarketArtwork.Kind.Lamp,()=>app.Go(CampaignPage.Catching));
                 Link("标本室",CampaignMarketArtwork.Kind.Specimen,()=>app.Go(CampaignPage.SpecimenRoom));
                 Link("育种中心",CampaignMarketArtwork.Kind.Rainbow,()=>app.Go(CampaignPage.Breeding));
-                Link("虫箱",CampaignMarketArtwork.Kind.Container,ToggleSidebar);
                 nav.y+=10;
-                Link("照料",CampaignMarketArtwork.Kind.Sap,()=>OpenGreenhouseInfo(0));
                 Link("甲虫名册",CampaignMarketArtwork.Kind.Stag,OpenGreenhouseRoster);
-                Link("主菜单",CampaignMarketArtwork.Kind.Leaves,()=>app.Go(CampaignPage.MainMenu));
             }
             var footer=greenhouseFooter=Panel(root,0,0,width,46,name:"GreenhouseFooter");
             footer.anchorMin=Vector2.zero;footer.anchorMax=new Vector2(1,0);footer.pivot=Vector2.zero;footer.anchoredPosition=Vector2.zero;footer.sizeDelta=new Vector2(0,46);
@@ -68,10 +67,12 @@ namespace BeetleArena.Campaign
             }
             notice=Label(root,"",7,height-83,width-14,32,14,muted);notice.name="GreenhouseNotice";
             if(greenhouseInfoOpen)DrawGreenhouseInfo();
+            if(feedingDishOpen)DrawFeedingDish();
         }
 
         void OpenGreenhouseInfo(int tab=0)
         {
+            CloseFeedingDish();RememberControlHint(ControlHint.Beetle);
             greenhouseInfoOpen=true;SetGreenhouseTab(tab);QueueRefresh();
         }
         void CloseGreenhouseInfo()
@@ -88,9 +89,9 @@ namespace BeetleArena.Campaign
             greenhouseInfo.SetAsLastSibling();
             greenhouseInfo.anchorMin=greenhouseInfo.anchorMax=greenhouseInfo.pivot=Vector2.one;greenhouseInfo.anchoredPosition=new Vector2(-24,-48);
             Component<RetroBevel>(greenhouseInfo).Configure(3,CampaignRetroTheme.LightEdge,CampaignRetroTheme.DarkEdge);
-            var shadow=Component<UnityEngine.UI.Shadow>(greenhouseInfo);shadow.effectColor=new Color(0,0,0,.3f);shadow.effectDistance=new Vector2(4,-5);
+            var shadow=Component<UnityEngine.UI.Shadow>(greenhouseInfo);shadow.enabled=!CampaignRetroTheme.Paper;shadow.effectColor=new Color(0,0,0,.3f);shadow.effectDistance=new Vector2(4,-5);
             MTitle(greenhouseInfo,"甲虫信息",width-6);
-            MButton(greenhouseInfo,"×",width-35,5,28,26,CloseGreenhouseInfo,true,18,false,CampaignRetroTheme.Hex(0xc83131),Color.white);
+            MButton(greenhouseInfo,"×",width-35,5,28,26,CloseGreenhouseInfo,true,18,false,CampaignRetroTheme.Danger,CampaignRetroTheme.TitleInk);
             var selected=State.beetles.FirstOrDefault(x=>x.id==State.selectedId)??State.beetles.FirstOrDefault();
             if(selected!=null)
             {
@@ -100,7 +101,7 @@ namespace BeetleArena.Campaign
                 MButton(greenhouseInfo,"命名",width-80,45,66,30,()=>OpenBeetleNaming(selected.id),true,17);
             }
             else Label(greenhouseInfo,"暂无甲虫",14,48,width-28,55,23,muted);
-            float tabWidth=(width-36)/3;string[] tabs={"照料","管理","建造"};int[] ids={0,2,3};
+            float tabWidth=(width-36)/3;string[] tabs={"信息","管理","建造"};int[] ids={0,2,3};
             for(int i=0;i<tabs.Length;i++){int tab=ids[i];GreenhouseButton(greenhouseInfo,tabs[i],12+i*(tabWidth+6),123,tabWidth,34,()=>SetGreenhouseTab(tab),greenhouseTab!=tab);}
             string scrollName=greenhouseTab switch{0=>"CareScroll",2=>"ManagementScroll",_=>"ConstructionScroll"};
             var detail=Column(10,166,width-20,height-222,greenhouseInfo,scrollName);detail.rightInset=0;detail.spacing=7;
@@ -111,23 +112,20 @@ namespace BeetleArena.Campaign
         }
         void ReadGreenhousePointer()
         {
-            var mouse=UnityEngine.InputSystem.Mouse.current;
-            if(mouse==null||!mouse.leftButton.wasPressedThisFrame||app.Busy||modal||!construction||construction.Editing)return;
-            var position=mouse.position.ReadValue();var events=UnityEngine.EventSystems.EventSystem.current;
-            if(events)
-            {
-                greenhouseHits.Clear();events.RaycastAll(new UnityEngine.EventSystems.PointerEventData(events){position=position},greenhouseHits);
-                if(greenhouseHits.Count>0)return;
-            }
-            if(!construction.TryPointerRay(position,out var ray))return;
             if(!observedSpecimen)observedSpecimen=FindObjectsByType<CampaignSpecimen>(FindObjectsSortMode.None).FirstOrDefault(s=>s.selected&&s.gameObject.scene==gameObject.scene);
-            if(!observedSpecimen)return;
-            foreach(var renderer in observedSpecimen.GetComponentsInChildren<Renderer>())
-                if(renderer.enabled&&renderer.bounds.IntersectRay(ray)){OpenGreenhouseInfo();break;}
+            if(!observedSpecimen||!construction||!backdrop)return;
+            if(!beetleGrab)beetleGrab=CampaignBeetleGrabController.Ensure(observedSpecimen,construction,backdrop);
+            switch(beetleGrab.TickPointer())
+            {
+                case CarePointerAction.Beetle:OpenGreenhouseInfo();break;
+                case CarePointerAction.FeedingDish:OpenFeedingDish();break;
+            }
         }
         bool HandleGreenhouseBack()
         {
+            if(beetleGrab&&beetleGrab.BackConsumedThisFrame)return true;
             if(HandleConstructionBack())return true;
+            if(feedingDishOpen){CloseFeedingDish();return true;}
             if(greenhouseInfoOpen){CloseGreenhouseInfo();return true;}
             if(warehouseOpen){if(warehouseCategory>=0)SelectWarehouseCategory(warehouseCategory);else ExitWarehouse();return true;}
             return false;
@@ -189,17 +187,7 @@ namespace BeetleArena.Campaign
             var care=Card(flow,62);float controlWidth=(inside-gap)/2;
             GreenhouseButton(care,"更换环境",pad,12,controlWidth,38,()=>OpenHousing(b.id));
             GreenhouseButton(care,"轻触 / 互动",pad+controlWidth+gap,12,controlWidth,38,()=>{if(!careController)careController=FindFirstObjectByType<CampaignCareController>();if(careController)careController.Disturb(b.id);},b.Adult(State.week));
-            if(b.Adult(State.week))
-            {
-                var food=Card(flow,102);
-                Label(food,b.meal==null?"成虫喂食":"食盆有食物",pad,11,inside,35,18,accent);
-                string[] foods=Enumerable.Range(0,3).Select(i=>CampaignItems.Name(CampaignItems.Food(i))+" ×"+Session.InventoryCount(CampaignItems.Food(i))).ToArray();float third=(inside-gap*2)/3;
-                for(int i=0;i<foods.Length;i++)
-                {
-                    int index=i;GreenhouseButton(food,foods[i],pad+i*(third+gap),53,third,38,()=>app.Execute(s=>s.Feed(b.id,index)),Session.InventoryCount(CampaignItems.Food(i))>0&&!b.listed&&!b.overturned&&b.meal==null&&State.battle?.beetleId!=b.id&&State.auction?.beetleId!=b.id);
-                }
-            }
-            else if(b.stage<=CampaignLifeStage.Larva3)
+            if(b.stage<=CampaignLifeStage.Larva3)
             {
                 var growth=Card(flow,253);Label(growth,"体型养成 · 可选饲料与温控",pad,10,inside,32,21,accent);
                 float third=(inside-gap*2)/3;

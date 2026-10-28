@@ -6275,6 +6275,330 @@ MonoBehaviour:
     m_Key: display_pixel_level_value
     m_Metadata:
       m_Items: []
+  - m_Id: 2461402260230144
+    m_Key: care_info_tab
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2461402318950400
+    m_Key: care_dish_title
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2461402318950401
+    m_Key: care_dish_food
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2461402318950402
+    m_Key: care_dish_residue
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2461402318950403
+    m_Key: care_dish_empty
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2461402318950404
+    m_Key: care_dish_place
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2461402318950405
+    m_Key: care_dish_no_stock
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2461402318950406
+    m_Key: care_dish_replace
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2461402318950407
+    m_Key: care_dish_feed_hint
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2461402318950408
+    m_Key: care_dish_empty_action
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2461402318950409
+    m_Key: care_dish_clean
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2461402318950410
+    m_Key: care_dish_confirm
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2461402318950411
+    m_Key: care_dish_cleaned
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2461402318950412
+    m_Key: control_hint_title
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2461402318950413
+    m_Key: control_hint_dismiss
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2461402318950414
+    m_Key: control_hint_beetle
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2461402318950415
+    m_Key: control_hint_dish
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2461402318950416
+    m_Key: control_hint_camera
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2461402318950417
+    m_Key: control_hint_warehouse
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2461402318950418
+    m_Key: control_hint_building
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2466333918679040
+    m_Key: control_hint_pickup
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2466333948039168
+    m_Key: construction_beetle_cell
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2466333948039169
+    m_Key: care_dish_adults
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2466333948039170
+    m_Key: care_dish_already_clean
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2466333948039171
+    m_Key: ui_concise_save_select
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2466333948039172
+    m_Key: ui_concise_league_wins
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2466333948039173
+    m_Key: ui_concise_league_rematch
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2466333948039174
+    m_Key: ui_concise_league_no_champions
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2466333948039175
+    m_Key: ui_concise_auction_history
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2466333948039176
+    m_Key: ui_concise_auction_royalties
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2466333948039177
+    m_Key: ui_concise_battle_save_retry
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2466333948039178
+    m_Key: ui_concise_catch_summary
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2466333948039179
+    m_Key: ui_concise_catch_supplies
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2466333952233472
+    m_Key: ui_concise_catch_empty
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2466333952233473
+    m_Key: ui_concise_breeding_mother_ownership
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2466333952233474
+    m_Key: ui_concise_breeding_price_luck
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2466333952233475
+    m_Key: ui_concise_specimen_wall_slots
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2466333952233476
+    m_Key: ui_concise_construction_takeout
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2466333952233477
+    m_Key: ui_concise_construction_empty
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2466333952233478
+    m_Key: ui_concise_name_length
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2466333952233479
+    m_Key: ui_concise_mail_empty
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2466333952233480
+    m_Key: ui_concise_mail_no_attachments
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2466333952233481
+    m_Key: ui_concise_rearing_empty
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2466333952233482
+    m_Key: ui_concise_market_categories
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2466333952233483
+    m_Key: ui_concise_market_empty_listings
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2466333952233484
+    m_Key: ui_concise_market_buyback
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2466333952233485
+    m_Key: ui_concise_market_buyback_rates
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2466333952233486
+    m_Key: ui_concise_market_sale_quantity
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2466333952233487
+    m_Key: ui_concise_market_empty_live
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2466333952233488
+    m_Key: ui_concise_market_paid_immediately
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2466333952233489
+    m_Key: ui_concise_market_mail_delivery
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2466333952233490
+    m_Key: ui_concise_market_offer_week
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2466333952233491
+    m_Key: ui_concise_market_item_details
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2466333952233492
+    m_Key: ui_concise_market_detail_category
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2466333952233493
+    m_Key: ui_concise_market_detail_species
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2466333952233494
+    m_Key: ui_concise_market_detail_size
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2466333952233495
+    m_Key: ui_concise_market_detail_attributes
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2466333952233496
+    m_Key: ui_concise_market_detail_price
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2466333952233497
+    m_Key: ui_concise_market_listing_terms
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2466333952233498
+    m_Key: ui_concise_market_listing_empty
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2466333952233499
+    m_Key: ui_concise_pupa_opening
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2466333952233500
+    m_Key: ui_concise_pupa_raise
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2466333952233501
+    m_Key: ui_concise_auction_terms
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2466333952233502
+    m_Key: ui_concise_pupa_schedule
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2466333952233503
+    m_Key: ui_concise_auction_delivery
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2466333952233504
+    m_Key: ui_concise_auction_refund
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2466333952233505
+    m_Key: ui_concise_auction_closing
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2466333952233506
+    m_Key: ui_concise_settings_rebind
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2466333952233507
+    m_Key: ui_concise_settings_current_scene
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2466333952233508
+    m_Key: ui_concise_clock_pause
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2466333952233509
+    m_Key: ui_concise_market_help
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2467791779057664
+    m_Key: ui_supply_compact_egg_medium
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2467791816806400
+    m_Key: ui_supply_compact_humus
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2467791816806401
+    m_Key: ui_supply_compact_wood
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2467791816806402
+    m_Key: ui_supply_compact_fungus
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2467791816806403
+    m_Key: ui_supply_compact_pupa_cell
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2467791816806404
+    m_Key: ui_supply_compact_adult_jelly
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2467791816806405
+    m_Key: ui_supply_compact_decoration_cells
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2533899273949184
+    m_Key: ui_style_title
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2533899454304256
+    m_Key: ui_style_comic_paper
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2533899454304257
+    m_Key: ui_style_classic
+    m_Metadata:
+      m_Items: []
   m_Metadata:
     m_Items: []
   m_KeyGenerator:

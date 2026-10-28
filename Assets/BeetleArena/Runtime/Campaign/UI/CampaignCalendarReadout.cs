@@ -19,7 +19,7 @@ namespace BeetleArena.Campaign
             // Compare values before formatting; localized labels already listen for locale changes.
             if(hasShown&&current==shown)return;shown=current;hasShown=true;
             string statusText=status==0?"流逝中":status==1?"建造暂停":"操作暂停";
-            string text=$"第 {shown.year} 年 · {shown.month:00} 月 · {shown.day:00} 日"+(compact?"  |  ":"\n")+$"{shown.hour:00}:{shown.minute:00} · {shown.speed:0.#}× · {statusText}";
+            string text=$"第 {shown.year} 年 · {shown.month:00} 月 · {shown.day:00} 日"+(compact?"  |  ":"\n")+$"{shown.hour:00}:{shown.minute:00} · {shown.speed:0.#}×"+(compact?"":" · "+statusText);
             CampaignLocalization.Bind(label,text);
         }
     }

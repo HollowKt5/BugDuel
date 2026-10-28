@@ -26,7 +26,7 @@ namespace BeetleArena.Campaign
             CloseModal();
             if(page!=CampaignPage.Greenhouse){requestedWarehouse=true;app.Go(CampaignPage.Greenhouse);return;}
             if(warehouseOpen){QueueRefresh();return;}
-            CloseGreenhouseInfo();warehouseOpen=true;warehouseCategory=-1;warehouseProgress=0;
+            CloseGreenhouseInfo();CloseFeedingDish();warehouseOpen=true;warehouseCategory=-1;warehouseProgress=0;
             if(sidebarCollapsed)SetSidebarCollapsed(false);
             FadeGreenhouseNavigation();QueueRefresh();
         }
@@ -46,26 +46,26 @@ namespace BeetleArena.Campaign
         }
         void DrawWarehouseSidebar(float unit,float height)
         {
-            warehouseBody=Rect("WarehouseBody",root,0,108,unit*2,height-192);
+            warehouseBody=Rect("WarehouseBody",root,0,86,unit*2,height-170);
             Component<CanvasGroup>(warehouseBody).alpha=warehouseAlpha;
-            var categories=MBox("WarehouseCategories",warehouseBody,0,0,unit,height-192,CampaignRetroTheme.Window);
-            var list=Column(4,4,unit-8,height-250,categories,"WarehouseCategoryScroll");list.rightInset=0;
+            var categories=MBox("WarehouseCategories",warehouseBody,0,0,unit,height-170,CampaignRetroTheme.Window);
+            var list=Column(4,4,unit-8,height-228,categories,"WarehouseCategoryScroll");list.rightInset=0;
             for(int i=0;i<warehouseCategories.Length;i++)
             {
                 int category=i;bool active=warehouseCategory==i;
                 var b=MButton(list.content,warehouseCategories[i]+"  ›",0,i*44,list.width,43,()=>SelectWarehouseCategory(category),true,20,true,
-                    active?CampaignRetroTheme.Hex(0x316ac5):CampaignRetroTheme.Window,active?Color.white:ink);
+                    active?CampaignRetroTheme.Selection:CampaignRetroTheme.Window,active?CampaignRetroTheme.SelectionInk:ink);
                 b.GetComponentInChildren<TMPro.TMP_Text>().alignment=TMPro.TextAlignmentOptions.MidlineLeft;
             }
             list.content.sizeDelta=new Vector2(list.width,warehouseCategories.Length*44);
-            MButton(categories,"退出",7,height-238,unit-14,38,ExitWarehouse,true,20);
-            MBox("WarehouseDivider",warehouseBody,unit-2,0,2,height-192,CampaignRetroTheme.DarkEdge);
-            warehouseDetails=MBox("WarehouseDetails",warehouseBody,unit,0,unit,height-192,MColor(0xf5f3ea,0x181c20));
+            MButton(categories,"退出",7,height-216,unit-14,38,ExitWarehouse,true,20);
+            MBox("WarehouseDivider",warehouseBody,unit-2,0,2,height-170,CampaignRetroTheme.Rule);
+            warehouseDetails=MBox("WarehouseDetails",warehouseBody,unit,0,unit,height-170,CampaignRetroTheme.Panel);
             Component<RetroBevel>(warehouseDetails).Configure(2,CampaignRetroTheme.DarkEdge,CampaignRetroTheme.LightEdge);
             var group=Component<CanvasGroup>(warehouseDetails);group.alpha=warehouseProgress;
             group.interactable=group.blocksRaycasts=warehouseCategory>=0&&warehouseProgress>.98f;
             bool visible=warehouseCategory>=0||warehouseProgress>.001f;warehouseDetails.gameObject.SetActive(visible);
-            if(visible)BuildWarehouseCategory(unit,height-192);
+            if(visible)BuildWarehouseCategory(unit,height-170);
         }
         void SelectWarehouseCategory(int category)
         {
@@ -96,20 +96,30 @@ namespace BeetleArena.Campaign
         void BuildWarehouseCategory(float width,float height)
         {
             int category=warehouseCategory>=0?warehouseCategory:lastWarehouseCategory;
-            var list=Column(6,6,width-12,height-12,warehouseDetails,"WarehouseItems");list.rightInset=0;
-            int columns=Mathf.Max(1,Mathf.FloorToInt((list.width+6)/124));float cell=(list.width-(columns-1)*6)/columns;
+            const float padding=12,gap=10,tileHeight=174,thumbnailHeight=86;
+            // Paper thickness belongs to the frame, not the image or text's usable area.
+            float paperRight=CampaignRetroTheme.Paper?5:0,paperBottom=CampaignRetroTheme.Paper?9:0;
+            var list=Column(padding,padding,width-padding*2-paperRight,height-padding*2-paperBottom,warehouseDetails,"WarehouseItems");list.rightInset=0;
+            int columns=Mathf.Max(1,Mathf.FloorToInt((list.width+gap)/(108+gap)));
+            float cell=(list.width-(columns-1)*gap)/columns,innerWidth=cell-padding*2-paperRight;
             int count=0;
             void Tile(string title,string detail,CampaignMarketArtwork.Kind art,Action action)
             {
-                float x=(count%columns)*(cell+6),y=(count/columns)*151;count++;
-                var button=MButton(list.content,title,x,y,cell,145,action,true,17);
-                var shadow=Component<UnityEngine.UI.Shadow>(button.transform);shadow.effectColor=new Color(0,0,0,CampaignRetroTheme.Dark?.32f:.18f);shadow.effectDistance=new Vector2(2,-2);
-                CampaignLocalization.Bind(button.GetComponentInChildren<TMPro.TMP_Text>(),"");button.gameObject.name="Warehouse item · "+title;
-                var thumb=MBox("ItemThumbnail",button.transform,4,4,cell-8,90,MColor(0xd8d4c4,0x14171a),CampaignRetroTheme.Border,1);
-                float size=Mathf.Min(80,cell-18);Component<CampaignMarketArtwork>(Rect("Artwork",thumb,(cell-8-size)/2,(90-size)/2,size,size)).SetKind(art);
-                var name=Label(button.transform,title,5,98,cell-10,23,17);name.textWrappingMode=TMPro.TextWrappingModes.NoWrap;
-                Label(button.transform,detail,5,121,cell-10,21,16,CampaignRetroTheme.Price).alignment=TMPro.TextAlignmentOptions.MidlineRight;
-                list.content.sizeDelta=new Vector2(list.width,Mathf.Ceil(count/(float)columns)*151);
+                float x=(count%columns)*(cell+gap),y=(count/columns)*(tileHeight+gap);count++;
+                var button=MButton(list.content,"",x,y,cell,tileHeight,action,true,17);
+                var shadow=Component<UnityEngine.UI.Shadow>(button.transform);shadow.enabled=!CampaignRetroTheme.Paper;shadow.effectColor=new Color(0,0,0,CampaignRetroTheme.Dark?.32f:.18f);shadow.effectDistance=new Vector2(2,-2);
+                button.gameObject.name="Warehouse item · "+title;
+                var thumb=MBox("ItemThumbnail",button.transform,padding,padding,innerWidth,thumbnailHeight,CampaignRetroTheme.SurfaceInset,CampaignRetroTheme.Border,1);
+                // Keep a single paper frame; the inset illustration must not become another raised card.
+                thumb.GetComponent<RetroBevel>().enabled=!CampaignRetroTheme.Paper;
+                float size=Mathf.Min(78,innerWidth-8);
+                Component<CampaignMarketArtwork>(Rect("Artwork",thumb,(innerWidth-size)/2,(thumbnailHeight-size)/2,size,size)).SetKind(art);
+                var name=Label(button.transform,title,padding,104,innerWidth,24,18);
+                name.textWrappingMode=TMPro.TextWrappingModes.NoWrap;name.alignment=TMPro.TextAlignmentOptions.MidlineLeft;name.margin=Vector4.zero;
+                name.enableAutoSizing=true;CampaignLocalization.SetFontSize(name,18,15);
+                var quantity=Label(button.transform,detail,padding,132,innerWidth,22,17,CampaignRetroTheme.Price);
+                quantity.alignment=TMPro.TextAlignmentOptions.MidlineRight;quantity.textWrappingMode=TMPro.TextWrappingModes.NoWrap;quantity.margin=Vector4.zero;
+                quantity.enableAutoSizing=true;CampaignLocalization.SetFontSize(quantity,17,14);
             }
             foreach(string supply in TradableSupplies)
             {
@@ -122,13 +132,15 @@ namespace BeetleArena.Campaign
                 var b=beetle;Tile(CampaignLocalization.Name(b),$"{b.length:0.0} mm",BeetleMarketArtwork(b),()=>OpenWarehouseBeetle(b.id));
             }
             if(category==5)Tile("标本室","×"+State.specimens.Count,CampaignMarketArtwork.Kind.Specimen,()=>app.Go(CampaignPage.SpecimenRoom));
+            int rows=Mathf.CeilToInt(count/(float)columns);
+            list.content.sizeDelta=new Vector2(list.width,rows>0?rows*(tileHeight+gap)-gap:58);
             if(count==0)Label(list.content,"暂无物品",8,18,list.width-16,40,21,muted);
         }
         RectTransform WarehouseItemDialog(string title)
         {
             var p=OpenModal(540,360,false,false);
             Component<RetroBevel>(p).Configure(3,CampaignRetroTheme.LightEdge,CampaignRetroTheme.DarkEdge);MTitle(p,title,534);
-            MButton(p,"×",505,5,28,26,CloseModal,true,18,false,CampaignRetroTheme.Hex(0xc83131),Color.white);return p;
+            MButton(p,"×",505,5,28,26,CloseModal,true,18,false,CampaignRetroTheme.Danger,Color.white);return p;
         }
         void WarehouseCommand(Action<CampaignSession> command)
         {

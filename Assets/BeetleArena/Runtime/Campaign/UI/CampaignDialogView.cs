@@ -29,8 +29,7 @@ namespace BeetleArena.Campaign
             ink=CampaignRetroTheme.Ink;muted=CampaignRetroTheme.Muted;accent=CampaignRetroTheme.Accent;
             bool sameWindow=modal && dialogMotion && dialogContent==content && dialogMotion.Panel.sizeDelta==new Vector2(w,h);
             if(closingDialog){closingDialog.Discard();closingDialog=null;}
-            // Keep the page capture across window replacements (including the black
-            // player-name page), so returning through a black transition cannot capture it.
+            // Keep the page capture across window replacements, including player naming.
             CloseModal(true);
             focusBeforeModal=EventSystem.current?EventSystem.current.currentSelectedGameObject:null;
             app.Modal=true;
@@ -63,7 +62,7 @@ namespace BeetleArena.Campaign
                 var title=Panel(panel,3,3,w-6,18);
                 title.name="DialogTitleBar";
                 title.GetComponent<UI.Image>().color=CampaignRetroTheme.Frame;
-                Component<RetroBevel>(title).Configure(0,Color.clear,Color.clear,true,CampaignRetroTheme.TitleTop,CampaignRetroTheme.TitleBottom);
+                Component<RetroBevel>(title).Configure(1,CampaignRetroTheme.TitleHighlight,CampaignRetroTheme.TitleShadow,true,CampaignRetroTheme.TitleTop,CampaignRetroTheme.TitleBottom);
             }
             dialogContent=content;
             dialogMotion=modal.gameObject.AddComponent<CampaignDialogMotion>();

@@ -32,6 +32,11 @@ namespace BeetleArena.Campaign
                 Label(p,CampaignRetroTheme.SeasonName,560,420,450,55,24);
                 SettingRow(p,"明暗模式",470,CampaignRetroTheme.Dark?"经典暗色":"明亮浅色",()=>{CampaignRetroTheme.SetMode(!CampaignRetroTheme.Dark);QueueRefresh();OpenSettings();});
                 SettingRow(p,"时间速度",530,Session==null?"开始游戏后可设置":"调整自然时间倍率",()=>OpenTimeSettings(OpenSettings),Session!=null);
+                SettingRow(p,"界面风格",590,CampaignRetroTheme.StyleName,()=>
+                {
+                    CampaignRetroTheme.SetStyle(CampaignRetroTheme.Paper?CampaignUiStyle.Classic:CampaignUiStyle.ComicPaper);
+                    QueueRefresh();OpenSettings();
+                });
             }
             else if(settingsTab==1)
             {
@@ -40,7 +45,6 @@ namespace BeetleArena.Campaign
                 Slider(p,"音乐",275,app.Preferences.music,v=>app.Preferences.music=v);
                 Slider(p,"自然环境",360,app.Preferences.nature,v=>app.Preferences.nature=v);
                 Slider(p,"甲壳碰撞音效",445,app.Preferences.carapace,v=>{app.Preferences.carapace=v;if(arenaAudio)arenaAudio.volume=v;});
-                Label(p,"拖动滑块或点击音轨调整；选中后可用 ← / → 或手柄微调。",40,550,970,60,20,muted);
             }
             else if(settingsTab==2)
             {
@@ -55,12 +59,11 @@ namespace BeetleArena.Campaign
                     app.Preferences.transitionMode=app.Preferences.transitionMode==CampaignTransitionMode.BlackFade?CampaignTransitionMode.Television:CampaignTransitionMode.BlackFade;
                     app.ApplyPreferences();OpenSettings();
                 });
-                Label(p,"主菜单、存档页切出时使用黑屏淡入淡出。",40,593,960,42,20,muted);
             }
             else if(settingsTab==3) DrawDisplaySettings(p);
             else
             {
-                Label(p,"键盘、鼠标与手柄\n界面导航使用方向键、摇杆、确认与取消；下方可重映射经营快捷键。",35,165,970,75,21,muted);
+                Label(p,"点击按键重新绑定",35,185,970,45,21,muted);
                 string[] actions={"Back","Help"};string[] names={"返回 / 关闭","帮助翻身"};
                 for(int i=0;i<actions.Length;i++)
                 {
@@ -69,7 +72,6 @@ namespace BeetleArena.Campaign
                 }
                 Btn(p,"恢复默认按键",40,525,280,50,()=>{app.Controls.RemoveAllBindingOverrides();OpenSettings();});
             }
-            Label(p,"设置即时生效，关闭时自动保存。",40,632+extraHeight,960,34,18,muted);
             bool canReturn=page!=CampaignPage.MainMenu&&page!=CampaignPage.Saves;
             Btn(p,"完成",40,680+extraHeight,canReturn?630:970,54,()=>{BeetleDisplayPreferences.Save();CloseModal();QueueRefresh();});
             if(canReturn)Btn(p,"返回主菜单",690,680+extraHeight,320,54,()=>{CloseModal();app.Go(CampaignPage.MainMenu);});SelectFirst(p);
@@ -89,14 +91,13 @@ namespace BeetleArena.Campaign
             Label(p,"游戏滤镜",40,184,280,48,24);
             var filterButton=Btn(p,BeetleDisplayPreferences.StyleName(BeetleDisplayPreferences.Style),350,174,660,60,()=>{});
             filterButton.name="GameFilter";
-            Label(p,"仅当前场景 · 滤镜互斥 · 界面保持清晰",40,249,960,42,20,muted);
+            Label(p,"仅当前场景",40,249,960,42,20,muted);
             var preview=Panel(p,40,306,470,270,true);
             if(backdrop && backdrop.Frame)
             {
                 var display=Rect("Style Preview",preview,4,4,462,262).gameObject.AddComponent<UnityEngine.UI.RawImage>();
                 display.texture=backdrop.Frame;display.raycastTarget=false;BeetleCombatCrt.Attach(display);
             }
-            Label(p,"当前场景的实时画面预览",40,279,470,25,17,muted);
             Label(p,"像素档位",550,301,460,34,22);
             UI.Button pixelButton=null,spotlightButton=null;TMPro.TMP_Text description=null,glassDescription=null;RetroFilterDropdown dropdown=null,glassDropdown=null;
             pixelButton=Btn(p,BeetleDisplayPreferences.PixelSizeLabel,550,341,460,52,()=>

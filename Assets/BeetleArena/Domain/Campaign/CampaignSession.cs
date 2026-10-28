@@ -63,7 +63,13 @@ namespace BugDuel.Campaign
             var b=Beetle(id); Available(b);
             Require(b.Adult(State.week) && !b.overturned && b.meal!=null && b.meal.id==mealId,"这份食物当前不能结算");
             b.nutrition=Math.Min(100,b.nutrition+(b.meal.food==0?35:25)); b.hearts=Math.Min(b.maxHearts,b.hearts+.5);
-            b.meal=null;b.hasMeal=false;Tell("进食完成");
+            b.meal=null;b.hasMeal=false;b.foodResidue=true;Tell("进食完成");
+        }
+        public void ClearFoodDish(string id)
+        {
+            var b=Beetle(id);Available(b);Require(b.Adult(State.week),"只有成虫使用食盆");
+            Require(b.meal!=null||b.foodResidue,"食盆已经是干净的");
+            b.meal=null;b.hasMeal=false;b.foodResidue=false;Tell("食盆已清理");
         }
         public void Rescue(string id)
         {

@@ -11,16 +11,16 @@ namespace BeetleArena.Campaign
         void OpenMarketItem(MarketItem item)
         {
             if(!string.IsNullOrEmpty(item.itemId)){OpenMarketSupply(item.itemId,false);return;}
-            var dialog=MarketDialog("商品详细参数档案",460,335);
+            var dialog=MarketDialog("商品详情",460,335);
             Component<CampaignMarketArtwork>(Rect("DetailArtwork",dialog,18,53,52,52)).SetKind(item.artwork);
             MText(dialog,item.title,84,49,352,29,13,CampaignRetroTheme.Accent,true);
-            string[] names={"所属类别：","种类品名：","尺寸规格：","参数属性：","核准价格："};string[] values={item.category,item.species,item.size,item.parameter,item.price};
+            string[] names={"类别：","物种：","尺寸：","属性：","价格："};string[] values={item.category,item.species,item.size,item.parameter,item.price};
             for(int i=0;i<5;i++)
             {
                 MText(dialog,names[i],84,88+i*30,77,25,11,CampaignRetroTheme.Muted);MText(dialog,values[i],161,88+i*30,275,25,i==4?14:11,i==4?CampaignRetroTheme.Price:CampaignRetroTheme.Ink,i==4);
-                if(i<4)MBox("Rule",dialog,84,114+i*30,352,1,MColor(0xd0ccbe,0x374151));
+                if(i<4)MBox("Rule",dialog,84,114+i*30,352,1,CampaignRetroTheme.Rule);
             }
-            MText(dialog,item.enabled?"订单将寄送至邮箱，领取后加入收藏。":"金币不足，可先出售库存或参加联赛赚取金币。",18,247,420,23,11,CampaignRetroTheme.Muted);
+            MText(dialog,item.enabled?"购买后在邮箱领取。":"金币不足",18,247,420,23,11,CampaignRetroTheme.Muted);
             MBox("DialogRule",dialog,18,278,422,1,CampaignRetroTheme.Border);
             MButton(dialog,item.actionLabel,218,291,132,27,()=>{CloseModal();item.action?.Invoke();},item.enabled);MButton(dialog,"取消",360,291,80,27,CloseModal);
         }
@@ -28,7 +28,7 @@ namespace BeetleArena.Campaign
         {
             var dialog=MarketDialog("发表转让帖 - 选择活体或标本",760,590);
             MText(dialog,$"挂牌展柜 {Session.ListedCount}/{State.cabinet} · 挂牌免费，成交收取 5% 手续费。",18,46,724,28,12,CampaignRetroTheme.Muted);
-            MText(dialog,"报价锁定到本周末，可随时撤回。仓库活体需先入住温室才能挂牌。",18,75,724,25,11,CampaignRetroTheme.Muted);
+            MText(dialog,"报价本周有效 · 可撤回 · 仓库活体需先入住",18,75,724,25,11,CampaignRetroTheme.Muted);
             var flow=Column(18,110,724,404,dialog);
             foreach(var beetle in State.beetles.Where(b=>!b.listed))
             {
@@ -43,7 +43,7 @@ namespace BeetleArena.Campaign
                 MText(row,$"[标本] {CampaignDisplayText.SpecimenName(p)}   "+(p.beetle.stage<BugDuel.Campaign.CampaignLifeStage.DormantAdult?BugDuel.Campaign.CampaignSession.StageName(p.beetle.stage):$"{p.beetle.length:0.0} mm"),10,7,570,23,12);MText(row,$"{CampaignDisplayText.SpecimenSpecies(p)} · 估价 {Session.SpecimenAsking(p):N0} G",10,33,570,20,11,CampaignRetroTheme.Muted);
                 MButton(row,"挂牌",598,16,96,29,()=>{CloseModal();app.Execute(s=>s.ListSpecimen(p.id));},Session.ListedCount<State.cabinet);
             }
-            if(flow.y==0)MText(flow.content,"当前没有可选择的收藏。",10,12,650,30,12,CampaignRetroTheme.Muted);MButton(dialog,"返回",646,539,96,29,CloseModal);
+            if(flow.y==0)MText(flow.content,"暂无可挂牌收藏",10,12,650,30,12,CampaignRetroTheme.Muted);MButton(dialog,"返回",646,539,96,29,CloseModal);
         }
         void OpenMarketOffers(string beetleId)
         {
@@ -65,12 +65,12 @@ namespace BeetleArena.Campaign
             var dialog=MarketDialog("周末 · 神秘蛹盲拍",460,280);
             if(State.pupaAuction==null)
             {
-                MText(dialog,"起拍 150 G，共三轮加价。\n落槌前物种保密，退出不扣金币，每场仅可参加一次。",24,59,412,95,13);
+                MText(dialog,"起拍 150 G · 共三轮\n退出不扣款，本周不能再参加。",24,59,412,95,13);
                 MButton(dialog,"进入本周拍卖",174,212,150,29,()=>{CloseModal();app.Execute(s=>s.StartPupaAuction(),()=>{if(State.pupaAuction!=null)OpenMarketPupa();});},State.week%2==0&&State.lastPupaWeek!=State.week);
             }
             else
             {
-                MText(dialog,$"当前 {State.pupaAuction.bid:N0} G  ·  第 {State.pupaAuction.round}/3 轮",24,59,412,31,15,CampaignRetroTheme.Price,true);MText(dialog,"再举牌加价 50–149 G，第三轮成交。\n退出不扣金币，本周将无法再次参加。",24,103,412,65,12);
+                MText(dialog,$"当前 {State.pupaAuction.bid:N0} G  ·  第 {State.pupaAuction.round}/3 轮",24,59,412,31,15,CampaignRetroTheme.Price,true);MText(dialog,"每轮加价 50–149 G · 第三轮成交\n退出不扣款，本周不能再参加。",24,103,412,65,12);
                 MButton(dialog,"举牌",24,212,125,29,()=>{CloseModal();app.Execute(s=>s.BidPupa(),()=>{if(State.pupaAuction!=null)OpenMarketPupa();});});MButton(dialog,"退出盲拍",159,212,125,29,()=>{CloseModal();app.Execute(s=>s.LeavePupaAuction());});
             }
             MText(dialog,"竞拍人："+Session.PlayerSignature,24,174,412,27,12,CampaignRetroTheme.Muted);
@@ -91,21 +91,20 @@ namespace BeetleArena.Campaign
         void DrawMarketThemeMenu()
         {
             var dismiss=Rect("MenuDismiss",root,0,0,root.rect.width,root.rect.height);var hit=Component<UI.Image>(dismiss);hit.color=Color.clear;hit.raycastTarget=marketThemeOpen;var click=Component<UI.Button>(dismiss);click.onClick.RemoveAllListeners();click.onClick.AddListener(()=>SetMarketThemeOpen(false));click.transition=UI.Selectable.Transition.None;click.interactable=marketThemeOpen;marketThemeDismiss=click;
-            var dropdown=MBox("ThemeDropdown",root,294,64,300,238,MColor(0xffffff,0x252a30),MColor(0x716f64,0x4b5563),1);dropdown.GetComponent<UI.Image>().raycastTarget=true;
+            var dropdown=MBox("ThemeDropdown",root,MarketMenuStart+3,64,300,238,CampaignRetroTheme.SurfaceRaised,CampaignRetroTheme.Border,1);dropdown.GetComponent<UI.Image>().raycastTarget=true;
             MText(dropdown,"当前季节（随游戏日历）",12,8,276,27,17,CampaignRetroTheme.Muted);
             MText(dropdown,CampaignRetroTheme.SeasonName,12,42,276,32,21,CampaignRetroTheme.Ink,true);
-            MBox("ModeRule",dropdown,1,88,298,1,MColor(0xd0ccbe,0x181b1f));MText(dropdown,"色彩模式 (明暗)：",12,99,276,27,18,CampaignRetroTheme.Muted);
-            MButton(dropdown,(!CampaignRetroTheme.Dark?"✓  ":"    ")+"明亮浅色模式 (Light)",3,134,294,42,()=>SetMarketMode(false),true,18,true,MColor(0xffffff,0x252a30)).GetComponentInChildren<TMP_Text>().alignment=TextAlignmentOptions.MidlineLeft;
-            MButton(dropdown,(CampaignRetroTheme.Dark?"✓  ":"    ")+"经典暗色模式 (Dark)",3,184,294,42,()=>SetMarketMode(true),true,18,true,MColor(0xffffff,0x252a30)).GetComponentInChildren<TMP_Text>().alignment=TextAlignmentOptions.MidlineLeft;
+            MBox("ModeRule",dropdown,1,88,298,1,CampaignRetroTheme.Rule);MText(dropdown,"色彩模式 (明暗)：",12,99,276,27,18,CampaignRetroTheme.Muted);
+            MButton(dropdown,(!CampaignRetroTheme.Dark?"✓  ":"    ")+"明亮浅色模式 (Light)",3,134,294,42,()=>SetMarketMode(false),true,18,true,CampaignRetroTheme.SurfaceRaised).GetComponentInChildren<TMP_Text>().alignment=TextAlignmentOptions.MidlineLeft;
+            MButton(dropdown,(CampaignRetroTheme.Dark?"✓  ":"    ")+"经典暗色模式 (Dark)",3,184,294,42,()=>SetMarketMode(true),true,18,true,CampaignRetroTheme.SurfaceRaised).GetComponentInChildren<TMP_Text>().alignment=TextAlignmentOptions.MidlineLeft;
             marketThemeMotion=BeetlePanelMotion.Attach(dropdown.gameObject);
             marketThemeMotion.SetVisible(marketThemeOpen,hidden:QueueRefresh);
         }
         void OpenMarketHelp()
         {
-            SetMarketThemeOpen(false);var dialog=MarketDialog("市场交易与竞拍指南",760,648);
-            MText(dialog,"甲虫商店 / 收藏市场 / 公开拍卖",20,48,720,29,16,CampaignRetroTheme.Accent,true);
-            MText(dialog,"1. 商店与邮箱\n活体、装框标本与用品均有明码标价。用品可按 1–99 件批量购买。所有订单通过邮箱领取：活体存入仓库，标本存入收藏库。\n\n2. 出售收藏与库存\n商店即时回收价：成虫估价的 55%（幼虫 35%），标本估价的 60%，用品零售价的 40%。显示的回收价就是实收金币。\n\n3. 交易 BBS\n健康成虫与标本共用挂牌展柜。挂牌免费，每周刷新买家报价；成交收取 5% 手续费。成交前可以撤回。标本挂牌时会从展示墙取下。\n\n4. 公开拍卖\n每场四轮，自定义举牌后点击「下一轮」查看其他买家回应。只有落槌时最高出价者参与成交判定。达到期望价时必定成交；低于期望价时，接受率为价格比例的平方。出价暂存托管，被超价或流拍自动退款。\n\n5. 每周补货与保存\n进入下一周会结算未结束拍卖，再更新货架和拍品。每次成功交易都会保存。Alt+T 查看主题，Alt+M 切换明暗，Alt+H 查看帮助。",20,91,720,473,13);
-            MButton(dialog,"确定(O)",628,596,112,31,CloseModal,true,13);
+            SetMarketThemeOpen(false);var dialog=MarketDialog("市场交易与竞拍指南",760,448);
+            MText(dialog,"购买：商品寄至邮箱，领取后入库。\n\n挂牌：免费发布，成交收取 5% 手续费，成交前可撤回。\n\n回收：成虫估价的 55%，幼虫 35%，标本 60%，用品零售价的 40%。\n\n拍卖：每场 4 轮。最高出价达到期望价时必定成交；低于期望价时，成交率为出价比例的平方。被超价或流拍退回托管。\n\n每周更新商品与报价，并结算未结束拍卖。\nAlt+T 主题 · Alt+M 明暗 · Alt+H 帮助",20,54,720,320,15);
+            MButton(dialog,"确定(O)",628,396,112,31,CloseModal,true,13);
         }
     }
 }

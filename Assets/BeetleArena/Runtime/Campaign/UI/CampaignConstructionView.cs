@@ -34,6 +34,7 @@ namespace BeetleArena.Campaign
         }
         void SetGreenhouseTab(int tab)
         {
+            CloseFeedingDish();
             greenhouseInfoOpen=true;greenhouseTab=tab;construction?.SetEditing(tab==3);QueueRefresh();
         }
         void OpenConstructionWarehouse()
@@ -62,20 +63,19 @@ namespace BeetleArena.Campaign
         void DrawConstructionInventory(Flow flow)
         {
             float w=flow.CardWidth,inside=w-24;
-            var status=Card(flow,construction.HasPreview?160:145);
+            var status=Card(flow,construction.HasPreview?160:112);
             Label(status,"景观仓库",12,9,inside,30,23,accent);
-            Label(status,"每只甲虫独立布景 · 拖出卡片或点击取出",12,43,inside,25,15,muted);
+            Label(status,"拖出卡片或点击取出",12,43,inside,25,15,muted);
             if(construction.HasPreview)
             {
-                Label(status,(construction.PreviewValid?"可放置 · ":"不可放置 · ")+construction.PreviewReason,12,72,inside,40,16,construction.PreviewValid?new Color(.35f,.9f,.55f):new Color(1,.4f,.35f));
+                Label(status,(construction.PreviewValid?"可放置 · ":"不可放置 · ")+construction.PreviewReason,12,72,inside,40,16,construction.PreviewValid?CampaignRetroTheme.Positive:CampaignRetroTheme.Price);
                 GreenhouseButton(status,"Q ↶",12,119,(inside-12)/3,30,()=>construction.RotatePreview(-90));
                 GreenhouseButton(status,"E ↷",18+(inside-12)/3,119,(inside-12)/3,30,()=>construction.RotatePreview(90));
                 GreenhouseButton(status,"取消  Esc",24+2*(inside-12)/3,119,(inside-12)/3,30,()=>construction.Cancel());
             }
             else
             {
-                Label(status,"左键放置 / 选中 · Q / E 旋转 · 右键转动视角",12,72,inside,24,14,muted);
-                GreenhouseButton(status,"完成布置 · 放回甲虫",12,105,inside,30,()=>SetGreenhouseTab(0));
+                GreenhouseButton(status,"完成布置 · 放回甲虫",12,72,inside,30,()=>SetGreenhouseTab(0));
             }
             var selection=construction.Selected;
             if(selection!=null&&!construction.HasPreview)
@@ -104,7 +104,7 @@ namespace BeetleArena.Campaign
                 }
             }
             if(inventory.Length==0)
-            {var empty=Card(flow,90);Label(empty,"景观仓库暂时为空。\n可到市场补充，或将已摆放的景观收回。",12,12,inside,64,18,muted);}
+            {var empty=Card(flow,64);Label(empty,"暂无景观",12,12,inside,40,18,muted);}
             var shops=Card(flow,100);
             GreenhouseButton(shops,"购买更多景观",12,10,inside,35,()=>{construction.SetEditing(false);app.Go(CampaignPage.Market);});
             GreenhouseButton(shops,"查看全部仓库",12,55,inside,35,OpenWarehouse);
@@ -141,7 +141,7 @@ namespace BeetleArena.Campaign
                 {
                     currencyHost.anchoredPosition=new Vector2(12,-34);currencyHost.sizeDelta=new Vector2(260,28);
                 }
-                CampaignCurrencyHud.Attach(currencyHost,font,ink,new Color(.35f,.95f,.55f),new Color(1,.43f,.35f),true);currencyHost.SetAsLastSibling();
+                CampaignCurrencyHud.Attach(currencyHost,font,ink,CampaignRetroTheme.Positive,CampaignRetroTheme.Price,true);currencyHost.SetAsLastSibling();
                 if(page==CampaignPage.Greenhouse)
                 {
                     currencyHost.SetParent(greenhouseFooter,false);

@@ -22,11 +22,14 @@ Runtime/Campaign/UI（输入、排版、提示）
 
 | 功能 | 规则 / 数据入口 | 界面 / 表现入口 |
 | --- | --- | --- |
-| 玩家名字、旧档补名、署名 | `CampaignPlayerIdentity.cs`、`CampaignNaming.cs` | `CampaignPlayerNamingView.cs`（独立黑底）；`CampaignApp.NewGame` / `RevealAfterPlayerNaming`（保存成功后BlackFade） |
+| 玩家名字、旧档补名、署名 | `CampaignPlayerIdentity.cs`、`CampaignNaming.cs` | `CampaignPlayerNamingView.cs`（共用主题的独立命名页，`Window` 背景）；`CampaignApp.NewGame` / `RevealAfterPlayerNaming`（保存成功后BlackFade） |
 | 甲虫名字 | `CampaignNaming.cs` 的 `RenameBeetle` | `CampaignNamingView.OpenBeetleNaming` |
-| 时间、阶段、寿命、用品 | `CampaignLifecycle.cs` | `CampaignCalendarView.cs`、`CampaignTimeSettingsView.cs`（仅0.5–64倍速）、`CampaignLifeStageDisplay.cs`；`CampaignApp.LoadSlot` 清除旧手动暂停并保留日长与周期 |
-| 温室照料、翻倒、投喂 | `CampaignSession.cs` | `CampaignGreenhouseView.cs`、`CampaignCareController.cs`、`CampaignSpecimen.cs`、`CampaignRescuePrompt.cs` |
-| 建造库存、占格、移动、回售 | `CampaignConstruction.cs` | `CampaignConstructionView.cs`、`CampaignConstructionController.cs` |
+| 时间、阶段、寿命、用品 | `CampaignLifecycle.cs` | `CampaignCalendarView.cs`、`CampaignCalendarReadout.cs`（虫箱/市场单行）、`CampaignTimeSettingsView.cs`（仅0.5–64倍速）、`CampaignLifeStageDisplay.cs`；`CampaignApp.LoadSlot` 清除旧手动暂停并保留日长与周期 |
+| 甲虫信息、翻倒与阶段照料 | `CampaignSession.cs`、`CampaignLifecycle.cs` | `CampaignGreenhouseView.cs`（信息/管理/建造浮窗）、`CampaignCareController.cs`、`CampaignSpecimen.cs`、`CampaignRescuePrompt.cs` |
+| 食盆投喂、残渣与丢弃 | `CampaignSession.Feed` / `CompleteMeal` / `ClearFoodDish`；`CampaignBeetle.foodResidue` | `CampaignFeedingDishView.cs`（非模态操作窗、丢弃确认）；`CampaignSpecimen`（食物/残渣显示）；`CampaignFoodDishValidation` |
+| 长按背部提起、放下与取消 | 不增加经营存档字段；`CampaignApp.HandlingBeetle` 临时暂停日历 | `Presentation/Husbandry/CampaignBeetleGrabController.cs`（锁定初始背部命中，0.7秒白色空心进度圈，绑定返回键取消握持；落地不因UI命中撤回）；`CampaignCareController.HeldId`；`CampaignSpecimen` / `CarePosePresenter.PresentHeld` / `CareLocomotion.PlaceAt`；`CampaignBeetleGrabValidation` |
+| 一次性必要操作提示 | `CampaignPreferences.learnedControls`，保存于 `settings.json` | `CampaignControlHints.cs`；甲虫/食盆/抓取操作、`CampaignObservationCamera.UserInputRevision` 与 `CampaignConstructionController.PlacementRevision` 记录已学；提示无emoji |
+| 建造库存、占格、移动、回售 | `CampaignConstruction.cs` | `CampaignConstructionView.cs`、`CampaignConstructionController.cs`；`CampaignConstructionOccupancy.cs` 将虫体覆盖格绘为红X，并在预览/提交时拒绝重叠 |
 | 建造剩余空间与安全返回 | `CampaignConstructionSpace.cs` | `CampaignConstructionHabitat.cs`、`CareEnclosureLayout.cs` |
 | 景观造型、建造动画 | `CampaignConstruction.cs` 内的 `CampaignDecorations` | `CampaignDecorationVisuals.cs`、`CampaignDecorationDragSource.cs` |
 | 捕虫队 | `CampaignSession.Dispatch` 与跨周结算 | `CampaignCatchingView.cs` |
@@ -38,19 +41,19 @@ Runtime/Campaign/UI（输入、排版、提示）
 | 遗体、装框、标本交易 | `CampaignTrading.cs` | `CampaignSpecimenRoomView.cs`、`CampaignSpecimenRoom.cs` |
 | 金币数字、浮字、音效 | `CampaignApp` 的提交事件 | `CampaignCurrencyHud.cs`、`CampaignCurrencyAudio.cs` |
 | 页面调度、刷新、输入 | `CampaignApp.cs`、`CampaignInputPolicy.cs` | `CampaignView.cs`、`CampaignUiTree.cs` |
-| 共用排版、按钮、滚动卡片 | — | `CampaignUiLayout.cs` |
+| 共用排版、按钮、滚动卡片 | — | `CampaignUiLayout.cs`（普通页居中、浅背景与按钮区分）；`CampaignView`（市场铺满实际画布） |
 | 市场、邮箱、仓库的经典窗口控件 | — | `CampaignClassicControls.cs`（`MText` / `MStatus` / `MarketDialog`） |
 | 共用确认框、背景模糊、输入与焦点 | — | `CampaignDialogView.cs`；`Presentation/Display/CampaignDialogMotion.cs`（DOTween弹出/缩回）；`CampaignModalBackdrop.cs`（一次抓取世界+HUD，Gaussian模糊，前景清晰） |
 | 下拉菜单、联赛与独立格斗面板动画 | — | `Runtime/Presentation/UI/BeetlePanelMotion.cs`；`CampaignMarketDialogs.cs`、`CampaignLeagueView.cs`、`BeetleFeedbackSettings.cs`、`BeetleArenaHud.cs` |
 | 转场、上下帘软边、全黑停留 | `CampaignTransitionProfile`、`Resources/CampaignTransition.asset` | `Presentation/Transitions/CampaignSceneTransition.cs` 的 `Go` / `Play`；`Resources/CampaignTransitionShutter.shader`；`Editor/Setup/CampaignTransitionSetup.cs` |
 | 温室观察与重置视角 | — | `CampaignGreenhouseView.cs` 的“重置视角”；`Presentation/Cameras/CampaignObservationCamera.cs` |
-| 玻璃养殖箱、照片土层 | — | `Editor/Setup/HusbandryTerrariumSetup.cs`；`Generated/Husbandry/GlassEnclosure.prefab`（四面薄 Cube）；`Runtime/Presentation/Husbandry/HusbandryGlassEnclosure.cs`（高度）；`Generated/Husbandry/Materials/`（玻璃与土壤材质） |
+| 玻璃养殖箱、照片土层 | — | `Editor/Setup/HusbandryTerrariumSetup.cs`（土层1.6、顶面亮度0.36、侧面0.48，保持土面高度并降低背景底板）；`Generated/Husbandry/GlassEnclosure.prefab`（四面薄 Cube）；`Runtime/Presentation/Husbandry/HusbandryGlassEnclosure.cs`（高度）；`Generated/Husbandry/Materials/`（玻璃与土壤材质） |
 | 养殖聚光与入场闪灯 | — | `Presentation/Husbandry/HusbandrySpotlight.cs` 同步固定聚光、圆形地面光池和入场 DOTween 双闪，黑幕退去后播放、离场关闭；`Presentation/Display/BeetleHusbandryLightingPreferences.cs` 保存画面设置开关。`Editor/Setup/HusbandryLightingSetup.cs` 配置两个养殖场景。场景 `EnclosureSpot/Light` 调光强及内外锥角（光池大小与柔边同步）；`Generated/Husbandry/Materials/SpotlightPool.mat` 调光池亮度/颜色，`Backdrop.mat` 移除随视角游走的高光。`SoilTop.mat` 独立控制土壤亮度。 |
 | 玻璃效果：拟真 / 低配 | `Runtime/Presentation/Display/BeetleGlassPreferences.cs`（全局偏好，默认拟真） | `CampaignSettingsView.cs`、`BeetleFeedbackSettings.cs`、`RetroFilterDropdown.cs`；`Runtime/Presentation/Husbandry/HusbandryGlassSurface.cs`；`Shaders/HusbandryGlass.shader` / `HusbandryGlassLow.shader` |
 | 格斗个体跟随镜头 | `BeetleCameraFrame` 的水平 `Forward` | `Runtime/Presentation/Cameras/ArenaCamera.cs`（后上方，与地面60°，随个体转向） |
-| 菜单与存档槽 | `CampaignSaveRepository.cs`、`CampaignSnapshots.cs` | `CampaignMenuView.cs` |
+| 菜单与存档槽 | `CampaignSaveRepository.cs`、`CampaignSnapshots.cs` | `CampaignMenuView.cs`（主菜单设置入口；四卡按内宽排版；缺失/解码失败/纯色缩略图隐藏）；`CampaignBackdrop.ConfigureMenuFraming` / `SetMenuTransitionProgress`（完整边界取景、宽高比适配与离场缩小）；存档入口仅保留主菜单 |
 | 设置、滑块、显示样式 | `CampaignPreferences`、`BeetleDisplayPreferences` | `CampaignSettingsView.cs`、`Runtime/Presentation/UI/RetroSettingsSlider.cs` |
-| 季节主题、明暗配色 | `CampaignClock.Month` | `CampaignRetroTheme.cs`：每3个游戏月一季，跨季和读档使用现有页面刷新；明暗模式独立保存 |
+| 纸板/经典风格、季节与明暗配色 | `CampaignClock.Month`；风格和明暗模式独立保存 | `CampaignRetroTheme.cs`：四季×明暗共享 `Window` / `Panel` / `Button` / `Selection`、对应文字与交互颜色；`SetStyle` / `SetMode` / `NotifyCurrentPalette` 发出 `Changed`；`RetroBevel` 绘制原尺寸内的纸面、墨线、厚边及硬阴影，`CampaignSettingsView` / `BeetleFeedbackSettings` 提供风格切换，`CampaignView.Rebuild` 同步季节，`BeetleArenaHud` / `BeetleHusbandryHud` 订阅更新 |
 | 游戏滤镜：原画 / CRT / 两套原色 Dither | `BeetleDisplayPreferences`、`WorldDisplayProfile` | `CampaignSettingsView.DrawDisplaySettings`、`BeetleFeedbackSettings`、`Runtime/Presentation/UI/RetroFilterDropdown.cs`；`Runtime/Presentation/Display/BeetleCombatCrt.cs` 和对应显示着色器 |
 | 分场景画面编辑器、Shader 扫描与应用 | `WorldDisplayProfile`、`Resources/WorldDisplay.asset` | `Editor/Presentation/WorldDisplayWindow.cs`（配套 UXML/USS）、`WorldDisplayEditorService.cs`；Shader 参数在 `Resources/WorldDisplayMaterials/` 各场景材质的 Inspector 编辑 |
 | 本地化与玩家原样文字 | `CampaignDisplayText.cs` | `CampaignLocalization.cs`；`Assets/Localization/Source/GameText.json` |
@@ -61,11 +64,11 @@ Runtime/Campaign/UI（输入、排版、提示）
 
 `HusbandryGlassSurface` 将所选材质应用到四面玻璃，编辑器使用独立的 `editorPreview`。同文件中的 `GlassCameraTextures` 仅在能看到活动玻璃的当前世界相机渲染期间临时修改 URP 相机选项：拟真请求颜色和深度，低配关闭颜色副本并保留原深度选项；渲染结束恢复原值。它不修改共享管线资源，也不接管 UI 相机。
 
-土壤照片位于 `Art/Husbandry/Textures/SoilTop.png` 与 `SoilSide.png`，`Generation.json` 记录图片来源与生成提示词；`SoilCube.asset` 从 Unity Cube 拆分顶面/侧面材质槽，保持单位边界。场景中 `Terrarium/SoilBed` 的原高度和尺寸是脚底、建造与相机共用的锚点，不应为换贴图另盖一层。`HusbandryTerrariumSetup.Apply()` 增量更新独立养殖与经营温室，保留已有材质的 Inspector 修改；`HusbandryTerrariumValidation` 与 `TerrariumPlayValidation` 验证几何依赖和真实运行画面。
+土壤照片位于 `Art/Husbandry/Textures/SoilTop.png` 与 `SoilSide.png`，`Generation.json` 记录图片来源与生成提示词；`SoilCube.asset` 从 Unity Cube 拆分顶面/侧面材质槽，保持单位边界。`Terrarium/SoilBed` 厚度由0.8增至1.6，增量向下延伸，土面仍是脚底、建造与相机共用的原锚点-0.02，不在上方另盖地面。`HusbandryTerrariumSetup.SoilSize` 控制尺寸，`SoilTopBrightness=.36` 与 `SoilSideBrightness=.48` 控制顶面/侧面材质乘色。`BackdropClearance=.1` 让背景底板至少低于土层底面0.10，光池跟随底板，防止底板截掉土层下部与玻璃底框；灯光配置保持原值。`Apply()` 更新独立养殖与经营温室；`HusbandryTerrariumValidation` 验证完整土层、底框与光池之间的净空，`TerrariumPlayValidation` 验证真实运行画面。
 
-自然时间的玩家入口只修改倍率；日期、基准日长、生命周期编辑和独立 `NextWeek` 快捷入口已移除。“帮工一周”仍走领域跨周规则。建造与弹窗的暂停由 `CampaignApp` 的页面/操作状态门禁控制，退出后恢复，不写入长期暂停标记；领域配置接口仍供旧档兼容和验证使用。
+自然时间的玩家入口只修改倍率；日期、基准日长、生命周期编辑和独立 `NextWeek` 快捷入口已移除。“帮工一周”仍走领域跨周规则。建造、模态弹窗及抓取/落下的暂停由 `CampaignApp` 的页面/操作门禁控制，退出后恢复，不写入长期暂停标记；`HandlingBeetle` 还阻止抓取期间的跨日进食结算。甲虫信息与食盆浮窗本身不暂停日历。领域配置接口仍供旧档兼容和验证使用。
 
-玻璃高度在 `Generated/Husbandry/GlassEnclosure.prefab` 根物体的 `HusbandryGlassEnclosure` 组件中调整 `Height`：默认 `5.6`，是原 `2.8` 的两倍。参数表示玻璃下沿至上沿的总高度；四面板、上边框和接缝同步，底框与土壤固定。组件在编辑模式和运行模式均生效，全景观察镜头通过 `Revision` 重算取景；甲虫近观不被重置。更改场景实例可单独设高，更改预设则所有未覆盖的实例一起更新。
+玻璃高度在 `Generated/Husbandry/GlassEnclosure.prefab` 根物体的 `HusbandryGlassEnclosure` 组件中调整 `Height`：应用1.6厚土层后总高为6.8，下沿世界高度-1.62，上沿保持5.18。参数表示玻璃下沿至上沿的总高度；`SetHeight` 同步四面板、上边框和接缝，`SetBottom` 在土层增厚时只向下延长玻璃与底框，保留上沿位置。组件在编辑模式和运行模式均生效，全景观察镜头通过 `Revision` 重算取景；甲虫近观不被重置。更改场景实例可单独设高，更改预设则所有未覆盖的实例一起更新。
 
 ## 表现代码目录
 
@@ -75,9 +78,9 @@ Runtime/Campaign/UI（输入、排版、提示）
 | --- | --- |
 | `Display/` | dither、CRT、自定义画面材质及分场景配置：`BeetleCombatCrt`、`BeetleCombatDisplay`、`BeetleCrtProfile`、`BeetleDisplayPreferences`、`WorldDisplayProfile`；全局玻璃品质：`BeetleGlassPreferences` |
 | `Cameras/` | 战斗取景、镜头姿态快照：`ArenaCamera`、`BeetleCameraFrame` |
-| `UI/` | 独立格斗/养殖 HUD、设置、滑块和养殖导航：`BeetleArenaHud`、`BeetleHusbandryHud`、`BeetleFeedbackSettings`、`RetroSettingsSlider`、`BeetleNurseryNavigation`；共用滤镜与玻璃效果下拉：`RetroFilterDropdown`；常驻窗口/下拉动画：`BeetlePanelMotion` |
+| `UI/` | 独立格斗/养殖 HUD、设置、滑块和养殖导航：`BeetleArenaHud`、`BeetleHusbandryHud`（启用订阅主题、禁用解绑；刷新保留精简卡片与选中态）、`BeetleFeedbackSettings`、`RetroSettingsSlider`、`BeetleNurseryNavigation`；共用滤镜与玻璃效果下拉：`RetroFilterDropdown`；常驻窗口/下拉动画：`BeetlePanelMotion` |
 | `Audio/` | 战斗声音、按钮合成声及滑块点击声：`ArenaAudio`、`RetroUiAudio`、`RetroUiAudioProfile`、`MouseClickSynthesizer`、`RetroUiSliderClick` |
-| `Husbandry/` | 养殖模型姿态、游走、足部 IK 和容器空间：`BeetleHusbandryView`、`CarePosePresenter`、`CareLocomotion`、`CareFootPlant`、`CareEnclosureLayout`、`CareWalkArea`、`CareGroundSurface`、`CareShellContact`；玻璃高度与品质：`HusbandryGlassEnclosure`、`HusbandryGlassSurface` |
+| `Husbandry/` | 养殖模型姿态、游走、足部 IK 和容器空间：`BeetleHusbandryView`、`CarePosePresenter`（`PresentAmbient` 静止/暂停感知微动，`PresentHeld` 悬空姿态）、`CareLocomotion`（`PlaceAt` 安全落地）、`CareFootPlant`、`CareEnclosureLayout`、`CareWalkArea`、`CareGroundSurface`、`CareShellContact`；玻璃高度与品质：`HusbandryGlassEnclosure`、`HusbandryGlassSurface` |
 | `CombatFeedback/` | 战斗接触反馈、火星：`BeetleContactFeedback`、`HornClashSparks` |
 
 | 经营表现目录（`Runtime/Campaign/Presentation/`） | 职责与入口 |
@@ -85,8 +88,8 @@ Runtime/Campaign/UI（输入、排版、提示）
 | `Display/` | 世界背景纹理显示：`CampaignBackdrop`；弹窗一次页面截图与柔和模糊：`CampaignModalBackdrop`；DOTween窗口动画：`CampaignDialogMotion` |
 | `Cameras/` | 观察镜头、景深：`CampaignObservationCamera`、`CampaignDepthOfFieldToggle` |
 | `Audio/` | 经营背景声、金币声音、邮件反馈：`CampaignAudio`、`CampaignCurrencyAudio`、`CampaignMailAudio` |
-| `Husbandry/` | 照料与阶段外观：`CampaignCareController`、`CampaignLifeStageDisplay`、`CampaignLifeStageVisualProfile`、`CampaignSpecimen`（活虫模型表现） |
-| `Construction/` | 建造交互、净空检查、景观造型：`CampaignConstructionController`、`CampaignConstructionHabitat`、`CampaignDecorationVisuals` |
+| `Husbandry/` | 照料与阶段外观：`CampaignCareController`、`CampaignLifeStageDisplay`、`CampaignLifeStageVisualProfile`、`CampaignSpecimen`（活虫、食盆及残渣）；`CampaignBeetleGrabController`（锁定初始背部命中、0.7秒白色空心进度圈、手形光标、合法移动、落下与取消） |
+| `Construction/` | 建造交互、净空检查、景观造型：`CampaignConstructionController`、`CampaignConstructionHabitat`、`CampaignDecorationVisuals`；`CampaignConstructionOccupancy`（身体投影、逐格红X禁放） |
 | `Specimens/` | 标本墙与相框展示：`CampaignSpecimenRoom` |
 | `Transitions/` | 场景 `Go` 与同场景 `Play`：`CampaignSceneTransition`、`CampaignTransitionProfile`；BlackFade时长默认×3，全黑2.06秒，上下帘双向柔化 |
 
@@ -98,7 +101,7 @@ Runtime/Campaign/UI（输入、排版、提示）
 
 正式场景位于 `Assets/Scenes/Campaign/`。场景 UI 根对象按页面命名，如 `GreenhouseUI`、`MarketUI`、`SpecimenRoomUI`。场景中的 `ObservedBeetle`、`Terrarium`、`SoilBed` 分别表示观察个体、养殖箱和底床；保留这些有含义且被表现组件使用的名字。
 
-运行时界面使用 `CampaignCanvas / Page`、`DialogPanel`、`DialogTitleBar`、`GreenhousePanel`、`GreenhouseTitle`、`Card`、`Viewport / Content` 等结构名称。养殖主导航 `GreenhouseNavigation` 占左侧1/6，仓库 `WarehouseCategories / WarehouseDetails` 按选择展开至1/3。`GreenhouseInfo` 是点击甲虫后打开的浮窗，其 `CareScroll`、`ManagementScroll`、`ConstructionScroll` 分别属于照料、管理、建造页签；育种仍为独立页面。`GreenhouseFooter` 内整合金币与邮箱，`UnreadMailBadge / RetroRoundBadge` 绘制白边红色圆圈，并置于金币之上。交互按钮沿用其可见操作名称，便于在 Hierarchy 查找。业务归属使用稳定 ID 或明确标记，不用显示名判断玩家、甲虫或拍卖所有权。
+运行时界面使用 `CampaignCanvas / Page`、`DialogPanel`、`DialogTitleBar`、`GreenhousePanel`、`GreenhouseTitle`、`Card`、`Viewport / Content` 等结构名称。养殖主导航 `GreenhouseNavigation` 占左侧1/6，标题为“虫箱”，不再有“虫箱”“照料”重复选项；仓库 `WarehouseCategories / WarehouseDetails` 按选择展开至1/3。`GreenhouseInfo` 是点击甲虫后打开的浮窗，其 `CareScroll`、`ManagementScroll`、`ConstructionScroll` 分别属于信息、管理、建造页签；保留 `CareScroll` 内部名以维持引用，育种仍为独立页面。`FeedingDishWindow` 是点击食盆打开的非模态操作窗，与甲虫信息互斥；`ControlHint` 显示必要的一次性操作提示。`GreenhouseFooter` 内整合金币与邮箱，`UnreadMailBadge / RetroRoundBadge` 绘制白边红色圆圈，并置于金币之上。建造世界对象 `CareConstructionAnimalCells` 绘制每个身体占格的红X。交互按钮沿用其可见操作名称，便于在 Hierarchy 查找。业务归属使用稳定 ID 或明确标记，不用显示名判断玩家、甲虫或拍卖所有权。
 
 导入模型的部件名、骨骼名和已有物理接触标记有绑定用途，不能仅为统一字形随意重命名。新增场景对象应描述职责，避免 `GameObject`、`Cube` 或冗长的解释句。生成器在 `Editor/Setup/`，修改命名时同步生成器，避免重新安装后退回旧名。
 
@@ -124,7 +127,11 @@ Runtime/Campaign/UI（输入、排版、提示）
 | 修改范围 | 定向验证类 |
 | --- | --- |
 | 玩家身份、姓名迁移、同名竞拍 | `CampaignPlayerIdentityValidation`、`CampaignPlayerIdentityPlayValidation` |
-| 建造规则、空间、库存、实际放置 | `CampaignConstructionValidation`、`CampaignConstructionPlayValidation` |
+| 建造规则、空间、库存、虫体占格与实际放置 | `CampaignConstructionValidation`（含旋转身体逐格投影）、`CampaignConstructionPlayValidation`；`CampaignInterfacePlayValidation` 检查红X显示与放置拒绝 |
+| 食盆清理、丢弃、残渣持久化与旧档 | `CampaignFoodDishValidation`（`Artifacts/Campaign/Care/FoodDish.txt`；隔离存档自动清理） |
+| 提起/落点约束、悬空姿态、落地足部 | `CampaignBeetleGrabValidation`（`Artifacts/Campaign/Care/Grab.txt`）；`CampaignInterfacePlayValidation` 检查真实抓取与取消流程 |
+| 虫箱/仓库/市场/存档排版、食盆浮窗、提示与静止微动 | `CampaignInterfacePlayValidation`（`Artifacts/InterfaceRework/`；检查真实输入、模态阻挡、提示记忆与界面边界） |
+| 土层增厚、顶面亮度与地面锚点 | `HusbandryTerrariumValidation`、`TerrariumPlayValidation` |
 | 翻身按钮、侧栏与视口 | `CampaignGreenhouseUiValidation` |
 | 市场与标本交易、竞价托管 | `CampaignTradingValidation`、`SpecimenTradingPlayValidation` |
 | 标本室封闭外壳、极限镜头与双语界面 | `SpecimenLocalePlayValidation`、`SpecimenRoomGeometryChecks`（`Artifacts/SpecimenLocale/`） |

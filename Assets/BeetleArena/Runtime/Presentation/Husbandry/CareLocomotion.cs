@@ -37,6 +37,11 @@ namespace BeetleArena
             area = enclosure; Position = area.KeepInside(Position); target = Position;
             version = -1; Speed = turnSpeed = 0; hasWanderTarget = false; path.Clear();
         }
+        public void PlaceAt(Vector2 position)
+        {
+            Position=target=area.KeepInside(position);
+            Speed=turnSpeed=0;version=-1;hasWanderTarget=false;path.Clear();waypoint=0;
+        }
         public void Tick(CareStateMachine brain, float dt)
         {
             if(dt<=0)return;

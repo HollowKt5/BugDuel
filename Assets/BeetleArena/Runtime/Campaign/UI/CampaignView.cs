@@ -54,6 +54,11 @@ namespace BeetleArena.Campaign
                 var background=Rect("World",canvas,0,0,1600,900); Stretch(background);
                 backdrop.output=background.gameObject.AddComponent<UI.RawImage>(); backdrop.output.raycastTarget=false; backdrop.output.texture=backdrop.Frame;
                 BeetleCombatCrt.Attach(backdrop.output);
+                if(page==CampaignPage.MainMenu)
+                {
+                    backdrop.SetViewport(new Rect(0,0,1,1));
+                    backdrop.ConfigureMenuFraming();
+                }
                 if(page==CampaignPage.Greenhouse)
                 {
                     backdrop.SetViewport(new Rect(1f/6f,0,5f/6f,1));
@@ -73,6 +78,7 @@ namespace BeetleArena.Campaign
             if(!EventSystem.current) { var e=new GameObject("CampaignEvents",typeof(EventSystem),typeof(InputSystemUIInputModule)); e.GetComponent<InputSystemUIInputModule>().AssignDefaultActions(); }
             app.Changed+=QueueRefresh;
             CampaignLocalization.Changed+=QueueRefresh;
+            CampaignRetroTheme.Changed+=QueueRefresh;
             if(leagueBridge) leagueBridge.StateChanged+=QueueRefresh;
             Rebuild();
         }
@@ -92,7 +98,7 @@ namespace BeetleArena.Campaign
         {
             if(!app || !canvas) return;
             HandlePlayerIdentityPrompt();
-            if(page==CampaignPage.Greenhouse){ApplyConstructionRequest();ReadGreenhousePointer();}
+            if(page==CampaignPage.Greenhouse){ApplyConstructionRequest();ReadGreenhousePointer();UpdateControlHints();}
             if(dialogNotice)CampaignLocalization.Bind(dialogNotice,app.Message);
             if(lastCanvasSize!=canvas.rect.size) { lastCanvasSize=canvas.rect.size;QueueRefresh(); }
             if(pageInteraction)pageInteraction.interactable=!app.Busy&&!modal&&!(page==CampaignPage.Greenhouse&&sidebarCollapsed);
@@ -112,6 +118,7 @@ namespace BeetleArena.Campaign
         }
         void Rebuild()
         {
+            CampaignRetroTheme.NotifyCurrentPalette();
             if(CampaignLocalization.Font)font=CampaignLocalization.Font;
             ink=CampaignRetroTheme.Ink;muted=CampaignRetroTheme.Muted;accent=CampaignRetroTheme.Accent;
             var selected=EventSystem.current?EventSystem.current.currentSelectedGameObject:null;
@@ -142,13 +149,14 @@ namespace BeetleArena.Campaign
                     case CampaignPage.Breeding: DrawBreedingCenter();break;
                 }
             }
-            notice=Label(root,"",50,845,1500,30,17,muted);
+            notice=page==CampaignPage.Saves?Label(root,"",56,800,root.rect.width-112,30,17,muted):Label(root,"",50,845,1500,30,17,muted);
             notice.name="PageNotice";
             EndRefresh(selected);
         }
         void EndRefresh(GameObject selected)
         {
             if(Session!=null&&page==CampaignPage.SpecimenRoom)DrawCalendarHud();
+            DrawControlHint();
             tree.End();
             EnsurePresentationHud();
             if(!sidebarCollapsed&&(!selected || !selected.activeInHierarchy || (selected.GetComponent<UI.Selectable>() is UI.Selectable control && !control.IsInteractable())))SelectFirst(root);
@@ -167,7 +175,6 @@ namespace BeetleArena.Campaign
             var pages=new[]{CampaignPage.Greenhouse,CampaignPage.Catching,CampaignPage.Market,CampaignPage.League,CampaignPage.Breeding};
             string[] names={"温室","捕虫队","市场","联赛","育种中心"};
             for(int i=0;i<pages.Length;i++) { var p=pages[i]; Btn(nav,names[i],270+i*126,10,116,44,()=>app.Go(p),page!=p); }
-            Btn(nav,"主菜单",1090,10,110,44,()=>app.Go(CampaignPage.MainMenu));
             DrawCalendarClock(nav,1210,4,314,56);
         }
         void Title(string title,string subtitle) { Label(root,title,42,163,1180,48,32,ink); Label(root,subtitle,44,212,1480,32,18,muted); }
@@ -181,6 +188,7 @@ namespace BeetleArena.Campaign
         {
             DisposeConstructionUi();
             CampaignLocalization.Changed-=QueueRefresh;
+            CampaignRetroTheme.Changed-=QueueRefresh;
             if(app)app.Changed-=QueueRefresh;if(leagueBridge)leagueBridge.StateChanged-=QueueRefresh;CloseModal();
             if(rounded)Destroy(rounded);if(roundTexture)Destroy(roundTexture);foreach(var t in thumbnails)if(t)Destroy(t);
         }

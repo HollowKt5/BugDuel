@@ -61,6 +61,7 @@ namespace BugDuel.Campaign
         public string mutation = "";
         public CampaignMeal meal;
         public bool hasMeal; // Preserve nullness through Unity inline serialization.
+        public bool foodResidue;
         public List<Gene> genes = new List<Gene>();
         public bool Adult(int week) => !dead && stage == CampaignLifeStage.ActiveAdult;
     }

@@ -19,12 +19,22 @@ namespace BeetleArena
         readonly Dictionary<string, UnityEngine.UI.Button> foods = new Dictionary<string, UnityEngine.UI.Button>();
         readonly Dictionary<string, UnityEngine.UI.Button> habitats = new Dictionary<string, UnityEngine.UI.Button>();
         Color normal => Campaign.CampaignRetroTheme.Button;
-        Color selected => Campaign.CampaignRetroTheme.Dark?new Color(.2f,.32f,.45f):new Color(.75f,.85f,1);
+        Color selected => Campaign.CampaignRetroTheme.Selection;
         int contentVersion = -1, rosterCount = -1;
         bool bound;
 
         void Start() => BeetleCombatDisplay.Install(GetComponent<Canvas>().worldCamera);
-        void OnEnable() => Bind();
+        void OnEnable()
+        {
+            Campaign.CampaignRetroTheme.Changed += RefreshTheme;
+            Bind();
+        }
+        void RefreshTheme()
+        {
+            if(!bound)return;
+            Campaign.CampaignRetroTheme.ApplyHierarchy(transform);
+            Refresh();
+        }
         public void Bind()
         {
             if (bound || !controller) return;
@@ -41,6 +51,7 @@ namespace BeetleArena
         }
         void OnDisable()
         {
+            Campaign.CampaignRetroTheme.Changed -= RefreshTheme;
             if (!bound) return;
             if (controller) controller.Changed -= Refresh;
             helpButton.onClick.RemoveListener(Help); pauseButton.onClick.RemoveListener(Pause);
@@ -131,12 +142,16 @@ namespace BeetleArena
             {
                 var button = habitats[habitat.Id];
                 button.interactable = !dead && !occupied && habitat.Allows(selectedIndividual.Stage);
-                button.image.color = session.GetSelectedHabitatId(selectedIndividual.Id) == habitat.Id ? selected : normal;
+                bool isSelected = session.GetSelectedHabitatId(selectedIndividual.Id) == habitat.Id;
+                button.image.color = isSelected ? selected : normal;
+                button.GetComponentInChildren<TMP_Text>().color = isSelected ? Campaign.CampaignRetroTheme.SelectionInk : Campaign.CampaignRetroTheme.Ink;
             }
             foreach (BeetleIndividual individual in roster)
             {
                 var button = individuals[individual.Id];
-                button.image.color = individual.Id == selectedIndividual.Id ? selected : normal;
+                bool isSelected = individual.Id == selectedIndividual.Id;
+                button.image.color = isSelected ? selected : normal;
+                button.GetComponentInChildren<TMP_Text>().color = isSelected ? Campaign.CampaignRetroTheme.SelectionInk : Campaign.CampaignRetroTheme.Ink;
                 L.Bind(button.GetComponentInChildren<TMP_Text>(),individual.DisplayName + "\n<size=15>" +
                     (individual.Stage == LifeStage.Dead ? "已死亡" : individual.IsOverturned ? "需要救助！" : "正常") + "</size>");
             }

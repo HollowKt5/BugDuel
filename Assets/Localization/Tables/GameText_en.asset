@@ -6618,6 +6618,354 @@ MonoBehaviour:
     m_Localized: Level {0}
     m_Metadata:
       m_Items: []
+  - m_Id: 2461402260230144
+    m_Localized: Info
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2461402318950400
+    m_Localized: Feeding dish
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2461402318950401
+    m_Localized: 'Food in dish: {0}'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2461402318950402
+    m_Localized: Leftovers to clean
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2461402318950403
+    m_Localized: The dish is empty
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2461402318950404
+    m_Localized: Add food
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2461402318950405
+    m_Localized: No food in stock. Buy some at the market.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2461402318950406
+    m_Localized: Empty the dish before replacing the remaining food.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2461402318950407
+    m_Localized: Add food and the beetle will come to eat.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2461402318950408
+    m_Localized: Empty dish
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2461402318950409
+    m_Localized: Clean leftovers
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2461402318950410
+    m_Localized: Discard the remaining food? It will not be returned to your inventory.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2461402318950411
+    m_Localized: Feeding dish cleaned
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2461402318950412
+    m_Localized: Controls
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2461402318950413
+    m_Localized: Got it
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2461402318950414
+    m_Localized: Click a beetle to view its details, manage it, or decorate its enclosure.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2461402318950415
+    m_Localized: Click the feeding dish in the enclosure to add food or clean leftovers.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2461402318950416
+    m_Localized: Drag with the right mouse button to orbit. Scroll to zoom. Press
+      Esc for settings.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2461402318950417
+    m_Localized: Choose a category on the left, then click an item to inspect or
+      use it.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2461402318950418
+    m_Localized: Move the mouse to choose a spot. Left-click to place, Q / E to rotate,
+      Esc to cancel.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2466333918679040
+    m_Localized: Hold the beetle's back for 0.7 seconds until the white ring fills,
+      then lift. Release the left mouse button to put it down.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2466333948039168
+    m_Localized: Red X marks the cells occupied by the beetle. Choose another spot.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2466333948039169
+    m_Localized: Only adult beetles use a feeding dish
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2466333948039170
+    m_Localized: The feeding dish is already clean
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2466333948039171
+    m_Localized: Select save
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2466333948039172
+    m_Localized: "Win {0} matches in a row for the title \xB7 A loss resets the streak"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2466333948039173
+    m_Localized: '{0} vs. Woodland Challenger
+
+      No entry fee for the rematch.'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2466333948039174
+    m_Localized: No champion beetles
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2466333948039175
+    m_Localized: Auction history
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2466333948039176
+    m_Localized: "Weekly bloodline payout \xB7 10% of the league win reward"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2466333948039177
+    m_Localized: Rewards follow a successful save. Failed saves retry automatically.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2466333948039178
+    m_Localized: "2 beetles per team \xB7 Paid on departure \xB7 Housed on return"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2466333948039179
+    m_Localized: Supplies
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2466333952233472
+    m_Localized: No expeditions
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2466333952233473
+    m_Localized: The centre provides the female; ownership is not transferred.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2466333952233474
+    m_Localized: "Price-based failure rate {0}% \xB7 Random luck {1}%"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2466333952233475
+    m_Localized: "Wall slots \xB7 Click to move or swap"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2466333952233476
+    m_Localized: Drag a card out or click to place
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2466333952233477
+    m_Localized: No scenery
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2466333952233478
+    m_Localized: "1\u201324 characters"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2466333952233479
+    m_Localized: No mail
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2466333952233480
+    m_Localized: No attachments
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2466333952233481
+    m_Localized: No eligible beetles
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2466333952233482
+    m_Localized: Categories
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2466333952233483
+    m_Localized: "No listings. Click \u201CNew listing\u201D to start."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2466333952233484
+    m_Localized: Shop buyback
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2466333952233485
+    m_Localized: "Buyback: specimens 60% of value \xB7 supplies 40% of retail \xB7
+      live beetles by stage"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2466333952233486
+    m_Localized: "Retail {0} G each \xB7 Sell 1\u201399 per order"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2466333952233487
+    m_Localized: No live beetles
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2466333952233488
+    m_Localized: Payment is immediate.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2466333952233489
+    m_Localized: Collect purchases from your mailbox.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2466333952233490
+    m_Localized: Offer valid this week
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2466333952233491
+    m_Localized: Item details
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2466333952233492
+    m_Localized: 'Category:'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2466333952233493
+    m_Localized: 'Species:'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2466333952233494
+    m_Localized: 'Size:'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2466333952233495
+    m_Localized: 'Attributes:'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2466333952233496
+    m_Localized: 'Price:'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2466333952233497
+    m_Localized: "Offers valid this week \xB7 Withdraw anytime \xB7 House stored
+      beetles before listing"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2466333952233498
+    m_Localized: No eligible items to list
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2466333952233499
+    m_Localized: "Opening bid: 150 G \xB7 3 rounds\nLeaving costs nothing, but ends
+      entry for this week."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2466333952233500
+    m_Localized: "Raise 50\u2013149 G per round \xB7 Sold in round 3\nLeaving costs
+      nothing, but ends entry for this week."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2466333952233501
+    m_Localized: "Top bid at the asking price guarantees a sale \xB7 Unsuccessful
+      bids are refunded"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2466333952233502
+    m_Localized: "3 rounds \xB7 Opens on even weeks\nLeaving costs nothing, but ends
+      entry for this week."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2466333952233503
+    m_Localized: The lot has been sent to your mailbox.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2466333952233504
+    m_Localized: Held funds have been refunded.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2466333952233505
+    m_Localized: 'At closing, only the highest bidder is considered.
+
+      Outbid
+      or unsold bids are refunded.'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2466333952233506
+    m_Localized: Click a binding to change it
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2466333952233507
+    m_Localized: Current scene only
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2466333952233508
+    m_Localized: "Paused during building, panels and battles \xB7 No offline progress"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2466333952233509
+    m_Localized: "Buying: collect purchases from your mailbox.\n\nListings: free
+      to post, with a 5% sale fee. Withdraw before sale.\n\nBuyback: adults 55% of
+      value, larvae 35%, specimens 60%, supplies 40% of retail.\n\nAuctions: 4 rounds.
+      The highest bid at the asking price guarantees a sale; below it, acceptance
+      equals the squared bid-to-asking-price ratio. Outbid or unsold bids are refunded.\n\nStock
+      and offers refresh weekly; unfinished auctions also close.\nAlt+T Theme \xB7
+      Alt+M Light/dark \xB7 Alt+H Help"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2467791779057664
+    m_Localized: "Eggs \xB7 Substrate nutrition +35\nCleanliness restored to 100"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2467791816806400
+    m_Localized: "L1 \xB7 Substrate nutrition +45\nCleanliness restored to 100"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2467791816806401
+    m_Localized: "L2/L3 \xB7 Substrate nutrition +60\nCleanliness restored to 100"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2467791816806402
+    m_Localized: "L2/L3 \xB7 Nutrition/cleanliness to 100\nAdult length +5% (does
+      not stack)"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2467791816806403
+    m_Localized: "Prepupa/pupa/dormant \xB7 30-day protection\nCleanliness to 100
+      \xB7 Health +0.25"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2467791816806404
+    m_Localized: "Active adults only \xB7 Not for dormant adults\nSatiety +40 \xB7
+      Health +0.5"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2467791816806405
+    m_Localized: "{0}\xD7{1} cells"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2533899273949184
+    m_Localized: UI style
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2533899454304256
+    m_Localized: Comic cardboard
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2533899454304257
+    m_Localized: Classic
+    m_Metadata:
+      m_Items: []
   references:
     version: 2
     RefIds: []

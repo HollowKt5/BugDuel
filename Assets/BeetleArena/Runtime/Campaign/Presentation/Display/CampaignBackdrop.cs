@@ -19,8 +19,43 @@ namespace BeetleArena.Campaign
         bool blurReady;
         int width,height;
         Camera uiCamera;
+        bool menuFraming;
+        float menuHalfWidth,menuHalfHeight,menuZoom=1;
         readonly Vector3[] outputCorners=new Vector3[4];
         void OnEnable() { RenderPipelineManager.endCameraRendering+=Rendered; }
+        public void ConfigureMenuFraming()
+        {
+            if(!sceneCamera||!sceneCamera.orthographic||menuFraming)return;
+            menuFraming=true;
+            // Preserve the authored 16:9 composition, then include the complete visible terrarium.
+            menuHalfHeight=sceneCamera.orthographicSize;menuHalfWidth=menuHalfHeight*16f/9f;
+            foreach(var root in gameObject.scene.GetRootGameObjects())
+                foreach(var renderer in root.GetComponentsInChildren<Renderer>())
+                {
+                    // The oversized ground backdrop deliberately extends beyond the composition.
+                    if(!renderer.enabled||renderer.name=="Backdrop"||renderer is ParticleSystemRenderer)continue;
+                    var bounds=renderer.bounds;
+                    for(int i=0;i<8;i++)
+                    {
+                        var corner=bounds.center+Vector3.Scale(bounds.extents,new Vector3((i&1)==0?-1:1,(i&2)==0?-1:1,(i&4)==0?-1:1));
+                        var local=sceneCamera.transform.InverseTransformPoint(corner);
+                        menuHalfWidth=Mathf.Max(menuHalfWidth,Mathf.Abs(local.x));
+                        menuHalfHeight=Mathf.Max(menuHalfHeight,Mathf.Abs(local.y));
+                    }
+                }
+            sceneCamera.rect=new Rect(0,0,1,1);
+            ApplyMenuFraming();
+        }
+        public void SetMenuTransitionProgress(float progress)
+        {
+            menuZoom=Mathf.Lerp(1,1.12f,Mathf.Clamp01(progress));
+            ApplyMenuFraming();
+        }
+        void ApplyMenuFraming()
+        {
+            if(!menuFraming||!sceneCamera)return;
+            sceneCamera.orthographicSize=Mathf.Max(menuHalfHeight,menuHalfWidth/Mathf.Max(.01f,sceneCamera.aspect))*1.06f*menuZoom;
+        }
         /// <summary>The UI rectangle, not Camera.rect, owns the offscreen world's screen area.</summary>
         public void SetViewport(Rect normalizedViewport)
         {
@@ -79,14 +114,14 @@ namespace BeetleArena.Campaign
         void Resize()
         {
             TargetSize(out int w,out int h);
-            if(Frame&&width==w&&height==h){BindOutput();return;}
+            if(Frame&&width==w&&height==h){ApplyMenuFraming();BindOutput();return;}
             Release();width=w;height=h;
             Frame=new RenderTexture(width,height,24,RenderTextureFormat.ARGB32) { name="Campaign world",antiAliasing=1 };
             Frame.filterMode=FilterMode.Bilinear;Frame.wrapMode=TextureWrapMode.Clamp;
             Frame.Create();var active=RenderTexture.active;
             try { RenderTexture.active=Frame;GL.Clear(true,true,Color.black); }
             finally { RenderTexture.active=active; }
-            sceneCamera.rect=new Rect(0,0,1,1);sceneCamera.targetTexture=Frame;sceneCamera.aspect=(float)width/height;BindOutput();
+            sceneCamera.rect=new Rect(0,0,1,1);sceneCamera.targetTexture=Frame;sceneCamera.aspect=(float)width/height;ApplyMenuFraming();BindOutput();
         }
         void Rendered(ScriptableRenderContext context,Camera camera)
         {

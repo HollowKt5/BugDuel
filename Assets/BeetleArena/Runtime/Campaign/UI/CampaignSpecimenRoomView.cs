@@ -32,8 +32,8 @@ namespace BeetleArena.Campaign
             Panel(root,0,0,width,height);
             var title=Panel(root,4,4,width-8,46);
             title.GetComponent<UnityEngine.UI.Image>().color=CampaignRetroTheme.Frame;
-            Component<RetroBevel>(title).Configure(0,Color.clear,Color.clear,true,CampaignRetroTheme.TitleTop,CampaignRetroTheme.TitleBottom);
-            Label(title,"标本室",12,9,width-32,32,23,Color.white);
+            Component<RetroBevel>(title).Configure(1,CampaignRetroTheme.TitleHighlight,CampaignRetroTheme.TitleShadow,true,CampaignRetroTheme.TitleTop,CampaignRetroTheme.TitleBottom);
+            Label(title,"标本室",12,9,width-32,32,23,CampaignRetroTheme.TitleInk);
 
             Btn(root,"返回温室",margin,90,half,36,()=>app.Go(CampaignPage.Greenhouse));
             Btn(root,"前往市场",margin+half+gap,90,half,36,()=>app.Go(CampaignPage.Market));
@@ -45,7 +45,7 @@ namespace BeetleArena.Campaign
             if(selected==null){selected=State.specimens.LastOrDefault();selectedSpecimenId=selected?.id;}
             specimenRoom.Select(selectedSpecimenId);
             if(selected!=null)DrawSpecimenInspector(flow,selected);
-            var heading=Card(flow,43);Label(heading,"收藏库 · 选择一件标本",10,7,inner-32,30,20,accent);
+            var heading=Card(flow,43);Label(heading,"收藏库",10,7,inner-32,30,20,accent);
             foreach(var record in State.specimens)
             {
                 var s=record;var card=Card(flow,91);
@@ -71,7 +71,7 @@ namespace BeetleArena.Campaign
             string[] frames={"胡桃木","黄铜","乌木"};
             Btn(card,"相框："+frames[s.frameStyle],pad,156,half,34,()=>app.Execute(session=>session.EditSpecimen(s.id,s.labelName,s.speciesLabel,s.dateLabel,(s.frameStyle+1)%3,s.rotation)),!s.listed);
             Btn(card,"旋转 +15°",pad+half+gap,156,half,34,()=>app.Execute(session=>session.EditSpecimen(s.id,s.labelName,s.speciesLabel,s.dateLabel,s.frameStyle,s.rotation>=165?-180:s.rotation+15)),!s.listed);
-            Label(card,"墙位 · 点击移动 / 与原位置交换",pad,202,inside,25,16,muted);
+            Label(card,"墙位 · 点击移动或交换",pad,202,inside,25,16,muted);
             float cell=(inside-18)/4;
             for(int i=0;i<12;i++)
             {
@@ -86,14 +86,14 @@ namespace BeetleArena.Campaign
         }
         void EditSpecimenPlaque(SpecimenRecord s)
         {
-            var dialog=OpenModal(650,450);
+            var dialog=OpenModal(650,414);
             Label(dialog,"编辑藏品铭牌",26,30,598,40,28,accent);
             var name=EditableField(dialog,"藏品名称",s.labelName,92,40);
             var species=EditableField(dialog,"种类名称",s.speciesLabel,170,60);
             var date=EditableField(dialog,"铭牌日期",s.dateLabel,248,40);
-            dialogNotice=Label(dialog,"铭牌可自由填写，原始物种和制作周数会保留。",26,323,598,45,17,muted);
-            Btn(dialog,"保存铭牌",26,377,291,45,()=>app.Execute(session=>session.EditSpecimen(s.id,name.text,species.text,date.text,s.frameStyle,s.rotation),CloseModal));
-            Btn(dialog,"取消",329,377,291,45,CloseModal);
+            dialogNotice=Label(dialog,"",26,307,598,36,17,muted);
+            Btn(dialog,"保存铭牌",26,353,291,45,()=>app.Execute(session=>session.EditSpecimen(s.id,name.text,species.text,date.text,s.frameStyle,s.rotation),CloseModal));
+            Btn(dialog,"取消",329,353,291,45,CloseModal);
         }
         TMP_InputField EditableField(Transform parent,string label,string value,float y,int limit)
         {

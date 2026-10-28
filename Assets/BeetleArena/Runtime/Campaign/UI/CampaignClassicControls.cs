@@ -8,7 +8,6 @@ namespace BeetleArena.Campaign
     // Shared retro window controls used by the market, mailbox, warehouse and item dialogs.
     public sealed partial class CampaignView
     {
-        static Color MColor(uint light,uint dark)=>CampaignRetroTheme.Hex(CampaignRetroTheme.Dark?dark:light);
         RectTransform MBox(string name,Transform parent,float x,float y,float width,float height,Color color,Color border=default,float borderWidth=0)
         {
             var rt=Rect(name,parent,x,y,width,height);var im=Component<UI.Image>(rt);im.sprite=null;im.type=UI.Image.Type.Simple;im.material=null;im.color=color;im.raycastTarget=false;Component<RetroBevel>(rt).Configure(borderWidth,border,border);return rt;
@@ -25,12 +24,17 @@ namespace BeetleArena.Campaign
         UI.Button MButton(Transform parent,string text,float x,float y,float width,float height,Action action,bool enabled=true,int size=11,bool flat=false,Color? background=null,Color? foreground=null)
         {
             var rt=MBox("MarketButton",parent,x,y,width,height,background??CampaignRetroTheme.Button);rt.name=text;if(!flat)Component<RetroBevel>(rt).Configure(2,CampaignRetroTheme.LightEdge,CampaignRetroTheme.DarkEdge);var im=rt.GetComponent<UI.Image>();im.raycastTarget=true;var b=Component<UI.Button>(rt);b.interactable=enabled;b.targetGraphic=im;b.transition=UI.Selectable.Transition.ColorTint;
-            var c=b.colors;c.normalColor=Color.white;c.highlightedColor=CampaignRetroTheme.Hex(0xdce8fa);c.pressedColor=CampaignRetroTheme.Hex(0xb9cce8);c.selectedColor=Color.white;c.disabledColor=new Color(.7f,.7f,.7f);b.colors=c;MText(rt,text,flat?8:4,0,width-(flat?16:8),height,size,enabled?(foreground??CampaignRetroTheme.Ink):CampaignRetroTheme.Muted).alignment=TextAlignmentOptions.Center;
+            var c=b.colors;c.normalColor=Color.white;c.highlightedColor=CampaignRetroTheme.HoverTint;c.pressedColor=CampaignRetroTheme.PressedTint;c.selectedColor=CampaignRetroTheme.HoverTint;c.disabledColor=CampaignRetroTheme.DisabledTint;b.colors=c;
+            var label=MText(rt,text,flat?8:4,0,width-(flat?16:8),height,size,enabled?(foreground??CampaignRetroTheme.Ink):CampaignRetroTheme.Muted,CampaignRetroTheme.Paper&&size>=16);
+            label.alignment=TextAlignmentOptions.Center;
+            if(CampaignRetroTheme.Paper){float depth=Mathf.Min(5,height*.09f);label.margin=new Vector4(0,0,depth,depth*1.8f);}
             b.onClick.RemoveAllListeners();b.onClick.AddListener(()=>{if(app.Busy||(modal&&!rt.IsChildOf(modal)))return;RetroUiAudio.PlayClick();action?.Invoke();});return b;
         }
         void MTitle(Transform parent,string title,float width)
         {
-            var bar=MBox("WindowTitle",parent,3,3,width,28,CampaignRetroTheme.Frame);Component<RetroBevel>(bar).Configure(0,Color.clear,Color.clear,true,CampaignRetroTheme.TitleTop,CampaignRetroTheme.TitleBottom);Component<CampaignMarketArtwork>(Rect("WindowIcon",bar,8,6,16,16)).SetKind(CampaignMarketArtwork.Kind.Rainbow);MText(bar,title,30,3,width-66,24,18,Color.white,true);
+            var bar=MBox("WindowTitle",parent,3,3,width,28,CampaignRetroTheme.Frame);
+            Component<RetroBevel>(bar).Configure(1,CampaignRetroTheme.TitleHighlight,CampaignRetroTheme.TitleShadow,true,CampaignRetroTheme.TitleTop,CampaignRetroTheme.TitleBottom);
+            MText(bar,title,12,3,width-48,24,19,CampaignRetroTheme.TitleInk,CampaignRetroTheme.Paper);
         }
         RectTransform MarketScroll(Transform parent,float x,float y,float width,float height,Color background)
         {
@@ -44,7 +48,7 @@ namespace BeetleArena.Campaign
             dialog.GetComponent<UI.Image>().color=CampaignRetroTheme.Window;
             Component<RetroBevel>(dialog).Configure(3,CampaignRetroTheme.Frame,CampaignRetroTheme.Frame);
             MTitle(dialog,title,width-6);
-            MButton(dialog,"×",width-30,7,20,20,CloseModal,true,11,false,CampaignRetroTheme.Hex(0xd73720),Color.white);
+            MButton(dialog,"×",width-30,7,20,20,CloseModal,true,11,false,CampaignRetroTheme.Danger,Color.white);
             return dialog;
         }
     }

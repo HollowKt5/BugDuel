@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using TMPro;
+using BeetleArena.Campaign;
 using L=BeetleArena.Campaign.CampaignLocalization;
 
 namespace BeetleArena
@@ -12,7 +13,7 @@ namespace BeetleArena
         public GameObject panel;
         public bool IsOpen=>panel.activeInHierarchy;
         public HornClashSparks sparks;
-        UnityEngine.UI.Button styleButton, pixelButton, spotlightButton;
+        UnityEngine.UI.Button styleButton, pixelButton, spotlightButton, uiStyleButton;
         RetroFilterDropdown filterDropdown,glassDropdown;
         TMP_Text filterDescription,glassDescription;
         BeetlePanelMotion panelMotion;
@@ -22,6 +23,7 @@ namespace BeetleArena
             openButton.onClick.AddListener(Open); closeButton.onClick.AddListener(Close);
             sparksToggle.onValueChanged.AddListener(Change);
             BuildDisplayControls();
+            RefreshTheme();
             L.BindHierarchy(panel.transform);
             L.Bind(openButton.GetComponentInChildren<TMP_Text>(),"设置");
             openButton.gameObject.SetActive(false);
@@ -29,7 +31,15 @@ namespace BeetleArena
             panelMotion=BeetlePanelMotion.Attach(panel);panelMotion.SetVisible(false,false);
         }
         public void Open()
-        { sparksToggle.SetIsOnWithoutNotify(sparks.SparksEnabled);RefreshDisplayControls();panelMotion.SetVisible(true);panel.transform.SetAsLastSibling(); }
+        { sparksToggle.SetIsOnWithoutNotify(sparks.SparksEnabled);RefreshTheme();panelMotion.SetVisible(true);panel.transform.SetAsLastSibling(); }
+        void OnEnable()=>CampaignRetroTheme.Changed+=RefreshTheme;
+        void OnDisable()=>CampaignRetroTheme.Changed-=RefreshTheme;
+        void RefreshTheme()
+        {
+            if(!styleButton)return;
+            CampaignRetroTheme.ApplyHierarchy(panel.transform);
+            RefreshDisplayControls();
+        }
         public void Close() {filterDropdown.Close(false);glassDropdown.Close(false);panelMotion.SetVisible(false);}
         void Update()
         {
@@ -43,7 +53,7 @@ namespace BeetleArena
         void BuildDisplayControls()
         {
             if(styleButton)return;
-            ((RectTransform)panel.transform).sizeDelta=new Vector2(620,664);
+            ((RectTransform)panel.transform).sizeDelta=new Vector2(620,744);
             var font=Resources.Load<TMP_FontAsset>("RetroUiFont") ?? closeButton.GetComponentInChildren<TMP_Text>().font;
             AddLabel("游戏滤镜",180,font);
             AddLabel("像素档位",244,font);
@@ -62,7 +72,10 @@ namespace BeetleArena
             var defaults=DisplayButton("Scene Defaults",494,()=>
             { BeetleDisplayPreferences.UseSceneDefault(gameObject.scene.name);RefreshDisplayControls(); },font);
             L.Bind(defaults.GetComponentInChildren<TMP_Text>(),"使用编辑器配置");
-            filterDescription=AddLabel(RetroFilterDropdown.Description(BeetleDisplayPreferences.Style),558,font);
+            AddLabel("界面风格",558,font);
+            uiStyleButton=DisplayButton("UI Style",558,()=>
+            { CampaignRetroTheme.SetStyle(CampaignRetroTheme.Paper?CampaignUiStyle.Classic:CampaignUiStyle.ComicPaper); },font);
+            filterDescription=AddLabel(RetroFilterDropdown.Description(BeetleDisplayPreferences.Style),622,font);
             L.SetFontSize(filterDescription,17);filterDescription.rectTransform.sizeDelta=new Vector2(570,48);
             RefreshDisplayControls();
         }
@@ -94,6 +107,7 @@ namespace BeetleArena
             L.Bind(pixelButton.GetComponentInChildren<TMP_Text>(),BeetleDisplayPreferences.PixelSizeLabel);
             pixelButton.interactable=BeetleDisplayPreferences.IsDither(BeetleDisplayPreferences.Style);
             L.Bind(filterDescription,RetroFilterDropdown.Description(BeetleDisplayPreferences.Style));
+            L.Bind(uiStyleButton.GetComponentInChildren<TMP_Text>(),CampaignRetroTheme.StyleName);
         }
         void OnDestroy()
         {

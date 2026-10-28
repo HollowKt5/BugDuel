@@ -40,12 +40,15 @@ namespace BeetleArena.Campaign
         CarePosePresenter pose;
         CareGroundSurface groundSurface;
         public CareFootPlant Feet => pose?.Feet;
+        public CampaignBeetleGrabController Grab { get; internal set; }
+        public float GroundOffset => rootGroundOffset;
         MaterialPropertyBlock block;
         string lastId,lastMutation;
         bool lastOverturned,lastDead;
         CampaignCatalog catalog;
         Renderer[] renderers;
         GameObject dish,food,shelter;
+        public Renderer FeedingDish => dish&&dish.activeInHierarchy?dish.GetComponent<Renderer>():null;
         Material propMaterial;
         Matrix4x4 floorMatrix;
         Bounds floorBounds;
@@ -122,7 +125,7 @@ namespace BeetleArena.Campaign
             LifeStageDisplay?.SetAnimalVisible(!ConstructionHidden);
             bool active=beetle!=null&&beetle.stage==CampaignLifeStage.ActiveAdult;
             if(dish)dish.SetActive(!ConstructionHidden&&active&&!beetle.dead);
-            if(food)food.SetActive(!ConstructionHidden&&active&&beetle.meal!=null&&!beetle.dead);
+            if(food)food.SetActive(!ConstructionHidden&&active&&(beetle.meal!=null||beetle.foodResidue)&&!beetle.dead);
             if(shelter)shelter.SetActive(!ConstructionHidden&&active);
         }
         void PlaceProps()
@@ -151,6 +154,7 @@ namespace BeetleArena.Campaign
             bool activeStage=b==null||b.stage==CampaignLifeStage.ActiveAdult;
             if(stageChanged&&activeStage)boundFloor=null;
             bool layoutChanged=activeStage&&RefreshEnclosure(b,app?.Session?.Catalog);
+            if(Grab)Grab.ValidateState();
             ApplyVisibility(b);
             if(selected&&b==null) { lastId=null;return; }
             bool changed=b!=null&&lastId!=b.id;
@@ -166,10 +170,12 @@ namespace BeetleArena.Campaign
                     pose?.Reset(false,b.dead);
                     if(!b.dead)pose?.Present(CareState.Resting,0,1);
                 }
+                if(!b.dead)pose?.PresentAmbient(CareState.Resting,Mathf.Min(Time.unscaledDeltaTime,.05f));
             }
             else if(resident!=null&&activeStage)
             {
-                transform.position=Enclosure!=null?Enclosure.ToWorld(resident.Motor.Position)+Vector3.up*rootGroundOffset:
+                var displayState=b.dead?CareState.Dead:b.overturned?CareState.Struggling:resident.Brain.State;
+                transform.position=Grab&&Grab.IsManipulating?Grab.HeldWorldPosition:Enclosure!=null?Enclosure.ToWorld(resident.Motor.Position)+Vector3.up*rootGroundOffset:
                     origin+new Vector3(resident.Motor.Position.x,0,resident.Motor.Position.y);
                 transform.rotation=Quaternion.Euler(0,resident.Motor.Heading+(Enclosure?.Heading??0),0);
                 if(changed||layoutChanged||stageChanged||pausedFlagsChanged)
@@ -177,13 +183,24 @@ namespace BeetleArena.Campaign
                     if(Feet!=null&&Enclosure!=null){Feet.GroundHeight=Enclosure.GroundHeight;Feet.SurfaceHeight=groundSurface.HeightAt;Feet.Reset();}
                     pose?.Reset(b.overturned,b.dead);
                 }
-                if(!Care.Paused&&!app.Busy&&!app.Modal || changed||layoutChanged||stageChanged)
-                    pose?.Present(resident.Brain.State,resident.Motor.Speed,resident.PoseSeconds);
+                if(Grab&&Grab.IsManipulating)
+                    pose?.PresentHeld(Mathf.Min(Time.unscaledDeltaTime,.05f),Grab.StruggleWeight);
+                else if(!Care.Paused&&!app.Busy&&!app.Modal || changed||layoutChanged||stageChanged)
+                    pose?.Present(displayState,resident.Motor.Speed,resident.PoseSeconds);
+                else
+                    pose?.PresentAmbient(displayState,Mathf.Min(Time.unscaledDeltaTime,.05f));
                 if(food&&b.meal!=null)
                 {
                     float amount=1-(float)resident.Brain.MealProgress*.65f;
                     food.transform.localScale=new Vector3(.3f*amount,.06f,.3f*amount);
+                    food.transform.position=Enclosure.ToWorld(Enclosure.Area.FoodPoint)+Vector3.up*.07f;
                     SetColor(food.GetComponent<Renderer>(),b.meal.food==0?new Color(.8f,.4f,.13f):b.meal.food==1?new Color(.9f,.74f,.22f):new Color(.68f,.18f,.1f));
+                }
+                else if(food&&b.foodResidue)
+                {
+                    food.transform.localScale=new Vector3(.17f,.014f,.13f);
+                    food.transform.position=Enclosure.ToWorld(Enclosure.Area.FoodPoint)+Vector3.up*.043f;
+                    SetColor(food.GetComponent<Renderer>(),new Color(.24f,.15f,.07f));
                 }
             }
             else if(!selected)
@@ -200,6 +217,13 @@ namespace BeetleArena.Campaign
                 if(b.mutation=="紫绀色")c=new Color(.45f,.15f,.65f);
                 Tint(rig,c,block);
             }
+        }
+        internal void RestoreAfterGrab()
+        {
+            var app=CampaignApp.Instance;var b=app?.Session?.State.beetles.Find(value=>value.id==app.Session.State.selectedId);
+            var resident=Care?Care.Find(b?.id):null;
+            if(resident!=null&&Enclosure!=null)transform.position=Enclosure.ToWorld(resident.Motor.Position)+Vector3.up*rootGroundOffset;
+            pose?.Reset(b?.overturned??false,b?.dead??false);
         }
         void OnDestroy()
         { groundSurface?.Dispose();if(dish)Destroy(dish);if(food)Destroy(food);if(shelter)Destroy(shelter);if(propMaterial)Destroy(propMaterial); }

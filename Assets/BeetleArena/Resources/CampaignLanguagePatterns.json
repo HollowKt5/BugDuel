@@ -1,6 +1,36 @@
 {
     "entries": [
         {
+            "key": "ui_style_title",
+            "source": "",
+            "zh": "界面风格",
+            "en": "",
+            "sites": [
+                "Assets/BeetleArena/Runtime/Campaign/UI/CampaignSettingsView.cs",
+                "Assets/BeetleArena/Runtime/Campaign/UI/CampaignRetroTheme.cs"
+            ]
+        },
+        {
+            "key": "ui_style_comic_paper",
+            "source": "",
+            "zh": "漫画纸板",
+            "en": "",
+            "sites": [
+                "Assets/BeetleArena/Runtime/Campaign/UI/CampaignSettingsView.cs",
+                "Assets/BeetleArena/Runtime/Campaign/UI/CampaignRetroTheme.cs"
+            ]
+        },
+        {
+            "key": "ui_style_classic",
+            "source": "",
+            "zh": "经典界面",
+            "en": "",
+            "sites": [
+                "Assets/BeetleArena/Runtime/Campaign/UI/CampaignSettingsView.cs",
+                "Assets/BeetleArena/Runtime/Campaign/UI/CampaignRetroTheme.cs"
+            ]
+        },
+        {
             "key": "game_filter_title",
             "source": "",
             "zh": "游戏滤镜",
@@ -10952,6 +10982,552 @@
             "key": "display_pixel_level_value",
             "source": "",
             "zh": "{0} 档",
+            "en": "",
+            "sites": []
+        },
+        {
+            "key": "care_info_tab",
+            "source": "",
+            "zh": "信息",
+            "en": "",
+            "sites": []
+        },
+        {
+            "key": "care_dish_title",
+            "source": "",
+            "zh": "喂食盆",
+            "en": "",
+            "sites": []
+        },
+        {
+            "key": "care_dish_food",
+            "source": "",
+            "zh": "盆中食物：{0}",
+            "en": "",
+            "sites": []
+        },
+        {
+            "key": "care_dish_residue",
+            "source": "",
+            "zh": "残渣待清理",
+            "en": "",
+            "sites": []
+        },
+        {
+            "key": "care_dish_empty",
+            "source": "",
+            "zh": "食盆为空",
+            "en": "",
+            "sites": []
+        },
+        {
+            "key": "care_dish_place",
+            "source": "",
+            "zh": "放入食物",
+            "en": "",
+            "sites": []
+        },
+        {
+            "key": "care_dish_no_stock",
+            "source": "",
+            "zh": "没有可用食物，可前往市场购买。",
+            "en": "",
+            "sites": []
+        },
+        {
+            "key": "care_dish_replace",
+            "source": "",
+            "zh": "食物尚未吃完，清空后可更换。",
+            "en": "",
+            "sites": []
+        },
+        {
+            "key": "care_dish_feed_hint",
+            "source": "",
+            "zh": "点击放入食物，甲虫会自行前来进食。",
+            "en": "",
+            "sites": []
+        },
+        {
+            "key": "care_dish_empty_action",
+            "source": "",
+            "zh": "清空食盆",
+            "en": "",
+            "sites": []
+        },
+        {
+            "key": "care_dish_clean",
+            "source": "",
+            "zh": "清理残渣",
+            "en": "",
+            "sites": []
+        },
+        {
+            "key": "care_dish_confirm",
+            "source": "",
+            "zh": "清空会丢弃尚未吃完的食物，不会退回仓库。确定清理？",
+            "en": "",
+            "sites": []
+        },
+        {
+            "key": "care_dish_cleaned",
+            "source": "",
+            "zh": "食盆已清理",
+            "en": "",
+            "sites": []
+        },
+        {
+            "key": "control_hint_title",
+            "source": "",
+            "zh": "操作提示",
+            "en": "",
+            "sites": []
+        },
+        {
+            "key": "control_hint_dismiss",
+            "source": "",
+            "zh": "知道了",
+            "en": "",
+            "sites": []
+        },
+        {
+            "key": "control_hint_beetle",
+            "source": "",
+            "zh": "点击甲虫查看信息，并进行管理或布置环境。",
+            "en": "",
+            "sites": []
+        },
+        {
+            "key": "control_hint_dish",
+            "source": "",
+            "zh": "点击缸内的喂食盆，可以放入食物或清理残渣。",
+            "en": "",
+            "sites": []
+        },
+        {
+            "key": "control_hint_camera",
+            "source": "",
+            "zh": "按住鼠标右键拖动可旋转视角，滚轮缩放。按 Esc 打开设置。",
+            "en": "",
+            "sites": []
+        },
+        {
+            "key": "control_hint_warehouse",
+            "source": "",
+            "zh": "先选择左侧分类，再点击物品查看和使用。",
+            "en": "",
+            "sites": []
+        },
+        {
+            "key": "control_hint_building",
+            "source": "",
+            "zh": "移动鼠标选择位置，左键放置；Q / E 旋转，Esc 取消。",
+            "en": "",
+            "sites": []
+        },
+        {
+            "key": "control_hint_pickup",
+            "source": "",
+            "zh": "长按甲虫背部0.7秒，白圈转满后提起；松开左键放下。",
+            "en": "",
+            "sites": []
+        },
+        {
+            "key": "construction_beetle_cell",
+            "source": "",
+            "zh": "红色 X 标记了甲虫所在格子，请换一个位置。",
+            "en": "",
+            "sites": []
+        },
+        {
+            "key": "care_dish_adults",
+            "source": "",
+            "zh": "只有成虫使用食盆",
+            "en": "",
+            "sites": []
+        },
+        {
+            "key": "care_dish_already_clean",
+            "source": "",
+            "zh": "食盆已经是干净的",
+            "en": "",
+            "sites": []
+        },
+        {
+            "key": "ui_concise_save_select",
+            "source": "",
+            "zh": "选择存档",
+            "en": "",
+            "sites": []
+        },
+        {
+            "key": "ui_concise_league_wins",
+            "source": "",
+            "zh": "{0} 连胜夺冠 · 战败重置赛季胜场",
+            "en": "",
+            "sites": []
+        },
+        {
+            "key": "ui_concise_league_rematch",
+            "source": "",
+            "zh": "{0} 对阵 林间挑战者\n重赛不再收取报名费。",
+            "en": "",
+            "sites": []
+        },
+        {
+            "key": "ui_concise_league_no_champions",
+            "source": "",
+            "zh": "暂无冠军甲虫",
+            "en": "",
+            "sites": []
+        },
+        {
+            "key": "ui_concise_auction_history",
+            "source": "",
+            "zh": "拍卖记录",
+            "en": "",
+            "sites": []
+        },
+        {
+            "key": "ui_concise_auction_royalties",
+            "source": "",
+            "zh": "每周 1 场血统分红 · 对应联赛胜场奖励的 10%",
+            "en": "",
+            "sites": []
+        },
+        {
+            "key": "ui_concise_battle_save_retry",
+            "source": "",
+            "zh": "保存后发放奖励，失败会自动重试。",
+            "en": "",
+            "sites": []
+        },
+        {
+            "key": "ui_concise_catch_summary",
+            "source": "",
+            "zh": "每队 2 只 · 出发时扣费 · 回程自动入住",
+            "en": "",
+            "sites": []
+        },
+        {
+            "key": "ui_concise_catch_supplies",
+            "source": "",
+            "zh": "携带用品",
+            "en": "",
+            "sites": []
+        },
+        {
+            "key": "ui_concise_catch_empty",
+            "source": "",
+            "zh": "暂无派遣",
+            "en": "",
+            "sites": []
+        },
+        {
+            "key": "ui_concise_breeding_mother_ownership",
+            "source": "",
+            "zh": "母虫由中心提供，不转让。",
+            "en": "",
+            "sites": []
+        },
+        {
+            "key": "ui_concise_breeding_price_luck",
+            "source": "",
+            "zh": "价格基础失败率 {0}% · 随机运气 {1}%",
+            "en": "",
+            "sites": []
+        },
+        {
+            "key": "ui_concise_specimen_wall_slots",
+            "source": "",
+            "zh": "墙位 · 点击移动或交换",
+            "en": "",
+            "sites": []
+        },
+        {
+            "key": "ui_concise_construction_takeout",
+            "source": "",
+            "zh": "拖出卡片或点击取出",
+            "en": "",
+            "sites": []
+        },
+        {
+            "key": "ui_concise_construction_empty",
+            "source": "",
+            "zh": "暂无景观",
+            "en": "",
+            "sites": []
+        },
+        {
+            "key": "ui_concise_name_length",
+            "source": "",
+            "zh": "1–24 个字符",
+            "en": "",
+            "sites": []
+        },
+        {
+            "key": "ui_concise_mail_empty",
+            "source": "",
+            "zh": "暂无邮件",
+            "en": "",
+            "sites": []
+        },
+        {
+            "key": "ui_concise_mail_no_attachments",
+            "source": "",
+            "zh": "无附件",
+            "en": "",
+            "sites": []
+        },
+        {
+            "key": "ui_concise_rearing_empty",
+            "source": "",
+            "zh": "暂无适用甲虫",
+            "en": "",
+            "sites": []
+        },
+        {
+            "key": "ui_concise_market_categories",
+            "source": "",
+            "zh": "商品分类",
+            "en": "",
+            "sites": []
+        },
+        {
+            "key": "ui_concise_market_empty_listings",
+            "source": "",
+            "zh": "暂无挂牌。点击「发表转让帖」开始。",
+            "en": "",
+            "sites": []
+        },
+        {
+            "key": "ui_concise_market_buyback",
+            "source": "",
+            "zh": "商店回收",
+            "en": "",
+            "sites": []
+        },
+        {
+            "key": "ui_concise_market_buyback_rates",
+            "source": "",
+            "zh": "回收价：标本估价的 60% · 用品零售价的 40% · 活体按阶段估价",
+            "en": "",
+            "sites": []
+        },
+        {
+            "key": "ui_concise_market_sale_quantity",
+            "source": "",
+            "zh": "零售 {0} G / 件 · 每笔出售 1–99 件",
+            "en": "",
+            "sites": []
+        },
+        {
+            "key": "ui_concise_market_empty_live",
+            "source": "",
+            "zh": "暂无活体收藏",
+            "en": "",
+            "sites": []
+        },
+        {
+            "key": "ui_concise_market_paid_immediately",
+            "source": "",
+            "zh": "出售后立即到账。",
+            "en": "",
+            "sites": []
+        },
+        {
+            "key": "ui_concise_market_mail_delivery",
+            "source": "",
+            "zh": "购买后在邮箱领取。",
+            "en": "",
+            "sites": []
+        },
+        {
+            "key": "ui_concise_market_offer_week",
+            "source": "",
+            "zh": "报价本周有效",
+            "en": "",
+            "sites": []
+        },
+        {
+            "key": "ui_concise_market_item_details",
+            "source": "",
+            "zh": "商品详情",
+            "en": "",
+            "sites": []
+        },
+        {
+            "key": "ui_concise_market_detail_category",
+            "source": "",
+            "zh": "类别：",
+            "en": "",
+            "sites": []
+        },
+        {
+            "key": "ui_concise_market_detail_species",
+            "source": "",
+            "zh": "物种：",
+            "en": "",
+            "sites": []
+        },
+        {
+            "key": "ui_concise_market_detail_size",
+            "source": "",
+            "zh": "尺寸：",
+            "en": "",
+            "sites": []
+        },
+        {
+            "key": "ui_concise_market_detail_attributes",
+            "source": "",
+            "zh": "属性：",
+            "en": "",
+            "sites": []
+        },
+        {
+            "key": "ui_concise_market_detail_price",
+            "source": "",
+            "zh": "价格：",
+            "en": "",
+            "sites": []
+        },
+        {
+            "key": "ui_concise_market_listing_terms",
+            "source": "",
+            "zh": "报价本周有效 · 可撤回 · 仓库活体需先入住",
+            "en": "",
+            "sites": []
+        },
+        {
+            "key": "ui_concise_market_listing_empty",
+            "source": "",
+            "zh": "暂无可挂牌收藏",
+            "en": "",
+            "sites": []
+        },
+        {
+            "key": "ui_concise_pupa_opening",
+            "source": "",
+            "zh": "起拍 150 G · 共三轮\n退出不扣款，本周不能再参加。",
+            "en": "",
+            "sites": []
+        },
+        {
+            "key": "ui_concise_pupa_raise",
+            "source": "",
+            "zh": "每轮加价 50–149 G · 第三轮成交\n退出不扣款，本周不能再参加。",
+            "en": "",
+            "sites": []
+        },
+        {
+            "key": "ui_concise_auction_terms",
+            "source": "",
+            "zh": "最高出价达到期望价必定成交 · 未成交退回托管",
+            "en": "",
+            "sites": []
+        },
+        {
+            "key": "ui_concise_pupa_schedule",
+            "source": "",
+            "zh": "三轮竞价 · 双数周开放\n退出不扣款，本周不能再参加。",
+            "en": "",
+            "sites": []
+        },
+        {
+            "key": "ui_concise_auction_delivery",
+            "source": "",
+            "zh": "拍品已寄至邮箱。",
+            "en": "",
+            "sites": []
+        },
+        {
+            "key": "ui_concise_auction_refund",
+            "source": "",
+            "zh": "托管金币已退回。",
+            "en": "",
+            "sites": []
+        },
+        {
+            "key": "ui_concise_auction_closing",
+            "source": "",
+            "zh": "落槌时最高出价者参与成交判定。\n被超价或流拍，托管金币退回。",
+            "en": "",
+            "sites": []
+        },
+        {
+            "key": "ui_concise_settings_rebind",
+            "source": "",
+            "zh": "点击按键重新绑定",
+            "en": "",
+            "sites": []
+        },
+        {
+            "key": "ui_concise_settings_current_scene",
+            "source": "",
+            "zh": "仅当前场景",
+            "en": "",
+            "sites": []
+        },
+        {
+            "key": "ui_concise_clock_pause",
+            "source": "",
+            "zh": "建造、操作面板与格斗时暂停 · 离线不计时",
+            "en": "",
+            "sites": []
+        },
+        {
+            "key": "ui_concise_market_help",
+            "source": "",
+            "zh": "购买：商品寄至邮箱，领取后入库。\n\n挂牌：免费发布，成交收取 5% 手续费，成交前可撤回。\n\n回收：成虫估价的 55%，幼虫 35%，标本 60%，用品零售价的 40%。\n\n拍卖：每场 4 轮。最高出价达到期望价时必定成交；低于期望价时，成交率为出价比例的平方。被超价或流拍退回托管。\n\n每周更新商品与报价，并结算未结束拍卖。\nAlt+T 主题 · Alt+M 明暗 · Alt+H 帮助",
+            "en": "",
+            "sites": []
+        },
+        {
+            "key": "ui_supply_compact_egg_medium",
+            "source": "",
+            "zh": "卵期 · 基质营养 +35\n洁净恢复至 100",
+            "en": "",
+            "sites": []
+        },
+        {
+            "key": "ui_supply_compact_humus",
+            "source": "",
+            "zh": "L1 · 基质营养 +45\n洁净恢复至 100",
+            "en": "",
+            "sites": []
+        },
+        {
+            "key": "ui_supply_compact_wood",
+            "source": "",
+            "zh": "L2/L3 · 基质营养 +60\n洁净恢复至 100",
+            "en": "",
+            "sites": []
+        },
+        {
+            "key": "ui_supply_compact_fungus",
+            "source": "",
+            "zh": "L2/L3 · 营养/洁净恢复至 100\n羽化体长 +5%（不叠加）",
+            "en": "",
+            "sites": []
+        },
+        {
+            "key": "ui_supply_compact_pupa_cell",
+            "source": "",
+            "zh": "预蛹/蛹/蛰伏 · 保护 30 天\n洁净恢复至 100 · 健康 +0.25",
+            "en": "",
+            "sites": []
+        },
+        {
+            "key": "ui_supply_compact_adult_jelly",
+            "source": "",
+            "zh": "仅活动成虫 · 蛰伏不可用\n饱食 +40 · 健康 +0.5",
+            "en": "",
+            "sites": []
+        },
+        {
+            "key": "ui_supply_compact_decoration_cells",
+            "source": "",
+            "zh": "{0}×{1} 格",
             "en": "",
             "sites": []
         }

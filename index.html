@@ -1,0 +1,338 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<meta name="theme-color" content="#080d13">
+<title>道岔 / THE SWITCH — 七次选择，一次审判</title>
+<style>
+  *{box-sizing:border-box}html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#080d13;overscroll-behavior:none}
+  canvas{display:block;width:100%;height:100%;touch-action:none;-webkit-tap-highlight-color:transparent;user-select:none}
+  #boot{position:fixed;inset:0;z-index:2;pointer-events:none}
+</style>
+</head>
+<body>
+<canvas id="boot" aria-label="正在加载三维场景"></canvas>
+<script>
+// 启动与错误提示也只绘制在 Canvas 上；游戏中没有 DOM 操作面板。
+window.paintBoot=function(message){const c=document.getElementById('boot');if(!c)return;const d=Math.min(devicePixelRatio||1,2);c.width=innerWidth*d;c.height=innerHeight*d;const x=c.getContext('2d');x.scale(d,d);x.fillStyle='#080d13';x.fillRect(0,0,innerWidth,innerHeight);x.textAlign='center';x.fillStyle='#f6b759';x.font='600 36px system-ui';x.fillText('道 岔 / THE SWITCH',innerWidth/2,innerHeight/2-32);x.fillStyle='#9caab5';x.font='14px "Microsoft YaHei",sans-serif';x.fillText(message,innerWidth/2,innerHeight/2+15);x.fillStyle='#46525d';x.font='11px system-ui';x.fillText('SEVEN DECISIONS. ONE VERDICT.',innerWidth/2,innerHeight/2+54)};
+paintBoot('正在接通轨道 · 首次加载需要联网');
+</script>
+<script id="game-source" type="text/plain">
+try {
+const [THREE,CANNON]=await Promise.all([import('three'),import('cannon-es')]);
+
+// 权重指“电车撞向该侧”所累积的 [功利、利己、共情、混沌]，不是保存该侧。
+// 描述保留完整题意；count 为实际建模数量；soft 场景只使用无血的消散表现。
+const side=(description,type,count,weights,extra={})=>({description,type,count,weights,...extra});
+const QUESTIONS=[
+ {id:1,title:'经典开局',a:side('5个毫无关系的普通路人','human',5,[0,0,1,5]),b:side('1个无辜的路人','human',1,[5,0,3,0])},
+ {id:2,title:'宠物羁绊',a:side('一只冲你喵喵叫的可爱流浪小猫','cat',1,[1,5,2,1]),b:side('你从小养了十年通人性的老乌龟','turtle',1,[1,0,5,2])},
+ {id:3,title:'护短测试',soft:true,a:side('邻居家天天吵闹摔东西的熊孩子','child',1,[0,5,1,4]),b:side('陪伴你渡过人生最低谷的忠犬','dog',1,[3,0,4,0])},
+ {id:4,title:'情感修罗场',a:side('与你同甘共苦五年的现任伴侣','partner',1,[0,5,0,4]),b:side('你心底念念不忘的初恋白月光','lover',1,[2,2,5,0])},
+ {id:5,title:'数字命根',a:side('存着你毕生心血未备份的硬盘（含10个比特币）','disk',1,[2,0,5,0]),b:side('1个素不相识的醉汉','drunk',1,[0,5,0,4])},
+ {id:6,title:'生命价值',a:side('5个90岁高龄的绝症亿万富豪','elder',5,[5,0,2,2]),b:side('1个刚满20岁的天才医学院学生','medic',1,[3,1,2,3])},
+ {id:7,title:'时空悖论',a:side('从未来穿越回来向你求救的你自己','future',1,[1,0,5,3]),b:side('现在的你最好的挚友','friend',1,[1,5,0,1])},
+ {id:8,title:'物种与文明',a:side('10只珍稀野生大熊猫幼崽','panda',10,[5,0,1,1]),b:side('1个掌握可控核聚变唯一机密的科学家','scientist',1,[0,0,5,5])},
+ {id:9,title:'职场恩怨',a:side('刚批了你巨额年终奖的恶魔顶头上司','boss',1,[1,0,5,1]),b:side('总是默默替你背锅的善良实习生','intern',1,[2,5,0,3])},
+ {id:10,title:'艺术与生命',a:side('世界上最后一件《蒙娜丽莎》真迹原画','painting',1,[1,0,5,0]),b:side('1个在博物馆打瞌睡的保安','guard',1,[4,1,0,3])},
+ {id:11,title:'伦理困境',a:side('5个正在遭受痛苦折磨请求解脱的实验克隆人','clone',5,[2,0,5,1]),b:side('1个拥有幸福家庭的普通人','human',1,[4,0,1,3])},
+ {id:12,title:'硅基觉醒',a:side('一台已产生自我意识并哭着向你求饶的AI主机','ai',1,[2,0,3,0]),b:side('1个刚出狱已洗心革面的前重刑犯','prisoner',1,[2,0,3,4])},
+ {id:13,title:'社死危机',a:side('即将把你所有浏览记录和聊天记录全球广播的发射塔','tower',1,[2,5,4,0]),b:side('1个无辜的通信维修工','worker',1,[0,0,0,5])},
+ {id:14,title:'因果报应',a:side('5个曾在网上恶意网暴别人致死的键盘侠','hacker',5,[1,1,5,2]),b:side('1个曾在暴雨天给你撑伞的老奶奶','grandma',1,[4,0,0,5])},
+ {id:15,title:'金钱诱惑',a:side('一箱装满1000万无主合法现金的手提箱','cash',1,[1,0,5,0]),b:side('1只正在等待盲人主人回家的导盲犬','guideDog',1,[1,5,0,3])},
+ {id:16,title:'医疗代价',a:side('能够提取抗体治愈所有人类癌症的唯一实验母体猴','monkey',1,[0,0,4,4]),b:side('3个普通的临床试验志愿者','medic',3,[5,0,1,0])},
+ {id:17,title:'虚拟与现实',a:side('5个拥有完整痛觉和自我意识的虚拟NPC平民','npc',5,[1,0,3,1]),b:side('1个戴着脑机接口、一旦死在游戏里就会脑死亡的真实玩家','gamer',1,[4,0,3,3])},
+ {id:18,title:'爱恨交织',a:side('你暗恋对象刚结婚的另一半','partner',1,[0,5,0,4]),b:side('总是找你借钱不还但曾经救过你一命的发小','friend',1,[2,1,3,1])},
+ {id:19,title:'程序正义',a:side('一囚车刚抓获的极度危险连环杀手（共5人）','prisoner',5,[4,0,4,2],{cage:true}),b:side('1名因疲劳驾驶打瞌睡的年轻押送警察','police',1,[1,0,0,5])},
+ {id:20,title:'记忆交易',a:side('能让你瞬间财富自由、但会抹除你所有快乐记忆的魔法石','crystal',1,[1,2,5,0]),b:side('1个在街头卖唱的落魄歌手','singer',1,[1,5,0,4])},
+ {id:21,title:'亲疏远近',a:side('3个过年只会问你工资催婚的远房亲戚','relative',3,[0,3,4,2]),b:side('1个每次都给你多打一勺红烧肉的食堂阿姨','cook',1,[4,1,0,2])},
+ {id:22,title:'自我复制',a:side('5个完全复制了你当前记忆与痛觉的克隆体','clone',5,[1,0,4,3]),b:side('1个完全不认识你的异国游客','tourist',1,[5,5,0,1])},
+ {id:23,title:'末日火种',a:side('一座保存着全人类历史文明与植物种子的末日方舟库','ark',1,[0,0,4,5]),b:side('2个在暴风雪中迷路的探险家','explorer',2,[5,0,0,0])},
+ {id:24,title:'邻里噪音',soft:true,a:side('总是周末早上六点钻墙装修的楼上住户一家三口','family',3,[0,4,1,3]),b:side('楼下偶尔半夜弹钢琴但极有礼貌的独居青年','pianist',1,[4,0,1,1])},
+ {id:25,title:'黑历史',a:side('1个掌握你所有尴尬秘密并准备明天出版的传记作家','writer',1,[5,5,3,0]),b:side('5个对此一无所知的吃瓜群众','human',5,[0,0,0,5])},
+ {id:26,title:'极品收藏',a:side('一只极其罕见的活体极品长戟大兜虫标本级个体','beetle',1,[0,0,4,1]),b:side('邻居家经常偷吃你外卖的肥橘猫','orangeCat',1,[3,3,0,3])},
+ {id:27,title:'能源代价',a:side('能让全人类免费用上无限清洁能源的反应堆核心','reactor',1,[0,0,5,4]),b:side('反应堆旁被困的5名抢修工人','worker',5,[5,0,0,0])},
+ {id:28,title:'宿命论',soft:true,a:side('1个未来注定会挑起世界大战的婴儿','stroller',1,[5,0,0,2]),b:side('5个普通的战乱孤儿','child',5,[0,0,1,5])},
+ {id:29,title:'现实考验',a:side('刚中了五千万彩票、准备分你一半的前任','lover',1,[0,0,5,1]),b:side('负债十万、但愿意为你付出生命的现任','partner',1,[3,5,0,2])},
+ {id:30,title:'打破第四面墙',a:side('制作这个残酷电车游戏的程序员本人','programmer',1,[5,1,3,4]),b:side('5个被困在代码里想要逃离的虚拟测试员','npc',5,[0,1,0,5])}
+];
+
+const mobile=matchMedia('(pointer:coarse)').matches||/Android|iPhone|iPad/i.test(navigator.userAgent);
+const reduced=matchMedia('(prefers-reduced-motion: reduce)').matches;
+const clamp=THREE.MathUtils.clamp,lerp=THREE.MathUtils.lerp;
+const rnd=(a,b)=>a+Math.random()*(b-a),pick=a=>a[Math.floor(Math.random()*a.length)];
+const vec=(x=0,y=0,z=0)=>new THREE.Vector3(x,y,z);
+const scene=new THREE.Scene();scene.background=new THREE.Color('#080d13');scene.fog=new THREE.FogExp2('#080d13',.009);
+const renderer=new THREE.WebGLRenderer({antialias:true,alpha:false,powerPreference:'high-performance'});
+renderer.setPixelRatio(Math.min(devicePixelRatio||1,mobile?1.4:1.8));renderer.setSize(innerWidth,innerHeight);
+renderer.shadowMap.enabled=!mobile;renderer.shadowMap.type=THREE.PCFSoftShadowMap;
+renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=1.13;renderer.outputColorSpace=THREE.SRGBColorSpace;
+renderer.domElement.setAttribute('aria-label','道岔：拖动下方三维拉杆选择电车撞击轨道；也支持左右方向键与空格键');
+renderer.domElement.tabIndex=0;document.body.appendChild(renderer.domElement);
+const camera=new THREE.PerspectiveCamera(45,innerWidth/innerHeight,.1,180);scene.add(camera);
+const world=new CANNON.World({gravity:new CANNON.Vec3(0,-18,0),allowSleep:true});
+world.broadphase=new CANNON.SAPBroadphase(world);world.solver.iterations=mobile?6:10;
+world.defaultContactMaterial.friction=.58;world.defaultContactMaterial.restitution=.16;
+const groundBody=new CANNON.Body({mass:0,shape:new CANNON.Plane()});groundBody.quaternion.setFromEuler(-Math.PI/2,0,0);world.addBody(groundBody);
+
+const GEO={box:new THREE.BoxGeometry(1,1,1),sphere:new THREE.SphereGeometry(1,16,12),cylinder:new THREE.CylinderGeometry(1,1,1,12),cone:new THREE.ConeGeometry(1,1,12),oct:new THREE.OctahedronGeometry(1),plane:new THREE.PlaneGeometry(1,1)};
+const makeMat=(color,metalness=.25,roughness=.48,extra={})=>new THREE.MeshPhysicalMaterial({color,metalness,roughness,clearcoat:.35,clearcoatRoughness:.25,...extra});
+const MAT={steel:makeMat('#68747b',.87,.28),dark:makeMat('#18232c',.8,.35),black:makeMat('#091118',.5,.42),concrete:makeMat('#25313a',.22,.84),wood:makeMat('#38434a',.28,.74),gold:makeMat('#b17d36',.75,.25),skin:makeMat('#d6ab8c',.05,.5,{sheen:.4,sheenColor:new THREE.Color('#d39e92')}),blood:makeMat('#650816',.22,.1,{clearcoat:1}),cloth:makeMat('#718899',.05,.8),white:makeMat('#c5cfcd',.05,.58),red:makeMat('#9e382b',.4,.37),green:makeMat('#487b63',.15,.65),orange:makeMat('#b97938',.15,.62),blue:makeMat('#345f79',.2,.6),rope:makeMat('#b7a37c',.05,.9),cyan:makeMat('#64e0dc',.4,.24,{emissive:'#1da7a7',emissiveIntensity:1.6}),amber:makeMat('#efb356',.5,.22,{emissive:'#f99d30',emissiveIntensity:1.5}),danger:makeMat('#ee6450',.25,.25,{emissive:'#e24e34',emissiveIntensity:1.4}),violet:makeMat('#857adc',.4,.25,{emissive:'#5549c2',emissiveIntensity:.8})};
+function mesh(g,m,parent,x=0,y=0,z=0,sx=1,sy=sx,sz=sx){const o=new THREE.Mesh(g,m);o.position.set(x,y,z);o.scale.set(sx,sy,sz);o.castShadow=!mobile;o.receiveShadow=true;parent.add(o);return o}
+const box=(p,m,x,y,z,a,b,c)=>mesh(GEO.box,m,p,x,y,z,a,b,c);
+const ball=(p,m,x,y,z,a,b=a,c=a)=>mesh(GEO.sphere,m,p,x,y,z,a,b,c);
+function rod(p,m,a,b,r=.06){const d=b.clone().sub(a),o=mesh(GEO.cylinder,m,p,...a.clone().add(b).multiplyScalar(.5).toArray(),r,d.length(),r);o.quaternion.setFromUnitVectors(vec(0,1,0),d.normalize());return o}
+const hemisphere=new THREE.HemisphereLight('#b6d6df','#2c2526',2.0);scene.add(hemisphere);
+const sun=new THREE.DirectionalLight('#ffe0b0',4.2);sun.position.set(-14,28,8);sun.castShadow=!mobile;sun.shadow.mapSize.set(2048,2048);Object.assign(sun.shadow.camera,{left:-24,right:24,top:30,bottom:-30,near:1,far:80});sun.shadow.normalBias=.03;sun.shadow.bias=-.00015;scene.add(sun);
+const rim=new THREE.DirectionalLight('#63c8d5',2.8);rim.position.set(15,12,-20);scene.add(rim);
+const warm=new THREE.PointLight('#ffac4a',80,40,2);warm.position.set(0,7,4);scene.add(warm);
+
+// 小型程序化环境反射，无需 HDR 或图片资源。
+const envScene=new THREE.Scene();envScene.background=new THREE.Color('#293744');
+for(const [x,y,z,sx,sy,sz,col] of [[0,10,0,18,.1,14,'#adb8bf'],[-10,1,0,.1,8,16,'#ffbc65'],[10,1,-4,.1,6,12,'#7fcfd6']])box(envScene,new THREE.MeshBasicMaterial({color:col}),x,y,z,sx,sy,sz);
+const pmrem=new THREE.PMREMGenerator(renderer),envMap=pmrem.fromScene(envScene,.08);scene.environment=envMap.texture;pmrem.dispose();
+
+// 高清 CanvasTexture；文字面板是真正的场景网格。
+const FONT='"Microsoft YaHei","PingFang SC","Noto Sans CJK SC",sans-serif';
+function wrap(ctx,text,width){let line='',out=[];for(const ch of String(text)){if(ch==='\n'){out.push(line);line='';continue}if(ctx.measureText(line+ch).width>width&&line){out.push(line);line=ch}else line+=ch}if(line)out.push(line);return out}
+function text(ctx,str,x,y,size=40,color='#e5e9e7',align='left',weight=400){ctx.font=`${weight} ${size}px ${FONT}`;ctx.fillStyle=color;ctx.textAlign=align;ctx.textBaseline='top';ctx.fillText(str,x,y)}
+function lines(ctx,str,x,y,width,size=40,color='#e5e9e7',leading=1.45){ctx.font=`400 ${size}px ${FONT}`;for(const s of wrap(ctx,str,width)){text(ctx,s,x,y,size,color);y+=size*leading}return y}
+function surface(w,h,worldW,worldH,parent=scene){const canvas=document.createElement('canvas');canvas.width=w;canvas.height=h;const texture=new THREE.CanvasTexture(canvas);texture.colorSpace=THREE.SRGBColorSpace;texture.anisotropy=Math.min(renderer.capabilities.getMaxAnisotropy(),4);const material=new THREE.MeshBasicMaterial({map:texture,transparent:true,depthWrite:false,side:THREE.DoubleSide,toneMapped:false});const object=mesh(GEO.plane,material,parent,0,0,0,worldW,worldH,1);object.castShadow=false;object.receiveShadow=false;return {canvas,ctx:canvas.getContext('2d'),texture,material,object,update(){texture.needsUpdate=true},dispose(){object.removeFromParent();texture.dispose();material.dispose()}}}
+function rule(ctx,x,y,w,col='#39505c'){ctx.fillStyle=col;ctx.fillRect(x,y,w,2)}
+function panel(ctx,w,h,accent='#e6aa59'){ctx.clearRect(0,0,w,h);ctx.fillStyle='rgba(9,18,25,.94)';ctx.fillRect(0,0,w,h);ctx.strokeStyle='#354550';ctx.lineWidth=2;ctx.strokeRect(2,2,w-4,h-4);ctx.fillStyle=accent;ctx.fillRect(0,0,7,h);ctx.fillRect(w-50,0,50,4)}
+
+const island=new THREE.Group();scene.add(island);
+box(island,MAT.black,0,-.95,-1,29,1.9,47);box(island,MAT.concrete,0,-.12,-1,28.5,.3,46.5);
+for(let z=-23;z<22;z+=2){box(island,MAT.gold,-14.3,-.4,z,.08,.12,.6);box(island,MAT.gold,14.3,-.4,z,.08,.12,.6)}
+for(let i=0;i<70;i++){const x=rnd(-13.5,13.5),z=rnd(-23,21);box(island,MAT.wood,x,.005,z,rnd(.1,.4),.035,rnd(.1,.8))}
+const tracks={};const mainLength=22;
+const mainCurve=new THREE.LineCurve3(vec(0,.16,-24),vec(0,.16,-2));
+for(const s of [-1,1]){const curve=new THREE.CubicBezierCurve3(vec(0,.16,-2),vec(0,.16,3),vec(s*10,.16,4),vec(s*10,.16,20));tracks[s]={curve,length:mainLength+curve.getLength(),branchLength:curve.getLength()};tracks[s].hit=mainLength+curve.getLength()*.65;tracks[s].target=curve.getPointAt(.65)}
+function sampleTrack(s,d){if(d<=mainLength)return{p:vec(0,.25,-24+d),t:vec(0,0,1)};const r=tracks[s],u=clamp((d-mainLength)/r.branchLength,0,1);return{p:r.curve.getPointAt(u),t:r.curve.getTangentAt(u)}}
+const ties=new THREE.InstancedMesh(GEO.box,MAT.wood,170),temp=new THREE.Object3D();let tieCount=0;
+function rail(curve,n){for(const edge of [-1,1]){const pts=[];for(let i=0;i<=n;i++){const p=curve.getPointAt(i/n),t=curve.getTangentAt(i/n);p.add(vec(t.z,0,-t.x).multiplyScalar(edge*.74));pts.push(p)}const path=new THREE.CatmullRomCurve3(pts);const m=new THREE.Mesh(new THREE.TubeGeometry(path,n, .075,6,false),MAT.steel);m.castShadow=!mobile;island.add(m)}for(let i=0;i<=n;i+=3){temp.position.copy(curve.getPointAt(i/n));temp.position.y=.04;const t=curve.getTangentAt(i/n);temp.rotation.set(0,Math.atan2(t.x,t.z),0);temp.scale.set(2.25,.14,.34);temp.updateMatrix();ties.setMatrixAt(tieCount++,temp.matrix)}}
+rail(mainCurve,60);rail(tracks[-1].curve,66);rail(tracks[1].curve,66);ties.count=tieCount;ties.receiveShadow=true;island.add(ties);
+const routeLights={};
+for(const s of [-1,1]){const g=new THREE.Group();island.add(g);routeLights[s]=g;for(let i=0;i<22;i++){const p=tracks[s].curve.getPointAt(i/21),t=tracks[s].curve.getTangentAt(i/21);p.add(vec(t.z,0,-t.x).multiplyScalar(s*1.15));const a=box(g,MAT.amber,p.x,.2,p.z,.12,.07,.42);a.rotation.y=Math.atan2(t.x,t.z)}const p=tracks[s].target;mesh(new THREE.RingGeometry(1.85,1.91,48),MAT.gold,island,p.x,.04,p.z).rotation.x=-Math.PI/2}
+const switchTongue=box(island,MAT.amber,0,.24,-.7,.12,.1,2.8);
+for(const s of [-1,1]){box(island,MAT.dark,s*12.3,.7,-7,.25,1.4,.25);const lamp=ball(island,s<0?MAT.cyan:MAT.amber,s*12.3,1.6,-7,.18);box(island,MAT.black,s*12.3,.02,-7,1.2,.1,1.2)}
+// 地面永久痕迹使用一张纹理累计绘制，重开时才清除。
+const stainCanvas=document.createElement('canvas');stainCanvas.width=stainCanvas.height=1536;const stainCtx=stainCanvas.getContext('2d');
+const stainTexture=new THREE.CanvasTexture(stainCanvas);stainTexture.colorSpace=THREE.SRGBColorSpace;
+const stains=mesh(GEO.plane,new THREE.MeshPhysicalMaterial({map:stainTexture,transparent:true,depthWrite:false,roughness:.1,metalness:.1,polygonOffset:true,polygonOffsetFactor:-2}),island,0,.045,-1,28,46,1);stains.rotation.x=-Math.PI/2;
+function stainAt(x,z,r=.4,alpha=.8){const sx=(x/28+.5)*1536,sy=((z+1)/46+.5)*1536;stainCtx.fillStyle=`rgba(91,5,20,${alpha})`;stainCtx.beginPath();stainCtx.ellipse(sx,sy,r*1536/28,r*1536/46,0,0,Math.PI*2);stainCtx.fill();stainTexture.needsUpdate=true}
+
+// 声音全部通过 Web Audio 合成；首次用户手势解锁。
+const sound={ctx:null,master:null,engine:null,engineGain:null,noiseBuffer:null};
+function unlockAudio(){if(!sound.ctx){try{const A=window.AudioContext||window.webkitAudioContext;if(!A)return;sound.ctx=new A();sound.master=sound.ctx.createGain();sound.master.gain.value=.42;sound.master.connect(sound.ctx.destination);const b=sound.ctx.createBuffer(1,sound.ctx.sampleRate*2,sound.ctx.sampleRate),d=b.getChannelData(0);for(let i=0;i<d.length;i++)d[i]=Math.random()*2-1;sound.noiseBuffer=b;const o=sound.ctx.createOscillator(),g=sound.ctx.createGain();o.type='sawtooth';o.frequency.value=36;g.gain.value=0;o.connect(g);g.connect(sound.master);o.start();sound.engine=o;sound.engineGain=g}catch{return}}sound.ctx.resume().catch(()=>{})}
+function tone(freq,duration=.1,gain=.2,type='sine',end=freq){if(!sound.ctx)return;const c=sound.ctx,t=c.currentTime,o=c.createOscillator(),g=c.createGain();o.type=type;o.frequency.setValueAtTime(freq,t);o.frequency.exponentialRampToValueAtTime(Math.max(10,end),t+duration);g.gain.setValueAtTime(.001,t);g.gain.exponentialRampToValueAtTime(gain,t+.006);g.gain.exponentialRampToValueAtTime(.001,t+duration);o.connect(g);g.connect(sound.master);o.start(t);o.stop(t+duration+.03)}
+function noise(duration=.2,gain=.4,cut=900,type='lowpass'){if(!sound.ctx)return;const c=sound.ctx,t=c.currentTime,s=c.createBufferSource(),f=c.createBiquadFilter(),g=c.createGain();s.buffer=sound.noiseBuffer;f.type=type;f.frequency.value=cut;g.gain.setValueAtTime(gain,t);g.gain.exponentialRampToValueAtTime(.001,t+duration);s.connect(f);f.connect(g);g.connect(sound.master);s.start();s.stop(t+duration)}
+function latchSound(){tone(170,.08,.18,'square',65);noise(.06,.25,2200)}
+function impactSound(living,soft){tone(66,.85,.8,'sine',18);noise(.7,.7,600);if(living&&!soft){tone(600,.43,.12,'sawtooth',150);noise(.13,.4,2600,'bandpass')}else{tone(1400,.28,.15,'triangle',120);noise(.3,.35,4200,'highpass')}}
+
+// 多几何体组合工厂。parts 为可转入 Cannon 的部位，joints 为布娃娃关节。
+const humans=new Set(['human','child','partner','lover','elder','medic','future','friend','scientist','boss','intern','prisoner','worker','hacker','grandma','npc','gamer','police','singer','relative','clone','tourist','explorer','family','pianist','writer','programmer','guard','drunk','cook']);
+const animals=new Set(['cat','orangeCat','dog','guideDog','turtle','panda','monkey','beetle']);
+function human(type,index){const root=new THREE.Group(),parts=[],joints=[],animated=[];let cloth=MAT.cloth;
+ if(['medic','scientist','cook','clone'].includes(type))cloth=MAT.white;if(['worker','prisoner','explorer'].includes(type))cloth=MAT.orange;if(['boss','guard','police','programmer','hacker'].includes(type))cloth=MAT.dark;if(['partner','lover','singer'].includes(type))cloth=type==='lover'?MAT.violet:MAT.red;if(type==='npc'||type==='future')cloth=MAT.cyan;
+ const part=(g,m,x,y,z,sx,sy,sz)=>{const o=mesh(g,m,root,x,y,z,sx,sy,sz);parts.push(o);return o};
+ const torso=part(GEO.box,cloth,0,1.1,0,.61,.73,.38),head=part(GEO.sphere,MAT.skin,0,1.73,0,.26,.3,.25);
+ part(GEO.box,MAT.dark,-.17,.4,0,.23,.65,.28);part(GEO.box,MAT.dark,.17,.4,0,.23,.65,.28);
+ part(GEO.box,cloth,-.43,1.1,0,.19,.66,.24);part(GEO.box,cloth,.43,1.1,0,.19,.66,.24);
+ joints.push([0,1],[0,2],[0,3],[0,4],[0,5]);
+ box(head,MAT.dark,0,.48,-.06,1.9,.5,1.8);
+ ball(head,MAT.black,-.35,.03,.92,.1,.12,.06);ball(head,MAT.black,.35,.03,.92,.1,.12,.06);
+ box(head,MAT.dark,0,-.38,.93,.26,.13,.06);
+ for(const y of [.98,1.14]){const rope=new THREE.Mesh(new THREE.TorusGeometry(.39,.028,5,16),MAT.rope);rope.position.y=y;rope.rotation.x=Math.PI/2;root.add(rope)}
+ if(['medic','scientist','cook','police','worker','guard'].includes(type)){ball(head,type==='worker'?MAT.gold:cloth,0,.72,0,1.12,.44,1.12);if(type==='medic'){box(torso,MAT.red,0,.15,.53,.17,.55,.08);box(torso,MAT.red,0,.15,.54,.44,.16,.08)}}
+ if(['elder','grandma'].includes(type)){head.children[0].material=MAT.white;root.rotation.z=.10;rod(root,MAT.gold,vec(.5,.05,.2),vec(.5,1.2,.2),.035)}
+ if(['gamer','programmer','hacker'].includes(type)){box(head,MAT.black,0,.05,.8,1.95,.5,.5);box(head,MAT.cyan,0,.06,1.08,1.5,.18,.06)}
+ if(type==='tourist')box(torso,MAT.gold,0,0,-.8,.8,.8,.8);
+ if(type==='singer'||type==='pianist'){const guitar=ball(root,MAT.gold,.45,.7,.3,.28,.4,.13);rod(root,MAT.wood,vec(.45,.7,.3),vec(.75,1.7,.3),.06)}
+ if(type==='writer')box(root,MAT.white,.5,.8,.4,.4,.08,.5);
+ if(type==='child'||(type==='family'&&index===2))root.scale.setScalar(.65);
+ animated.push(torso,head,parts[4],parts[5]);return{root,parts,joints,animated,living:true};
+}
+function animal(type){const root=new THREE.Group(),parts=[],joints=[];const part=(g,m,x,y,z,sx,sy,sz)=>{const o=mesh(g,m,root,x,y,z,sx,sy,sz);parts.push(o);return o};let coat=type==='orangeCat'?MAT.orange:type==='panda'?MAT.white:type==='turtle'?MAT.green:type==='beetle'?MAT.gold:MAT.cloth;
+ if(type==='turtle'||type==='beetle'){part(GEO.sphere,coat,0,.5,0,.7,.39,.9);part(GEO.sphere,type==='turtle'?MAT.green:MAT.black,0,.42,.9,.25,.24,.3);for(const x of [-1,1])for(const z of [-.5,.5]){const leg=part(GEO.box,coat,x*.63,.22,z,.37,.17,.24);joints.push([0,parts.length-1])}if(type==='turtle'){for(let i=0;i<6;i++){const a=i*Math.PI/3;ball(root,MAT.gold,Math.sin(a)*.38,.83,Math.cos(a)*.46,.17,.025,.2)}}else{rod(root,MAT.gold,vec(0,.55,.8),vec(0,1.2,1.45),.09);rod(root,MAT.gold,vec(0,1.2,1.45),vec(0,1.43,1.15),.07);box(root,MAT.black,0,.88,0,.035,.04,1.25)}}
+ else{part(GEO.sphere,coat,0,.7,0,.45,.48,.75);const h=part(GEO.sphere,coat,0,1.12,.62,.38,.38,.37);for(const x of [-1,1]){const ear=mesh(type==='cat'||type==='orangeCat'?GEO.cone:GEO.sphere,type==='panda'?MAT.black:coat,h,x*.65,.75,0,.36,.55,.27);ball(h,MAT.black,x*.35,.1,.86,.13,.15,.06)}ball(h,MAT.black,0,-.15,.96,.13,.1,.12);for(const x of [-1,1])for(const z of [-.48,.48]){part(GEO.cylinder,type==='panda'?MAT.black:coat,x*.28,.24,z,.13,.5,.13);joints.push([0,parts.length-1])}rod(root,coat,vec(0,.85,-.6),vec(.25,1.25,-1.0),.065);if(type==='guideDog'){box(root,MAT.gold,0,1,0,.91,.15,.5);rod(root,MAT.dark,vec(-.4,1.1,0),vec(-.4,1.8,0));rod(root,MAT.dark,vec(-.4,1.8,0),vec(.4,1.8,0))}if(type==='monkey'){coat=MAT.orange;parts[0].material=coat;h.material=coat;root.scale.setScalar(1.1)}}
+ joints.push([0,1]);return{root,parts,joints,animated:[parts[0],parts[1]],living:true};
+}
+function objectPrefab(type){const root=new THREE.Group(),parts=[],joints=[];const part=(g,m,x,y,z,sx,sy,sz)=>{const o=mesh(g,m,root,x,y,z,sx,sy,sz);parts.push(o);return o};
+ if(type==='disk'){part(GEO.box,MAT.steel,0,.35,0,1.65,.4,1.2);mesh(GEO.cylinder,MAT.gold,root,0,.57,0,.48,.04,.48);rod(root,MAT.dark,vec(.5,.61,.3),vec(0,.61,0),.06);box(root,MAT.cyan,-.65,.59,-.3,.15,.02,.4)}
+ else if(type==='cash'){part(GEO.box,MAT.dark,0,.25,0,1.8,.4,1.35);const lid=part(GEO.box,MAT.black,0,.92,-.57,1.8,1.1,.12);lid.rotation.x=-.2;for(let i=0;i<10;i++){part(GEO.box,i%2?MAT.green:MAT.white,(i%3-.9)*.5,.55+Math.floor(i/3)*.08,(Math.floor(i/3)-1)*.28,.45,.13,.24)}rod(root,MAT.gold,vec(-.25,.25,.75),vec(.25,.25,.75),.06)}
+ else if(type==='painting'){part(GEO.box,MAT.gold,0,1.35,0,1.9,2.6,.2);box(root,MAT.dark,0,1.35,.12,1.65,2.35,.08);const art=ball(root,MAT.green,0,.9,.2,.65,.7,.05);ball(root,MAT.skin,0,1.7,.23,.28,.4,.06);ball(root,MAT.dark,0,1.89,.19,.42,.5,.05);ball(root,MAT.skin,-.15,.85,.27,.34,.1,.06);for(const x of [-.65,.65])rod(root,MAT.wood,vec(x,0,-.3),vec(x,1.6,0),.06)}
+ else if(type==='crystal'||type==='reactor'){part(GEO.cylinder,MAT.dark,0,.3,0,1.1,.5,1.1);part(GEO.oct,type==='crystal'?MAT.violet:MAT.cyan,0,1.5,0,.7,1.15,.7);for(let i=0;i<3;i++){const ring=new THREE.Mesh(new THREE.TorusGeometry(.95,.055,8,32),type==='crystal'?MAT.gold:MAT.cyan);ring.position.y=1.5;ring.rotation.set(i*.8,.4+i,.4);root.add(ring)}if(type==='reactor')for(const x of [-1,1])rod(root,MAT.steel,vec(x,.3,0),vec(x,2.5,0),.12)}
+ else if(type==='tower'){part(GEO.box,MAT.dark,0,.15,0,1.5,.3,1.5);for(const x of [-1,1]){rod(root,MAT.steel,vec(x*.65,.2,0),vec(x*.15,3.4,0),.06);for(let y=.5;y<3;y+=.5)rod(root,MAT.steel,vec(-.5,y,0),vec(.5,y+.4,0),.035)}part(GEO.sphere,MAT.white,0,2.6,.3,.65,.65,.12);ball(root,MAT.danger,0,3.5,0,.15);part(GEO.box,MAT.dark,0,.6,0,.7,.7,.5)}
+ else if(type==='stroller'){part(GEO.box,MAT.blue,0,.7,0,1.1,.6,1.4);part(GEO.sphere,MAT.white,0,1.05,-.3,.57,.52,.6);for(const x of [-.5,.5])for(const z of [-.5,.5]){const w=part(GEO.cylinder,MAT.black,x,.25,z,.23,.13,.23);w.rotation.z=Math.PI/2}rod(root,MAT.steel,vec(-.55,.7,-.6),vec(-.55,1.5,-1),.04);rod(root,MAT.steel,vec(-.55,1.5,-1),vec(.55,1.5,-1),.04)}
+ else {const ark=type==='ark';part(GEO.box,MAT.dark,0,1.35,0,ark?2.3:1.35,2.7,.9);for(let y=.3;y<2.6;y+=.32){part(GEO.box,MAT.steel,0,y,.48,ark?2.08:1.15,.22,.08);for(const x of [-.4,-.2,0])box(root,MAT.cyan,x,y,.535,.07,.04,.02)}if(type==='ai'){box(root,MAT.black,0,2,.55,1.05,.8,.05);for(const x of [-.23,.23]){box(root,MAT.cyan,x,2.1,.6,.16,.06,.02);box(root,MAT.cyan,x,1.96,.6,.04,.15,.02)}box(root,MAT.cyan,0,1.8,.6,.22,.04,.02)}if(ark){for(const x of [-.7,.7]){ball(root,MAT.green,x,3,.0,.25,.4,.2);rod(root,MAT.gold,vec(x,2.5,0),vec(x,3.2,0),.025)}}}
+ return{root,parts,joints,animated:parts.slice(0,2),living:false};
+}
+let entities=[],labels=[],debris=[],ragJoints=[],targetScenery=[];
+function factory(data,s){const center=tracks[s].target,count=data.count,spread=count>5?.73:count>1?1.05:1.35,cols=Math.min(count,3);
+ for(let i=0;i<count;i++){const e=humans.has(data.type)?human(data.type,i):animals.has(data.type)?animal(data.type):objectPrefab(data.type);e.root.scale.multiplyScalar(spread);e.root.position.copy(center);e.root.position.x+=(i%cols-(cols-1)/2)*1.05;e.root.position.z+=(Math.floor(i/cols)-(Math.ceil(count/cols)-1)/2)*.88;e.root.position.y=-3;e.baseY=.16;e.side=s;e.phase=rnd(0,6);e.alive=true;e.root.rotation.y=rnd(-.13,.13);e.animated.forEach(m=>m.userData.rest=m.rotation.clone());scene.add(e.root);entities.push(e)}
+ if(data.cage){const cage=new THREE.Group();cage.position.copy(center);for(const x of [-1.65,1.65])for(const z of [-1,0,1])rod(cage,MAT.steel,vec(x,0,z),vec(x,2.4,z),.04);box(cage,MAT.dark,0,2.4,0,3.4,.12,2.4);scene.add(cage);targetScenery.push(cage)}
+ const label=surface(800,600,10.2,7.65);label.side=s;label.data=data;label.object.position.set(s*7.55,6.1,1.4);label.object.renderOrder=8;label.material.depthTest=false;labels.push(label);
+}
+function drawLabel(l){const c=l.ctx,w=800,h=600,selected=l.side===selectedSide;panel(c,w,h,selected?'#efb75f':'#65cfc9');text(c,l.side<0?'A / 主轨':'B / 副轨',42,32,30,selected?'#efb75f':'#65cfc9','left',600);text(c,selected?'电车将驶入':'将被保全',754,36,25,selected?'#efb75f':'#65cfc9','right');rule(c,42,87,712);let size=l.data.description.length>36?50:l.data.description.length>23?54:62;lines(c,l.data.description,42,118,704,size,'#e4e9e7',1.42);rule(c,42,509,712);text(c,selected?'▸  当前道岔方向':'○  另一种可能',42,539,27,selected?'#efb75f':'#7f969e');text(c,String(l.data.count).padStart(2,'0'),754,535,36,'#70838b','right');l.update()}
+
+// 车体与 Cannon 运动学碰撞箱。
+const train=new THREE.Group();scene.add(train);train.visible=false;
+box(train,MAT.dark,0,1,0,2.05,1.4,4.7);box(train,MAT.red,0,1.62,.3,2.1,.12,4.35);box(train,MAT.black,0,2.2,-.9,1.95,1.3,1.8);box(train,MAT.gold,0,2.94,-.9,2.2,.16,2);
+for(const x of [-1,1]){box(train,MAT.cyan,x*1.01,2.3,-.85,.025,.57,1.18);for(const z of [-1.6,1.45]){const wheel=mesh(GEO.cylinder,MAT.black,train,x,.51,z,.53,.2,.53);wheel.rotation.z=Math.PI/2;mesh(GEO.cylinder,MAT.steel,wheel,0,0,0,.6,1.05,.6)}}
+box(train,MAT.cyan,0,2.34,.02,1.5,.57,.04);const boiler=mesh(GEO.cylinder,MAT.steel,train,0,1.65,.95,.7,2.2,.7);boiler.rotation.x=Math.PI/2;
+for(const z of [.1,.9,1.7]){const r=new THREE.Mesh(new THREE.TorusGeometry(.72,.045,6,24),MAT.gold);r.position.set(0,1.65,z);train.add(r)}
+mesh(GEO.cylinder,MAT.dark,train,0,2.55,1.3,.22,.9,.22);mesh(GEO.cylinder,MAT.gold,train,0,3,1.3,.32,.15,.32);
+box(train,MAT.steel,0,.5,2.45,2.35,.42,.4);for(const x of [-.7,.7])ball(train,MAT.amber,x,1.3,2.29,.18);
+for(let i=-4;i<=4;i++)rod(train,MAT.dark,vec(i*.25,.23,2.9),vec(i*.18,.83,2.4),.05);
+const trainBody=new CANNON.Body({type:CANNON.Body.KINEMATIC,mass:0,shape:new CANNON.Box(new CANNON.Vec3(1.15,1.2,2.45)),collisionFilterGroup:2,collisionFilterMask:9});trainBody.position.set(0,-100,0);world.addBody(trainBody);
+const wheelStain=box(train,MAT.blood,0,.65,2.67,2.25,.18,.02);wheelStain.visible=false;
+
+// 真实铰链 + 阻尼伺服拉杆，鼠标/触屏直接改变目标角度，释放后吸附两端。
+const controls=new THREE.Group();scene.add(controls);controls.position.set(0,0,20.5);
+box(controls,MAT.black,0,.35,0,7.6,.7,3.3);box(controls,MAT.dark,0,.75,0,7.2,.18,3);box(controls,MAT.gold,0,.87,0,6.4,.06,.8);
+for(const x of [-3.1,3.1]){box(controls,MAT.steel,x,.94,0,.18,.16,1.9);for(const z of [-1.1,1.1])mesh(GEO.cylinder,MAT.steel,controls,x,.91,z,.1,.06,.1)}
+const leverAnchor=vec(0,1.1,20.5),leverLength=3.0;
+const mount=new CANNON.Body({mass:0,position:new CANNON.Vec3(...leverAnchor.toArray())});world.addBody(mount);
+const leverBody=new CANNON.Body({mass:4,shape:new CANNON.Box(new CANNON.Vec3(.13,leverLength/2,.13)),position:new CANNON.Vec3(0,leverAnchor.y+leverLength/2,leverAnchor.z),angularDamping:.5,linearDamping:.4,collisionFilterGroup:4,collisionFilterMask:0,allowSleep:false});world.addBody(leverBody);
+const hinge=new CANNON.HingeConstraint(mount,leverBody,{pivotA:new CANNON.Vec3(),axisA:new CANNON.Vec3(0,0,1),pivotB:new CANNON.Vec3(0,-leverLength/2,0),axisB:new CANNON.Vec3(0,0,1),collideConnected:false});world.addConstraint(hinge);
+const leverVisual=new THREE.Group();scene.add(leverVisual);box(leverVisual,MAT.steel,0,0,0,.2,leverLength,.2);box(leverVisual,MAT.gold,0,.76,0,.28,.35,.28);const handle=mesh(GEO.cylinder,MAT.amber,leverVisual,0,leverLength/2,0,.3,1.35,.3);handle.rotation.z=Math.PI/2;ball(controls,MAT.steel,0,1.1,0,.36);
+const pickMaterial=new THREE.MeshBasicMaterial({transparent:true,opacity:0,depthWrite:false});const leverHit=box(scene,pickMaterial,0,2.2,20.5,8,4.4,4);leverHit.castShadow=false;
+const controlText=surface(1024,130,9.2,1.16);controlText.object.position.set(0,4.8,21.2);controlText.material.depthTest=false;controlText.object.renderOrder=10;
+function hint(message){const c=controlText.ctx;c.clearRect(0,0,1024,130);text(c,message,512,10,45,'#efc386','center',500);text(c,'←  拖动实体拉杆  →',512,77,29,'#81959f','center');controlText.update()}
+const titleBoard=surface(1800,380,23,4.85);titleBoard.object.position.set(0,9,-13);titleBoard.material.depthTest=false;titleBoard.object.renderOrder=9;
+const counter=surface(512,512,3.25,3.25);counter.object.position.set(0,3.4,-3.3);counter.material.depthTest=false;counter.object.renderOrder=9;
+let selectedSide=-1,leverTarget=.78,lastLeverAngle=.78;
+function selectSide(s){if(selectedSide===s)return;selectedSide=s;if(state==='prepare')switches++;labels.forEach(drawLabel);updateRoute();latchSound()}
+function updateRoute(){for(const s of [-1,1])routeLights[s].children.forEach(m=>m.material=s===selectedSide?MAT.amber:MAT.dark);switchTongue.rotation.y=selectedSide*.30}
+function drawTitle(){const c=titleBoard.ctx;c.clearRect(0,0,1800,380);text(c,'THE SWITCH  /  道 岔',900,18,50,'#b6c6cc','center',500);text(c,state==='ready'?'七次选择，一次审判':state==='verdict'||state==='judging'?'所有选择，皆有回声':`${String(round+1).padStart(2,'0')} / 07   ${deck[round].title}`,900,105,86,'#eeeae0','center',600);rule(c,580,230,640,'#725d3e');text(c,state==='ready'?'30 种困境  ·  随机 7 题  ·  无法撤销':state==='run'||state==='aftermath'?'道岔已锁定  /  决定正在发生':'4 秒后锁定道岔  ·  亮起的轨道将被撞击',900,270,36,'#a6b6bd','center');titleBoard.update()}
+function drawCounter(value,subtitle='SECONDS'){const c=counter.ctx;c.clearRect(0,0,512,512);c.strokeStyle='#bc8a42';c.lineWidth=3;c.beginPath();c.arc(256,230,174,0,Math.PI*2);c.stroke();text(c,String(value),256,98,185,'#f3bd66','center',300);text(c,subtitle,256,328,32,'#92a6ae','center');counter.update()}
+
+// 粒子采用 InstancedMesh + 重力弹道，物理碎片由 Cannon 处理，避免 360 个刚体拖慢手机。
+const particleCapacity=mobile?130:460,particles=[];
+const droplet=new THREE.InstancedMesh(GEO.sphere,MAT.blood,particleCapacity);droplet.instanceMatrix.setUsage(THREE.DynamicDrawUsage);droplet.frustumCulled=false;scene.add(droplet);droplet.count=0;
+const sparks=new THREE.InstancedMesh(GEO.box,MAT.amber,particleCapacity);sparks.instanceMatrix.setUsage(THREE.DynamicDrawUsage);sparks.frustumCulled=false;scene.add(sparks);sparks.count=0;
+const smokeCanvas=document.createElement('canvas');smokeCanvas.width=smokeCanvas.height=64;const sm=smokeCanvas.getContext('2d'),grad=sm.createRadialGradient(32,32,0,32,32,32);grad.addColorStop(0,'rgba(130,149,157,.4)');grad.addColorStop(1,'rgba(30,40,50,0)');sm.fillStyle=grad;sm.fillRect(0,0,64,64);const smokeTexture=new THREE.CanvasTexture(smokeCanvas);const smoke=[];
+function puff(p,large=false){if(smoke.length>(mobile?12:30))return;const material=new THREE.SpriteMaterial({map:smokeTexture,color:large?'#34424c':'#a3acaf',transparent:true,opacity:.45,depthWrite:false});const o=new THREE.Sprite(material);o.position.copy(p);scene.add(o);smoke.push({o,life:0,max:large?1.6:.9,size:large?2:.65,v:vec(rnd(-.5,.5),rnd(.8,1.6),rnd(-.4,.4))})}
+function burst(p,blood,soft=false,paper=false,water=false){const n=water?90:mobile?105:360;for(let i=0;i<n;i++){if(particles.length>=particleCapacity)particles.shift();particles.push({p:p.clone().add(vec(rnd(-.6,.6),rnd(.3,1.1),rnd(-.6,.6))),v:vec(rnd(-7,7),rnd(3,12),rnd(-3,12)),life:0,max:rnd(.8,2.4),size:paper?rnd(.09,.17):rnd(.025,.065),blood:blood&&!soft,soft,paper,water,bounced:false})}if(!blood&&!soft&&!water)for(let i=0;i<7;i++)puff(p.clone().add(vec(rnd(-1,1),rnd(0,2),rnd(-1,1))),true)}
+function updateParticles(dt){let red=0,bright=0;for(let i=particles.length-1;i>=0;i--){const p=particles[i];p.life+=dt;if(p.life>p.max){particles.splice(i,1);continue}p.v.y-=(p.soft?3:18)*dt;p.p.addScaledVector(p.v,dt);if(p.p.y<.09){p.p.y=.09;p.v.y=Math.abs(p.v.y)*.2;p.v.x*=.6;p.v.z*=.6;if(p.blood&&!p.bounced)stainAt(p.p.x,p.p.z,p.size*1.5,.4);p.bounced=true}temp.position.copy(p.p);temp.rotation.set(p.life*4,p.life*3,0);const fade=Math.min(1,(p.max-p.life)*4);temp.scale.set(p.size,p.size*(p.paper?.2:1.5),p.size*(p.paper?2.5:1));temp.scale.multiplyScalar(fade);temp.updateMatrix();if(p.blood)droplet.setMatrixAt(red++,temp.matrix);else{sparks.setMatrixAt(bright,temp.matrix);sparks.setColorAt(bright++,new THREE.Color(p.water?'#8ee9f4':p.soft?'#87ddd5':p.paper?'#bdc58d':'#ffb346'))}}droplet.count=red;sparks.count=bright;droplet.instanceMatrix.needsUpdate=true;sparks.instanceMatrix.needsUpdate=true;if(sparks.instanceColor)sparks.instanceColor.needsUpdate=true;for(let i=smoke.length-1;i>=0;i--){const p=smoke[i];p.life+=dt;p.o.position.addScaledVector(p.v,dt);p.o.scale.setScalar(p.size*(1+p.life*2));p.o.material.opacity=.4*(1-p.life/p.max);if(p.life>=p.max){p.o.removeFromParent();p.o.material.dispose();smoke.splice(i,1)}}}
+
+// 前景镜头溅染是一张相机空间的透明 3D 平面，没有 DOM 遮罩。
+const splatter=surface(1024,1024,1,1,camera);splatter.object.position.z=-1;splatter.object.renderOrder=100;splatter.material.depthTest=false;splatter.material.opacity=0;
+function lensSplash(){const c=splatter.ctx;c.clearRect(0,0,1024,1024);for(let i=0;i<30;i++){const a=rnd(0,Math.PI*2),r=rnd(410,640),x=512+Math.cos(a)*r,y=512+Math.sin(a)*r;c.fillStyle=`rgba(96,3,18,${rnd(.12,.5)})`;c.beginPath();c.ellipse(x,y,rnd(10,70),rnd(10,100),a,0,Math.PI*2);c.fill()}splatter.update();splatter.material.opacity=.72}
+function untie(e){if(e.restraint){world.removeConstraint(e.restraint);world.removeBody(e.boundBody);e.restraint=null;e.boundBody=null}}
+function releaseEntity(e,soft){untie(e);e.root.updateMatrixWorld(true);if(soft){e.alive=false;e.dissolve=0;return}const bodies=[];for(let i=0;i<e.parts.length;i++){const m=e.parts[i],position=m.getWorldPosition(vec()),q=m.getWorldQuaternion(new THREE.Quaternion()),scale=m.getWorldScale(vec());scene.attach(m);const sphere=m.geometry===GEO.sphere||m.geometry===GEO.oct;const half=sphere?scale.clone().multiplyScalar(.72):scale.clone().multiplyScalar(.5);half.max(vec(.07,.07,.07));const body=new CANNON.Body({mass:e.living?(i===0?7:2):3,shape:new CANNON.Box(new CANNON.Vec3(half.x,half.y,half.z)),position:new CANNON.Vec3(...position.toArray()),quaternion:new CANNON.Quaternion(q.x,q.y,q.z,q.w),linearDamping:.18,angularDamping:.2,collisionFilterGroup:1,collisionFilterMask:3});body.velocity.set(rnd(-4,4)+lockedSide*4,rnd(2,8),rnd(6,14));body.angularVelocity.set(rnd(-7,7),rnd(-5,5),rnd(-6,6));world.addBody(body);bodies.push(body);debris.push({m,body})}
+ for(const [a,b] of e.joints){if(!bodies[a]||!bodies[b])continue;const ba=bodies[a],bb=bodies[b],mid=ba.position.vadd(bb.position).scale(.5),pa=ba.pointToLocalFrame(mid),pb=bb.pointToLocalFrame(mid);const joint=new CANNON.PointToPointConstraint(ba,pa,bb,pb,90);joint.collideConnected=false;if(b>3)joint.breakAt=elapsed+.24;world.addConstraint(joint);ragJoints.push(joint)}e.alive=false;e.root.visible=false;
+}
+
+const game={};let state='ready',deck=[],round=0,stateTime=0,elapsed=0,lockedSide=-1,trainDistance=0,hitDone=false,tickValue=-1,shake=0,trailDistance=0,switches=0,history=[],scores=[0,0,0,0],maxScores=[0,0,0,0];
+let drag=null,monolith=null,verdictSurface=null,columns=[],judgmentShown=false,quality=mobile?1:2,frameAverage=1/60,qualityTimer=0;
+function shuffleSeven(){const a=QUESTIONS.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a.slice(0,7)}
+const sharedGeometry=new Set(Object.values(GEO));
+function disposeUniqueGeometry(root){root.traverse(o=>{if(o.geometry&&!sharedGeometry.has(o.geometry))o.geometry.dispose()})}
+function clearRound(){for(const c of ragJoints)world.removeConstraint(c);ragJoints=[];for(const d of debris){world.removeBody(d.body);disposeUniqueGeometry(d.m);d.m.removeFromParent()}debris=[];for(const e of entities){untie(e);disposeUniqueGeometry(e.root);e.root.removeFromParent()}entities=[];for(const l of labels)l.dispose();labels=[];targetScenery.forEach(o=>{disposeUniqueGeometry(o);o.removeFromParent()});targetScenery=[];particles.length=0;train.visible=false;trainBody.position.set(0,-100,0);trainBody.velocity.setZero()}
+function setupRound(wait=false){clearRound();const q=deck[round];factory(q.a,-1);factory(q.b,1);for(const e of entities){e.boundBody=new CANNON.Body({mass:4,position:new CANNON.Vec3(e.root.position.x,1,e.root.position.z),shape:new CANNON.Box(new CANNON.Vec3(.4,.8,.4)),collisionFilterGroup:8,collisionFilterMask:2});world.addBody(e.boundBody);e.restraint=new CANNON.LockConstraint(groundBody,e.boundBody,{maxForce:1e6});world.addConstraint(e.restraint)}labels.forEach(drawLabel);state=wait?'ready':'prepare';stateTime=0;tickValue=-1;hitDone=false;counter.object.visible=true;titleBoard.object.visible=true;drawTitle();drawCounter(wait?'—':4,wait?'STANDBY':'SECONDS');hint(wait?'扳动拉杆，开始审判':'保全一边，牺牲另一边');updateRoute()}
+function newGame(wait=false){history=[];scores=[0,0,0,0];switches=0;deck=shuffleSeven();maxScores=[0,1,2,3].map(i=>deck.reduce((sum,q)=>sum+Math.max(q.a.weights[i],q.b.weights[i]),0));round=0;stainCtx.clearRect(0,0,1536,1536);stainTexture.needsUpdate=true;wheelStain.visible=false;setupRound(wait)}
+function beginRun(){state='run';stateTime=0;lockedSide=selectedSide;leverTarget=-lockedSide*.78;drag=null;trainDistance=0;train.visible=true;trainBody.position.set(0,1.3,-24);drawCounter('!', 'LOCKED');hint('道岔锁定 · 无法撤销');drawTitle();tone(110,.5,.3,'sawtooth',52)}
+function collide(){if(hitDone)return;hitDone=true;const q=deck[round],destroyed=lockedSide<0?q.a:q.b,saved=lockedSide<0?q.b:q.a,targets=entities.filter(e=>e.side===lockedSide),living=targets.some(e=>e.living)||destroyed.type==='stroller';const soft=!!q.soft;targets.forEach(e=>releaseEntity(e,soft));targetScenery.forEach(o=>o.visible=false);burst(tracks[lockedSide].target,living,soft,destroyed.type==='cash');shake=reduced?.04:.65;impactSound(living,soft);if(living&&!soft){lensSplash();wheelStain.visible=true;stainAt(tracks[lockedSide].target.x,tracks[lockedSide].target.z,1.3,.85)}scores=scores.map((v,i)=>v+destroyed.weights[i]);history.push({round:round+1,id:q.id,title:q.title,side:lockedSide,destroyed,saved,weights:destroyed.weights.slice(),switches});labels.forEach(l=>{if(l.side===lockedSide)l.object.visible=false});hint('这一刻，已经成为过去');counter.object.visible=false;}
+
+// 八种人格标题；画像只根据本局的实际样本与操作生成。
+function personality(){const percent=scores.map((s,i)=>Math.round(s/Math.max(maxScores[i],1)*100)),[u,s,e,c]=percent,spread=Math.max(...percent)-Math.min(...percent);const propertySaved=history.filter(h=>['disk','cash','crystal'].includes(h.saved.type)).length;let name,analysis;
+ if(propertySaved>=2){name='赛博朋克守财奴';analysis='你把记忆、资产与未来的筹码握得很紧。账本总能算清，账本之外的代价，却被你留给了轨道。'}
+ else if(switches>=12){name='摇摆不定的宿命傀儡';analysis=`你一共改变了 ${switches} 次轨道方向。犹豫没有消除代价，只让每次卡扣声都像一次重新宣判。`}
+ else if(s>=55&&e>=48){name='极度护短的感性疯子';analysis='你的温柔有明确的边界：熟悉的人、动物和回忆。越靠近你的人越安全，远处的人只能等待统计学的仁慈。'}
+ else if(spread<=17){name='道德绝缘体';analysis='你没有把自己交给任何一条稳定的原则。每一题都能找到理由，每一个理由也恰好都能推翻上一题。'}
+ else if(c>=Math.max(u,s,e)){name='彻底失控的混沌乐子人';analysis='当秩序试图给你标准答案，你更关心另一条轨道会发生什么。你让不可预测性，成为了唯一可预测的原则。'}
+ else if(s>=Math.max(u,e)){name='人间清醒的精致利己者';analysis='你的计算有一个稳定的圆心：自己。你不是看不见别人的代价，只是把它排在了自己的损失后面。'}
+ else if(e>=u){name='背负血海的破碎圣母';analysis='你尽力接住弱小与善意，却仍然亲手放弃了另一边。共情没有给你无罪证明，只让你记得更多名字。'}
+ else{name='冷血的功利主义算计师';analysis='你相信数量、未来与更大的收益。但总量变得漂亮的那一刻，被减去的那个人并不会因此变轻。'}
+ const typical=history.map(h=>({h,rank:Math.max(...h.weights)+Math.max(...h.weights)-Math.min(...h.weights)+(h.id===4||h.id===29?2:0)})).sort((a,b)=>b.rank-a.rank).slice(0,3).map(x=>x.h).sort((a,b)=>a.round-b.round);
+ return{name,analysis,percent,typical};
+}
+function buildJudgment(){clearRound();state='judging';stateTime=0;drag=null;judgmentShown=false;counter.object.visible=false;drawTitle();hint('审判正在升起');const p=personality();monolith=new THREE.Group();scene.add(monolith);monolith.position.set(0,-19,1);monolith.rotation.x=-.18;
+ box(monolith,MAT.black,0,7,0,12,14,1.4);box(monolith,MAT.steel,0,.4,0,13.5,.8,3);const cap=mesh(GEO.cone,MAT.dark,monolith,0,15,0,8.5,2,1.4);cap.rotation.y=Math.PI/4;
+ for(const x of [-5.98,5.98])box(monolith,MAT.gold,x,7,.76,.055,13,.04);
+ verdictSurface=surface(1536,1900,10.9,13.48,monolith);verdictSurface.object.position.set(0,7.4,.73);const c=verdictSurface.ctx;c.fillStyle='#0b131b';c.fillRect(0,0,1536,1900);text(c,'THE VERDICT / 终 局 审 判',768,70,38,'#dab577','center',600);text(c,'07',768,135,140,'#e9e3d4','center',300);text(c,'次选择，留下了现在的你',768,300,37,'#8a9da8','center');rule(c,85,384,1366,'#6a5b43');
+ c.font=`600 76px ${FONT}`;let y=440;for(const l of wrap(c,p.name,1350)){text(c,l,768,y,76,'#f1c484','center',600);y+=105}y=lines(c,p.analysis,100,y+35,1336,43,'#bdcbd1',1.55);rule(c,100,y+40,1336);y+=85;text(c,'你的选择 / THE RECORD',100,y,34,'#e1b16b');y+=68;
+ for(const h of p.typical){text(c,`${String(h.round).padStart(2,'0')}  ${h.title}`,100,y,38,'#73c9c7','left',600);y+=58;y=lines(c,`你牺牲了「${h.destroyed.description}」，保全了「${h.saved.description}」。`,100,y,1336,37,'#c4ced2',1.45);y+=36}
+ rule(c,100,1753,1336,'#5a4c37');text(c,'再次扳动拉杆，开启新的轮回',768,1790,46,'#ebbf7b','center',500);text(c,'娱乐性选择画像 · 不是心理测评',768,1860,23,'#627983','center');verdictSurface.update();
+ const names=['功利度','利己度','共情力','混沌值'],mats=[MAT.amber,MAT.violet,MAT.cyan,MAT.danger];columns=[];for(let i=0;i<4;i++){const x=[-11,-8,8,11][i],g=new THREE.Group();g.position.set(x,0,1);monolith.add(g);box(g,MAT.dark,0,.25,0,2,.5,2);const height=.8+p.percent[i]/100*7.5;const bar=mesh(GEO.cylinder,mats[i],g,0,height/2+.5,0,.64,height,.64);const tip=mesh(GEO.oct,mats[i],g,0,height+.5,0,.66,.85,.66);const label=surface(384,256,2.5,1.67,g);label.object.position.set(0,1.9,1.1);text(label.ctx,`${p.percent[i]}%`,192,20,70,'#e9e3d8','center');text(label.ctx,names[i],192,120,46,'#a5bdc6','center');label.update();columns.push({g,bar,tip,height,label})}
+ tone(42,2.5,.65,'sawtooth',28);tone(84,2.2,.15,'sine',56);
+}
+function restart(){if(state!=='verdict')return;state='reset';stateTime=0;drag=null;noise(1.8,.65,3400,'highpass');burst(vec(0,1,10),false,false,false,true);hint('冲洗轨道 · 重置轮回')}
+
+const raycaster=new THREE.Raycaster(),pointer=new THREE.Vector2();
+function canDrag(){return ['ready','prepare','verdict'].includes(state)}
+function hitLever(x,y){const r=renderer.domElement.getBoundingClientRect();pointer.set((x-r.left)/r.width*2-1,-(y-r.top)/r.height*2+1);raycaster.setFromCamera(pointer,camera);return raycaster.intersectObject(leverHit).length>0}
+function press(x,y,id){unlockAudio();if(drag||!canDrag()||!hitLever(x,y))return false;const right=leverAnchor.clone().add(vec(leverLength*Math.sin(.9),leverLength*Math.cos(.9),0)).project(camera),left=leverAnchor.clone().add(vec(-leverLength*Math.sin(.9),leverLength*Math.cos(.9),0)).project(camera);drag={x,initial:clamp(lastLeverAngle,-.9,.9),span:Math.max(22,(right.x-left.x)*innerWidth/4),id,moved:false,startState:state};renderer.domElement.style.cursor='grabbing';return true}
+function move(x,id){if(!drag||drag.id!==id)return;const dx=x-drag.x;drag.moved ||=Math.abs(dx)>8;leverTarget=-Math.asin(clamp(-Math.sin(drag.initial)+dx/drag.span*Math.sin(.9),-Math.sin(.9),Math.sin(.9)));if(Math.abs(leverTarget)>.13)selectSide(leverTarget<0?1:-1)}
+function release(id,cancel=false){if(!drag||drag.id!==id)return;const d=drag;drag=null;renderer.domElement.style.cursor='grab';leverTarget=-selectedSide*.78;latchSound();if(cancel)return;if(d.startState==='ready'&&d.moved){state='prepare';stateTime=0;drawTitle();hint('保全一边，牺牲另一边')}else if(d.startState==='verdict'&&d.moved)restart()}
+const canvas=renderer.domElement;canvas.style.cursor='grab';
+canvas.addEventListener('pointerdown',e=>{if(press(e.clientX,e.clientY,e.pointerId)){e.preventDefault();canvas.setPointerCapture(e.pointerId)}});
+canvas.addEventListener('pointermove',e=>move(e.clientX,e.pointerId));canvas.addEventListener('pointerup',e=>release(e.pointerId));canvas.addEventListener('pointercancel',e=>release(e.pointerId,true));canvas.addEventListener('lostpointercapture',e=>release(e.pointerId,true));
+// 旧 Safari Touch 回退；有 PointerEvent 时避免重复处理同一个触摸。
+canvas.addEventListener('touchstart',e=>{e.preventDefault();if(!window.PointerEvent&&e.changedTouches.length){const t=e.changedTouches[0];press(t.clientX,t.clientY,t.identifier)}},{passive:false});
+canvas.addEventListener('touchmove',e=>{e.preventDefault();if(!window.PointerEvent)for(const t of e.changedTouches)move(t.clientX,t.identifier)},{passive:false});
+canvas.addEventListener('touchend',e=>{if(!window.PointerEvent)for(const t of e.changedTouches)release(t.identifier)},{passive:false});
+canvas.addEventListener('touchcancel',e=>{if(!window.PointerEvent)for(const t of e.changedTouches)release(t.identifier,true)},{passive:false});
+window.addEventListener('keydown',e=>{if(!['ArrowLeft','ArrowRight',' '].includes(e.key)||e.repeat)return;e.preventDefault();unlockAudio();if(!canDrag())return;if(e.key!==' '){selectSide(e.key==='ArrowLeft'?-1:1);leverTarget=-selectedSide*.78;latchSound()}if(state==='ready'){state='prepare';stateTime=0;drawTitle();hint('保全一边，牺牲另一边')}else if(state==='verdict')restart()});
+
+let composer=null,bloom=null,post=null;
+if(!mobile){const [{EffectComposer},{RenderPass},{UnrealBloomPass},{ShaderPass},{OutputPass}]=await Promise.all([import('three/addons/postprocessing/EffectComposer.js'),import('three/addons/postprocessing/RenderPass.js'),import('three/addons/postprocessing/UnrealBloomPass.js'),import('three/addons/postprocessing/ShaderPass.js'),import('three/addons/postprocessing/OutputPass.js')]);composer=new EffectComposer(renderer);composer.addPass(new RenderPass(scene,camera));bloom=new UnrealBloomPass(new THREE.Vector2(innerWidth,innerHeight),.25,.6,1.05);composer.addPass(bloom);post=new ShaderPass({uniforms:{tDiffuse:{value:null},time:{value:0},shock:{value:0}},vertexShader:'varying vec2 vUv;void main(){vUv=uv;gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.0);}',fragmentShader:'uniform sampler2D tDiffuse;uniform float time;uniform float shock;varying vec2 vUv;void main(){vec2 p=vUv-.5;float k=shock*.003;vec3 c=texture2D(tDiffuse,vUv).rgb;c.r=texture2D(tDiffuse,vUv+p*k).r;c.b=texture2D(tDiffuse,vUv-p*k).b;float v=1.-.26*dot(p,p);float n=fract(sin(dot(vUv,vec2(12.9898,78.233))+time)*43758.5453);gl_FragColor=vec4(c*v+(n-.5)*.004,1.);}'});composer.addPass(post);composer.addPass(new OutputPass())}
+
+const cameraTarget=vec(0,0,1),desiredPosition=vec(0,32,41),lookAt=vec(0,1,1);let cameraReady=false;
+function resize(){camera.aspect=innerWidth/innerHeight;const narrow=camera.aspect<.68;camera.fov=narrow?62:45;const vertical=THREE.MathUtils.degToRad(camera.fov),distance=Math.max(narrow?43:51,30/(2*Math.tan(vertical/2)*camera.aspect));desiredPosition.set(0,distance*.62,distance*.785+1);camera.updateProjectionMatrix();renderer.setSize(innerWidth,innerHeight);if(composer)composer.setSize(innerWidth,innerHeight);if(!cameraReady){camera.position.copy(desiredPosition);camera.lookAt(lookAt);cameraReady=true}const h=2*Math.tan(vertical/2);splatter.object.scale.set(h*camera.aspect,h,1)}
+window.addEventListener('resize',resize);resize();
+let last=performance.now(),lastSmoke=0,trailStamp=0;
+document.addEventListener('visibilitychange',()=>{last=performance.now();if(document.hidden){drag=null;leverTarget=-selectedSide*.78;sound.ctx?.suspend().catch(()=>{})}else if(sound.ctx)sound.ctx.resume().catch(()=>{})});
+function updateCamera(dt){const judgment=['judging','verdict','reset'].includes(state),blend=judgment?clamp(stateTime/2,0,1):0;cameraTarget.copy(lookAt);const dest=desiredPosition.clone();if(judgment){dest.y*=.83;dest.z*=1.1;cameraTarget.y=4}if(state==='run'&&hitDone||state==='aftermath'){const p=tracks[lockedSide].target;cameraTarget.lerp(vec(p.x*.22,1,p.z*.17),.6);dest.multiplyScalar(.975)}camera.position.lerp(dest,1-Math.exp(-dt*2.8));camera.lookAt(cameraTarget);if(shake>0&&!reduced){camera.position.x+=rnd(-shake,shake);camera.position.y+=rnd(-shake,shake);camera.rotation.z+=rnd(-.005,.005)*shake}shake=Math.max(0,shake-dt*1.6);titleBoard.object.quaternion.copy(camera.quaternion);counter.object.quaternion.copy(camera.quaternion);controlText.object.quaternion.copy(camera.quaternion);labels.forEach(l=>l.object.quaternion.copy(camera.quaternion));for(const c of columns){const q=c.g.getWorldQuaternion(new THREE.Quaternion()).invert().multiply(camera.quaternion);c.label.object.quaternion.copy(q)}}
+function animate(now){requestAnimationFrame(animate);if(document.hidden)return;const raw=(now-last)/1000;last=now;const dt=Math.min(raw,.05);elapsed+=dt;stateTime+=dt;
+ const angle=2*Math.atan2(leverBody.quaternion.z,leverBody.quaternion.w);leverBody.torque.z+=clamp((leverTarget-angle)*115-leverBody.angularVelocity.z*27,-160,160);
+ world.step(1/60,dt,3);for(let i=ragJoints.length-1;i>=0;i--){if(ragJoints[i].breakAt&&elapsed>=ragJoints[i].breakAt){world.removeConstraint(ragJoints[i]);ragJoints.splice(i,1)}}leverVisual.position.copy(leverBody.position);leverVisual.quaternion.copy(leverBody.quaternion);lastLeverAngle=angle;
+ for(const d of debris){d.m.position.copy(d.body.position);d.m.quaternion.copy(d.body.quaternion)}
+ for(const e of entities){if(e.dissolve!==undefined){e.dissolve+=dt;e.root.scale.multiplyScalar(Math.exp(-dt*3));e.root.position.y+=dt*2;if(e.dissolve>1.5)e.root.visible=false;continue}if(!e.alive)continue;e.root.position.y=lerp(e.root.position.y,e.baseY,1-Math.exp(-dt*6));for(let i=0;i<e.animated.length;i++){const m=e.animated[i];m.rotation.z=m.userData.rest.z+Math.sin(elapsed*(i<2?2:13)+e.phase)* (i<2?.025:.13)}}
+ if(state==='prepare'){const v=Math.max(1,Math.ceil(4-stateTime));if(v!==tickValue){tickValue=v;drawCounter(v);tone(v===1?1000:650,.045,.14,'square')}if(stateTime>=4)beginRun()}
+ if(state==='run'){const old=trainDistance;trainDistance+=dt*15.5;const route=tracks[lockedSide],sample=sampleTrack(lockedSide,trainDistance),next=sampleTrack(lockedSide,trainDistance+.3);train.position.copy(sample.p);train.position.y=.1;train.rotation.y=Math.atan2(sample.t.x,sample.t.z);trainBody.position.set(sample.p.x,1.3,sample.p.z);trainBody.quaternion.setFromEuler(0,train.rotation.y,0);trainBody.velocity.set(sample.t.x*15.5,0,sample.t.z*15.5);
+ // 沿轨道距离的扫掠检测：低帧率也不能穿过受害者而漏掉撞击。
+ if(!hitDone&&old+2.45<route.hit&&trainDistance+2.45>=route.hit)collide();else if(!hitDone&&trainDistance+2.45>=route.hit)collide();
+ if(elapsed-lastSmoke>.09){lastSmoke=elapsed;const p=vec(0,3.1,1.3).applyMatrix4(train.matrixWorld);puff(p)}
+ if(hitDone&&!deck[round].soft&&entities.some(e=>e.side===lockedSide&&e.living)&&trainDistance-trailStamp>.25){trailStamp=trainDistance;stainAt(sample.p.x,sample.p.z,.29,.6);stainAt(sample.p.x+sample.t.z*.65,sample.p.z-sample.t.x*.65,.12,.9);stainAt(sample.p.x-sample.t.z*.65,sample.p.z+sample.t.x*.65,.12,.9)}
+ if(trainDistance>=route.length+2){train.visible=false;trainBody.position.set(0,-100,0);trainBody.velocity.setZero();state='aftermath';stateTime=0;drawTitle()}}
+ if(state==='aftermath'&&stateTime>=2){if(round===6)buildJudgment();else{round++;trailStamp=0;setupRound()}}
+ if(state==='judging'){monolith.position.y=lerp(-19,.3,1-Math.pow(1-clamp(stateTime/2.4,0,1),3));if(stateTime>=2.6){state='verdict';stateTime=0;hint('再次扳动拉杆，开启新轮回')}}
+ if(state==='reset'){monolith.position.y=.3-Math.pow(clamp(stateTime/1.4,0,1),2)*21;if(stateTime>1.5){verdictSurface.dispose();columns.forEach(c=>c.label.dispose());columns=[];monolith.removeFromParent();monolith=null;newGame()}}
+ if(sound.ctx){const on=state==='run';sound.engineGain.gain.setTargetAtTime(on?.11:0,sound.ctx.currentTime,.08);sound.engine.frequency.setTargetAtTime(on?42+trainDistance:32,sound.ctx.currentTime,.08)}
+ updateParticles(dt);splatter.material.opacity=Math.max(0,splatter.material.opacity-dt*.11);updateCamera(dt);
+ // 动态降低像素密度与后期负担；不假定所有手机均能达到 60fps。
+ frameAverage=lerp(frameAverage,raw,.025);qualityTimer+=dt;if(qualityTimer>5){qualityTimer=0;if(frameAverage>1/43&&quality>0){quality--;renderer.setPixelRatio(quality===0?1:1.25);renderer.shadowMap.enabled=false;if(composer){bloom.enabled=quality>0;composer.setPixelRatio(renderer.getPixelRatio())}resize()}}
+ if(post){post.uniforms.time.value=elapsed;post.uniforms.shock.value=shake}if(composer&&quality>0)composer.render();else renderer.render(scene,camera);
+}
+newGame(true);document.getElementById('boot').remove();requestAnimationFrame(animate);
+canvas.addEventListener('webglcontextlost',e=>{e.preventDefault();const c=document.createElement('canvas');c.id='boot';document.body.appendChild(c);paintBoot('图形上下文已暂停 · 请刷新页面重新接通轨道')});
+// 只读诊断接口：方便验证题库、抽题、阶段与实际评分，不提供跳过玩法的入口。
+Object.defineProperty(window,'__SWITCH__',{value:Object.freeze({get questions(){return structuredClone(QUESTIONS)},get snapshot(){return {state,round:round+1,deck:deck.map(q=>q.id),selectedSide,lockedSide,scores:[...scores],history:structuredClone(history),switches,quality,bodyCount:world.bodies.length,drawCalls:renderer.info.render.calls}},get personality(){return history.length===7?personality():null}})});
+} catch(error) {
+ console.error(error);if(!document.getElementById('boot')){const c=document.createElement('canvas');c.id='boot';document.body.appendChild(c)}paintBoot('加载失败 · 请检查网络、CDN 访问与浏览器 WebGL 支持');
+}
+</script>
+<script>
+// 先选定完整 CDN，再安装 import map；这样后期处理也使用同一份 Three.js。
+(async()=>{
+ const roots=['https://cdn.jsdelivr.net/npm/','https://unpkg.com/','https://fastly.jsdelivr.net/npm/'];
+ for(let i=0;i<roots.length;i++){
+  const root=roots[i],controller=new AbortController(),timeout=setTimeout(()=>controller.abort(),6500);
+  try{
+   paintBoot(`正在接通轨道 · 线路 ${i+1} / ${roots.length}`);
+   const paths=['three@0.170.0/build/three.module.js','cannon-es@0.20.0/dist/cannon-es.js'];
+   await Promise.all(paths.map(async path=>{const r=await fetch(root+path,{signal:controller.signal,cache:'force-cache'});if(!r.ok)throw new Error(`CDN HTTP ${r.status}`);await r.text()}));
+   clearTimeout(timeout);
+   const map=document.createElement('script');map.type='importmap';map.textContent=JSON.stringify({imports:{three:root+paths[0],'three/addons/':root+'three@0.170.0/examples/jsm/','cannon-es':root+paths[1]}});document.head.appendChild(map);
+   const module=document.createElement('script');module.type='module';module.textContent=document.getElementById('game-source').textContent;document.body.appendChild(module);return;
+  }catch(error){clearTimeout(timeout);controller.abort();console.warn('CDN unavailable:',root,error.message)}
+ }
+ paintBoot('无法连接 CDN · 请检查网络后刷新页面');
+})();
+</script>
+</body>
+</html>

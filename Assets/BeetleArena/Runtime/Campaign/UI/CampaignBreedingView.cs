@@ -9,7 +9,7 @@ namespace BeetleArena.Campaign
         void DrawBreedingCenter()
         {
             Label(root,"育种中心",52,120,620,50,34,accent);
-            Label(root,"中心提供母虫，支付配种费；母虫不归玩家所有。",52,177,1470,36,22,muted);
+            Label(root,"母虫由中心提供，不转让。",52,177,1470,36,22,muted);
             var males=State.beetles.Where(b=>!b.female&&b.Adult(State.week)).ToArray();
             if(!males.Any(b=>b.id==breedingFather))breedingFather=males.FirstOrDefault()?.id;
             var father=males.FirstOrDefault(b=>b.id==breedingFather);
@@ -30,7 +30,7 @@ namespace BeetleArena.Campaign
                 var offer=Session.BreedingOffer(father.id,i);var m=offer.Mother;var row=Card(offers,208);
                 Label(row,m.name+"  ·  "+Session.Catalog.Species(m.speciesId).name,20,12,720,34,25,accent);
                 Label(row,$"{m.length:0.0} mm · {string.Join(" / ",m.genes.Select(g=>g.id+new string('★',g.stars)))}",20,52,720,33,21);
-                Label(row,$"价格档位基础失败率 {offer.BaseFailurePercent}% · 随机运气修正 {offer.LuckAdjustment:+0;-0;0}%",20,94,740,32,21,muted);
+                Label(row,$"价格基础失败率 {offer.BaseFailurePercent}% · 随机运气 {offer.LuckAdjustment:+0;-0;0}%",20,94,740,32,21,muted);
                 Label(row,$"最终失败率 {offer.FailurePercent}%（最高 30%）",20,134,740,38,26,accent);
                 Label(row,$"{offer.Fee:N0} G",800,28,280,42,30,accent);
                 string fatherId=father.id;
@@ -38,7 +38,7 @@ namespace BeetleArena.Campaign
                     $"支付 {offer.Fee:N0} G，使用「{m.name}」配种？\n随机失败率 {offer.FailurePercent}%；失败不退费。\n成功获得 1 枚卵；雄虫下周可再次配种。",
                     ()=>app.Execute(s=>s.HireBreeding(fatherId,offer.Index,offer.Week))),ready&&State.coins>=offer.Fee);
             }
-            Label(root,ready?"失败不退费。配种后雄虫需休息至下一周。":"需要健康、饱食且未占用的雄虫，并预留 1 个温室栏位。",440,813,1100,30,19,muted);
+            if(!ready)Label(root,"需要健康、饱食且未占用的雄虫，并预留 1 个温室栏位。",440,813,1100,30,19,muted);
         }
     }
 }

@@ -73,8 +73,7 @@ namespace BeetleArena.Campaign
             ActiveMode=mode==CampaignTransitionMode.BlackFade?CampaignTransitionMode.BlackFade:CampaignTransitionMode.Television;
             bool television=ActiveMode==CampaignTransitionMode.Television;
             SetShutters(television);fade.alpha=television?1:0;SetReveal(1);
-            var camera=SceneManager.GetActiveScene().name==CampaignApp.SceneName(CampaignPage.MainMenu)?Camera.main:null;
-            float size=camera?camera.orthographicSize:0;
+            var menuBackdrop=SceneManager.GetActiveScene().name==CampaignApp.SceneName(CampaignPage.MainMenu)?FindFirstObjectByType<CampaignBackdrop>():null;
             try
             {
                 float darken=Profile.CloseSecondsFor(ActiveMode),open=Profile.OpenSecondsFor(ActiveMode);
@@ -83,10 +82,12 @@ namespace BeetleArena.Campaign
                     PhaseTime=t/darken;
                     CloseProgress=Mathf.Max(CloseProgress,CampaignTransitionProfile.Evaluate(Profile.closeCurve,PhaseTime));
                     if(television)SetReveal(1-CloseProgress);else fade.alpha=CloseProgress;
-                    if(camera)camera.orthographicSize=Mathf.Lerp(size,size*.88f,CloseProgress);
+                    if(menuBackdrop)menuBackdrop.SetMenuTransitionProgress(CloseProgress);
                     yield return null;
                 }
                 PhaseTime=1;CloseProgress=1;fade.alpha=1;SetShutters(false);Holding=true;
+                // Restore while fully covered, including same-scene actions and failed loads.
+                if(menuBackdrop)menuBackdrop.SetMenuTransitionProgress(0);
                 float blackSince=Time.realtimeSinceStartup;
                 // Present a fully black frame before scene activation can stall or replace cameras.
                 Canvas.ForceUpdateCanvases();yield return new WaitForEndOfFrame();
@@ -126,7 +127,7 @@ namespace BeetleArena.Campaign
                     yield return null;
                 }
             }
-            finally { if(camera)camera.orthographicSize=size; ResetFade(); }
+            finally { if(menuBackdrop)menuBackdrop.SetMenuTransitionProgress(0); ResetFade(); }
         }
         // Loading or shader warm-up may produce a long frame. Do not skip most of the next animation.
         static float AnimationStep() => Mathf.Min(Time.unscaledDeltaTime,1f/30f);

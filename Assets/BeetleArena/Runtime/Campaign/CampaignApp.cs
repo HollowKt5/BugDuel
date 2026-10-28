@@ -18,6 +18,7 @@ namespace BeetleArena.Campaign
     [Serializable] public sealed class CampaignPreferences
     {
         public int language, autoSaveSeconds = 60, battleSpeed = 1, fps = 60, resolution;
+        public int learnedControls;
         public int windowMode = 1;
         public bool vsync = true, depthOfField = true;
         public CampaignTransitionMode transitionMode;
@@ -36,9 +37,10 @@ namespace BeetleArena.Campaign
         public bool Busy => pendingWrite!=null || (transition && transition.Busy);
         public bool Modal { get; set; }
         public bool Constructing { get; set; }
+        public bool HandlingBeetle { get; set; }
         public bool NeedsPlayerName => Session!=null && Session.NeedsPlayerName;
         public int? PlayerNameRequestSlot { get; private set; }
-        public bool CalendarRunning => Session!=null && !NeedsPlayerName && !Busy && !Modal && !Constructing && !Session.State.clock.paused &&
+        public bool CalendarRunning => Session!=null && !NeedsPlayerName && !Busy && !Modal && !Constructing && !HandlingBeetle && !Session.State.clock.paused &&
             Session.State.battle==null && Session.State.auction==null && Session.State.pupaAuction==null &&
             Enum.TryParse(SceneManager.GetActiveScene().name.Replace("Campaign",""),out CampaignPage currentPage) &&
             CampaignInputPolicy.CanManage(currentPage,true,false,false);
@@ -330,7 +332,7 @@ namespace BeetleArena.Campaign
         }
         void Navigate(CampaignPage page)
         {
-            Modal=false;Constructing=false;
+            Modal=false;Constructing=false;HandlingBeetle=false;
             string source=SceneManager.GetActiveScene().name;
             CampaignTransitionMode? mode=source==SceneName(CampaignPage.MainMenu)||source==SceneName(CampaignPage.Saves)?CampaignTransitionMode.BlackFade:(CampaignTransitionMode?)null;
             transition.Go(page,error=>Message=error,mode);
@@ -357,9 +359,9 @@ namespace BeetleArena.Campaign
             }
             var audio=FindFirstObjectByType<ArenaAudio>(); if(audio)audio.volume=Preferences.carapace;
         }
-        public void SavePreferences()
+        public void SavePreferences(bool announce=true)
         {
-            try { Preferences.inputOverrides=Controls.SaveBindingOverridesAsJson(); AtomicWrite(Path.Combine(SaveDirectory,"settings.json"),JsonUtility.ToJson(Preferences,true)); ApplyPreferences(); Message="设置已保存"; }
+            try { Preferences.inputOverrides=Controls.SaveBindingOverridesAsJson(); AtomicWrite(Path.Combine(SaveDirectory,"settings.json"),JsonUtility.ToJson(Preferences,true)); ApplyPreferences(); if(announce)Message="设置已保存"; }
             catch(Exception error) when(IsStorageFailure(error)) { ReportExternalFailure("设置保存失败：",error); }
             catch(Exception error) { ReportUnexpectedFailure("设置保存失败：",error); }
         }

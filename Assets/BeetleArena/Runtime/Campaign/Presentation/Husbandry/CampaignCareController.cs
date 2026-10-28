@@ -34,6 +34,9 @@ namespace BeetleArena.Campaign
             }
         }
         public bool Paused { get; private set; }
+        public string HeldId { get; private set; }
+        public void Hold(string id) => HeldId=id;
+        public void Release(string id) { if(HeldId==id)HeldId=null; }
         public Resident Find(string id) => id != null && residents.TryGetValue(id, out var value) ? value : null;
         public void Disturb(string id) { if (!Paused) Find(id)?.Brain.Disturb(); }
         void OnEnable()
@@ -46,7 +49,7 @@ namespace BeetleArena.Campaign
             if (owner && owner.IsCareEating == IsEating) owner.IsCareEating = null;
             owner = null;
         }
-        bool IsEating(string id) => Find(id)?.Brain.State == CareState.Eating;
+        bool IsEating(string id) => HeldId!=id&&Find(id)?.Brain.State == CareState.Eating;
         void Update()
         {
             var clock = CampaignApp.Instance?.Session?.State.clock;
@@ -62,6 +65,7 @@ namespace BeetleArena.Campaign
             foreach (var id in removed) residents.Remove(id);
             foreach (var b in session.State.beetles)
             {
+                bool suspended=Paused||HeldId==b.id;
                 if (!residents.TryGetValue(b.id, out var resident))
                 { resident = new Resident(b.id, session.Catalog.Species(b.speciesId).behavior ?? new CareBehaviorProfile(), area); residents.Add(b.id, resident); }
                 if (resident.catalog != session.Catalog)
@@ -76,13 +80,13 @@ namespace BeetleArena.Campaign
                 {
                     Dead=b.dead, Overturned=b.overturned, Growing=!b.Adult(session.State.week),
                     Unavailable=b.listed || session.State.battle?.beetleId==b.id || session.State.auction?.beetleId==b.id,
-                    Paused=Paused, FoodAvailable=b.meal!=null, AtGoal=resident.Motor.AtGoal,
+                    Paused=suspended, FoodAvailable=b.meal!=null, AtGoal=resident.Motor.AtGoal,
                     Nutrition=b.nutrition, HealthFraction=b.hearts/b.maxHearts, Hour=hour,
                     HabitatActivity=housing.behavior?.Activity??1, RestPreference=housing.behavior?.Rest??.5
                 };
-                resident.PoseSeconds = Paused ? 0 : dt;
+                resident.PoseSeconds = suspended ? 0 : dt;
                 resident.Brain.Step(dt, observation);
-                if (Paused) continue;
+                if (suspended) continue;
                 resident.Motor.Tick(resident.Brain, dt);
                 if (resident.Brain.MealReady && b.meal != null && Time.unscaledTime >= resident.retryAt)
                 {

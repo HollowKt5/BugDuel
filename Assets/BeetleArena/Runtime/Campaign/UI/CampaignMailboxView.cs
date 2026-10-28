@@ -44,13 +44,12 @@ namespace BeetleArena.Campaign
                 MText(row,CampaignMailContacts.Find(m.senderId).name+$" · 第 {m.week} 周",12,39,346,26,15,muted);
                 MButton(row,m.Pending?"查看 · 有附件":"查看邮件",12,74,346,29,()=>SelectMail(m.id),true,16);
             }
-            if(mails.Length==0)MText(p,"这个文件夹还没有邮件。",38,222,362,90,22,muted);
+            if(mails.Length==0)MText(p,"暂无邮件",38,222,362,90,22,muted);
             // Keep the open message visible when marking it read removes it from the Unread filter.
             var current=State.mail.FirstOrDefault(m=>m.id==selectedMail&&(mailFolder==3?m.deleted:!m.deleted));
             if(current==null)
             {
-                MText(p,"选择一封邮件",478,290,884,55,32,accent,true);
-                MText(p,"左侧选择邮件，右侧查看正文与附件。\n市场购买的商品会发送到这里。",478,367,884,100,23,muted);return;
+                MText(p,"选择一封邮件",478,380,884,55,32,accent,true);return;
             }
             var contact=CampaignMailContacts.Find(current.senderId);
             MText(p,current.subject,458,143,924,50,27,accent,true);
@@ -67,7 +66,7 @@ namespace BeetleArena.Campaign
                 MText(card,$"{CampaignLocalization.Name(a)} ×{a.quantity}",16,12,866,30,22,accent,true);
                 MText(card,a.itemId==CampaignItems.Specimen?(current.claimed?"已领取 · 标本已存入标本室收藏库":"标本附件 · 领取后前往标本室布展"):current.claimed?"已领取 · 附件已存入仓库":a.itemId==CampaignItems.Beetle?"活体附件 · 领取后从仓库安排入住温室":"物品附件 · 领取后存入仓库",16,52,866,27,17,muted);
             }
-            if(current.attachments.Count==0){MText(detail.content,"这封邮件没有附件。",4,detail.y,892,42,19,muted);detail.y+=54;}
+            if(current.attachments.Count==0){MText(detail.content,"无附件",4,detail.y,892,42,19,muted);detail.y+=54;}
             detail.content.sizeDelta=new Vector2(924,Mathf.Max(detail.y,244));
             if(current.deleted)
             {
@@ -99,9 +98,8 @@ namespace BeetleArena.Campaign
             var person=CampaignMailContacts.Find(selectedContact)??CampaignMailContacts.All[0];
             MText(p,person.name,470,164,908,58,32,accent,true);
             MText(p,CampaignLocalization.Literal(person.address),470,242,908,35,22,muted);
-            MText(p,person.description,470,316,908,170,24);
-            MText(p,$"往来邮件：{State.mail.Count(m=>m.senderId==person.id&&!m.deleted)} 封",470,518,908,40,22,muted);
-            MButton(p,"查看往来邮件",470,640,908,52,()=>{contactFilter=person.id;mailFolder=0;selectedMail=null;OpenMailbox();},true,20);
+            MText(p,$"往来邮件：{State.mail.Count(m=>m.senderId==person.id&&!m.deleted)} 封",470,316,908,40,22,muted);
+            MButton(p,"查看往来邮件",470,392,908,52,()=>{contactFilter=person.id;mailFolder=0;selectedMail=null;OpenMailbox();},true,20);
         }
         void MailboxCommand(Action<CampaignSession> command)
         {

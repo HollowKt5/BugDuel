@@ -33,6 +33,9 @@ namespace BeetleArena.Campaign
             prompt.label.color = CampaignRetroTheme.Ink;
             prompt.GetComponent<UnityEngine.UI.Image>().color = CampaignRetroTheme.Notice;
             prompt.GetComponent<RetroBevel>().Configure(2, CampaignRetroTheme.LightEdge, CampaignRetroTheme.DarkEdge);
+            var colors = prompt.button.colors; colors.normalColor = Color.white; colors.selectedColor = CampaignRetroTheme.HoverTint;
+            colors.highlightedColor = CampaignRetroTheme.HoverTint; colors.pressedColor = CampaignRetroTheme.PressedTint;
+            colors.disabledColor = CampaignRetroTheme.DisabledTint; prompt.button.colors = colors;
             CampaignLocalization.Bind(prompt.label, "帮助翻身 H");
             prompt.transform.SetAsLastSibling();
             return prompt;
@@ -48,8 +51,6 @@ namespace BeetleArena.Campaign
             gameObject.AddComponent<RetroBevel>();
             button = gameObject.AddComponent<UnityEngine.UI.Button>(); button.targetGraphic = image;
             button.navigation = new UnityEngine.UI.Navigation { mode = UnityEngine.UI.Navigation.Mode.None };
-            var colors = button.colors; colors.highlightedColor = CampaignRetroTheme.Hex(0xe3ebfa);
-            colors.pressedColor = CampaignRetroTheme.Hex(0xc4d5f2); colors.disabledColor = new Color(.65f, .65f, .65f, 1); button.colors = colors;
             button.onClick.AddListener(Rescue);
             var text = new GameObject("Label", typeof(RectTransform)); text.transform.SetParent(transform, false);
             label = text.AddComponent<TextMeshProUGUI>(); label.rectTransform.anchorMin = Vector2.zero; label.rectTransform.anchorMax = Vector2.one;

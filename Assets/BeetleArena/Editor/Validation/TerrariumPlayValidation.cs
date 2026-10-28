@@ -118,16 +118,17 @@ public sealed class TerrariumPlayDriver : MonoBehaviour
         BeetleDisplayPreferences.Style = BeetleDisplayStyle.Clean;
         var camera = CampaignObservationCamera.Ensure(View.backdrop);
         var enclosure = glass[0].GetComponentInParent<HusbandryGlassEnclosure>();
-        Check(enclosure && Mathf.Abs(enclosure.Height - 5.6f) < .001f, "default glass is twice the previous 2.8 height");
+        Check(enclosure && Mathf.Abs(enclosure.Height - 6f) < .001f && Mathf.Abs(enclosure.BottomY + .6f) < .001f,
+            "glass extends down around doubled soil depth while retaining its upper edge");
         var floorBounds = specimen.enclosureFloor.bounds; float fullDistance = camera.Distance;
         enclosure.SetHeight(4.2f); yield return new WaitForSecondsRealtime(.7f);
         Check(glass.All(r => Mathf.Abs(r.bounds.size.y - 4.2f) < .001f) && specimen.enclosureFloor.bounds == floorBounds,
             "height control resizes all panes without moving soil");
         Check(Mathf.Abs(camera.Distance - fullDistance) > .01f, "environment camera refits after a height change");
-        Check(Mathf.Abs(enclosure.transform.Find("TopFront").localPosition.y - 4f) < .001f &&
+        Check(Mathf.Abs(enclosure.transform.Find("TopFront").localPosition.y - 3.6f) < .001f &&
             Mathf.Abs(enclosure.transform.Find("CornerSeam0").localScale.y - 4.2f) < .001f,
             "upper rails and corner seams follow the glass height");
-        enclosure.SetHeight(5.6f); yield return new WaitForSecondsRealtime(.7f);
+        enclosure.SetHeight(6f); yield return new WaitForSecondsRealtime(.7f);
         foreach (var pose in new[] { new Vector2(35, 24), new Vector2(225, 48), new Vector2(315, 70) })
         {
             typeof(CampaignObservationCamera).GetField("azimuth", BindingFlags.Instance | BindingFlags.NonPublic).SetValue(camera, pose.x);
@@ -192,7 +193,8 @@ public sealed class TerrariumPlayDriver : MonoBehaviour
         Check(fill.type == LightType.Directional && fill.shadows == LightShadows.None, "fill covers the enclosure without self-shadowing");
         Check(FindObjectsByType<Light>(FindObjectsSortMode.None).Single(l => l.name == "WarmCanopy").shadows != LightShadows.None, "warm key retains natural shadows");
         var soil = AssetDatabase.LoadAssetAtPath<Material>(HusbandryTerrariumSetup.SoilTopMaterialPath);
-        Check(Mathf.Abs(soil.GetColor("_BaseColor").r - .64f) < .001f, "soil top is independently darkened");
+        Check(Mathf.Abs(soil.GetColor("_BaseColor").r - .48f) < .001f && soil.IsKeywordEnabled("_SPECULARHIGHLIGHTS_OFF") &&
+            soil.IsKeywordEnabled("_ENVIRONMENTREFLECTIONS_OFF"), "soil top is independently darkened and matte");
         specimen.transform.position = new Vector3(-2.5f, specimen.transform.position.y, 1.8f);
         specimen.transform.Rotate(0,180,0);
         typeof(CampaignObservationCamera).GetField("azimuth", BindingFlags.Instance | BindingFlags.NonPublic).SetValue(observer, 315f);

@@ -27,7 +27,7 @@ namespace BeetleArena.Campaign
                     OpenWarehouse();
                 }),available&&Session.InventoryCount(itemId)>0,18);
             }
-            if(targets==0)MText(dialog,"温室与仓库中暂无适合使用此用品的甲虫。",30,286,880,80,24,muted);
+            if(targets==0)MText(dialog,"暂无适用甲虫",30,286,880,80,24,muted);
             dialogNotice=MText(dialog,"",20,585,900,39,17,CampaignRetroTheme.Price);
             MButton(dialog,"返回仓库",20,636,900,34,OpenWarehouse,true,18);modalBack=OpenWarehouse;SelectFirst(dialog);
         }

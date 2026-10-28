@@ -86,7 +86,7 @@ namespace BugDuel.Campaign
 
         CampaignSpecimen CreateSpecimen(CampaignBeetle beetle,string date)
         {
-            beetle.dead=true;beetle.hearts=0;beetle.overturned=false;beetle.listed=false;beetle.meal=null;beetle.hasMeal=false;
+            beetle.dead=true;beetle.hearts=0;beetle.overturned=false;beetle.listed=false;beetle.meal=null;beetle.hasMeal=false;beetle.foodResidue=false;
             return new CampaignSpecimen { id=Id(),beetle=beetle,labelName=beetle.name,speciesLabel=Catalog.Species(beetle.speciesId).name,
                 dateLabel=date,preparedWeek=State.week,value=CampaignEconomy.Money(beetle.value*.38),plaqueVersion=1,
                 customLabelName=beetle.customName,customDateLabel=!DefaultSpecimenDate(date,State.week) };

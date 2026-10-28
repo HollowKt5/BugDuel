@@ -19,6 +19,7 @@ namespace BeetleArena.Campaign
         public CampaignObservationMode Mode { get; private set; }
         public float Elevation => elevation;
         public float Distance => distance;
+        public int UserInputRevision { get; private set; }
         public float GroundHeight => groundHeight;
         public const float MinimumElevation=18,MaximumElevation=78;
         CampaignBackdrop backdrop;
@@ -247,8 +248,10 @@ namespace BeetleArena.Campaign
             if(!inside||!wantsInput)return;
             if(PointerOverUi(mouse.position.ReadValue())){dragging=false;return;}
             if(mouse.rightButton.wasPressedThisFrame)dragging=true;
-            ApplyOrbitInput(dragging&&!mouse.rightButton.wasPressedThisFrame?mouse.delta.ReadValue():Vector2.zero,
-                Mathf.Clamp(mouse.scroll.ReadValue().y/120f,-4,4));
+            var drag=dragging&&!mouse.rightButton.wasPressedThisFrame?mouse.delta.ReadValue():Vector2.zero;
+            float wheel=Mathf.Clamp(mouse.scroll.ReadValue().y/120f,-4,4);
+            if(drag.sqrMagnitude>.01f||Mathf.Abs(wheel)>.01f)UserInputRevision++;
+            ApplyOrbitInput(drag,wheel);
         }
 
         public bool PointerOverWorld(Vector2 screenPosition)

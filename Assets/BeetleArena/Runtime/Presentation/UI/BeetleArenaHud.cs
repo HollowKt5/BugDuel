@@ -33,6 +33,20 @@ namespace BeetleArena
         BeetleMatchController match;
         BeetlePanelMotion resultMotion;
 
+        void OnEnable()
+        {
+            Campaign.CampaignRetroTheme.Changed += RefreshTheme;
+            if(match)RefreshTheme();
+        }
+        void OnDisable() => Campaign.CampaignRetroTheme.Changed -= RefreshTheme;
+        void RefreshTheme()
+        {
+            if(!match)return;
+            Campaign.CampaignRetroTheme.ApplyHierarchy(transform);
+            SimplifyFighterCards();
+            Refresh();
+        }
+
         // Unbinds previous controller listeners prior to rebinding, preventing duplicate invocations per click across restarts.
         public void Bind(BeetleMatchController controller)
         {
@@ -56,9 +70,13 @@ namespace BeetleArena
             foreach (var ui in fighters)
             {
                 var card = ui.name.transform.parent;
-                if (card.TryGetComponent<UnityEngine.UI.Image>(out var background)) background.enabled = false;
-                if (card.TryGetComponent<Campaign.RetroBevel>(out var bevel)) bevel.enabled = false;
-                ui.name.color = Color.white;
+                bool paper=Campaign.CampaignRetroTheme.Paper;
+                if (card.TryGetComponent<UnityEngine.UI.Image>(out var background))
+                { background.enabled=paper;background.raycastTarget=false; }
+                if (card.TryGetComponent<Campaign.RetroBevel>(out var bevel)) bevel.enabled=paper;
+                var cardRect=(RectTransform)card;
+                cardRect.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical,paper?88:250);
+                ui.name.color=paper?Campaign.CampaignRetroTheme.Ink:Color.white;
                 ui.measurements.gameObject.SetActive(false);
                 ui.action.gameObject.SetActive(false);
                 ui.staminaText.gameObject.SetActive(false);

@@ -34,8 +34,12 @@ namespace BeetleArena.Campaign
         UI.Button Btn(Transform parent,string text,float x,float y,float w,float h,Action action,bool enabled=true)
         {
             var rt=Panel(parent,x,y,w,h,true);rt.name=text;var b=Component<UI.Button>(rt);b.onClick.RemoveAllListeners();b.targetGraphic=rt.GetComponent<UI.Image>();b.interactable=enabled;
-            var colors=b.colors;colors.normalColor=Color.white;colors.highlightedColor=CampaignRetroTheme.Hex(0xe3ebfa);colors.selectedColor=colors.highlightedColor;colors.pressedColor=CampaignRetroTheme.Hex(0xc4d5f2);colors.disabledColor=new Color(.75f,.75f,.75f,1);b.colors=colors;
-            var label=Label(rt,text,10,0,w-20,h,19,enabled?ink:muted);label.alignment=TextAlignmentOptions.Center;b.onClick.AddListener(()=>{if(app.Busy || (modal&&!rt.IsChildOf(modal)))return;RetroUiAudio.PlayClick();action();});return b;
+            var colors=b.colors;colors.normalColor=Color.white;colors.highlightedColor=CampaignRetroTheme.HoverTint;colors.selectedColor=CampaignRetroTheme.HoverTint;colors.pressedColor=CampaignRetroTheme.PressedTint;colors.disabledColor=CampaignRetroTheme.DisabledTint;b.colors=colors;
+            var label=Label(rt,text,10,0,w-20,h,19,enabled?ink:muted);label.alignment=TextAlignmentOptions.Center;
+            label.fontStyle=CampaignRetroTheme.Paper?FontStyles.Bold:FontStyles.Normal;
+            float depth=Mathf.Min(5,h*.09f);
+            label.margin=CampaignRetroTheme.Paper?new Vector4(0,0,depth,depth*1.8f):Vector4.zero;
+            b.onClick.AddListener(()=>{if(app.Busy || (modal&&!rt.IsChildOf(modal)))return;RetroUiAudio.PlayClick();action();});return b;
         }
         sealed class Flow
         {

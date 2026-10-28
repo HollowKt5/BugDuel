@@ -161,7 +161,7 @@ public static class BeetleHusbandrySceneBuilder
         var floor = Material("ForestBackdrop", new Color(.07f, .115f, .085f));
         var root = new GameObject("Terrarium").transform;
         Primitive(root, "Backdrop", PrimitiveType.Cube, new Vector3(0, -.65f, 0), new Vector3(30, .2f, 30), floor);
-        Primitive(root, "SoilBed", PrimitiveType.Cube, new Vector3(0, -.22f, 0), new Vector3(9.4f, .4f, 7.4f), soil);
+        Primitive(root, "SoilBed", PrimitiveType.Cube, new Vector3(0, -.02f-HusbandryTerrariumSetup.SoilSize.y*.5f, 0), HusbandryTerrariumSetup.SoilSize, soil);
         var log = Primitive(root, "ClimbingLog", PrimitiveType.Cylinder, new Vector3(-2.8f, .28f, 1.7f), new Vector3(.68f, 1.4f, .68f), wood);
         log.transform.rotation = Quaternion.Euler(0, 28, 90);
         Primitive(root, "FoodDish", PrimitiveType.Cylinder, new Vector3(2.6f, .035f, -1.7f), new Vector3(1.05f, .06f, 1.05f), stone);

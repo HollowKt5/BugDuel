@@ -66,6 +66,8 @@ public static class BeetleArenaEditorCommands
             case "interface-setup": CampaignInterfaceSetup.Apply();return "Interface assets prepared.";
             case "interface-data": CampaignInterfaceValidation.Run();return File.ReadAllText("Artifacts/InterfaceRework/Data.txt");
             case "interface-play": CampaignInterfacePlayValidation.Run();return "Interface play acceptance started.";
+            case "ui-polish-apply": HusbandryTerrariumSetup.Apply();CampaignLocalizationSetup.Apply();return "Terrarium and localized interface assets updated.";
+            case "ui-polish-data": CampaignFoodDishValidation.Run();HusbandryTerrariumValidation.Run();CareAmbientValidation.Run();CareGroundingValidation.Run();CampaignConstructionValidation.Run();CampaignBeetleGrabValidation.Run();return "Food dish, terrarium, ambient motion, foot grounding, construction and beetle handling checks passed.";
             case "display-three-levels": BeetleArena.EditorTools.WorldDisplayEditorService.ApplyThreePixelLevelDefaults();return "Dither defaults set to the second of three pixel levels.";
             case "defensive-review": DefensiveProgrammingValidation.Run(); return File.ReadAllText("Artifacts/DefensiveReview/Verification.txt");
             case "ui-click-settings":
@@ -122,7 +124,18 @@ public static class BeetleArenaEditorCommands
             case "low-throw-verify": BeetleLowThrowValidation.Run(true); return File.ReadAllText("Artifacts/LowThrow/After/Report.txt");
             case "campaign-data": CampaignDataValidation.Run(); return "Campaign data PASS.";
             case "campaign-scenes": CampaignSceneValidation.Run(); return "Campaign scenes PASS.";
-            case "campaign-status": return "Playing="+EditorApplication.isPlaying+"; scene="+SceneManager.GetActiveScene().path+"; dirty="+SceneManager.GetActiveScene().isDirty;
+            case "campaign-status": return "Playing="+EditorApplication.isPlaying+"; paused="+EditorApplication.isPaused+"; focused="+Application.isFocused+"; frame="+Time.frameCount+"; scene="+SceneManager.GetActiveScene().path+"; dirty="+SceneManager.GetActiveScene().isDirty;
+            case "campaign-play":
+                var gameView=EditorWindow.GetWindow(Type.GetType("UnityEditor.GameView,UnityEditor"));gameView.Show();gameView.Focus();
+                EditorApplication.isPaused=false;EditorApplication.isPlaying=true;return "Normal game playback requested.";
+            case "campaign-recover-input": return CampaignInterfacePlayValidation.RecoverPhysicalInput();
+            case "campaign-input-status":
+                var events=EventSystem.current;var app=BeetleArena.Campaign.CampaignApp.Instance;
+                var devices=UnityEngine.InputSystem.InputSystem.devices.Select(d=>d.name+"; enabled="+d.enabled+"; native="+d.native+"; id="+d.deviceId);
+                var buttons=UnityEngine.Object.FindObjectsByType<UnityEngine.UI.Button>(FindObjectsSortMode.None).Where(b=>b.gameObject.activeInHierarchy).ToArray();
+                return "Playing="+EditorApplication.isPlaying+"; paused="+EditorApplication.isPaused+"; focused="+Application.isFocused+"; frame="+Time.frameCount+
+                    "\nBusy="+(app?app.Busy:false)+"; modal="+(app?app.Modal:false)+"; eventSystem="+(events?events.name:"none")+"; module="+(events&&events.currentInputModule?events.currentInputModule.GetType().Name:"none")+
+                    "\nButtons="+buttons.Length+"; interactable="+buttons.Count(b=>b.IsInteractable())+"\n"+string.Join("\n",devices);
             case "campaign-play-validation": CampaignPlayModeValidation.Run(); return "Campaign end-to-end acceptance started; see Artifacts/EndToEnd/Result.txt.";
             case "validate-landing-slide": BeetleThrowValidation.LandingAndEdge(); return File.ReadAllText("Artifacts/LandingSlide/After.txt") + File.ReadAllText("Artifacts/LandingSlide/Edge.txt");
             case "diagnose-replay": BeetleLiftCatchValidation.CompareReplay(); return File.ReadAllText("Artifacts/LiftCatch/Comparison.txt");

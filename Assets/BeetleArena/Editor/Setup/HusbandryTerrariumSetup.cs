@@ -10,7 +10,7 @@ using UnityEngine.Rendering;
 using UnityEngine.Rendering.Universal;
 using UnityEngine.SceneManagement;
 
-/// <summary>Installs the reusable open glass enclosure without changing the care floor's identity or bounds.</summary>
+/// <summary>Installs the reusable open glass enclosure while preserving the care floor's top plane and footprint.</summary>
 public static class HusbandryTerrariumSetup
 {
     public const string Folder="Assets/BeetleArena/Generated/Husbandry";
@@ -23,7 +23,11 @@ public static class HusbandryTerrariumSetup
     public const string GlassLowShaderName="BeetleArena/HusbandryGlassLow";
     const string TextureFolder="Assets/BeetleArena/Art/Husbandry/Textures";
     const string GreenhouseScenePath="Assets/Scenes/Campaign/CampaignGreenhouse.unity";
-    public static readonly Vector3 SoilSize=new Vector3(9.4f,.4f,7.4f);
+    public static readonly Vector3 SoilSize=new Vector3(9.4f,1.6f,7.4f);
+    public const float SoilTopBrightness=.36f;
+    public const float SoilSideBrightness=.48f;
+    public const float BackdropClearance=.1f;
+    const float EnclosureAnchorBelowSurface=.2f;
     public const float GlassHeight=HusbandryGlassEnclosure.DefaultHeight;
 
     [MenuItem("Tools/甲壳虫斗/画面与资源/养殖表现/应用玻璃养殖箱", false, 320)]
@@ -52,7 +56,7 @@ public static class HusbandryTerrariumSetup
             AssetDatabase.SaveAssets();
         }
         finally {EditorSceneManager.RestoreSceneManagerSetup(setup);}
-        Debug.Log("Glass terrariums installed in BeetleNursery and CampaignGreenhouse; existing SoilBed bounds preserved.");
+        Debug.Log($"Glass terrariums installed: soil depth {SoilSize.y}, top plane preserved, darker matte soil; backdrop clears lower frame; lights unchanged.");
     }
 
     public static void EnsureAssets()
@@ -87,9 +91,13 @@ public static class HusbandryTerrariumSetup
         if(!soil||!soil.TryGetComponent<MeshFilter>(out var filter)||!soil.TryGetComponent<MeshRenderer>(out var renderer))
             throw new InvalidOperationException("The existing Terrarium/SoilBed cube is required.");
         EnsureAssets();
+        float topY=soil.localPosition.y+Mathf.Abs(soil.localScale.y)*.5f;
+        var soilScale=soil.localScale;soilScale.y=SoilSize.y;soil.localScale=soilScale;
+        var soilPosition=soil.localPosition;soilPosition.y=topY-SoilSize.y*.5f;soil.localPosition=soilPosition;
         filter.sharedMesh=AssetDatabase.LoadAssetAtPath<Mesh>(SoilMeshPath);
         renderer.sharedMaterials=new[]{AssetDatabase.LoadAssetAtPath<Material>(SoilTopMaterialPath),AssetDatabase.LoadAssetAtPath<Material>(SoilSideMaterialPath)};
-        EditorUtility.SetDirty(filter);EditorUtility.SetDirty(renderer);
+        EditorUtility.SetDirty(soil);EditorUtility.SetDirty(filter);EditorUtility.SetDirty(renderer);
+        PrefabUtility.RecordPrefabInstancePropertyModifications(soil);
         PrefabUtility.RecordPrefabInstancePropertyModifications(filter);PrefabUtility.RecordPrefabInstancePropertyModifications(renderer);
         foreach(string name in new[]{"LeftRim","RightRim","BackRim","FrontRim"})
         {
@@ -101,8 +109,30 @@ public static class HusbandryTerrariumSetup
             var prefab=AssetDatabase.LoadAssetAtPath<GameObject>(PrefabPath);
             enclosure=((GameObject)PrefabUtility.InstantiatePrefab(prefab,root)).transform;
         }
-        enclosure.localPosition=soil.localPosition;enclosure.localRotation=soil.localRotation;enclosure.localScale=Vector3.one;
+        enclosure.localPosition=new Vector3(soil.localPosition.x,topY-EnclosureAnchorBelowSurface,soil.localPosition.z);
+        enclosure.localRotation=soil.localRotation;enclosure.localScale=Vector3.one;
+        var size=enclosure.GetComponent<HusbandryGlassEnclosure>();
+        size.SetBottom(EnclosureAnchorBelowSurface-SoilSize.y);
+        EditorUtility.SetDirty(size);PrefabUtility.RecordPrefabInstancePropertyModifications(size);
         PrefabUtility.RecordPrefabInstancePropertyModifications(enclosure);
+        PositionBackdropBelowSoil(root,renderer);
+    }
+
+    static void PositionBackdropBelowSoil(Transform root,Renderer soil)
+    {
+        var backdrop=root.Find("Backdrop")?.GetComponent<Renderer>();
+        if(!backdrop)return;
+        var position=backdrop.transform.position;
+        position.y+=soil.bounds.min.y-BackdropClearance-backdrop.bounds.max.y;
+        backdrop.transform.position=position;
+        EditorUtility.SetDirty(backdrop.transform);PrefabUtility.RecordPrefabInstancePropertyModifications(backdrop.transform);
+        foreach(var spotlight in root.gameObject.scene.GetRootGameObjects().SelectMany(g=>g.GetComponentsInChildren<HusbandrySpotlight>(true)))
+        {
+            if(spotlight.backdrop!=backdrop||!spotlight.groundPool)continue;
+            spotlight.Apply();
+            EditorUtility.SetDirty(spotlight.groundPool.transform);
+            PrefabUtility.RecordPrefabInstancePropertyModifications(spotlight.groundPool.transform);
+        }
     }
 
     public static bool IsTerrariumMaterial(Material material)
@@ -116,12 +146,26 @@ public static class HusbandryTerrariumSetup
     static void SoilMaterial(string path,Shader shader,Texture2D texture)
     {
         var material=AssetDatabase.LoadAssetAtPath<Material>(path);
-        if(material)return;
+        if(material)
+        {
+            ConfigureSoilSurface(material,path==SoilTopMaterialPath?SoilTopBrightness:SoilSideBrightness);
+            return;
+        }
         material=new Material(shader){name=Path.GetFileNameWithoutExtension(path)};AssetDatabase.CreateAsset(material,path);
-        float brightness=path==SoilTopMaterialPath?.64f:.74f;
+        float brightness=path==SoilTopMaterialPath?SoilTopBrightness:SoilSideBrightness;
         material.shader=shader;material.SetTexture("_BaseMap",texture);material.SetColor("_BaseColor",new Color(brightness,brightness,brightness));
         material.SetTextureScale("_BaseMap",Vector2.one);material.SetTextureOffset("_BaseMap",Vector2.zero);
         material.SetFloat("_Metallic",0);material.SetFloat("_Smoothness",.08f);EditorUtility.SetDirty(material);
+        ConfigureSoilSurface(material,brightness);
+    }
+
+    static void ConfigureSoilSurface(Material material,float brightness)
+    {
+        var color=new Color(brightness,brightness,brightness);
+        material.SetColor("_BaseColor",color);if(material.HasProperty("_Color"))material.SetColor("_Color",color);
+        material.SetFloat("_Smoothness",0);material.SetFloat("_SpecularHighlights",0);material.SetFloat("_EnvironmentReflections",0);
+        material.EnableKeyword("_SPECULARHIGHLIGHTS_OFF");material.EnableKeyword("_ENVIRONMENTREFLECTIONS_OFF");
+        EditorUtility.SetDirty(material);
     }
 
     static void CreateSoilMesh()
@@ -156,7 +200,7 @@ public static class HusbandryTerrariumSetup
         try
         {
             var root=go.transform;float x=SoilSize.x*.5f+.045f,z=SoilSize.z*.5f+.045f;
-            float bottom=-SoilSize.y*.5f,top=bottom+GlassHeight,middle=(bottom+top)*.5f;
+            float bottom=-EnclosureAnchorBelowSurface,top=bottom+GlassHeight,middle=(bottom+top)*.5f;
             Cube(root,"GlassLeft",new Vector3(-x,middle,0),new Vector3(.04f,GlassHeight,z*2),glass);
             Cube(root,"GlassRight",new Vector3(x,middle,0),new Vector3(.04f,GlassHeight,z*2),glass);
             Cube(root,"GlassBack",new Vector3(0,middle,z),new Vector3(x*2,GlassHeight,.04f),glass);
@@ -171,6 +215,7 @@ public static class HusbandryTerrariumSetup
             }
             for(int side=0;side<4;side++)Cube(root,"CornerSeam"+side,new Vector3(side<2?-x:x,middle,side%2==0?-z:z),new Vector3(.028f,GlassHeight,.028f),frame);
             BindHeightControl(go);
+            go.GetComponent<HusbandryGlassEnclosure>().SetBottom(EnclosureAnchorBelowSurface-SoilSize.y);
             BindSurface(go);
             if(!PrefabUtility.SaveAsPrefabAsset(go,PrefabPath))throw new IOException("Could not save the glass enclosure prefab.");
         }
@@ -180,11 +225,13 @@ public static class HusbandryTerrariumSetup
     static void EnsureHeightControl()
     {
         var prefab=AssetDatabase.LoadAssetAtPath<GameObject>(PrefabPath);
-        if(prefab.GetComponent<HusbandryGlassEnclosure>()&&prefab.GetComponent<HusbandryGlassSurface>())return;
+        var existing=prefab.GetComponent<HusbandryGlassEnclosure>();
+        if(existing&&Mathf.Abs(existing.BottomY-(EnclosureAnchorBelowSurface-SoilSize.y))<.0001f&&prefab.GetComponent<HusbandryGlassSurface>())return;
         var root=PrefabUtility.LoadPrefabContents(PrefabPath);
         try
         {
-            if(!root.GetComponent<HusbandryGlassEnclosure>())BindHeightControl(root);
+            BindHeightControl(root);
+            root.GetComponent<HusbandryGlassEnclosure>().SetBottom(EnclosureAnchorBelowSurface-SoilSize.y);
             BindSurface(root);PrefabUtility.SaveAsPrefabAsset(root,PrefabPath);
         }
         finally {PrefabUtility.UnloadPrefabContents(root);}
@@ -201,10 +248,11 @@ public static class HusbandryTerrariumSetup
 
     static void BindHeightControl(GameObject root)
     {
-        var size=root.AddComponent<HusbandryGlassEnclosure>();
+        var size=root.GetComponent<HusbandryGlassEnclosure>();if(!size)size=root.AddComponent<HusbandryGlassEnclosure>();
         size.Configure(new[]{"GlassLeft","GlassRight","GlassBack","GlassFront"}.Select(n=>root.transform.Find(n)).ToArray(),
             new[]{"TopLeft","TopRight","TopBack","TopFront"}.Select(n=>root.transform.Find(n)).ToArray(),
-            Enumerable.Range(0,4).Select(i=>root.transform.Find("CornerSeam"+i)).ToArray());
+            Enumerable.Range(0,4).Select(i=>root.transform.Find("CornerSeam"+i)).ToArray(),
+            new[]{"BaseLeft","BaseRight","BaseBack","BaseFront"}.Select(n=>root.transform.Find(n)).ToArray());
     }
 
     static void Cube(Transform parent,string name,Vector3 position,Vector3 scale,Material material)

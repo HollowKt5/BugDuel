@@ -13,7 +13,7 @@ namespace BeetleArena.Campaign
             Label(dialog,"为甲虫命名",26,30,598,40,28,accent);
             Label(dialog,Session.Catalog.Species(beetle.speciesId).name,26,78,598,30,19,muted);
             var input = EditableField(dialog,"甲虫名字",beetle.name,124,CampaignSession.BeetleNameLimit);
-            Label(dialog,"1–24 个字符 · 可随时修改 · 成长后保留",26,187,598,32,18,muted);
+            Label(dialog,"1–24 个字符",26,187,598,32,18,muted);
             dialogNotice = Label(dialog,"",26,226,598,42,17,muted);
             void Done() { CloseModal();returnTo?.Invoke(); }
             modalBack=Done;
