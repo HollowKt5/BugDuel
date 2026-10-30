@@ -16,34 +16,35 @@ namespace BeetleArena.Campaign
         CampaignSpecimen observedSpecimen;
         CampaignBeetleGrabController beetleGrab;
         public CampaignBeetleGrabController BeetleGrab=>beetleGrab;
-        float GreenhouseColumnWidth=>canvas.rect.width/6f;
+        float GreenhouseColumnWidth=>canvas.rect.width*SidebarFraction;
 
         void DrawGreenhouse()
         {
-            float width=GreenhouseColumnWidth,height=canvas.rect.height;
+            var layout=Layout.greenhouse;
+            float width=GreenhouseColumnWidth,height=canvas.rect.height,padding=layout.padding;
             Component<UnityEngine.UI.RectMask2D>(root);
             var frame=Panel(root,0,0,width,height,name:"GreenhousePanel");Stretch(frame);
             var title=Panel(root,3,3,width-6,34,name:"GreenhouseTitle");
             title.anchorMax=new Vector2(1,1);title.sizeDelta=new Vector2(-6,34);
             Component<RetroBevel>(title).Configure(1,CampaignRetroTheme.TitleHighlight,CampaignRetroTheme.TitleShadow,true,CampaignRetroTheme.TitleTop,CampaignRetroTheme.TitleBottom);
             Label(title,warehouseOpen?"仓库":"虫箱",12,2,width-30,30,22,CampaignRetroTheme.TitleInk).alignment=TMPro.TextAlignmentOptions.MidlineLeft;
-            var clock=DrawCalendarClock(root,7,44,width-14,34,true);
-            var clockRect=(RectTransform)clock.transform;clockRect.anchorMax=new Vector2(1,1);clockRect.sizeDelta=new Vector2(-14,34);
-            var clockLabel=clock.GetComponentInChildren<TMPro.TMP_Text>();clockLabel.rectTransform.anchorMax=new Vector2(1,1);clockLabel.rectTransform.sizeDelta=new Vector2(-12,34);
+            var clock=DrawCalendarClock(root,padding,layout.clockTop,width-padding*2,layout.clockHeight,true);
+            var clockRect=(RectTransform)clock.transform;clockRect.anchorMax=new Vector2(1,1);clockRect.sizeDelta=new Vector2(-padding*2,layout.clockHeight);
+            var clockLabel=clock.GetComponentInChildren<TMPro.TMP_Text>();clockLabel.rectTransform.anchorMax=new Vector2(1,1);clockLabel.rectTransform.sizeDelta=new Vector2(-12,layout.clockHeight);
             clockLabel.rectTransform.anchoredPosition=new Vector2(6,0);clockLabel.enableAutoSizing=true;clockLabel.textWrappingMode=TMPro.TextWrappingModes.NoWrap;
 
             if(warehouseOpen)DrawWarehouseSidebar(width,height);
             else
             {
-                var nav=Column(7,86,width-14,height-178,root,"GreenhouseNavigation");nav.rightInset=0;nav.spacing=7;
+                var nav=Column(padding,layout.navigationTop,width-padding*2,Mathf.Max(1,height-layout.navigationTop-layout.footerHeight-46),root,"GreenhouseNavigation");nav.rightInset=0;nav.spacing=layout.buttonGap;
                 warehouseBody=(RectTransform)nav.content.parent.parent;Component<UnityEngine.CanvasGroup>(warehouseBody).alpha=warehouseAlpha;
                 void Link(string text,CampaignMarketArtwork.Kind art,Action action)
                 {
-                    var b=MButton(nav.content,text,0,nav.y,nav.width,48,action,true,21);
+                    var b=MButton(nav.content,text,0,nav.y,nav.width,layout.buttonHeight,action,true,21);
                     var label=b.GetComponentInChildren<TMPro.TMP_Text>();label.alignment=TMPro.TextAlignmentOptions.MidlineLeft;
-                    label.rectTransform.anchoredPosition=new Vector2(48,0);label.rectTransform.sizeDelta=new Vector2(nav.width-58,48);
-                    Component<CampaignMarketArtwork>(Rect("NavigationIcon",b.transform,10,10,28,28)).SetKind(art);
-                    nav.y+=55;nav.content.sizeDelta=new Vector2(nav.width,nav.y);
+                    label.rectTransform.anchoredPosition=new Vector2(48,0);label.rectTransform.sizeDelta=new Vector2(nav.width-58,layout.buttonHeight);
+                    Component<CampaignMarketArtwork>(Rect("NavigationIcon",b.transform,10,(layout.buttonHeight-28)*.5f,28,28)).SetKind(art);
+                    nav.y+=layout.buttonHeight+nav.spacing;nav.content.sizeDelta=new Vector2(nav.width,nav.y);
                 }
                 Link("市场",CampaignMarketArtwork.Kind.Container,()=>app.Go(CampaignPage.Market));
                 Link("仓库",CampaignMarketArtwork.Kind.Wood,OpenWarehouse);
@@ -54,9 +55,9 @@ namespace BeetleArena.Campaign
                 nav.y+=10;
                 Link("甲虫名册",CampaignMarketArtwork.Kind.Stag,OpenGreenhouseRoster);
             }
-            var footer=greenhouseFooter=Panel(root,0,0,width,46,name:"GreenhouseFooter");
-            footer.anchorMin=Vector2.zero;footer.anchorMax=new Vector2(1,0);footer.pivot=Vector2.zero;footer.anchoredPosition=Vector2.zero;footer.sizeDelta=new Vector2(0,46);
-            var mail=greenhouseMail=MButton(footer,"邮箱",7,8,35,30,OpenMailbox,true,16);CampaignLocalization.Bind(mail.GetComponentInChildren<TMPro.TMP_Text>(),"信");
+            var footer=greenhouseFooter=Panel(root,0,0,width,layout.footerHeight,name:"GreenhouseFooter");
+            footer.anchorMin=Vector2.zero;footer.anchorMax=new Vector2(1,0);footer.pivot=Vector2.zero;footer.anchoredPosition=Vector2.zero;footer.sizeDelta=new Vector2(0,layout.footerHeight);
+            var mail=greenhouseMail=MButton(footer,"邮箱",padding,(layout.footerHeight-30)*.5f,35,30,OpenMailbox,true,16);CampaignLocalization.Bind(mail.GetComponentInChildren<TMPro.TMP_Text>(),"信");
             if(Session.UnreadMail>0)
             {
                 float size=Session.UnreadMail>99?28:24;
@@ -65,7 +66,7 @@ namespace BeetleArena.Campaign
                 var count=MText(badge,Session.UnreadMail>99?"99+":Session.UnreadMail.ToString(),2,1,size-4,size-2,13,Color.white,true);
                 count.alignment=TMPro.TextAlignmentOptions.Center;count.enableAutoSizing=true;CampaignLocalization.SetFontSize(count,13,10);
             }
-            notice=Label(root,"",7,height-83,width-14,32,14,muted);notice.name="GreenhouseNotice";
+            notice=Label(root,"",padding,height-layout.footerHeight-37,width-padding*2,32,14,muted);notice.name="GreenhouseNotice";
             if(greenhouseInfoOpen)DrawGreenhouseInfo();
             if(feedingDishOpen)DrawFeedingDish();
         }
@@ -84,10 +85,11 @@ namespace BeetleArena.Campaign
         }
         void DrawGreenhouseInfo()
         {
-            float width=480,height=Mathf.Min(610,canvas.rect.height-70);
+            var layout=Layout.info;
+            float width=layout.size.x,height=Mathf.Max(360,Mathf.Min(layout.size.y,canvas.rect.height-layout.inset.y-22));
             greenhouseInfo=Panel(canvas,0,0,width,height,name:"GreenhouseInfo");
             greenhouseInfo.SetAsLastSibling();
-            greenhouseInfo.anchorMin=greenhouseInfo.anchorMax=greenhouseInfo.pivot=Vector2.one;greenhouseInfo.anchoredPosition=new Vector2(-24,-48);
+            PlaceFloatingWindow(greenhouseInfo,layout.inset);
             Component<RetroBevel>(greenhouseInfo).Configure(3,CampaignRetroTheme.LightEdge,CampaignRetroTheme.DarkEdge);
             var shadow=Component<UnityEngine.UI.Shadow>(greenhouseInfo);shadow.enabled=!CampaignRetroTheme.Paper;shadow.effectColor=new Color(0,0,0,.3f);shadow.effectDistance=new Vector2(4,-5);
             MTitle(greenhouseInfo,"甲虫信息",width-6);
@@ -104,11 +106,12 @@ namespace BeetleArena.Campaign
             float tabWidth=(width-36)/3;string[] tabs={"信息","管理","建造"};int[] ids={0,2,3};
             for(int i=0;i<tabs.Length;i++){int tab=ids[i];GreenhouseButton(greenhouseInfo,tabs[i],12+i*(tabWidth+6),123,tabWidth,34,()=>SetGreenhouseTab(tab),greenhouseTab!=tab);}
             string scrollName=greenhouseTab switch{0=>"CareScroll",2=>"ManagementScroll",_=>"ConstructionScroll"};
-            var detail=Column(10,166,width-20,height-222,greenhouseInfo,scrollName);detail.rightInset=0;detail.spacing=7;
+            var detail=Column(layout.padding,166,width-layout.padding*2,height-222,greenhouseInfo,scrollName);detail.rightInset=0;detail.spacing=layout.cardGap;
             if(greenhouseTab==0)DrawGreenhouseCare(detail,selected);else if(greenhouseTab==2)DrawGreenhouseManagement(detail,selected);else DrawConstructionInventory(detail);
-            GreenhouseButton(greenhouseInfo,"场景全景",12,height-44,148,32,()=>observation?.SetMode(CampaignObservationMode.Environment));
-            GreenhouseButton(greenhouseInfo,"甲虫近观",166,height-44,148,32,()=>observation?.SetMode(CampaignObservationMode.Specimen),selected!=null);
-            GreenhouseButton(greenhouseInfo,"重置视角",320,height-44,148,32,()=>observation?.ResetView());
+            float buttonWidth=(width-36)/3;
+            GreenhouseButton(greenhouseInfo,"场景全景",12,height-44,buttonWidth,32,()=>observation?.SetMode(CampaignObservationMode.Environment));
+            GreenhouseButton(greenhouseInfo,"甲虫近观",18+buttonWidth,height-44,buttonWidth,32,()=>observation?.SetMode(CampaignObservationMode.Specimen),selected!=null);
+            GreenhouseButton(greenhouseInfo,"重置视角",24+buttonWidth*2,height-44,buttonWidth,32,()=>observation?.ResetView());
         }
         void ReadGreenhousePointer()
         {

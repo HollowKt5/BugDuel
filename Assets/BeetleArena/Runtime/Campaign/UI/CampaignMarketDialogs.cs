@@ -11,18 +11,24 @@ namespace BeetleArena.Campaign
         void OpenMarketItem(MarketItem item)
         {
             if(!string.IsNullOrEmpty(item.itemId)){OpenMarketSupply(item.itemId,false);return;}
-            var dialog=MarketDialog("商品详情",460,335);
-            Component<CampaignMarketArtwork>(Rect("DetailArtwork",dialog,18,53,52,52)).SetKind(item.artwork);
-            MText(dialog,item.title,84,49,352,29,13,CampaignRetroTheme.Accent,true);
+            var layout=Layout.market;
+            float width=layout.detailSize.x,height=layout.DetailHeight,pad=layout.detailPadding;
+            float detailsX=pad+layout.detailArtworkSize+28,detailsWidth=width-pad-detailsX;
+            var dialog=MarketDialog("商品详情",width,height,42,24);
+            Component<CampaignMarketArtwork>(Rect("DetailArtwork",dialog,pad,76,layout.detailArtworkSize,layout.detailArtworkSize)).SetKind(item.artwork);
+            MText(dialog,item.title,detailsX,70,detailsWidth,44,28,CampaignRetroTheme.Accent,true);
             string[] names={"类别：","物种：","尺寸：","属性：","价格："};string[] values={item.category,item.species,item.size,item.parameter,item.price};
             for(int i=0;i<5;i++)
             {
-                MText(dialog,names[i],84,88+i*30,77,25,11,CampaignRetroTheme.Muted);MText(dialog,values[i],161,88+i*30,275,25,i==4?14:11,i==4?CampaignRetroTheme.Price:CampaignRetroTheme.Ink,i==4);
-                if(i<4)MBox("Rule",dialog,84,114+i*30,352,1,CampaignRetroTheme.Rule);
+                float y=130+i*layout.detailRowHeight,rowHeight=layout.detailRowHeight-10;
+                MText(dialog,names[i],detailsX,y,88,rowHeight,21,CampaignRetroTheme.Muted);
+                MText(dialog,values[i],detailsX+88,y,detailsWidth-88,rowHeight,i==4?27:22,i==4?CampaignRetroTheme.Price:CampaignRetroTheme.Ink,i==4);
+                if(i<4)MBox("Rule",dialog,detailsX,y+rowHeight+2,detailsWidth,1,CampaignRetroTheme.Rule);
             }
-            MText(dialog,item.enabled?"购买后在邮箱领取。":"金币不足",18,247,420,23,11,CampaignRetroTheme.Muted);
-            MBox("DialogRule",dialog,18,278,422,1,CampaignRetroTheme.Border);
-            MButton(dialog,item.actionLabel,218,291,132,27,()=>{CloseModal();item.action?.Invoke();},item.enabled);MButton(dialog,"取消",360,291,80,27,CloseModal);
+            MText(dialog,item.enabled?"购买后在邮箱领取。":"金币不足",pad,height-pad-104,width-pad*2,30,20,CampaignRetroTheme.Muted);
+            MBox("DialogRule",dialog,pad,height-pad-64,width-pad*2,1,CampaignRetroTheme.Border);
+            MButton(dialog,item.actionLabel,width-pad-370,height-pad-48,220,48,()=>{CloseModal();item.action?.Invoke();},item.enabled,21);
+            MButton(dialog,"取消",width-pad-132,height-pad-48,132,48,CloseModal,true,21);
         }
         void OpenMarketListing()
         {
@@ -91,7 +97,8 @@ namespace BeetleArena.Campaign
         void DrawMarketThemeMenu()
         {
             var dismiss=Rect("MenuDismiss",root,0,0,root.rect.width,root.rect.height);var hit=Component<UI.Image>(dismiss);hit.color=Color.clear;hit.raycastTarget=marketThemeOpen;var click=Component<UI.Button>(dismiss);click.onClick.RemoveAllListeners();click.onClick.AddListener(()=>SetMarketThemeOpen(false));click.transition=UI.Selectable.Transition.None;click.interactable=marketThemeOpen;marketThemeDismiss=click;
-            var dropdown=MBox("ThemeDropdown",root,MarketMenuStart+3,64,300,238,CampaignRetroTheme.SurfaceRaised,CampaignRetroTheme.Border,1);dropdown.GetComponent<UI.Image>().raycastTarget=true;
+            var windowRect=MarketWindowRect;
+            var dropdown=MBox("ThemeDropdown",root,windowRect.x+MarketMenuStart+3,windowRect.y+64,300,238,CampaignRetroTheme.SurfaceRaised,CampaignRetroTheme.Border,1);dropdown.GetComponent<UI.Image>().raycastTarget=true;
             MText(dropdown,"当前季节（随游戏日历）",12,8,276,27,17,CampaignRetroTheme.Muted);
             MText(dropdown,CampaignRetroTheme.SeasonName,12,42,276,32,21,CampaignRetroTheme.Ink,true);
             MBox("ModeRule",dropdown,1,88,298,1,CampaignRetroTheme.Rule);MText(dropdown,"色彩模式 (明暗)：",12,99,276,27,18,CampaignRetroTheme.Muted);

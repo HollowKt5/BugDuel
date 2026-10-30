@@ -37,6 +37,7 @@ namespace BeetleArena.EditorTools
             Q<Button>("apply").clicked+=ApplySelection;
             Q<Button>("clean").clicked+=()=>{Q<DropdownField>("shader").index=0;ApplySelection();};
             Q<Button>("inspect-profile").clicked+=()=>Selection.activeObject=profile;
+            Q<Button>("inspect-toon").clicked+=()=>{Selection.activeObject=profile;EditorGUIUtility.PingObject(profile);};
             Q<Button>("inspect-material").clicked+=()=>Selection.activeObject=Q<ObjectField>("material").value;
             RefreshCatalog();
         }
@@ -44,7 +45,7 @@ namespace BeetleArena.EditorTools
         {
             profile=WorldDisplayEditorService.EnsureProfile();scenes=WorldDisplayEditorService.ScenePaths();shaders=WorldDisplayEditorService.DiscoverShaders();
             Q<DropdownField>("scene").choices=scenes.Select(path=>WorldDisplayEditorService.SceneLabel(Path.GetFileNameWithoutExtension(path))+" · "+Path.GetFileNameWithoutExtension(path)).ToList();
-            Q<DropdownField>("shader").choices=new[]{"清晰原画（关闭效果）"}.Concat(shaders.Select(s=>s.name)).ToList();
+            Q<DropdownField>("shader").choices=new[]{"原画（不加后续滤镜）"}.Concat(shaders.Select(s=>s.name)).ToList();
             SelectScene(selectedScene??SceneManager.GetActiveScene().name);
         }
         void SelectScene(string name)
@@ -70,7 +71,7 @@ namespace BeetleArena.EditorTools
             if(BeetleDisplayPreferences.IsDither(style)&&!Q<ObjectField>("material").value)
                 Q<ObjectField>("material").SetValueWithoutNotify(profile.Find(SceneName)?.DitherMaterial(style));
             Q<Button>("inspect-material").SetEnabled(materialStyle&&Q<ObjectField>("material").value);
-            Q<Label>("shader-path").text=shader?AssetDatabase.GetAssetPath(shader):"世界画面直接显示原始纹理，不使用屏幕效果。";
+            Q<Label>("shader-path").text=shader?AssetDatabase.GetAssetPath(shader):"不加 CRT / 抖动；统一卡通层由全局配置控制。";
         }
         public void ApplySelection()
         {

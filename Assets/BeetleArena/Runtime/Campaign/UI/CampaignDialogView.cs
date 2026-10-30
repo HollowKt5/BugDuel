@@ -56,7 +56,7 @@ namespace BeetleArena.Campaign
             var panel=Panel(modal,0,0,w,h);
             panel.name="DialogPanel";
             panel.anchorMin=panel.anchorMax=panel.pivot=new Vector2(.5f,.5f);
-            panel.anchoredPosition=Vector2.zero;
+            PlaceDialog(panel,content);
             if(titleBar)
             {
                 var title=Panel(panel,3,3,w-6,18);

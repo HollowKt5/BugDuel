@@ -503,7 +503,7 @@ namespace BeetleArena
             // BeforeStep restored authoritative bones; do not query stale interpolated PhysX poses.
             Physics.SyncTransforms();
             var anim = actors[attacker].animator;
-            var leg = anim.legs[slot];
+            var leg = anim.LegForSlot(slot);
             // Aim the end of the stroke at a nearby actual surface. This is an IK intent,
             // never a contact certificate; collision and bone-length constraints still apply.
             bool pushing = actors[attacker].State.Motion.Active is ForelegPushMotion;
@@ -697,8 +697,8 @@ namespace BeetleArena
             var anim = actors[attacker].animator;
             float Contact(int slot)
             {
-                var leg = anim.legs[slot];
-                Vector3 tip = anim.importedRig ? anim.importedRig.bindings[slot].tip.position : leg.lastFoot;
+                var leg = anim.LegForSlot(slot);
+                Vector3 tip = anim.importedRig ? anim.importedRig.BindingFor(leg).tip.position : leg.lastFoot;
                 if (!sim.SampleGround(new Vector2(tip.x, tip.z), out var hit))
                     return 0;
                 float scale = Mathf.Abs(anim.model.lossyScale.x);
@@ -737,7 +737,7 @@ namespace BeetleArena
             if (anim.importedRig)
                 for (int i = 0; i < anim.legs.Length; i++)
                 {
-                    Vector3 foot = anim.importedRig.bindings[i].tip.position;
+                    Vector3 foot = anim.importedRig.BindingFor(anim.legs[i]).tip.position;
                     float sole = (anim.legs[i].soleOffset + anim.importedRig.soleClearance) * Mathf.Abs(anim.model.lossyScale.x);
                     if (sim.SampleGround(new Vector2(foot.x, foot.z), out var hit) && foot.y - hit.height - sole < .045f)
                     {

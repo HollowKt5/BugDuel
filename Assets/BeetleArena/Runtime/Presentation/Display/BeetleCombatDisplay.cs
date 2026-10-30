@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using UnityEngine.Rendering;
 
 namespace BeetleArena
 {
@@ -15,6 +16,7 @@ namespace BeetleArena
         GameObject canvasObject;
         UnityEngine.UI.RawImage image;
         BeetleCombatCrt effect;
+        readonly WorldToonLayer toon=new WorldToonLayer();
         int width, height;
         string sceneName;
         readonly List<CanvasBinding> hudCanvases = new List<CanvasBinding>();
@@ -47,8 +49,9 @@ namespace BeetleArena
 
         public static void InstallScene(Scene scene)
         {
-            if (!scene.IsValid() || !scene.isLoaded || !BeetleDisplayPreferences.Profile ||
-                BeetleDisplayPreferences.Profile.Find(scene.name) == null) return;
+            if (!scene.IsValid() || !scene.isLoaded) return;
+            if (!WorldToonLayer.Enabled && (!BeetleDisplayPreferences.Profile ||
+                BeetleDisplayPreferences.Profile.Find(scene.name) == null)) return;
             var roots = scene.GetRootGameObjects();
             // Campaign pages already present the world through CampaignBackdrop.
             foreach (var root in roots)
@@ -59,6 +62,23 @@ namespace BeetleArena
         }
 
         void Awake() { source = GetComponent<Camera>();sceneName=gameObject.scene.name; }
+        void OnEnable()=>RenderPipelineManager.endCameraRendering+=Rendered;
+
+        void Rendered(ScriptableRenderContext context,Camera camera)
+        {
+            if(camera==source&&frame&&source.targetTexture==frame&&image)
+                image.texture=toon.Render(frame);
+        }
+
+        public static bool RequiresSurface(string scene,BeetleCrtProfile crt)
+        {
+            if(WorldToonLayer.Enabled)return true;
+            var style=BeetleDisplayPreferences.GetStyle(scene);
+            if(style==BeetleDisplayStyle.Clean)return false;
+            if(style==BeetleDisplayStyle.Custom)return BeetleDisplayPreferences.GetCustomMaterial(scene);
+            if(style==BeetleDisplayStyle.Crt)return crt&&crt.effectEnabled&&crt.intensity>0;
+            return BeetleDisplayPreferences.IsDither(style);
+        }
 
         void LateUpdate()
         {
@@ -68,10 +88,7 @@ namespace BeetleArena
             if (!frame && source.targetTexture) return;
             if (!profile) profile = Resources.Load<BeetleCrtProfile>("CombatCrt");
             if (effect) effect.profile = profile;
-            var style = BeetleDisplayPreferences.GetStyle(sceneName);
-            if (style == BeetleDisplayStyle.Clean ||
-                (style == BeetleDisplayStyle.Custom && !BeetleDisplayPreferences.GetCustomMaterial(sceneName)) ||
-                (style == BeetleDisplayStyle.Crt && (!profile || !profile.effectEnabled || profile.intensity <= 0)))
+            if (!RequiresSurface(sceneName,profile))
             {
                 Release();
                 return;
@@ -186,6 +203,7 @@ namespace BeetleArena
         void ReleaseFrame()
         {
             if (image) image.texture = null;
+            toon.Dispose();
             if (source && source.targetTexture == frame) source.targetTexture = null;
             if (frame) { frame.Release(); Destroy(frame); }
             frame = null;
@@ -200,6 +218,10 @@ namespace BeetleArena
             screenCamera = null; canvasObject = null; image = null; effect = null;
         }
 
-        void OnDisable() => Release();
+        void OnDisable()
+        {
+            RenderPipelineManager.endCameraRendering-=Rendered;
+            Release();
+        }
     }
 }

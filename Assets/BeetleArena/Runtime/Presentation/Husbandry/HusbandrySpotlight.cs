@@ -12,6 +12,8 @@ namespace BeetleArena
     {
         public Renderer backdrop;
         public MeshRenderer groundPool;
+        [Min(0),Tooltip("Zero uses the full light cone; a desk can limit the visible projection.")]
+        public float poolDiameterLimit;
         Light source;
         MaterialPropertyBlock properties;
         Sequence flicker;
@@ -45,7 +47,9 @@ namespace BeetleArena
             float outer = Mathf.Tan(source.spotAngle * .5f * Mathf.Deg2Rad);
             float inner = Mathf.Tan(source.innerSpotAngle * .5f * Mathf.Deg2Rad);
             groundPool.transform.SetPositionAndRotation(new Vector3(transform.position.x, groundY, transform.position.z), Quaternion.Euler(90, 0, 0));
-            groundPool.transform.localScale = new Vector3(height * outer * 2, height * outer * 2, 1);
+            float diameter=height*outer*2;
+            if(poolDiameterLimit>0)diameter=Mathf.Min(diameter,poolDiameterLimit);
+            groundPool.transform.localScale = new Vector3(diameter,diameter,1);
             properties ??= new MaterialPropertyBlock();
             properties.SetFloat("_InnerRadius", Mathf.Min(inner / outer, .999f));
             if (!Application.isPlaying) authoredIntensity = source.intensity;

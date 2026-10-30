@@ -2,7 +2,11 @@
   <ui:Style src="WorldDisplayWindow.uss" />
   <ui:ScrollView class="display-tool">
     <ui:Label text="BugDuel · 场景画面" class="title" />
-    <ui:Label text="每个场景独立配置。效果只应用于世界画面，文字、按钮与 HUD 保持清晰。" class="hint" />
+    <ui:Label text="卡通层全场景共用，后续滤镜按场景配置。文字、按钮与 HUD 保持清晰。" class="hint" />
+    <ui:VisualElement class="section">
+      <ui:Button name="inspect-toon" text="统一卡通层参数" />
+      <ui:Label text="在 Inspector 调整启用、强度、明暗层数与描边。顺序：原材质 → 卡通层 → 场景滤镜。选择原画仍保留卡通层，关闭卡通叠加即可恢复原材质画面。" class="hint" />
+    </ui:VisualElement>
     <ui:DropdownField name="scene" label="目标场景" />
     <ui:Label name="scene-path" class="path" />
     <ui:VisualElement class="row">

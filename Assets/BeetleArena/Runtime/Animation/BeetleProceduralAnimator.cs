@@ -60,6 +60,7 @@ namespace BeetleArena
         // model controls visual scale; bodyPivot controls body pitch/roll; headPivot drives head/horn elevation.
         public Transform model, bodyPivot, headPivot;
         public BeetleModelRig importedRig;
+        public BeetleAppendageRig appendages;
         public Transform[] antennae;
         public BeetleLegRig[] legs;
         public Renderer[] shellRenderers;
@@ -123,10 +124,30 @@ namespace BeetleArena
 
         float SoleHeight(BeetleLegRig leg) => importedRig ? (leg.soleOffset + importedRig.soleClearance) *
             Mathf.Abs(model.lossyScale.x) : .05f * size;
+
+        public void PrepareModel()
+        {
+            var adapter = GetComponent<BeetleModelAdapter>();
+            if (adapter) adapter.ApplyBindings();
+            if (!appendages) appendages = GetComponent<BeetleAppendageRig>();
+            if (appendages)
+            {
+                if (!appendages.Validate(out var error)) throw new InvalidOperationException(error);
+                appendages.ResetPose();
+            }
+        }
+
+        public BeetleLegRig LegForSlot(int slot)
+        {
+            foreach (var leg in legs)
+                if (leg != null && (leg.side < 0 ? 0 : 3) + leg.pair == slot) return leg;
+            throw new InvalidOperationException("Missing logical beetle leg slot " + slot);
+        }
         // Resets scale, posture, gait, and footplants upon per-match rebind. Colors applied via MaterialPropertyBlock
         // to avoid cloning materials across fighters. Actor places root at initial match spawn before this call.
         public void Initialize(BeetleTraits traits, BeetleMatchSettings settings, Color shellColor, IBeetleGround surface = null, float? visualScale = null)
         {
+            PrepareModel();
             this.settings = settings;
             previousAirborne = false;
             StruggleWeight = StruggleFrequency = strugglePhase = 0;
@@ -153,7 +174,7 @@ namespace BeetleArena
             headPivot.localRotation = Quaternion.identity;
             var hornRig = importedRig ? importedRig.GetComponent<BeetleHornRig>() : null;
             if (hornRig && hornRig.lengthPivot) hornRig.SetLength(traits.hornLengthFactor);
-            else headPivot.localScale = new Vector3(1, 1, traits.hornLengthFactor);
+            else if (!importedRig) headPivot.localScale = new Vector3(1, 1, traits.hornLengthFactor);
             bodyPitch = bodyRoll = headPitch = walkCycle = bodyHeightOffset = 0;
             antennaAngles = new Vector3[antennae.Length];
             if (antennaRest == null || antennaRest.Length != antennae.Length)
@@ -583,6 +604,13 @@ namespace BeetleArena
                 antennae[i].localRotation = antennaRest[i] * Quaternion.Euler(antennaAngles[i]);
             }
 
+            if (appendages)
+            {
+                state.Motion.SampleAntenna(0, out var sensing);
+                appendages.SetSensing(sensing.x / 30f, sensing.y / 45f);
+                appendages.Advance(dt);
+            }
+
             if (importedRig && !state.Airborne && !state.HasFallen)
                 importedRig.AvoidFeelerGround(ground, dt);
             // Tallies legs currently in swing phase for the swing budget below. Budget restricts new steps without interrupting active swings.
@@ -611,7 +639,7 @@ namespace BeetleArena
                 if (anchor && !leg.supportAnchored)
                     leg.supportAnchor = leg.lastFoot;
                 leg.supportAnchored = anchor;
-                if (leg.pair == 2 && legs[leg.side < 0 ? 5 : 2].stepping)
+                if (leg.pair == 2 && LegForSlot(leg.side < 0 ? 5 : 2).stepping)
                     ownsLeg = false;
                 if (leg.moduleOwned && !ownsLeg)
                 {
@@ -782,9 +810,9 @@ namespace BeetleArena
                     int maxLifted = catching || state.Committed || state.Action == BeetleAction.Brace ? 1 : fast ? 3 : 2;
                     urgent |= catching && error > .05f * size;
                     // Requires: not currently stepping, displacement > 0.16 * size from rest, leg phase window open, swing quota available.
-                    bool oppositeHindBusy = leg.pair == 2 && (legs[leg.side < 0 ? 5 : 2].stepping || legs[leg.side <
-                        0 ? 5 : 2].moduleOwned || state.Motion.SampleLeg(leg.side < 0 ? 5 : 2, out _) || legs[leg.side <
-                        0 ? 5 : 2].moduleReturn < 1);
+                    var oppositeHind = leg.pair == 2 ? LegForSlot(leg.side < 0 ? 5 : 2) : null;
+                    bool oppositeHindBusy = oppositeHind != null && (oppositeHind.stepping || oppositeHind.moduleOwned ||
+                        state.Motion.SampleLeg(leg.side < 0 ? 5 : 2, out _) || oppositeHind.moduleReturn < 1);
                     if (!leg.stepping && !state.Motion.PlantSupportLeg(slot) && !oppositeHindBusy && (urgent || error >
                         .16f * size && cycle < (fast ? .42f : .24f)) && steppingCount <
                         (catching ? 1 : urgent ? 3 : maxLifted))
@@ -897,8 +925,7 @@ namespace BeetleArena
             previousPosition = transform.position;
         }
 
-        Vector3 ActualFoot(BeetleLegRig leg, Vector3 fallback) => importedRig ? importedRig.bindings[(leg.side <
-            0 ? 0 : 3) + leg.pair].tip.position : fallback;
+        Vector3 ActualFoot(BeetleLegRig leg, Vector3 fallback) => importedRig ? importedRig.BindingFor(leg).tip.position : fallback;
         // Local feedback for contact constraints: horn under-forces yield head joint first, avoiding translating entire root backwards.
         public void YieldHead(float degrees)
         {
@@ -939,7 +966,7 @@ namespace BeetleArena
         // Adjusts IK target when articulated legs are blocked by horns or opponent legs, preserving bone lengths; rigid thorax absorbs whole-body separation.
         public void YieldLeg(int index, Vector3 direction, BeetleState state)
         {
-            var leg = legs[index];
+            var leg = LegForSlot(index);
             Vector3 outward = model.right * leg.side;
             Vector3 move = Vector3.ProjectOnPlane(direction, Vector3.up) + outward * .5f;
             if (move.sqrMagnitude < .001f)
@@ -962,7 +989,7 @@ namespace BeetleArena
 
         public Vector3 MotionFootBase(int slot, BeetleState state)
         {
-            var leg = legs[slot];
+            var leg = LegForSlot(slot);
             var target = NominalFoot(leg);
             return importedRig && !state.Airborne && !state.HasFallen ? importedRig.PlanSupport(leg, target, state, ground) : target;
         }

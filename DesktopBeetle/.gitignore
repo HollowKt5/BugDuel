@@ -1,0 +1,10 @@
+/bin/
+/obj/
+/Build/
+/Artifacts/
+/Tests/bin/
+/Tests/obj/
+/Tests/Gait/bin/
+/Tests/Gait/obj/
+!BeetleDesktop.csproj
+!Tests/*.csproj

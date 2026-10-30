@@ -20,6 +20,7 @@ namespace BeetleArena
         {
             if (initialized || !sourceRig) return;
             sourceRig.enabled = false;
+            sourceRig.PrepareModel();
             if (sourceRig.importedRig) sourceRig.importedRig.ResetRig();
             bodyRest = sourceRig.bodyPivot.localPosition;
             headRest = sourceRig.headPivot.localRotation;
@@ -49,6 +50,7 @@ namespace BeetleArena
                 displayedId = individual.Id; time = eating = 0;
                 roll = individual.IsOverturned ? 180 : 0;
                 previousNutrition = individual.Condition.Nutrition;
+                if(sourceRig.appendages)sourceRig.appendages.ResetPose();
                 for (int i = 0; i < hips.Length; i++)
                 {
                     sourceRig.legs[i].hip.localRotation = hips[i];
@@ -84,6 +86,12 @@ namespace BeetleArena
             sourceRig.headPivot.localRotation = headRest * Quaternion.Euler(eating > 0 ? 5 + 3 * Mathf.Sin(time * 15) : 0, 0, 0);
             for (int i = 0; i < antennae.Length; i++)
                 sourceRig.antennae[i].localRotation = antennae[i] * Quaternion.Euler(0, Mathf.Sin(time * 2 + i * 2) * (struggling ? 10 : 4), 0);
+            if(sourceRig.appendages)
+            {
+                sourceRig.appendages.SetMouth(eating>0?(1+Mathf.Sin(time*15))*.35f:0);
+                sourceRig.appendages.SetSensing(0,Mathf.Sin(time*2)*(struggling?.3f:.1f));
+                sourceRig.appendages.Advance(dt);
+            }
         }
     }
 }

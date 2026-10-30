@@ -25,11 +25,22 @@ namespace BeetleArena.Campaign
         }
         public static bool RequestChampionAuction;
         bool championAuction;
-        float MarketMenuStart=>Mathf.Max(8,(root.rect.width-652)/2);
+        Rect MarketWindowRect
+        {
+            get
+            {
+                var layout=Layout.market;
+                float x=Mathf.Clamp(layout.topLeft.x,0,Mathf.Max(0,root.rect.width-1280));
+                float y=Mathf.Clamp(layout.topLeft.y,0,Mathf.Max(0,root.rect.height-600));
+                return new Rect(x,y,Mathf.Max(1280,root.rect.width-x-layout.bottomRight.x),Mathf.Max(600,root.rect.height-y-layout.bottomRight.y));
+            }
+        }
+        float MarketMenuStart=>Mathf.Max(8,(MarketWindowRect.width-652)/2);
         void DrawMarket()
         {
-            float width=root.rect.width,height=root.rect.height;
-            var w=MBox("MarketWindow",root,0,0,width,height,CampaignRetroTheme.Window,CampaignRetroTheme.Frame,3);
+            var windowRect=MarketWindowRect;
+            float width=windowRect.width,height=windowRect.height;
+            var w=MBox("MarketWindow",root,windowRect.x,windowRect.y,width,height,CampaignRetroTheme.Window,CampaignRetroTheme.Frame,3);
             var title=MBox("MarketTitle",w,3,3,width-6,29,CampaignRetroTheme.Frame);
             Component<RetroBevel>(title).Configure(1,CampaignRetroTheme.TitleHighlight,CampaignRetroTheme.TitleShadow,true,CampaignRetroTheme.TitleTop,CampaignRetroTheme.TitleBottom);
             Component<CampaignMarketArtwork>(Rect("WindowIcon",title,8,5,18,18)).SetKind(CampaignMarketArtwork.Kind.Rainbow);
@@ -70,45 +81,36 @@ namespace BeetleArena.Campaign
         void MarketTab(Transform parent,string title,float x,float width,int index)
         {
             bool selected=marketTab==index;
-            var tab=MButton(parent,title,x+3,selected?3:6,width-6,selected?33:30,()=>{marketTab=index;SetMarketThemeOpen(false);QueueRefresh();},true,20,true,
-                selected?CampaignRetroTheme.Window:CampaignRetroTheme.InactiveTab,selected?CampaignRetroTheme.Ink:CampaignRetroTheme.Muted);
-            Component<RetroBevel>(tab.transform).Configure(2,CampaignRetroTheme.LightEdge,CampaignRetroTheme.DarkEdge);
-            var label=tab.GetComponentInChildren<TMP_Text>();label.rectTransform.anchoredPosition=new Vector2(14,0);
-            label.rectTransform.sizeDelta=new Vector2(width-36,30);label.alignment=TextAlignmentOptions.MidlineLeft;label.fontStyle=selected?FontStyles.Bold:FontStyles.Normal;
+            var tab=MarketChoice(parent,title,x+3,selected?3:6,width-6,selected?33:30,selected,()=>{marketTab=index;SetMarketThemeOpen(false);QueueRefresh();});
             if(selected)MBox("OpenTabEdge",tab.transform,2,31,width-10,3,CampaignRetroTheme.Window);
         }
         void DrawMarketShop(RectTransform window)
         {
+            var layout=Layout.market;
             float width=window.rect.width,height=window.rect.height-100;
-            var categories=MBox("CategoryTree",window,3,100,280,height-3,CampaignRetroTheme.Panel,CampaignRetroTheme.Border,2);
+            float categoryWidth=layout.categoryWidth;
+            var categories=MBox("CategoryTree",window,3,100,categoryWidth,height-3,CampaignRetroTheme.Panel,CampaignRetroTheme.Border,2);
             Component<RetroBevel>(categories).Configure(2,CampaignRetroTheme.DarkEdge,CampaignRetroTheme.LightEdge);
-            var heading=MBox("TreeHeading",categories,2,2,276,32,CampaignRetroTheme.Frame);
+            var heading=MBox("TreeHeading",categories,2,2,categoryWidth-4,32,CampaignRetroTheme.Frame);
             Component<RetroBevel>(heading).Configure(1,CampaignRetroTheme.TitleHighlight,CampaignRetroTheme.TitleShadow,true,CampaignRetroTheme.TitleTop,CampaignRetroTheme.TitleBottom);
-            MText(heading,"商品分类",8,3,260,26,18,CampaignRetroTheme.TitleInk,true);
+            MText(heading,"商品分类",8,3,categoryWidth-20,26,18,CampaignRetroTheme.TitleInk,true);
             for(int i=0;i<marketCategories.Length;i++)
             {
                 int category=i;bool selected=marketCategory==i;
-                var node=MButton(categories,marketCategories[i],7,43+i*52,266,46,()=>{marketCategory=category;QueueRefresh();},true,19,true,
+                var node=MButton(categories,marketCategories[i],7,43+i*52,categoryWidth-14,46,()=>{marketCategory=category;QueueRefresh();},true,19,true,
                     selected?CampaignRetroTheme.Selection:CampaignRetroTheme.Panel,selected?CampaignRetroTheme.SelectionInk:CampaignRetroTheme.Ink);
-                var label=node.GetComponentInChildren<TMP_Text>();label.rectTransform.anchoredPosition=new Vector2(31,0);
-                label.rectTransform.sizeDelta=new Vector2(195,46);label.alignment=TextAlignmentOptions.MidlineLeft;
-                var line=selected?CampaignRetroTheme.SelectionInk:CampaignRetroTheme.Muted;
-                MBox("TreeBranch",node.transform,10,22,14,1,line);MBox("TreeTrunk",node.transform,10,0,1,i==marketCategories.Length-1?23:46,line);
-                MText(node.transform,$"({MarketItems(i).Count})",230,0,32,46,16,selected?CampaignRetroTheme.SelectionInk:CampaignRetroTheme.Muted).alignment=TextAlignmentOptions.MidlineRight;
+                var label=node.GetComponentInChildren<TMP_Text>();label.rectTransform.anchoredPosition=new Vector2(14,0);
+                label.rectTransform.sizeDelta=new Vector2(categoryWidth-42,46);label.alignment=TextAlignmentOptions.MidlineLeft;
             }
-            float goodsWidth=width-292;
-            var goods=MBox("Goods",window,289,100,goodsWidth,height-3,CampaignRetroTheme.Panel,CampaignRetroTheme.Border,2);
+            float goodsWidth=width-categoryWidth-12;
+            var goods=MBox("Goods",window,categoryWidth+9,100,goodsWidth,height-3,CampaignRetroTheme.Panel,CampaignRetroTheme.Border,2);
             Component<RetroBevel>(goods).Configure(2,CampaignRetroTheme.DarkEdge,CampaignRetroTheme.LightEdge);
             var items=MarketItems(marketCategory);
             var header=MBox("GoodsHeader",goods,2,2,goodsWidth-4,36,CampaignRetroTheme.Window);
             MText(header,marketCategories[marketCategory],12,3,goodsWidth-162,30,21,CampaignRetroTheme.Accent,true);
             MText(header,$"{items.Count} 件",goodsWidth-140,3,122,30,18,CampaignRetroTheme.Muted).alignment=TextAlignmentOptions.MidlineRight;
             var content=MarketScroll(goods,2,38,goodsWidth-4,height-74,CampaignRetroTheme.Grid);
-            int columns=Mathf.Max(1,Mathf.FloorToInt((content.rect.width-24+10)/400));
-            float cardWidth=(content.rect.width-24-(columns-1)*10)/columns;
-            var grid=Component<UI.GridLayoutGroup>(content);grid.constraint=UI.GridLayoutGroup.Constraint.FixedColumnCount;grid.constraintCount=columns;
-            grid.cellSize=new Vector2(cardWidth,230);grid.spacing=new Vector2(10,10);grid.padding=new RectOffset(12,12,12,12);grid.childAlignment=TextAnchor.UpperLeft;
-            Component<UI.ContentSizeFitter>(content).verticalFit=UI.ContentSizeFitter.FitMode.PreferredSize;
+            float cardWidth=MarketCardGrid(content,layout.CardHeight);
             foreach(var item in items)DrawMarketCard(content,item,cardWidth);
             if(items.Count==0)MText(content,"本周暂无现货",20,20,cardWidth,60,24,CampaignRetroTheme.Muted);
             var status=MBox("ShopStatus",goods,2,height-34,goodsWidth-4,29,CampaignRetroTheme.Window);
@@ -166,45 +168,39 @@ namespace BeetleArena.Campaign
         }
         void DrawMarketCard(Transform parent,MarketItem item,float width)
         {
-            var card=MBox("GoodsCard",parent,0,0,width,230,CampaignRetroTheme.SurfaceRaised,CampaignRetroTheme.Border,1);
-            Component<RetroBevel>(card).Configure(2,CampaignRetroTheme.LightEdge,CampaignRetroTheme.DarkEdge);
-            var shadow=Component<UI.Shadow>(card);shadow.enabled=!CampaignRetroTheme.Paper;shadow.effectColor=new Color(0,0,0,CampaignRetroTheme.Dark ? .32f : .18f);shadow.effectDistance=new Vector2(2,-2);
-            var header=MBox("CardHeader",card,1,1,width-2,29,CampaignRetroTheme.Window);
-            MText(header,item.category,10,3,width-20,23,17,CampaignRetroTheme.Accent,true);
-            var thumb=MBox("Thumbnail",card,12,42,94,94,CampaignRetroTheme.Thumbnail,CampaignRetroTheme.DarkEdge,1);
-            Component<RetroBevel>(thumb).Configure(2,CampaignRetroTheme.DarkEdge,CampaignRetroTheme.LightEdge);
-            Component<CampaignMarketArtwork>(Rect("Artwork",thumb,2,2,90,90)).SetKind(item.artwork);
-            MText(card,item.title,118,40,width-130,52,21,CampaignRetroTheme.Ink,true);
-            if(!string.IsNullOrEmpty(item.size))MText(card,item.size,118,98,width-130,42,18);
-            if(!string.IsNullOrEmpty(item.parameter))MText(card,item.parameter,12,138,width-24,46,18,CampaignRetroTheme.Muted);
-            var price=MBox("PriceRow",card,1,187,width-2,42,CampaignRetroTheme.SurfaceInset,CampaignRetroTheme.Rule,1);
-            Component<RetroBevel>(price).Configure(1,CampaignRetroTheme.LightEdge,CampaignRetroTheme.DarkEdge);
-            MText(price,item.price,10,5,width-188,32,24,CampaignRetroTheme.Price,true);
-            MButton(price,"查看 / 订购",width-170,5,158,32,()=>OpenMarketItem(item),true,18);
+            var layout=Layout.market;
+            float padding=layout.cardPadding,thumbSize=layout.thumbnailSize,thumbTop=30+padding,textX=padding*2+thumbSize;
+            var card=MarketCardSurface("GoodsCard",parent,width,layout.CardHeight,out var header,out var price);
+            MarketCardHeading(header,item.category);MarketCardArtwork(card,item.artwork,thumbTop);
+            MText(card,item.title,textX,thumbTop-2,width-textX-padding,52,21,CampaignRetroTheme.Ink,true);
+            if(!string.IsNullOrEmpty(item.size))MText(card,item.size,textX,thumbTop+56,width-textX-padding,42,18);
+            if(!string.IsNullOrEmpty(item.parameter))MText(card,item.parameter,padding,Mathf.Max(thumbTop+96,thumbTop+thumbSize+2),width-padding*2,46,18,CampaignRetroTheme.Muted);
+            MText(price,item.price,4,5,price.rect.width-176,32,24,CampaignRetroTheme.Price,true);
+            MarketCardAction(price,"查看 / 订购",()=>OpenMarketItem(item));
         }
         void DrawMarketBbs(RectTransform window)
         {
             float width=window.rect.width-6,height=window.rect.height-103,inside=width-4;
-            var bbs=MBox("TradingBBS",window,3,100,width,height,CampaignRetroTheme.Panel,CampaignRetroTheme.Border,2);var banner=MBox("BBSBanner",bbs,2,2,inside,37,CampaignRetroTheme.Frame);
+            var bbs=MBox("TradingBBS",window,3,100,width,height,CampaignRetroTheme.Panel,CampaignRetroTheme.Border,2);var banner=MBox("BBSBanner",bbs,2,2,inside,46,CampaignRetroTheme.Frame);
             Component<RetroBevel>(banner).Configure(1,CampaignRetroTheme.TitleHighlight,CampaignRetroTheme.TitleShadow,true,CampaignRetroTheme.TitleTop,CampaignRetroTheme.TitleBottom);
-            MText(banner,Session.PlayerSignature,12,7,inside-440,24,13,CampaignRetroTheme.TitleInk,true);
-            MButton(banner,"+ 发表转让帖",inside-188,7,174,25,OpenMarketListing);MButton(banner,State.cabinet==3?$"展柜扩展包 {Session.Catalog.cabinetUpgrade:N0} G":"展柜已满级",inside-408,7,210,25,()=>app.Execute(s=>s.ExpandCabinet()),!Session.CabinetOrdered);
-            var content=MarketScroll(bbs,2,67,inside,height-96,CampaignRetroTheme.Panel);var layout=Component<UI.VerticalLayoutGroup>(content);layout.spacing=0;layout.childControlWidth=true;layout.childControlHeight=true;layout.childForceExpandWidth=true;layout.childForceExpandHeight=false;Component<UI.ContentSizeFitter>(content).verticalFit=UI.ContentSizeFitter.FitMode.PreferredSize;
-            float actionX=content.rect.width-150,priceX=actionX-122,statusX=priceX-100,ownerX=statusX-120,titleWidth=ownerX-94;
-            var header=MBox("BBSColumns",bbs,2,39,inside,28,CampaignRetroTheme.Window,CampaignRetroTheme.Rule,1);string[] titles={"性质","转让收藏 / 买家报价","出虫玩家","状态","估价","操作"};float[] xs={8,82,ownerX,statusX,priceX,actionX};float[] widths={68,titleWidth,112,92,114,142};for(int i=0;i<titles.Length;i++)MText(header,titles[i],xs[i],5,widths[i],19,12);
+            MText(banner,Session.PlayerSignature,12,7,inside-540,32,20,CampaignRetroTheme.TitleInk,true);
+            MButton(banner,"+ 发表转让帖",inside-190,5,178,36,OpenMarketListing,true,18);MButton(banner,State.cabinet==3?$"展柜扩展包 {Session.Catalog.cabinetUpgrade:N0} G":"展柜已满级",inside-508,5,304,36,()=>app.Execute(s=>s.ExpandCabinet()),!Session.CabinetOrdered,18);
+            var content=MarketScroll(bbs,2,82,inside,height-111,CampaignRetroTheme.Panel);var layout=Component<UI.VerticalLayoutGroup>(content);layout.spacing=0;layout.childControlWidth=true;layout.childControlHeight=true;layout.childForceExpandWidth=true;layout.childForceExpandHeight=false;Component<UI.ContentSizeFitter>(content).verticalFit=UI.ContentSizeFitter.FitMode.PreferredSize;
+            float actionX=content.rect.width-188,priceX=actionX-160,statusX=priceX-110,ownerX=statusX-152,titleWidth=ownerX-138;
+            var header=MBox("BBSColumns",bbs,2,48,inside,34,CampaignRetroTheme.Window,CampaignRetroTheme.Rule,1);string[] titles={"性质","转让收藏 / 买家报价","出虫玩家","状态","估价","操作"};float[] xs={8,126,ownerX,statusX,priceX,actionX};float[] widths={108,titleWidth,144,102,152,180};for(int i=0;i<titles.Length;i++)MText(header,titles[i],xs[i],5,widths[i],26,18);
             int row=0;
             foreach(var beetle in State.beetles.Where(b=>b.listed))
             {
-                var b=beetle;var offers=State.offers.Where(o=>o.beetleId==b.id).ToArray();var listing=MarketBbsRow(content,ref row,63);MarketBadge(listing,"[活体转让]",false);
-                MText(listing,$"【挂牌】{CampaignLocalization.Name(b)}  {b.length:0.0}mm {(b.female?"雌虫":"雄虫")}",82,9,titleWidth,22,12,CampaignRetroTheme.Ink,true);MText(listing,$"{string.Join(" / ",b.genes.Select(g=>g.id+new string('★',g.stars)))}   ·   {offers.Length} 条有效报价",82,34,titleWidth,20,11,CampaignRetroTheme.Muted);MText(listing,Session.PlayerSignature,ownerX,20,112,23,12);MText(listing,"本周挂牌",statusX,20,92,23,11);MText(listing,$"{Session.Asking(b):N0} G",priceX,20,114,23,12,CampaignRetroTheme.Price,true);MButton(listing,"查看 / 成交",actionX,19,134,25,()=>OpenMarketOffers(b.id));
+                var b=beetle;var offers=State.offers.Where(o=>o.beetleId==b.id).ToArray();var listing=MarketBbsRow(content,ref row,88);MarketBadge(listing,"[活体转让]",false);
+                MText(listing,$"【挂牌】{CampaignLocalization.Name(b)}  {b.length:0.0}mm {(b.female?"雌虫":"雄虫")}",126,8,titleWidth,30,20,CampaignRetroTheme.Ink,true);MText(listing,$"{string.Join(" / ",b.genes.Select(g=>g.id+new string('★',g.stars)))}   ·   {offers.Length} 条有效报价",126,46,titleWidth,28,18,CampaignRetroTheme.Muted);MText(listing,Session.PlayerSignature,ownerX,29,144,28,18);MText(listing,"本周挂牌",statusX,29,102,28,18);MText(listing,$"{Session.Asking(b):N0} G",priceX,29,152,28,18,CampaignRetroTheme.Price,true);MButton(listing,"查看 / 成交",actionX,25,176,36,()=>OpenMarketOffers(b.id),true,18);
             }
             foreach(var specimen in State.specimens.Where(p=>p.listed))
             {
-                var p=specimen;var offers=State.specimenOffers.Where(o=>o.specimenId==p.id).ToArray();var listing=MarketBbsRow(content,ref row,63);MarketBadge(listing,"[标本转让]",false);
-                MText(listing,$"【装框标本】{CampaignDisplayText.SpecimenName(p)}  "+(p.beetle.stage<CampaignLifeStage.DormantAdult?CampaignSession.StageName(p.beetle.stage):$"{p.beetle.length:0.0} mm"),82,9,titleWidth,22,12,CampaignRetroTheme.Ink,true);MText(listing,$"{CampaignDisplayText.SpecimenSpecies(p)} · {CampaignDisplayText.SpecimenDate(p)} · {offers.Length} 条有效报价",82,34,titleWidth,20,11,CampaignRetroTheme.Muted);MText(listing,Session.PlayerSignature,ownerX,20,112,23,12);MText(listing,"本周挂牌",statusX,20,92,23,11);MText(listing,$"{Session.SpecimenAsking(p):N0} G",priceX,20,114,23,12,CampaignRetroTheme.Price,true);MButton(listing,"查看 / 成交",actionX,19,134,25,()=>OpenMarketSpecimenOffers(p.id));
+                var p=specimen;var offers=State.specimenOffers.Where(o=>o.specimenId==p.id).ToArray();var listing=MarketBbsRow(content,ref row,88);MarketBadge(listing,"[标本转让]",false);
+                MText(listing,$"【装框标本】{CampaignDisplayText.SpecimenName(p)}  "+(p.beetle.stage<CampaignLifeStage.DormantAdult?CampaignSession.StageName(p.beetle.stage):$"{p.beetle.length:0.0} mm"),126,8,titleWidth,30,20,CampaignRetroTheme.Ink,true);MText(listing,$"{CampaignDisplayText.SpecimenSpecies(p)} · {CampaignDisplayText.SpecimenDate(p)} · {offers.Length} 条有效报价",126,46,titleWidth,28,18,CampaignRetroTheme.Muted);MText(listing,Session.PlayerSignature,ownerX,29,144,28,18);MText(listing,"本周挂牌",statusX,29,102,28,18);MText(listing,$"{Session.SpecimenAsking(p):N0} G",priceX,29,152,28,18,CampaignRetroTheme.Price,true);MButton(listing,"查看 / 成交",actionX,25,176,36,()=>OpenMarketSpecimenOffers(p.id),true,18);
             }
-            if(row==0){var empty=MarketBbsRow(content,ref row,65);MText(empty,"暂无挂牌。点击「发表转让帖」开始。",18,20,content.rect.width-36,25,12,CampaignRetroTheme.Muted);}
-            notice=MStatus(bbs,10,height-25,width-20,20);Canvas.ForceUpdateCanvases();
+            if(row==0){var empty=MarketBbsRow(content,ref row,65);MText(empty,"暂无挂牌。点击「发表转让帖」开始。",18,20,content.rect.width-36,30,20,CampaignRetroTheme.Muted);}
+            notice=MStatus(bbs,10,height-25,width-20,20,17);Canvas.ForceUpdateCanvases();
         }
         RectTransform MarketBbsRow(RectTransform parent,ref int index,float height)
         {
@@ -212,7 +208,7 @@ namespace BeetleArena.Campaign
         }
         void MarketBadge(Transform parent,string title,bool auction)
         {
-            var b=MBox("PostBadge",parent,8,20,67,19,CampaignRetroTheme.SurfaceInset,CampaignRetroTheme.Rule,1);MText(b,title,2,1,63,17,10,CampaignRetroTheme.Accent).alignment=TextAlignmentOptions.Center;
+            var b=MBox("PostBadge",parent,8,28,108,30,CampaignRetroTheme.SurfaceInset,CampaignRetroTheme.Rule,1);MText(b,title,4,2,100,26,17,CampaignRetroTheme.Accent).alignment=TextAlignmentOptions.Center;
         }
     }
 }

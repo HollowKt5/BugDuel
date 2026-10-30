@@ -14,6 +14,7 @@ namespace BeetleArena
         {
             public Transform hip, knee, ankle, tip;
             public Quaternion hipRest = Quaternion.identity, kneeRest = Quaternion.identity;
+            public Quaternion ankleRest = Quaternion.identity, ankleInModel = Quaternion.identity;
             public Vector3 bendInBody, footOffsetInModel;
             public float upperLength, lowerLength;
             [NonSerialized] public Vector3 lastBend;
@@ -42,17 +43,26 @@ namespace BeetleArena
 
         public void ResetRig()
         {
-            foreach (var b in bindings)
+            if (bindings != null) foreach (var b in bindings)
             {
+                if (b == null || !b.hip || !b.knee || !b.ankle) continue;
                 b.hip.localRotation = b.hipRest;
                 b.knee.localRotation = b.kneeRest;
-                b.ankle.localRotation = Quaternion.identity;
+                b.ankle.localRotation = b.ankleRest;
                 b.lastBend = Vector3.zero;
                 b.targetError = 0;
             }
-            if(feelers != null) foreach(var f in feelers) f.avoidanceAngle=0;
+            if(feelers != null) foreach(var f in feelers) if(f != null) f.avoidanceAngle=0;
             postureLift=0;
             if(jaws) jaws.ResetPose();
+        }
+
+        public LegBinding BindingFor(BeetleLegRig leg)
+        {
+            if (leg != null && bindings != null)
+                foreach (var binding in bindings)
+                    if (binding != null && binding.hip == leg.hip && leg.hip) return binding;
+            throw new InvalidOperationException("Missing imported leg binding. Bind the leg's hip, knee, ankle and contact tip before animation.");
         }
 
         public float AvoidHeadGround(Transform head, IBeetleGround ground, float pitch, float yaw)
@@ -96,6 +106,7 @@ namespace BeetleArena
             if(ground==null || feelers==null)return;
             float neededLift=0;
             foreach(var f in feelers) {
+                if(f == null || !f.pivot || f.surfacePoints == null) continue;
                 Quaternion rest=f.pivot.rotation;
                 float wanted=0, scale=Mathf.Abs(model.lossyScale.x), bestDepth=float.MaxValue;
                 for(int iteration=0;iteration<=12;iteration++) {
@@ -128,7 +139,7 @@ namespace BeetleArena
         /// <summary>Current hip-to-ankle reach fraction consumed by foot placement; gait initiates recovery steps early rather than dragging feet until IK limits.</summary>
         public float SupportReach(BeetleLegRig leg, Vector3 target, BeetleState state, IBeetleGround ground)
         {
-            var b = bindings[(leg.side < 0 ? 0 : 3) + leg.pair];
+            var b = BindingFor(leg);
             float scale = Mathf.Abs(model.lossyScale.x);
             Vector3 normal = state.SurfaceNormal;
             if (ground != null && ground.Sample(new Vector2(target.x, target.z), out var hit)) normal = hit.normal;
@@ -143,7 +154,7 @@ namespace BeetleArena
         /// </summary>
         public Vector3 PlanSupport(BeetleLegRig leg, Vector3 target, BeetleState state, IBeetleGround ground)
         {
-            var b = bindings[(leg.side < 0 ? 0 : 3) + leg.pair];
+            var b = BindingFor(leg);
             float scale = Mathf.Abs(model.lossyScale.x);
             float reach = (b.upperLength + b.lowerLength) * scale * (1 - reachMargin) * .94f;
             for (int pass = 0; pass < 3; pass++)
@@ -170,8 +181,7 @@ namespace BeetleArena
 
         public void Solve(BeetleLegRig leg, Vector3 target, BeetleState state, IBeetleGround ground)
         {
-            int index = (leg.side < 0 ? 0 : 3) + leg.pair;
-            var b = bindings[index];
+            var b = BindingFor(leg);
             float scale = Mathf.Abs(model.lossyScale.x);
             // Clamps support anchors within active workspace sector for this leg, using measured model foot placements rather than geometric leg widths.
             Quaternion legFrame = Quaternion.Slerp(model.rotation, body.rotation, leg.tumbleFrameWeight);
@@ -218,7 +228,7 @@ namespace BeetleArena
             Vector3 kneeTarget = hip + direction * along + pole * Mathf.Sqrt(Mathf.Max(0, a * a - along * along));
             b.hip.rotation = Quaternion.FromToRotation(b.knee.position - hip, kneeTarget - hip) * b.hip.rotation;
             b.knee.rotation = Quaternion.FromToRotation(b.ankle.position - b.knee.position, ankleTarget - b.knee.position) * b.knee.rotation;
-            b.ankle.rotation = footFrame;
+            b.ankle.rotation = footFrame * b.ankleInModel;
             b.targetError = Vector3.Distance(b.tip.position, target);
         }
     }

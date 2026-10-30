@@ -30,9 +30,10 @@ namespace BeetleArena.Campaign
         {
             var b=State.beetles.FirstOrDefault(value=>value.id==feedingDishBeetle);
             if(b==null||b.id!=State.selectedId||!b.Adult(State.week)){CloseFeedingDish();return;}
-            const float width=440,height=325;
+            var layout=Layout.feeding;
+            float width=layout.size.x,height=layout.size.y;
             var panel=feedingDishWindow=Panel(canvas,0,0,width,height,name:"FeedingDishWindow");
-            panel.SetAsLastSibling();panel.anchorMin=panel.anchorMax=panel.pivot=Vector2.one;panel.anchoredPosition=new Vector2(-24,-48);
+            panel.SetAsLastSibling();PlaceFloatingWindow(panel,layout.inset);
             Component<RetroBevel>(panel).Configure(3,CampaignRetroTheme.LightEdge,CampaignRetroTheme.DarkEdge);
             var shadow=Component<UnityEngine.UI.Shadow>(panel);shadow.enabled=!CampaignRetroTheme.Paper;shadow.effectColor=new Color(0,0,0,.3f);shadow.effectDistance=new Vector2(4,-5);
             MTitle(panel,"喂食盆",width-6);
@@ -45,15 +46,16 @@ namespace BeetleArena.Campaign
             {
                 int index=i,count=Session.InventoryCount(CampaignItems.Food(i));
                 var row=Panel(panel,14,125+i*49,width-28,43,name:"DishFood "+i);
-                Label(row,CampaignItems.Name(CampaignItems.Food(i))+" ×"+count,10,3,225,35,20);
+                Label(row,CampaignItems.Name(CampaignItems.Food(i))+" ×"+count,10,3,width-215,35,20);
                 GreenhouseButton(row,"放入食物",width-145,4,108,35,()=>app.Execute(s=>s.Feed(b.id,index)),available&&!b.overturned&&b.meal==null&&count>0);
             }
-            GreenhouseButton(panel,b.meal!=null?"清空食盆":"清理残渣",14,280,199,32,()=>
+            float buttonWidth=(width-42)/2;
+            GreenhouseButton(panel,b.meal!=null?"清空食盆":"清理残渣",14,height-45,buttonWidth,32,()=>
             {
                 if(b.meal!=null)Confirm("清空会丢弃尚未吃完的食物，不会退回仓库。确定清理？",()=>app.Execute(s=>s.ClearFoodDish(b.id)));
                 else app.Execute(s=>s.ClearFoodDish(b.id));
             },available&&(b.meal!=null||b.foodResidue));
-            GreenhouseButton(panel,"去市场",227,280,199,32,()=>app.Go(CampaignPage.Market));
+            GreenhouseButton(panel,"去市场",28+buttonWidth,height-45,buttonWidth,32,()=>app.Go(CampaignPage.Market));
         }
     }
 }

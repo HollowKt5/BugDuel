@@ -14,9 +14,12 @@ namespace BeetleArena.Campaign
         void OpenSettings()
         {
             BeetleDisplayPreferences.Save();
+            var layout=Layout.settings;
             float extraHeight=settingsTab==3?80:0;
-            var p=OpenModal(1050,760+extraHeight);settingsOpen=true;Label(p,"设置",30,25,850,50,36);
-            string[] tabs={"游戏","音频","视频","画面","控制"};for(int i=0;i<tabs.Length;i++){int tab=i;Btn(p,tabs[i],30+i*200,95,185,48,()=>{settingsTab=tab;OpenSettings();},settingsTab!=i);}
+            var p=OpenModal(layout.size.x,layout.Height+extraHeight);settingsOpen=true;
+            float padding=layout.padding,inside=p.rect.width-padding*2,tabStart=padding-10,tabWidth=(p.rect.width-tabStart*2-65)/5;
+            Label(p,"设置",tabStart,25,p.rect.width-tabStart*2,50,36);
+            string[] tabs={"游戏","音频","视频","画面","控制"};for(int i=0;i<tabs.Length;i++){int tab=i;Btn(p,tabs[i],tabStart+i*(tabWidth+15),95,tabWidth,48,()=>{settingsTab=tab;OpenSettings();},settingsTab!=i);}
             if(settingsTab==0)
             {
                 SettingRow(p,"玩家名字",170,Session==null?"开始游戏后可设置":Session.PlayerSignature,()=>OpenPlayerNaming(null,OpenSettings),Session!=null);
@@ -28,8 +31,9 @@ namespace BeetleArena.Campaign
                 });
                 SettingRow(p,"定时自动保存（交易即时保存）",290,app.Preferences.autoSaveSeconds+" 秒",()=>{int[] values={30,60,180,300};app.Preferences.autoSaveSeconds=values[(Array.IndexOf(values,app.Preferences.autoSaveSeconds)+1)%4];OpenSettings();});
                 SettingRow(p,"默认战斗速度",350,app.Preferences.battleSpeed+"×",()=>{app.Preferences.battleSpeed=app.Preferences.battleSpeed==1?2:app.Preferences.battleSpeed==2?4:1;OpenSettings();});
-                Label(p,"当前季节（随游戏日历）",40,420,500,55,24);
-                Label(p,CampaignRetroTheme.SeasonName,560,420,450,55,24);
+                float labelWidth=inside*layout.labelFraction,buttonX=padding+labelWidth+layout.columnGap;
+                Label(p,"当前季节（随游戏日历）",padding,layout.RowY(410)+10,labelWidth,55,24);
+                Label(p,CampaignRetroTheme.SeasonName,buttonX,layout.RowY(410)+10,p.rect.width-padding-buttonX,55,24);
                 SettingRow(p,"明暗模式",470,CampaignRetroTheme.Dark?"经典暗色":"明亮浅色",()=>{CampaignRetroTheme.SetMode(!CampaignRetroTheme.Dark);QueueRefresh();OpenSettings();});
                 SettingRow(p,"时间速度",530,Session==null?"开始游戏后可设置":"调整自然时间倍率",()=>OpenTimeSettings(OpenSettings),Session!=null);
                 SettingRow(p,"界面风格",590,CampaignRetroTheme.StyleName,()=>
@@ -63,58 +67,72 @@ namespace BeetleArena.Campaign
             else if(settingsTab==3) DrawDisplaySettings(p);
             else
             {
-                Label(p,"点击按键重新绑定",35,185,970,45,21,muted);
+                Label(p,"点击按键重新绑定",padding-5,185,inside,45,21,muted);
+                float bindingStart=padding+inside*290/970,bindWidth=(p.rect.width-padding-bindingStart-15)/2;
                 string[] actions={"Back","Help"};string[] names={"返回 / 关闭","帮助翻身"};
                 for(int i=0;i<actions.Length;i++)
                 {
-                    var action=app.Controls[actions[i]];Label(p,names[i],40,270+i*85,280,55,24);
-                    for(int j=0;j<2;j++){int binding=j;Btn(p,FormatBinding(action,j),330+j*335,260+i*85,320,55,()=>Rebind(action,binding));}
+                    var action=app.Controls[actions[i]];Label(p,names[i],padding,270+i*85,bindingStart-padding-10,55,24);
+                    for(int j=0;j<2;j++){int binding=j;Btn(p,FormatBinding(action,j),bindingStart+j*(bindWidth+15),260+i*85,bindWidth,55,()=>Rebind(action,binding));}
                 }
-                Btn(p,"恢复默认按键",40,525,280,50,()=>{app.Controls.RemoveAllBindingOverrides();OpenSettings();});
+                Btn(p,"恢复默认按键",padding,525,280,50,()=>{app.Controls.RemoveAllBindingOverrides();OpenSettings();});
             }
             bool canReturn=page!=CampaignPage.MainMenu&&page!=CampaignPage.Saves;
-            Btn(p,"完成",40,680+extraHeight,canReturn?630:970,54,()=>{BeetleDisplayPreferences.Save();CloseModal();QueueRefresh();});
-            if(canReturn)Btn(p,"返回主菜单",690,680+extraHeight,320,54,()=>{CloseModal();app.Go(CampaignPage.MainMenu);});SelectFirst(p);
+            Btn(p,"完成",padding,p.rect.height-80,canReturn?inside-340:inside,54,()=>{BeetleDisplayPreferences.Save();CloseModal();QueueRefresh();});
+            if(canReturn)Btn(p,"返回主菜单",p.rect.width-padding-320,p.rect.height-80,320,54,()=>{CloseModal();app.Go(CampaignPage.MainMenu);});SelectFirst(p);
         }
-        void SettingRow(RectTransform p,string title,float y,string value,Action click,bool enabled=true){Label(p,title,40,y+10,500,55,24);Btn(p,value,560,y,450,58,click,enabled);}
+        void SettingRow(RectTransform p,string title,float y,string value,Action click,bool enabled=true)
+        {
+            var layout=Layout.settings;
+            float labelWidth=(p.rect.width-layout.padding*2)*layout.labelFraction,buttonX=layout.padding+labelWidth+layout.columnGap;
+            y=layout.RowY(y);
+            Label(p,title,layout.padding,y+10,labelWidth,55,24);
+            Btn(p,value,buttonX,y,p.rect.width-layout.padding-buttonX,58,click,enabled);
+        }
         void Slider(RectTransform p,string title,float y,float value,Action<float> changed)
         {
-            Label(p,title,40,y+10,290,55,24);
-            var percentage=Label(p,Mathf.RoundToInt(value*100)+"%",920,y+8,90,50,23,accent);percentage.alignment=TMPro.TextAlignmentOptions.Right;
-            var rt=Rect("Slider "+title,p,340,y,560,56);
+            float padding=Layout.settings.padding,inside=p.rect.width-padding*2,labelWidth=inside*290/970,sliderX=padding+labelWidth+10;
+            Label(p,title,padding,y+10,labelWidth,55,24);
+            var percentage=Label(p,Mathf.RoundToInt(value*100)+"%",p.rect.width-padding-90,y+8,90,50,23,accent);percentage.alignment=TMPro.TextAlignmentOptions.Right;
+            var rt=Rect("Slider "+title,p,sliderX,y,p.rect.width-padding-110-sliderX,56);
             RetroSettingsSlider.Create(rt,value,CampaignRetroTheme.DarkEdge,accent,CampaignRetroTheme.LightEdge,v=>
             { percentage.text=Mathf.RoundToInt(v*100)+"%";changed(v); });
         }
 
         void DrawDisplaySettings(RectTransform p)
         {
-            Label(p,"游戏滤镜",40,184,280,48,24);
-            var filterButton=Btn(p,BeetleDisplayPreferences.StyleName(BeetleDisplayPreferences.Style),350,174,660,60,()=>{});
+            float padding=Layout.settings.padding,inside=p.rect.width-padding*2;
+            float leftWidth=(inside-40)*470/930,rightX=padding+leftWidth+40,rightWidth=p.rect.width-padding-rightX;
+            float filterX=padding+inside*310/970;
+            Label(p,"游戏滤镜",padding,184,filterX-padding-30,48,24);
+            var filterButton=Btn(p,BeetleDisplayPreferences.StyleName(BeetleDisplayPreferences.Style),filterX,174,p.rect.width-padding-filterX,60,()=>{});
             filterButton.name="GameFilter";
-            Label(p,"仅当前场景",40,249,960,42,20,muted);
-            var preview=Panel(p,40,306,470,270,true);
+            Label(p,"仅当前场景",padding,249,inside-10,42,20,muted);
+            var preview=Panel(p,padding,306,leftWidth,270,true);
             if(backdrop && backdrop.Frame)
             {
-                var display=Rect("Style Preview",preview,4,4,462,262).gameObject.AddComponent<UnityEngine.UI.RawImage>();
-                display.texture=backdrop.Frame;display.raycastTarget=false;BeetleCombatCrt.Attach(display);
+                var display=Rect("Style Preview",preview,4,4,leftWidth-8,262).gameObject.AddComponent<UnityEngine.UI.RawImage>();
+                backdrop.previewOutput=display;
+                display.texture=backdrop.WorldFrame;display.raycastTarget=false;BeetleCombatCrt.Attach(display);
             }
-            Label(p,"像素档位",550,301,460,34,22);
+            Label(p,"像素档位",rightX,301,rightWidth,34,22);
             UI.Button pixelButton=null,spotlightButton=null;TMPro.TMP_Text description=null,glassDescription=null;RetroFilterDropdown dropdown=null,glassDropdown=null;
-            pixelButton=Btn(p,BeetleDisplayPreferences.PixelSizeLabel,550,341,460,52,()=>
+            pixelButton=Btn(p,BeetleDisplayPreferences.PixelSizeLabel,rightX,341,rightWidth,52,()=>
             { BeetleDisplayPreferences.NextPixelSize();RefreshControls(); },BeetleDisplayPreferences.IsDither(BeetleDisplayPreferences.Style));
             pixelButton.name="FilterPixelSize";
-            description=Label(p,RetroFilterDropdown.Description(BeetleDisplayPreferences.Style),550,409,460,66,20,muted);
+            description=Label(p,RetroFilterDropdown.Description(BeetleDisplayPreferences.Style),rightX,409,rightWidth,66,20,muted);
             dropdown=RetroFilterDropdown.Attach(filterButton,_=>RefreshControls(),(RectTransform)p.parent);
-            Label(p,"玻璃效果",550,485,460,30,22);
-            var glassButton=Btn(p,BeetleGlassPreferences.QualityName(BeetleGlassPreferences.Quality),550,525,460,48,()=>{});
+            Label(p,"玻璃效果",rightX,485,rightWidth,30,22);
+            var glassButton=Btn(p,BeetleGlassPreferences.QualityName(BeetleGlassPreferences.Quality),rightX,525,rightWidth,48,()=>{});
             glassButton.name="GlassQuality";
-            glassDescription=Label(p,BeetleGlassPreferences.Description(BeetleGlassPreferences.Quality),550,579,460,42,17,muted);
+            glassDescription=Label(p,BeetleGlassPreferences.Description(BeetleGlassPreferences.Quality),rightX,579,rightWidth,42,17,muted);
             glassDescription.name="GlassQualityDescription";
             glassDropdown=RetroFilterDropdown.AttachGlass(glassButton,_=>RefreshControls(),(RectTransform)p.parent);
-            Btn(p,"使用编辑器配置",40,579,470,40,()=>
+            Btn(p,"使用编辑器配置",padding,579,leftWidth,40,()=>
             { BeetleDisplayPreferences.UseSceneDefault(gameObject.scene.name);RefreshControls(); });
-            Label(p,"养殖聚光灯",40,652,500,55,24);
-            spotlightButton=Btn(p,BeetleHusbandryLightingPreferences.Enabled?"开启":"关闭",560,642,450,58,()=>
+            float labelWidth=inside*Layout.settings.labelFraction,buttonX=padding+labelWidth+Layout.settings.columnGap;
+            Label(p,"养殖聚光灯",padding,652,labelWidth,55,24);
+            spotlightButton=Btn(p,BeetleHusbandryLightingPreferences.Enabled?"开启":"关闭",buttonX,642,p.rect.width-padding-buttonX,58,()=>
             { BeetleHusbandryLightingPreferences.SetEnabled(!BeetleHusbandryLightingPreferences.Enabled);RefreshControls(); });
             spotlightButton.name="HusbandrySpotlight";
             void RefreshControls()

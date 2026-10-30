@@ -139,14 +139,14 @@ namespace BeetleArena.Campaign
                 }
                 if(page==CampaignPage.Market)
                 {
-                    currencyHost.anchoredPosition=new Vector2(12,-34);currencyHost.sizeDelta=new Vector2(260,28);
+                    currencyHost.anchoredPosition=new Vector2(MarketWindowRect.x+12,-MarketWindowRect.y-34);currencyHost.sizeDelta=new Vector2(260,28);
                 }
                 CampaignCurrencyHud.Attach(currencyHost,font,ink,CampaignRetroTheme.Positive,CampaignRetroTheme.Price,true);currencyHost.SetAsLastSibling();
                 if(page==CampaignPage.Greenhouse)
                 {
                     currencyHost.SetParent(greenhouseFooter,false);
                     currencyHost.anchorMin=Vector2.zero;currencyHost.anchorMax=new Vector2(1,0);currencyHost.pivot=new Vector2(0,1);
-                    currencyHost.anchoredPosition=new Vector2(56,38);currencyHost.sizeDelta=new Vector2(-100,30);
+                    currencyHost.anchoredPosition=new Vector2(Layout.greenhouse.padding+49,(Layout.greenhouse.footerHeight+30)*.5f);currencyHost.sizeDelta=new Vector2(-93-Layout.greenhouse.padding,30);
                     Component<RetroBevel>(currencyHost).Configure(2,CampaignRetroTheme.DarkEdge,CampaignRetroTheme.LightEdge);
                     currencyHost.GetComponent<CampaignCurrencyHud>().FloatAbove=true;
                     greenhouseMail.transform.SetAsLastSibling();
@@ -184,11 +184,11 @@ namespace BeetleArena.Campaign
         void ApplySidebar()
         {
             if(!root||!backdrop)return;
-            root.anchorMax=new Vector2((1+warehouseProgress)/6f,1);
+            root.anchorMax=new Vector2(ExpandedSidebarFraction,1);
             root.anchoredPosition=new Vector2(-root.rect.width*sidebarProgress,0);
-            float left=Mathf.Clamp01(1-sidebarProgress)*(1+warehouseProgress)/6f;
+            float left=Mathf.Clamp01(1-sidebarProgress)*ExpandedSidebarFraction;
             backdrop.SetViewport(new Rect(left,0,1-left,1));
-            if(sidebarHandle)sidebarHandle.anchoredPosition=new Vector2(Mathf.Max(7,root.rect.width*(1-sidebarProgress)-37),8);
+            if(sidebarHandle)sidebarHandle.anchoredPosition=new Vector2(Mathf.Max(Layout.greenhouse.padding,root.rect.width*(1-sidebarProgress)-37),(Layout.greenhouse.footerHeight-30)*.5f);
             if(pageInteraction){pageInteraction.blocksRaycasts=!sidebarCollapsed&&!modal;pageInteraction.interactable=!sidebarCollapsed&&!app.Busy&&!modal;}
         }
         void DisposeConstructionUi()

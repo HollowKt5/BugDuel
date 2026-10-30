@@ -50,16 +50,18 @@ namespace BeetleArena.Campaign
                 ControlHint.Warehouse=>"先选择左侧分类，再点击物品查看和使用。",
                 _=>"移动鼠标选择位置，左键放置；Q / E 旋转，Esc 取消。"
             };
-            const float width=480,padding=16,bodyTop=48,buttonHeight=32,bottomPadding=14;
-            var panel=controlHintPanel=Panel(canvas,0,0,width,164,name:"ControlHint");
-            panel.anchorMin=panel.anchorMax=panel.pivot=new Vector2(1,0);panel.anchoredPosition=new Vector2(-24,22);panel.SetAsLastSibling();
+            var layout=Layout.hint;
+            float width=layout.size.x,padding=layout.padding;
+            const float bodyTop=48,buttonHeight=32,bottomPadding=14;
+            var panel=controlHintPanel=Panel(canvas,0,0,width,layout.size.y,name:"ControlHint");
+            panel.anchorMin=panel.anchorMax=panel.pivot=new Vector2(1,0);panel.anchoredPosition=new Vector2(-layout.inset.x,layout.inset.y);panel.SetAsLastSibling();
             var title=Label(panel,"操作提示",padding,12,width-padding*2,28,18,accent);
             title.alignment=TMPro.TextAlignmentOptions.TopLeft;
             var body=Label(panel,text,padding,bodyTop,width-padding*2,48,19);
             body.alignment=TMPro.TextAlignmentOptions.TopLeft;body.enableAutoSizing=false;
             float bodyHeight=Mathf.Max(48,Mathf.Ceil(body.GetPreferredValues(body.text,width-padding*2,float.PositiveInfinity).y)+4);
             body.rectTransform.sizeDelta=new Vector2(width-padding*2,bodyHeight);
-            panel.sizeDelta=new Vector2(width,Mathf.Max(164,bodyTop+bodyHeight+14+buttonHeight+bottomPadding));
+            panel.sizeDelta=new Vector2(width,Mathf.Max(layout.size.y,bodyTop+bodyHeight+14+buttonHeight+bottomPadding));
             var hint=shownControlHint;
             var button=GreenhouseButton(panel,"知道了",0,0,100,buttonHeight,()=>RememberControlHint(hint));
             var buttonRect=(RectTransform)button.transform;

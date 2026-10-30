@@ -9,13 +9,17 @@ namespace BeetleArena.Campaign
         public Camera sceneCamera;
         public Shader blurShader;
         public UnityEngine.UI.RawImage output;
+        public UnityEngine.UI.RawImage previewOutput;
         public RenderTexture Frame { get; private set; }
+        public RenderTexture WorldFrame=>toonFrame?toonFrame:Frame;
         public bool UiFocused { get; private set; }
         public bool Ready { get; private set; }
         public bool DeferViewportResize { get; set; }
         public Rect Viewport { get; private set; } = new Rect(0,0,1,1);
         RenderTexture blur,scratch,prefilter;
         Material blurMaterial;
+        readonly WorldToonLayer toon=new WorldToonLayer();
+        RenderTexture toonFrame;
         bool blurReady;
         int width,height;
         Camera uiCamera;
@@ -108,7 +112,8 @@ namespace BeetleArena.Campaign
                 if(topRight.x>bottomLeft.x&&topRight.y>bottomLeft.y)
                 { pixelsWide=topRight.x-bottomLeft.x;pixelsHigh=topRight.y-bottomLeft.y; }
             }
-            float scale=Mathf.Min(1,1280/Mathf.Max(1,pixelsWide),1280/Mathf.Max(1,pixelsHigh));
+            float limit=gameObject.scene.name=="CampaignGreenhouse"?1920:1280;
+            float scale=Mathf.Min(1,limit/Mathf.Max(1,pixelsWide),limit/Mathf.Max(1,pixelsHigh));
             w=Mathf.Max(1,Mathf.RoundToInt(pixelsWide*scale));h=Mathf.Max(1,Mathf.RoundToInt(pixelsHigh*scale));
         }
         void Resize()
@@ -126,7 +131,8 @@ namespace BeetleArena.Campaign
         void Rendered(ScriptableRenderContext context,Camera camera)
         {
             if(camera!=sceneCamera || !Frame)return;
-            if(!UiFocused || !blurShader || !blurShader.isSupported) { Ready=true;return; }
+            toonFrame=toon.Render(Frame);
+            if(!UiFocused || !blurShader || !blurShader.isSupported) { BindOutput();Ready=true;return; }
             if(!blurMaterial)blurMaterial=new Material(blurShader) { name="Campaign background focus",hideFlags=HideFlags.HideAndDontSave };
             if(!blur)
             {
@@ -138,27 +144,30 @@ namespace BeetleArena.Campaign
                 scratch=new RenderTexture(w,h,0,RenderTextureFormat.ARGB32) { name="Campaign focus scratch",filterMode=FilterMode.Bilinear,wrapMode=TextureWrapMode.Clamp };
             }
             var active=RenderTexture.active;
+            bool write=GL.sRGBWrite;
             try
             {
-                Graphics.Blit(Frame,prefilter,blurMaterial,1);
+                GL.sRGBWrite=QualitySettings.activeColorSpace==ColorSpace.Linear&&prefilter.sRGB;
+                Graphics.Blit(WorldFrame,prefilter,blurMaterial,1);
                 Graphics.Blit(prefilter,blur,blurMaterial,1);
                 blurMaterial.SetVector("_Direction",new Vector4(1,0,0,0));Graphics.Blit(blur,scratch,blurMaterial,0);
                 blurMaterial.SetVector("_Direction",new Vector4(0,1,0,0));Graphics.Blit(scratch,blur,blurMaterial,0);
                 blurReady=true;BindOutput();Ready=true;
             }
-            finally { RenderTexture.active=active; }
+            finally { RenderTexture.active=active;GL.sRGBWrite=write; }
         }
         void BindOutput()
         {
+            if(previewOutput)previewOutput.texture=WorldFrame;
             if(!output)return;
             ApplyViewport();
-            output.texture=UiFocused&&blurReady?blur:Frame;
+            output.texture=UiFocused&&blurReady?blur:WorldFrame;
             output.color=UiFocused?new Color(.86f,.86f,.86f,1):Color.white;
         }
         void ReleaseBlur()
         {
             blurReady=false;
-            if(output)output.texture=Frame;
+            if(output)output.texture=WorldFrame;
             if(blur) { blur.Release();Destroy(blur);blur=null; }
             if(scratch) { scratch.Release();Destroy(scratch);scratch=null; }
             if(prefilter) { prefilter.Release();Destroy(prefilter);prefilter=null; }
@@ -169,11 +178,17 @@ namespace BeetleArena.Campaign
             Ready=false;
             ReleaseBlur();
             if(output)output.texture=null;
+            if(previewOutput)previewOutput.texture=null;
+            toon.Dispose();toonFrame=null;
             if(sceneCamera && sceneCamera.targetTexture==Frame)sceneCamera.targetTexture=null;
             if(Frame) { Frame.Release(); Destroy(Frame); }
             Frame=null;
         }
-        void OnDisable() { RenderPipelineManager.endCameraRendering-=Rendered;Ready=false;ReleaseBlur(); }
+        void OnDisable()
+        {
+            RenderPipelineManager.endCameraRendering-=Rendered;Ready=false;ReleaseBlur();
+            toon.Dispose();toonFrame=null;BindOutput();
+        }
         void OnDestroy() { Release(); }
     }
 

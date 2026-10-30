@@ -33,7 +33,6 @@ namespace BeetleArena.Campaign
         Vector3 gripOffset,pressedGripLocal;
         float gripHeight;
         float pressedAt,heldTime,nextStruggle,struggleStart=-10,struggleDuration,struggleStrength,struggleRhythm,lift,fallSpeed;
-        float lastPointerMotion=float.NegativeInfinity;
         bool pending,canLift,landing,pointerMoved;
         CarePointerAction pressedTarget;
         string pressedBeetle;
@@ -81,7 +80,7 @@ namespace BeetleArena.Campaign
                 {Cancel();return CarePointerAction.None;}
                 // Screen movement is independent of the lift animation, camera and corrected world position.
                 pointerMoved=mouse.leftButton.isPressed&&(screen-lastHeldPointer).sqrMagnitude>=1;
-                if(pointerMoved){lastHeldPointer=screen;lastPointerMotion=heldTime;}
+                if(pointerMoved)lastHeldPointer=screen;
                 if(!overUi&&construction.TryPointerRay(screen,out var ray)&&new Plane(Vector3.up,Vector3.up*(gripHeight+lift)).Raycast(ray,out var distance))
                     MoveHeldTo(ray.GetPoint(distance)+gripOffset);
                 if(!mouse.leftButton.isPressed)Release();
@@ -180,7 +179,7 @@ namespace BeetleArena.Campaign
             PickupCount++;random=CareLocomotion.Seed(beetle.id)^0x57231u^unchecked((uint)PickupCount*0x9e3779b9u);
             if(random==0)random=0x57231u;
             lastHeldPointer=Mouse.current?.position.ReadValue()??pressPoint;
-            pointerMoved=false;lastPointerMotion=float.NegativeInfinity;nextStruggle=0;struggleDuration=1;
+            pointerMoved=false;nextStruggle=0;struggleDuration=1;
             ResetPress();SetCursor(2);return true;
         }
         public void MoveHeldTo(Vector3 world)
@@ -206,7 +205,7 @@ namespace BeetleArena.Campaign
             if(!IsHolding)return;
             ResetPress();SetCursor(0);
             IsHolding=false;landing=true;StruggleWeight=0;fallSpeed=0;
-            pointerMoved=false;lastPointerMotion=float.NegativeInfinity;
+            pointerMoved=false;
             heldPoint=specimen.Enclosure.Area.KeepInside(heldPoint);resident.Motor.PlaceAt(heldPoint);
             resident.Brain.InvalidateArrival();
         }
@@ -223,11 +222,8 @@ namespace BeetleArena.Campaign
                     nextStruggle=heldTime+struggleDuration+.45f+Roll()*1.15f;
                 }
                 pointerMoved=false;
-                if(heldTime-lastPointerMotion>.12f)
-                {
-                    StruggleWeight=Mathf.MoveTowards(StruggleWeight,0,dt*5);
-                    struggleStart=-10;nextStruggle=heldTime;return;
-                }
+                // Pointer movement starts a bout; stopping the pointer lets that bout finish.
+                // Only a new movement after the cooldown may start the next one.
                 float t=(heldTime-struggleStart)/struggleDuration;
                 float attack=Mathf.SmoothStep(0,1,Mathf.Clamp01(t/.12f));
                 float release=1-Mathf.SmoothStep(0,1,Mathf.Clamp01((t-.6f)/.4f));
@@ -288,7 +284,7 @@ namespace BeetleArena.Campaign
             if(specimen&&specimen.Care)specimen.Care.Release(CurrentBeetleId);
             if(app)app.HandlingBeetle=false;
             IsHolding=landing=false;lift=StruggleWeight=0;CurrentBeetleId=null;resident=null;heldArea=null;
-            pointerMoved=false;lastPointerMotion=float.NegativeInfinity;
+            pointerMoved=false;
             if(specimen)specimen.RestoreAfterGrab();SetCursor(0);
         }
         float Roll(){uint x=random;x^=x<<13;x^=x>>17;x^=x<<5;random=x;return x/(float)uint.MaxValue;}

@@ -2,7 +2,7 @@ using UnityEngine;
 
 namespace BeetleArena
 {
-    // One world surface owns one selected treatment. HUD text and hit areas stay untouched.
+    // The selected display filter receives the shared toon layer. HUD text and hit areas stay untouched.
     // Keep the component name so existing scenes and external tooling retain their bindings.
     [DisallowMultipleComponent]
     public sealed class BeetleCombatCrt : MonoBehaviour

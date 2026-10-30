@@ -63,6 +63,13 @@ public static class BeetleArenaEditorCommands
     {
         switch (request.action)
         {
+            case "husbandry-desk-wall-fit": HusbandryRoomSetup.ApplyDesktopWallFit();return "Desk, enclosure and window aligned against the left wall in both rooms.";
+            case "husbandry-window-tree": HusbandryWindowTreeSetup.Apply();return "Seasonal outdoor tree installed in both husbandry rooms.";
+            case "husbandry-desktop-continuous": return "Removed desktop seam strips: "+HusbandryRoomSetup.ApplyContinuousDesktop();
+            case "model-adapter-check": BeetleModelAdapterValidation.Run();return File.ReadAllText(BeetleModelAdapterValidation.Report);
+            case "husbandry-room-setup": HusbandryRoomSetup.Apply();return "Indoor husbandry room installed.";
+            case "husbandry-polish-check": HusbandryPolishValidation.RunLogic();return File.ReadAllText(HusbandryPolishValidation.Output+"/Logic.txt");
+            case "husbandry-polish-play": HusbandryPolishValidation.RunPlay();return "Isolated husbandry room preview started.";
             case "interface-setup": CampaignInterfaceSetup.Apply();return "Interface assets prepared.";
             case "interface-data": CampaignInterfaceValidation.Run();return File.ReadAllText("Artifacts/InterfaceRework/Data.txt");
             case "interface-play": CampaignInterfacePlayValidation.Run();return "Interface play acceptance started.";

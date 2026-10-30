@@ -61,13 +61,14 @@ namespace BeetleArena.Campaign
                 }
                 if(page==CampaignPage.Greenhouse)
                 {
-                    backdrop.SetViewport(new Rect(1f/6f,0,5f/6f,1));
+                    backdrop.SetViewport(new Rect(SidebarFraction,0,1-SidebarFraction,1));
                     observation=CampaignObservationCamera.Ensure(backdrop);
                     SetupConstruction();
                 }
                 if(page==CampaignPage.SpecimenRoom)
                 {
-                    backdrop.SetViewport(new Rect(.28f,0,.72f,1));
+                    float sidebar=Layout.common.specimenSidebar;
+                    backdrop.SetViewport(new Rect(sidebar,0,1-sidebar,1));
                     specimenRoom=GetComponent<CampaignSpecimenRoom>();
                     specimenRoom.Bind(backdrop);
                     specimenRoom.SlotClicked=SelectWallSlot;
@@ -80,6 +81,7 @@ namespace BeetleArena.Campaign
             CampaignLocalization.Changed+=QueueRefresh;
             CampaignRetroTheme.Changed+=QueueRefresh;
             if(leagueBridge) leagueBridge.StateChanged+=QueueRefresh;
+            observedLayout=Layout;layoutRevision=Layout.revision;
             Rebuild();
         }
         void QueueRefresh() { refreshQueued=true; }
@@ -97,6 +99,7 @@ namespace BeetleArena.Campaign
         void Update()
         {
             if(!app || !canvas) return;
+            UpdateLayoutConfiguration();
             HandlePlayerIdentityPrompt();
             if(page==CampaignPage.Greenhouse){ApplyConstructionRequest();ReadGreenhousePointer();UpdateControlHints();}
             if(dialogNotice)CampaignLocalization.Bind(dialogNotice,app.Message);
@@ -128,8 +131,12 @@ namespace BeetleArena.Campaign
                 pageInteraction=root.gameObject.AddComponent<CanvasGroup>();
             }
             if(page==CampaignPage.Greenhouse || page==CampaignPage.SpecimenRoom)
-            { root.anchorMin=Vector2.zero;root.anchorMax=new Vector2(page==CampaignPage.Greenhouse?(1+warehouseProgress)/6f:.28f,1);root.pivot=new Vector2(0,1);root.offsetMin=root.offsetMax=Vector2.zero;Canvas.ForceUpdateCanvases(); }
+            { root.anchorMin=Vector2.zero;root.anchorMax=new Vector2(page==CampaignPage.Greenhouse?ExpandedSidebarFraction:Layout.common.specimenSidebar,1);root.pivot=new Vector2(0,1);root.offsetMin=root.offsetMax=Vector2.zero;Canvas.ForceUpdateCanvases(); }
             if(page==CampaignPage.Market){Stretch(root);Canvas.ForceUpdateCanvases();}
+            else if(page!=CampaignPage.Greenhouse && page!=CampaignPage.SpecimenRoom)
+            {CenterFrame(root);root.anchoredPosition=new Vector2(Layout.common.pageOffset.x,-Layout.common.pageOffset.y);}
+            if(page==CampaignPage.SpecimenRoom && backdrop)
+            {float sidebar=Layout.common.specimenSidebar;backdrop.SetViewport(new Rect(sidebar,0,1-sidebar,1));}
             foreach(var t in thumbnails) if(t) Destroy(t); thumbnails.Clear(); careLabel=null;
             tree.Begin();
             if(page==CampaignPage.Arena) { DrawArena(); EndRefresh(selected); return; }
@@ -191,6 +198,7 @@ namespace BeetleArena.Campaign
             CampaignRetroTheme.Changed-=QueueRefresh;
             if(app)app.Changed-=QueueRefresh;if(leagueBridge)leagueBridge.StateChanged-=QueueRefresh;CloseModal();
             if(rounded)Destroy(rounded);if(roundTexture)Destroy(roundTexture);foreach(var t in thumbnails)if(t)Destroy(t);
+            if(ownedLayout)Destroy(ownedLayout);
         }
     }
 }

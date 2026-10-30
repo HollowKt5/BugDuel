@@ -1,0 +1,16 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net9.0-windows</TargetFramework>
+    <UseWPF>true</UseWPF>
+    <Nullable>disable</Nullable>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <AssemblyName>BeetleDesktop</AssemblyName>
+    <RootNamespace>BeetleDesktop.Native</RootNamespace>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Remove="Tests/**/*.cs" />
+    <Content Include="Assets/**/*" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+</Project>

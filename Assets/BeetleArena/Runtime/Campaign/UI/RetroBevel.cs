@@ -10,10 +10,10 @@ namespace BeetleArena.Campaign
     {
         float thickness=1;
         Color light=Color.white,dark=Color.gray,top,bottom;
-        bool gradient,pressed;
-        public void Configure(float width,Color highlight,Color shadow,bool useGradient=false,Color gradientTop=default,Color gradientBottom=default)
+        bool gradient,pressed,foldCorner=true;
+        public void Configure(float width,Color highlight,Color shadow,bool useGradient=false,Color gradientTop=default,Color gradientBottom=default,bool paperFold=true)
         {
-            thickness=width;light=highlight;dark=shadow;gradient=useGradient;top=gradientTop;bottom=gradientBottom;
+            thickness=width;light=highlight;dark=shadow;gradient=useGradient;top=gradientTop;bottom=gradientBottom;foldCorner=paperFold;
             if(graphic)graphic.SetVerticesDirty();
         }
         public void OnPointerDown(PointerEventData e) { if(e.button==PointerEventData.InputButton.Left){pressed=true;graphic.SetVerticesDirty();} }
@@ -72,7 +72,7 @@ namespace BeetleArena.Campaign
             Polygon(mesh,face,Mathf.Max(0,corner-line),surface);
 
             // Small folded corner stays inside the card's padding; text and illustrations keep their space.
-            if(!button&&!gradient&&rect.width>180&&rect.height>110)
+            if(foldCorner&&!button&&!gradient&&rect.width>180&&rect.height>110)
             {
                 float fold=Mathf.Min(14,rect.height*.08f);
                 var a=new Vector2(face.xMax-fold,face.yMin);

@@ -7,6 +7,9 @@ namespace BeetleArena
     /// <summary>Care-only motor: enclosure routes, bounded translation and turn-before-eating.</summary>
     public sealed class CareLocomotion
     {
+        // Care presentation keeps species speed differences, including catalogs already stored in saves.
+        // Combat has its own motor and never uses these pacing limits.
+        const float TravelPace=.75f,AnticipationSeconds=.46f;
         public Vector2 FoodPoint => area.FoodPoint;
         public Vector2 FeedingPoint => area.FeedingPoint;
         public Vector2 ShelterPoint => area.ShelterPoint;
@@ -14,7 +17,9 @@ namespace BeetleArena
         public Vector2 Position { get; private set; }
         public float Heading { get; private set; } = 145;
         public float Speed { get; private set; }
-        public bool AtGoal => version >= 0 && Vector2.Distance(Position, target) < .025f &&
+        public float LookYaw { get; private set; }
+        public bool Anticipating { get; private set; }
+        public bool AtGoal => version >= 0 && Speed<=.025f && Vector2.Distance(Position, target) < .025f &&
             (goal != CareGoal.Food || Mathf.Abs(Mathf.DeltaAngle(Heading, Angle(FoodPoint - Position))) < 8);
         Vector2 target, wanderTarget;
         CareWalkArea area;
@@ -24,7 +29,7 @@ namespace BeetleArena
         CareGoal goal;
         int version = -1;
         uint random;
-        float turnSpeed;
+        float turnSpeed, approachTime;
         public CareLocomotion(uint seed, CareWalkArea enclosure = null)
         {
             random = seed == 0 ? 1 : seed;
@@ -35,12 +40,12 @@ namespace BeetleArena
         {
             if (enclosure == null || ReferenceEquals(area, enclosure)) return;
             area = enclosure; Position = area.KeepInside(Position); target = Position;
-            version = -1; Speed = turnSpeed = 0; hasWanderTarget = false; path.Clear();
+            version = -1; Speed = turnSpeed = LookYaw = approachTime = 0; Anticipating=false; hasWanderTarget = false; path.Clear();
         }
         public void PlaceAt(Vector2 position)
         {
             Position=target=area.KeepInside(position);
-            Speed=turnSpeed=0;version=-1;hasWanderTarget=false;path.Clear();waypoint=0;
+            Speed=turnSpeed=LookYaw=approachTime=0;Anticipating=false;version=-1;hasWanderTarget=false;path.Clear();waypoint=0;
         }
         public void Tick(CareStateMachine brain, float dt)
         {
@@ -48,6 +53,7 @@ namespace BeetleArena
             if (version != brain.GoalVersion)
             {
                 version = brain.GoalVersion; goal = brain.Goal;
+                approachTime=Speed<.01f?0:AnticipationSeconds;
                 // Short behavior pauses must not keep reselecting distant goals and trapping the animal in the center.
                 if (goal == CareGoal.Wander && (!hasWanderTarget || Vector2.Distance(Position, wanderTarget) < .04f))
                 { wanderTarget = area.WanderPoint(Roll()); hasWanderTarget = true; }
@@ -65,13 +71,18 @@ namespace BeetleArena
             if (!moving && goal == CareGoal.Food || brain.State == CareState.Eating)
                 desiredHeading = Angle(FoodPoint - Position);
             float error=Mathf.DeltaAngle(Heading,desiredHeading);
-            turnSpeed=Mathf.MoveTowards(turnSpeed,Mathf.Clamp(error*3,-62,62),180*dt);
+            approachTime+=dt;
+            Anticipating=moving&&approachTime<AnticipationSeconds;
+            // Antennae acquire the route, then the head, then the thorax and feet follow.
+            float desiredTurn=moving&&approachTime<.22f?0:Mathf.Clamp(error*2.1f,-34,34);
+            turnSpeed=Mathf.MoveTowards(turnSpeed,desiredTurn,70*dt);
             float turn=Mathf.Abs(turnSpeed*dt)>Mathf.Abs(error)?error:turnSpeed*dt;
             Heading=Mathf.Repeat(Heading+turn+180,360)-180;
-            float alignment=Mathf.Clamp01(1-Mathf.Abs(Mathf.DeltaAngle(Heading,desiredHeading))/65);
-            float arrival=Mathf.Clamp01(delta.magnitude/.09f);
-            float desiredSpeed=moving?(float)brain.Profile.walkSpeed*alignment*arrival:0;
-            Speed=Mathf.MoveTowards(Speed,desiredSpeed,dt*(desiredSpeed>Speed?.32f:.7f));
+            LookYaw=Mathf.Clamp(Mathf.DeltaAngle(Heading,desiredHeading),-55,55);
+            float alignment=Mathf.Clamp01(1-Mathf.Abs(Mathf.DeltaAngle(Heading,desiredHeading))/58);
+            float arrival=Mathf.Clamp01(delta.magnitude/.14f);
+            float desiredSpeed=moving&&!Anticipating?(float)brain.Profile.walkSpeed*TravelPace*alignment*arrival:0;
+            Speed=Mathf.MoveTowards(Speed,desiredSpeed,dt*(desiredSpeed>Speed?.16f:.44f));
             if(!moving){Speed=0;return;}
             // Translation follows the thorax heading; an uncleared corner stops the motor
             // while it turns, rather than sliding the animal sideways through the route.

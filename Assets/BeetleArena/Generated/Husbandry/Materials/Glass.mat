@@ -25,21 +25,21 @@ Material:
     m_TexEnvs: []
     m_Ints: []
     m_Floats:
-    - _AbsorptionDensity: 1
+    - _AbsorptionDensity: 0.35
     - _DepthRejection: 0.15
-    - _HighlightStrength: 1
+    - _HighlightStrength: 0.35
     - _IOR: 1.5
-    - _MaxRefractionPixels: 1.25
-    - _ReflectionStrength: 0.2
-    - _RefractionStrength: 0.5
-    - _Smoothness: 0.9
+    - _MaxRefractionPixels: 0.6
+    - _ReflectionStrength: 1
+    - _RefractionStrength: 0.16
+    - _Smoothness: 0.96
     - _WindowHeight: 1.8
     - _WindowMinimumFill: 0.35
-    - _WindowSoftness: 0.32
-    - _WindowStrength: 0.28
+    - _WindowSoftness: 0.035
+    - _WindowStrength: 0
     - _WindowWidth: 1.5
     m_Colors:
-    - _TransmissionColor: {r: 0.8399999, g: 0.96999997, b: 0.93, a: 1}
+    - _TransmissionColor: {r: 0.91, g: 0.985, b: 0.96, a: 1}
     - _WindowColor: {r: 0.92, g: 0.97, b: 1, a: 1}
     - _WindowDirection: {r: -0.5, g: -0.65, b: -0.57, a: 0}
     - _WindowPosition: {r: -4, g: -4, b: -8, a: 0}

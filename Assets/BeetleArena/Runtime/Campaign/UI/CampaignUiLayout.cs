@@ -52,7 +52,7 @@ namespace BeetleArena.Campaign
             var view=Rect(name,parent?parent:root,x,y,width,height);var scroll=Component<UI.ScrollRect>(view); scroll.horizontal=false;scroll.movementType=UI.ScrollRect.MovementType.Clamped;scroll.scrollSensitivity=35;
             var vp=Rect("Viewport",view,0,0,width,height);Component<UI.RectMask2D>(vp);var hit=Component<UI.Image>(vp);hit.color=Color.clear;
             var content=Rect("Content",vp,0,0,width,1);scroll.viewport=vp;scroll.content=content;
-            return new Flow{content=content,width=width};
+            return new Flow{content=content,width=width,spacing=Layout.common.listSpacing,rightInset=Layout.common.listRightInset};
         }
         RectTransform Card(Flow flow,float height)
         {

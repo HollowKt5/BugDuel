@@ -9,44 +9,42 @@ namespace BeetleArena.Campaign
     {
         void DrawMarketAuctions(RectTransform window)
         {
-            MButton(window,"公开竞价",14,104,240,40,()=>{championAuction=false;QueueRefresh();},true,22,true,championAuction?CampaignRetroTheme.Button:CampaignRetroTheme.Selection,championAuction?ink:CampaignRetroTheme.SelectionInk);
-            MButton(window,"冠军拍卖",264,104,240,40,()=>{championAuction=true;QueueRefresh();},true,22,true,championAuction?CampaignRetroTheme.Selection:CampaignRetroTheme.Button,championAuction?CampaignRetroTheme.SelectionInk:ink);
+            MarketChoice(window,"公开竞价",14,104,240,40,!championAuction,()=>{championAuction=false;QueueRefresh();});
+            MarketChoice(window,"冠军拍卖",264,104,240,40,championAuction,()=>{championAuction=true;QueueRefresh();});
             if(championAuction){DrawAuction(window);return;}
             float width=window.rect.width-6,height=window.rect.height-157,inside=width-4;
             var panel=MBox("PublicAuctions",window,3,154,width,height,CampaignRetroTheme.Panel,CampaignRetroTheme.Border,2);
-            var heading=MBox("AuctionHeading",panel,2,2,inside,40,CampaignRetroTheme.Frame);
-            MText(heading,"公开拍卖大厅 · 活体 / 装框标本",12,9,inside-412,25,14,CampaignRetroTheme.TitleInk,true);
-            MText(heading,$"第 {State.week:00} 周拍品 · 每场 4 轮",inside-388,10,372,23,12,CampaignRetroTheme.TitleInk).alignment=TextAlignmentOptions.MidlineRight;
-            MText(panel,"最高出价达到期望价必定成交 · 未成交退回托管",16,53,width-32,26,13,CampaignRetroTheme.Accent,true);
-            var content=MarketScroll(panel,2,90,inside,height-119,CampaignRetroTheme.Grid);
-            int columns=Mathf.Max(1,Mathf.FloorToInt((content.rect.width-12)/720));
-            float cardWidth=(content.rect.width-24-(columns-1)*12)/columns;
-            var grid=Component<UnityEngine.UI.GridLayoutGroup>(content);grid.constraint=UnityEngine.UI.GridLayoutGroup.Constraint.FixedColumnCount;grid.constraintCount=columns;grid.cellSize=new Vector2(cardWidth,264);grid.spacing=new Vector2(12,12);grid.padding=new RectOffset(12,12,12,12);grid.childAlignment=TextAnchor.UpperCenter;
-            Component<UnityEngine.UI.ContentSizeFitter>(content).verticalFit=UnityEngine.UI.ContentSizeFitter.FitMode.PreferredSize;
+            var heading=MBox("AuctionHeading",panel,2,2,inside,36,CampaignRetroTheme.Window);
+            MText(heading,"公开竞价",12,3,inside-230,30,21,CampaignRetroTheme.Accent,true);
+            MText(heading,$"第 {State.week:00} 周",inside-210,3,194,30,18,CampaignRetroTheme.Muted).alignment=TextAlignmentOptions.MidlineRight;
+            var content=MarketScroll(panel,2,38,inside,height-67,CampaignRetroTheme.Grid);
+            float cardWidth=MarketCardGrid(content,Layout.market.AuctionCardHeight);
             foreach(var lot in State.marketAuctions)DrawMarketAuctionCard(content,lot,cardWidth);
-            var blind=MBox("BlindAuction",content,0,0,cardWidth,264,CampaignRetroTheme.Panel,CampaignRetroTheme.Border,1);
-            MText(blind,"特别场 · 神秘蛹盲拍",18,18,cardWidth-36,30,17,CampaignRetroTheme.Accent,true);
-            MText(blind,"三轮竞价 · 双数周开放\n退出不扣款，本周不能再参加。",18,65,cardWidth-36,91,13,CampaignRetroTheme.Muted);
-            MText(blind,State.pupaAuction==null?$"起拍 150 G · {(State.week%2==0?"本周开放":"下周开放")}":$"当前 {State.pupaAuction.bid:N0} G · 第 {State.pupaAuction.round}/3 轮",18,165,cardWidth-36,29,15,CampaignRetroTheme.Price,true);
-            MButton(blind,State.pupaAuction==null?"进入神秘蛹盲拍":"继续神秘蛹盲拍",18,216,cardWidth-36,30,OpenMarketPupa,State.pupaAuction!=null||State.week%2==0&&State.lastPupaWeek!=State.week,12);
-            notice=MStatus(panel,10,height-25,width-20,20);
+            var blind=MarketCardSurface("BlindAuction",content,cardWidth,Layout.market.AuctionCardHeight,out var blindHeader,out var blindFooter);
+            MarketCardHeading(blindHeader,"特别场",State.pupaAuction!=null?$"{State.pupaAuction.round}/3 轮":State.week%2==0?"本周开放":"下周开放");
+            float pad=Layout.market.cardPadding;
+            MText(blind,"神秘蛹盲拍",pad,42,cardWidth-pad*2,48,21,CampaignRetroTheme.Ink,true);
+            MText(blind,"三轮竞价 · 双数周开放\n退出不扣款，本周不能再参加。",pad,104,cardWidth-pad*2,90,18,CampaignRetroTheme.Muted);
+            MText(blindFooter,$"{(State.pupaAuction?.bid??150):N0} G",4,5,blindFooter.rect.width-176,32,24,CampaignRetroTheme.Price,true);
+            MarketCardAction(blindFooter,State.pupaAuction==null?"进入盲拍":"继续竞拍",OpenMarketPupa,State.pupaAuction!=null||State.week%2==0&&State.lastPupaWeek!=State.week);
+            notice=MStatus(panel,10,height-25,width-20,20,17);
             Canvas.ForceUpdateCanvases();
         }
 
         void DrawMarketAuctionCard(Transform parent,MarketAuctionLot lot,float width)
         {
-            var card=MBox("AuctionLot",parent,0,0,width,264,CampaignRetroTheme.Panel,CampaignRetroTheme.Border,1);
-            var header=MBox("LotTitle",card,1,1,width-2,32,CampaignRetroTheme.Window);
-            MText(header,lot.kind=="specimen"?"装框标本 / 收藏专场":"健康成虫 / 活体专场",12,7,width-210,22,12,CampaignRetroTheme.Accent,true);
-            MText(header,lot.closed?(lot.won?"已竞得":"已结束"):$"第 {lot.round}/{lot.rounds} 轮",width-186,7,169,22,12,CampaignRetroTheme.Muted).alignment=TextAlignmentOptions.MidlineRight;
-            var art=MBox("LotArtwork",card,16,48,116,116,CampaignRetroTheme.Grid,CampaignRetroTheme.Border,1);
-            Component<CampaignMarketArtwork>(Rect("Artwork",art,2,2,112,112)).SetKind(lot.kind=="specimen"?CampaignMarketArtwork.Kind.Specimen:lot.Beetle!=null?BeetleMarketArtwork(lot.Beetle):CampaignMarketArtwork.Kind.Horn);
-            MText(card,lot.name,150,48,width-170,29,16,CampaignRetroTheme.Ink,true);
-            MText(card,$"期望成交价  {lot.expectedPrice:N0} G",150,87,width-170,27,14,CampaignRetroTheme.Price,true);
-            MText(card,$"最高出价  {lot.currentBid:N0} G  /  {Session.AuctionBidderName(lot)}",150,122,width-170,26,13);
-            string status=lot.closed?lot.result:lot.playerBid>0?$"{Session.PlayerSignature}正领先 · 托管 {lot.playerBid:N0} G · 若保持最高，卖家接受率 {Session.AuctionChance(lot.currentBid,lot.expectedPrice):P0}":$"最低举牌 {Session.AuctionMinimumBid(lot):N0} G · 出价步幅至少为期望价的 5%";
-            MText(card,status,16,174,width-32,35,12,lot.won?CampaignRetroTheme.Accent:CampaignRetroTheme.Muted);
-            MButton(card,lot.closed?"查看成交结果":lot.playerBid>0?"继续竞拍 / 推进轮次":"查看拍品 / 自由出价",16,216,width-32,30,()=>OpenMarketAuction(lot.id),true,12);
+            var layout=Layout.market;float pad=layout.cardPadding,top=30+pad,textX=pad*2+layout.thumbnailSize;
+            var card=MarketCardSurface("AuctionLot",parent,width,layout.AuctionCardHeight,out var header,out var footer);
+            MarketCardHeading(header,lot.kind=="specimen"?"装框标本":"活体专场",lot.closed?(lot.won?"已竞得":"已结束"):$"{lot.round}/{lot.rounds} 轮");
+            MarketCardArtwork(card,lot.kind=="specimen"?CampaignMarketArtwork.Kind.Specimen:lot.Beetle!=null?BeetleMarketArtwork(lot.Beetle):CampaignMarketArtwork.Kind.Horn,top);
+            MText(card,lot.name,textX,top-2,width-textX-pad,52,21,CampaignRetroTheme.Ink,true);
+            MText(card,$"期望 {lot.expectedPrice:N0} G",textX,top+54,width-textX-pad,28,18,CampaignRetroTheme.Price,true);
+            MText(card,Session.AuctionBidderName(lot),textX,top+86,width-textX-pad,26,18,CampaignRetroTheme.Muted);
+            string status=lot.closed?lot.result:lot.playerBid>0?$"我的托管 {lot.playerBid:N0} G · 接受率 {Session.AuctionChance(lot.currentBid,lot.expectedPrice):P0}":$"最低举牌 {Session.AuctionMinimumBid(lot):N0} G";
+            float statusY=top+Mathf.Max(112,layout.thumbnailSize)+12;
+            MText(card,status,pad,statusY,width-pad*2,60,18,lot.won?CampaignRetroTheme.Accent:CampaignRetroTheme.Muted);
+            MText(footer,$"{lot.currentBid:N0} G",4,5,footer.rect.width-176,32,24,CampaignRetroTheme.Price,true);
+            MarketCardAction(footer,lot.closed?"查看结果":lot.playerBid>0?"继续竞拍":"查看 / 出价",()=>OpenMarketAuction(lot.id));
         }
 
         void OpenMarketAuction(string lotId)

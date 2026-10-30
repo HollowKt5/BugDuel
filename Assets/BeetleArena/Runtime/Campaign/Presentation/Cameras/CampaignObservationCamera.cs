@@ -22,11 +22,15 @@ namespace BeetleArena.Campaign
         public int UserInputRevision { get; private set; }
         public float GroundHeight => groundHeight;
         public const float MinimumElevation=18,MaximumElevation=78;
+        public const float MinimumRoomAzimuth=140,MaximumRoomAzimuth=220;
+        public const float MaximumRoomZoomFactor=1.1f;
         CampaignBackdrop backdrop;
         Camera targetCamera;
         CampaignSpecimen specimen;
         Renderer[] specimenRenderers;
         Renderer ground;
+        HusbandryDaylight room;
+        Renderer sideWall;
         Transform environment;
         HusbandryGlassEnclosure glassEnclosure;
         int enclosureRevision=-1;
@@ -67,6 +71,11 @@ namespace BeetleArena.Campaign
             specimenRenderers=specimen?specimen.GetComponentsInChildren<Renderer>(true):null;
             foreach(var renderer in FindObjectsByType<Renderer>(FindObjectsSortMode.None))
                 if(renderer.name=="SoilBed"&&renderer.gameObject.scene==gameObject.scene){ground=renderer;environment=renderer.transform.parent;break;}
+            foreach(var candidate in FindObjectsByType<HusbandryDaylight>(FindObjectsSortMode.None))
+                if(candidate.gameObject.scene==gameObject.scene){room=candidate;break;}
+            if(room)
+                foreach(var renderer in room.GetComponentsInChildren<Renderer>(true))
+                    if(renderer.name=="Side plaster"){sideWall=renderer;break;}
             glassEnclosure=environment?environment.GetComponentInChildren<HusbandryGlassEnclosure>(true):null;
             enclosureRevision=glassEnclosure?glassEnclosure.Revision:-1;
             ConfigureFocus();
@@ -96,7 +105,8 @@ namespace BeetleArena.Campaign
         public void ResetView()
         {
             if(!initialized)return;
-            dragging=false;azimuth=145;elevation=Mode==CampaignObservationMode.Environment?48:30;
+            dragging=false;azimuth=Mode==CampaignObservationMode.Environment?180:145;elevation=Mode==CampaignObservationMode.Environment?20:30;
+            targetCamera.fieldOfView=Mode==CampaignObservationMode.Environment?50:42;
             MeasureSpecimen();UpdateDistanceLimits();
             targetDistance=FramingDistance(Mode==CampaignObservationMode.Environment?environmentBounds.extents.magnitude:specimenRadius);
             targetDistance=Mathf.Clamp(targetDistance,minDistance,maxDistance);
@@ -158,7 +168,12 @@ namespace BeetleArena.Campaign
         {
             float radius=Mode==CampaignObservationMode.Environment?environmentBounds.extents.magnitude:specimenRadius;
             minDistance=Mathf.Max(1.25f,radius*1.15f);
-            maxDistance=Mathf.Max(minDistance+1,FramingDistance(radius)*2.2f);
+            // Keep the complete subject in narrow viewports while allowing only a small retreat from the indoor overview.
+            float framing=FramingDistance(radius);
+            maxDistance=room?Mathf.Max(minDistance,framing)*MaximumRoomZoomFactor:Mathf.Max(minDistance+1,framing*2.2f);
+            targetDistance=Mathf.Clamp(targetDistance,minDistance,maxDistance);
+            // A smaller subject or wider viewport may immediately tighten this bound; retain the zero-distance first-bind sentinel.
+            if(room)distance=Mathf.Min(distance,maxDistance);
         }
 
         float FramingDistance(float radius) => FramingDistance(radius,targetCamera.aspect);
@@ -277,14 +292,29 @@ namespace BeetleArena.Campaign
         {
             if(!initialized)return;
             float sensitivity=180f/Mathf.Max(300,Screen.height);
-            azimuth=Mathf.Repeat(azimuth+dragPixels.x*sensitivity,360);
+            azimuth=LimitAzimuth(azimuth+dragPixels.x*sensitivity);
             elevation=Mathf.Clamp(elevation-dragPixels.y*sensitivity,MinimumElevation,MaximumElevation);
             float zoomSensitivity=(wheelSteps>0?.20f:.15f)*3f*zoomSpeedMultiplier;
             targetDistance=Mathf.Clamp(targetDistance*Mathf.Exp(-wheelSteps*zoomSensitivity),minDistance,maxDistance);
         }
 
+        float LimitAzimuth(float value) => room?Mathf.Clamp(value,MinimumRoomAzimuth,MaximumRoomAzimuth):Mathf.Repeat(value,360);
+
         void ApplyPose()
         {
+            if(room&&maxDistance>0)distance=Mathf.Min(distance,maxDistance);
+            azimuth=LimitAzimuth(azimuth);
+            elevation=Mathf.Clamp(elevation,MinimumElevation,MaximumElevation);
+            float near=targetCamera.nearClipPlane,tangent=Mathf.Tan(targetCamera.fieldOfView*.5f*Mathf.Deg2Rad);
+            float nearRadius=near*Mathf.Sqrt(1+tangent*tangent*(1+targetCamera.aspect*targetCamera.aspect));
+            float indoorLeft=sideWall?sideWall.bounds.max.x+.06f+nearRadius:float.NegativeInfinity;
+            if(room&&sideWall)
+            {
+                // Preserve framing distance in narrow windows: reduce the left orbit before the camera reaches the wall.
+                float horizontalRadius=distance*Mathf.Cos(elevation*Mathf.Deg2Rad);
+                float safeYaw=180+Mathf.Asin(Mathf.Clamp01((focus.x-indoorLeft)/Mathf.Max(.001f,horizontalRadius)))*Mathf.Rad2Deg;
+                azimuth=Mathf.Min(azimuth,safeYaw);
+            }
             float yaw=azimuth*Mathf.Deg2Rad,pitch=elevation*Mathf.Deg2Rad;
             var direction=new Vector3(Mathf.Sin(yaw)*Mathf.Cos(pitch),Mathf.Sin(pitch),Mathf.Cos(yaw)*Mathf.Cos(pitch));
             var position=focus+direction*distance;
@@ -292,9 +322,22 @@ namespace BeetleArena.Campaign
             float halfNearHeight=targetCamera.nearClipPlane*Mathf.Tan(targetCamera.fieldOfView*.5f*Mathf.Deg2Rad);
             float clearance=targetCamera.nearClipPlane+halfNearHeight*Mathf.Max(1,targetCamera.aspect)+.06f;
             position.y=Mathf.Max(position.y,groundHeight+clearance);
+            if(room)
+            {
+                // The room's window center sits behind its indoor frame. Protect the full near plane after all interpolation and mode changes.
+                position.z=Mathf.Min(position.z,room.windowCenter.z-.4f-nearRadius);
+                position.x=Mathf.Max(position.x,indoorLeft);
+            }
             targetCamera.transform.SetPositionAndRotation(position,Quaternion.LookRotation(focus-position,Vector3.up));
+            if(room&&room.sky)
+            {
+                // The distant sky must survive the larger framing distance used by narrow viewports.
+                var skyBounds=room.sky.bounds;
+                targetCamera.farClipPlane=Mathf.Max(100,Vector3.Distance(position,skyBounds.center)+skyBounds.extents.magnitude+2);
+            }
             if(depthOfField)
             {
+                depthOfField.active=Mode==CampaignObservationMode.Specimen;
                 float radius=Mode==CampaignObservationMode.Environment?environmentBounds.extents.magnitude:specimenRadius*.7f;
                 float focusedDistance=Vector3.Distance(position,focus);
                 depthOfField.gaussianStart.Override(focusedDistance+radius);

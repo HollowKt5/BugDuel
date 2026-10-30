@@ -75,13 +75,15 @@ namespace BeetleArena.Campaign
             if(selected&&enclosureFloor)
                 foreach(var item in (enclosureFloor.transform.parent?enclosureFloor.transform.parent:enclosureFloor.transform).GetComponentsInChildren<Renderer>())
                     if(item.name=="FoodDish"||item.name=="FoodJelly")item.gameObject.SetActive(false);
-            if(rig){pose=new CarePosePresenter(rig,groundHeight);pose.Reset(false,false);}
+            if(rig){pose=new CarePosePresenter(rig,groundHeight);pose.Reset(false,false,CareLocomotion.Seed(name+phase));}
             if(selected)
             {
                 Care=gameObject.AddComponent<CampaignCareController>();
                 if(rig){clearance=CareEnclosureLayout.MeasureClearance(rig);initialScale=Mathf.Max(.001f,rig.model.lossyScale.magnitude);restingFootprint=MeasureBodyFootprint();}
                 RefreshEnclosure(null,null);
                 propMaterial=new Material(Shader.Find("BeetleArena/Toon")) { name="Care observation props" };
+                propMaterial.SetFloat("_SpecStrength",.035f);propMaterial.SetFloat("_RimStrength",.05f);
+                propMaterial.SetFloat("_OutlineWidth",.65f);
                 dish=Prop("CareFoodDish",new Vector3(.55f,.04f,.55f),new Color(.46f,.38f,.25f));
                 food=Prop("CareFood",new Vector3(.3f,.06f,.3f),new Color(.8f,.45f,.12f));
                 shelter=Prop("CareRestingLeaf",new Vector3(.7f,.015f,1),new Color(.22f,.35f,.12f));
@@ -167,7 +169,7 @@ namespace BeetleArena.Campaign
                 if(changed||stageChanged||pausedFlagsChanged)
                 {
                     if(Feet!=null){Feet.GroundHeight=LifeStageDisplay.GroundHeight;Feet.SurfaceHeight=null;Feet.Reset();}
-                    pose?.Reset(false,b.dead);
+                    pose?.Reset(false,b.dead,CareLocomotion.Seed(b.id));
                     if(!b.dead)pose?.Present(CareState.Resting,0,1);
                 }
                 if(!b.dead)pose?.PresentAmbient(CareState.Resting,Mathf.Min(Time.unscaledDeltaTime,.05f));
@@ -181,12 +183,12 @@ namespace BeetleArena.Campaign
                 if(changed||layoutChanged||stageChanged||pausedFlagsChanged)
                 {
                     if(Feet!=null&&Enclosure!=null){Feet.GroundHeight=Enclosure.GroundHeight;Feet.SurfaceHeight=groundSurface.HeightAt;Feet.Reset();}
-                    pose?.Reset(b.overturned,b.dead);
+                    pose?.Reset(b.overturned,b.dead,CareLocomotion.Seed(b.id));
                 }
                 if(Grab&&Grab.IsManipulating)
                     pose?.PresentHeld(Mathf.Min(Time.unscaledDeltaTime,.05f),Grab.StruggleWeight);
                 else if(!Care.Paused&&!app.Busy&&!app.Modal || changed||layoutChanged||stageChanged)
-                    pose?.Present(displayState,resident.Motor.Speed,resident.PoseSeconds);
+                    pose?.Present(displayState,resident.Motor.Speed,resident.PoseSeconds,resident.Motor.LookYaw);
                 else
                     pose?.PresentAmbient(displayState,Mathf.Min(Time.unscaledDeltaTime,.05f));
                 if(food&&b.meal!=null)
@@ -212,10 +214,10 @@ namespace BeetleArena.Campaign
             if(b!=null&&(lastId!=b.id||lastMutation!=b.mutation||catalog!=app.Session.Catalog))
             {
                 lastId=b.id;lastMutation=b.mutation;catalog=app.Session.Catalog;
-                Color c=Color.HSVToRGB((float)catalog.Species(b.speciesId).hue,.65f,.65f);
+                Color c=Color.HSVToRGB((float)catalog.Species(b.speciesId).hue,.58f,.8f);
                 if(b.mutation=="纯金壳")c=new Color(.85f,.65f,.15f);
                 if(b.mutation=="紫绀色")c=new Color(.45f,.15f,.65f);
-                Tint(rig,c,block);
+                Tint(rig,c,block,true);
             }
         }
         internal void RestoreAfterGrab()
@@ -223,14 +225,21 @@ namespace BeetleArena.Campaign
             var app=CampaignApp.Instance;var b=app?.Session?.State.beetles.Find(value=>value.id==app.Session.State.selectedId);
             var resident=Care?Care.Find(b?.id):null;
             if(resident!=null&&Enclosure!=null)transform.position=Enclosure.ToWorld(resident.Motor.Position)+Vector3.up*rootGroundOffset;
-            pose?.Reset(b?.overturned??false,b?.dead??false);
+            pose?.Reset(b?.overturned??false,b?.dead??false,CareLocomotion.Seed(b?.id));
         }
         void OnDestroy()
         { groundSurface?.Dispose();if(dish)Destroy(dish);if(food)Destroy(food);if(shelter)Destroy(shelter);if(propMaterial)Destroy(propMaterial); }
-        public static void Tint(BeetleProceduralAnimator rig,Color color,MaterialPropertyBlock block=null)
+        public static void Tint(BeetleProceduralAnimator rig,Color color,MaterialPropertyBlock block=null,bool careLighting=false)
         {
             if(!rig||rig.shellRenderers==null)return;
             block=block??new MaterialPropertyBlock();block.Clear();block.SetColor("_BaseColor",color);block.SetColor("_Color",color);
+            if(careLighting)
+            {
+                block.SetFloat("_AmbientStrength",.48f);block.SetFloat("_SpecStrength",.3f);
+                block.SetFloat("_BandSoftness",.16f);block.SetFloat("_OutlineWidth",.7f);
+                block.SetFloat("_SpecPower",48);block.SetFloat("_SpecSoftness",.17f);
+                block.SetColor("_ShadowColor",new Color(.48f,.5f,.58f));
+            }
             foreach(var r in rig.shellRenderers)if(r)r.SetPropertyBlock(block);
         }
     }

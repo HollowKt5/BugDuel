@@ -12,6 +12,17 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b5d124764b74f5d44a22b88320b25237, type: 3}
   m_Name: WorldDisplay
   m_EditorClassIdentifier: BeetleArena.Runtime::BeetleArena.WorldDisplayProfile
+  toon:
+    enabled: 1
+    strength: 0.65
+    bands: 5
+    softness: 0.16
+    shadowLift: 0.08
+    detailRetention: 0.65
+    outlineStrength: 0.25
+    outlineWidth: 1
+    edgeThreshold: 0.18
+    outlineColor: {r: 0.055, g: 0.065, b: 0.05, a: 1}
   scenes:
   - sceneName: CampaignMainMenu
     style: 2

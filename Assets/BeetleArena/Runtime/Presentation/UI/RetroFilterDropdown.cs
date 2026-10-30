@@ -191,7 +191,7 @@ namespace BeetleArena
                 case BeetleDisplayStyle.OrderedDither:return "柔和的有序抖动，保留更多颜色层次。";
                 case BeetleDisplayStyle.DenseDither:return "细密网点与更明显的色阶，保留场景原色。";
                 case BeetleDisplayStyle.Custom:return "使用当前场景在编辑器中配置的自定义画面材质。";
-                default:return "保留场景原始画面，不添加滤镜。";
+                default:return "不添加额外滤镜。";
             }
         }
     }

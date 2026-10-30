@@ -31,6 +31,7 @@ namespace BeetleArena.Campaign
         }
         void DrawAuction(Transform parent=null)
         {
+            if(parent){DrawMarketChampionAuction((RectTransform)parent);return;}
             if(!parent)Title("冠军拍卖","");
             var pageRect=parent?(RectTransform)parent:root;
             float columnWidth=(pageRect.rect.width-48)/2,top=parent?164:265,height=parent?pageRect.rect.height-top-14:550;
