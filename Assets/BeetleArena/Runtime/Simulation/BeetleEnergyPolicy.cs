@@ -23,10 +23,13 @@ namespace BeetleArena
             b.ContactReleaseCooldown = Mathf.Max(0, b.ContactReleaseCooldown - dt);
         }
 
-        public static void Apply(BeetleState b, BeetleMatchSettings s, float cost, bool threatened, float dt)
+        public static void Apply(BeetleState b, BeetleMatchSettings s, float cost, bool threatened, float dt,
+            float costMultiplier = 1, float burstRecoveryMultiplier = 1)
         {
             bool working = cost >= 5 || b.Action == BeetleAction.Lifting;
             if (working) b.ExertionCooldown = s.exertionRecoveryDelay;
+            if (cost > 0)
+                cost *= costMultiplier;
             // Disengaging and repositioning yield better recovery; close-range stance holding still grants minor recovery to prevent mutual low-stamina deadlock.
             if (cost < 0)
             {
@@ -39,7 +42,7 @@ namespace BeetleArena
             }
             b.Stamina = Mathf.Clamp(b.Stamina - cost * dt, 0, b.StaminaLimit);
             float burstRate = working ? -s.burstDrainPerSecond * Mathf.Clamp(cost / 14, .40f, 1.8f) :
-                s.burstRecoveryPerSecond * (b.ExertionCooldown > 0 ? .10f : threatened ? .25f : .85f);
+                s.burstRecoveryPerSecond * burstRecoveryMultiplier * (b.ExertionCooldown > 0 ? .10f : threatened ? .25f : .85f);
             b.BurstReserve = Mathf.Clamp01(b.BurstReserve + burstRate * dt);
         }
 

@@ -69,7 +69,7 @@ namespace BeetleArena.Campaign
         void Update() => Tick(Time.unscaledDeltaTime);
         void Tick(float elapsed)
         {
-            if(!controller||controller.Simulation==null||app.Modal||app.Busy)return;
+            if(!controller||controller.Simulation==null||controller.AwaitingCardLoadout||app.Modal||app.Busy)return;
             if(result!=null&&!IsFinished){retryTime-=elapsed;if(retryTime<=0){retryTime=3;TrySettle();}}
             if(IsFinished){finishTime+=elapsed;if(finishTime>3)return;}
             // The match deadline follows elapsed play time even when physics must cap

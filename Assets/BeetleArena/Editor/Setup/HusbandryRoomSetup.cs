@@ -212,10 +212,13 @@ public static class HusbandryRoomSetup
         // The wall has an actual opening. The landscape lies beyond the sill, with parallax while orbiting.
         var sky=Surface("Window daylight",Color.white);sky.shader=Shader.Find("BeetleArena/HusbandryWindowSky");EditorUtility.SetDirty(sky);
         string vistaPath=TextureFolder+"/GardenVista-SoftToon.png";
-        var importer=AssetImporter.GetAtPath(vistaPath) as TextureImporter;
-        if(importer){importer.alphaSource=TextureImporterAlphaSource.FromInput;importer.alphaIsTransparency=true;importer.maxTextureSize=2048;importer.textureCompression=TextureImporterCompression.Uncompressed;importer.wrapMode=TextureWrapMode.Clamp;importer.SaveAndReimport();}
-        sky.SetTexture("_GardenTex",AssetDatabase.LoadAssetAtPath<Texture2D>(vistaPath));
-        sky.SetFloat("_GardenSkyMatte",1);
+        if(System.IO.File.Exists(vistaPath))
+        {
+            var importer=AssetImporter.GetAtPath(vistaPath) as TextureImporter;
+            if(importer){importer.alphaSource=TextureImporterAlphaSource.FromInput;importer.alphaIsTransparency=true;importer.maxTextureSize=2048;importer.textureCompression=TextureImporterCompression.Uncompressed;importer.wrapMode=TextureWrapMode.Clamp;importer.SaveAndReimport();}
+            sky.SetTexture("_GardenTex",AssetDatabase.LoadAssetAtPath<Texture2D>(vistaPath));
+            sky.SetFloat("_GardenSkyMatte",1);
+        }
         var skyView=Panel(window,"Window sky",new Vector3(0,top+3.7f,26),new Vector2(22,15),sky).GetComponent<Renderer>();
         foreach(float x in new[]{-6f,0,6f})Box(window,"Window vertical",new Vector3(x,top+6,11.65f),new Vector3(.17f,9.2f,.35f),ivory);
         foreach(float y in new[]{1.5f,6f,10.5f})Box(window,"Window horizontal",new Vector3(0,top+y,11.65f),new Vector3(12.2f,.17f,.35f),ivory);

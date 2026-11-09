@@ -1,4 +1,4 @@
-﻿using BugDuel.Domain;
+using BugDuel.Domain;
 using UnityEngine;
 
 namespace BeetleArena
@@ -19,6 +19,7 @@ namespace BeetleArena
         void Initialize()
         {
             if (initialized || !sourceRig) return;
+            transform.localScale = Vector3.one * .6f;
             sourceRig.enabled = false;
             sourceRig.PrepareModel();
             if (sourceRig.importedRig) sourceRig.importedRig.ResetRig();

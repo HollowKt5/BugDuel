@@ -51,21 +51,21 @@ namespace BeetleArena.Campaign
 
         static CampaignStageVisual[] Defaults() => new[]
         {
-            new CampaignStageVisual {stage=CampaignLifeStage.Egg,bodyLength=1.8f,startScale=.65f,
+            new CampaignStageVisual {stage=CampaignLifeStage.Egg,bodyLength=1.08f,startScale=.65f,
                 bodyColor=new Color(.94f,.91f,.76f),enclosureSize=new Vector3(5,.85f,4)},
-            new CampaignStageVisual {stage=CampaignLifeStage.Larva1,bodyLength=1.35f,startScale=.72f,
+            new CampaignStageVisual {stage=CampaignLifeStage.Larva1,bodyLength=0.81f,startScale=.72f,
                 bodyColor=new Color(.96f,.92f,.76f),enclosureSize=new Vector3(4.4f,2.5f,4.4f)},
-            new CampaignStageVisual {stage=CampaignLifeStage.Larva2,bodyLength=2.1f,startScale=.75f,
+            new CampaignStageVisual {stage=CampaignLifeStage.Larva2,bodyLength=1.26f,startScale=.75f,
                 bodyColor=new Color(.93f,.88f,.69f),enclosureSize=new Vector3(4.9f,2.8f,4.9f)},
-            new CampaignStageVisual {stage=CampaignLifeStage.Larva3,bodyLength=3.2f,startScale=.80f,
+            new CampaignStageVisual {stage=CampaignLifeStage.Larva3,bodyLength=1.92f,startScale=.80f,
                 bodyColor=new Color(.91f,.84f,.63f),enclosureSize=new Vector3(5.7f,3.1f,5.7f)},
-            new CampaignStageVisual {stage=CampaignLifeStage.Prepupa,bodyLength=2.9f,startScale=.94f,
+            new CampaignStageVisual {stage=CampaignLifeStage.Prepupa,bodyLength=1.74f,startScale=.94f,
                 bodyColor=new Color(.84f,.76f,.52f),enclosureSize=new Vector3(5.7f,1.75f,5.8f)},
-            new CampaignStageVisual {stage=CampaignLifeStage.Pupa,bodyLength=3.4f,startScale=.96f,
+            new CampaignStageVisual {stage=CampaignLifeStage.Pupa,bodyLength=2.04f,startScale=.96f,
                 bodyColor=new Color(.77f,.47f,.15f),enclosureSize=new Vector3(5.7f,1.75f,5.8f)},
-            new CampaignStageVisual {stage=CampaignLifeStage.DormantAdult,bodyLength=1,startScale=1,
+            new CampaignStageVisual {stage=CampaignLifeStage.DormantAdult,bodyLength=0.6f,startScale=1,
                 enclosureSize=new Vector3(7,2.1f,7)},
-            new CampaignStageVisual {stage=CampaignLifeStage.ActiveAdult,bodyLength=1,startScale=1}
+            new CampaignStageVisual {stage=CampaignLifeStage.ActiveAdult,bodyLength=0.6f,startScale=1}
         };
     }
 }

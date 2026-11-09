@@ -11,6 +11,7 @@ Unity 6000.3.16f1 / URP。正式经营流程从 `Assets/Scenes/Campaign/Campaign
 | 查最近实现与实际验证结果 | [CHANGELOG.md](CHANGELOG.md) |
 | 替换阶段模型或景观模型 | [ModelingChecklist.md](ModelingChecklist.md) |
 | 查战斗模拟、骨架、接触求解 | [TechnicalGuide.md](TechnicalGuide.md)、[MotionModules.md](MotionModules.md) |
+| 查战术卡、出牌规则与机变触发 | [CardDesign.md](CardDesign.md) |
 | 查独立战斗与早期养殖原型 | [Assets/BeetleArena/README.md](Assets/BeetleArena/README.md)、[Framework.md](Framework.md) |
 
 `BeetleArena.unity` 是独立战斗入口，`BeetleNursery.unity` 是早期养殖原型；它们不替代 `Scenes/Campaign/` 的正式经营流程。第三方代码在 `Assets/Plugins/`，不要与游戏功能代码混改。

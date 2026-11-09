@@ -98,7 +98,7 @@ public static class BeetleHusbandrySceneBuilder
             var specimen = (GameObject)PrefabUtility.InstantiatePrefab(prefab, scene);
             specimen.name = "ObservedBeetle";
             specimen.transform.SetPositionAndRotation(Vector3.zero, Quaternion.Euler(0, 145, 0));
-            specimen.transform.localScale = Vector3.one;
+            specimen.transform.localScale = Vector3.one * .6f;
             PrefabUtility.RecordPrefabInstancePropertyModifications(specimen.transform);
             foreach (var actor in specimen.GetComponentsInChildren<BeetleActor>(true))
             {

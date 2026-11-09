@@ -92,6 +92,7 @@ public static class BeetleArenaSceneBuilder
 
             // Binds all runtime dependencies explicitly in editor, avoiding repeated runtime GameObject.Find queries.
             var controller = new GameObject("Match Director").AddComponent<BeetleMatchController>();
+            controller.gameObject.AddComponent<ArenaCardHud>();
             controller.gameObject.AddComponent<ArenaStandaloneSmoke>();
             controller.settings = settings;
             controller.arenaContacts = stageContacts;

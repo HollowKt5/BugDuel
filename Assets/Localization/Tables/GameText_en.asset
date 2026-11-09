@@ -6966,6 +6966,262 @@ MonoBehaviour:
     m_Localized: Classic
     m_Metadata:
       m_Items: []
+  - m_Id: 6863208977453056
+    m_Localized: Shove
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6863209040367616
+    m_Localized: Probe
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6863209040367617
+    m_Localized: Brace
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6863209040367618
+    m_Localized: Sidestep
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6863209040367619
+    m_Localized: Rosin
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6863209040367620
+    m_Localized: Wood Knock
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6863209040367621
+    m_Localized: Unhook
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6863209040367622
+    m_Localized: Emery
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6863209040367623
+    m_Localized: Pheromone
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6863209040367624
+    m_Localized: Camphor
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6863209040367625
+    m_Localized: Dull Antennae
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6863209040367626
+    m_Localized: Honeydew
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6863209040367627
+    m_Localized: Groom
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6863209040367628
+    m_Localized: Deep Breath
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6863209040367629
+    m_Localized: Play Dead
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6863209040367630
+    m_Localized: Stridulate
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6863209040367631
+    m_Localized: Last Stand
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6863209040367632
+    m_Localized: Wood Groove
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6863209040367633
+    m_Localized: King's Lift
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6863209040367634
+    m_Localized: Cool Rain
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6863209040367635
+    m_Localized: Crowd Jelly
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6863209040367636
+    m_Localized: Spend 10 stamina to wind up and lunge. Moving or retreating rivals
+      are easier to push.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6863209040367637
+    m_Localized: Spend 5 stamina on a quick probing shove. Weaker push, but only
+      a 3 second cooldown.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6863209040367638
+    m_Localized: Brace for 2 seconds, gaining balance and push resistance.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6863209040367639
+    m_Localized: Step quickly toward the arena centre, briefly leaving the head-on
+      exchange.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6863209040367640
+    m_Localized: Improve traction and slow footing loss for 8 seconds.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6863209040367641
+    m_Localized: Interrupt both beetles and push them apart to reset the exchange.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6863209040367642
+    m_Localized: Break the horn lock, back off and reset the exchange.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6863209040367643
+    m_Localized: Keep horns aligned and suppress sideways slip for 6 seconds.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6863209040367644
+    m_Localized: For 6 seconds, +40% push, double burst recovery and +50% stamina
+      cost.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6863209040367645
+    m_Localized: Force the opponent to retreat for 3 seconds.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6863209040367646
+    m_Localized: Reduce the opponent's tracking and attack angle tolerance for 5
+      seconds.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6863209040367647
+    m_Localized: Restore 35 stamina and clear 20 fatigue, respecting the stamina
+      cap.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6863209040367648
+    m_Localized: Clear sliding and obstruction, and restore footing.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6863209040367649
+    m_Localized: Reduce action stamina costs by 40% for 12 seconds.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6863209040367650
+    m_Localized: Go limp for 0.8 seconds to evade pries, then gain 35% push for 3
+      seconds.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6863209040367651
+    m_Localized: Interrupt and startle the opponent for 0.9 seconds.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6863209040367652
+    m_Localized: Appears at the rim. Surge forward and knock the rival away.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6863209040367653
+    m_Localized: Appears after 3 seconds of head-on contact. Anchor against pushes
+      for 3 seconds.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6863209040367654
+    m_Localized: Appears when the opponent is exposed. Your next physical contact
+      launches them; the charge is held until then.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6863209040367655
+    m_Localized: Appears after 60 seconds with both below 30% stamina. Cut both action
+      costs by 60% for the rest of the bout.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6863209040367656
+    m_Localized: Appears when fighters separate. The first to reach the center gains
+      20 stamina and a speed boost.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6863209040367657
+    m_Localized: TACTICAL LOADOUT
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6863209040367658
+    m_Localized: Choose 3 specials. Two attack and two defense cards are carried
+      automatically. Events unlock from combat.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6863209040367659
+    m_Localized: BEGIN BOUT
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6863209040367660
+    m_Localized: TACTIC PLAYED
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6863209040367661
+    m_Localized: TACTICS READY
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6863209040367662
+    m_Localized: HAND LOCKED   {0}s
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6863209040367663
+    m_Localized: EVENT SLOT
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6863209040367664
+    m_Localized: WAITING
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6863209040367665
+    m_Localized: Waiting for a combat event.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6863209040367666
+    m_Localized: CROWD JELLY
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6863209040367667
+    m_Localized: ATTACK
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6863209040367668
+    m_Localized: DEFEND
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6863209040367669
+    m_Localized: FOOTWORK
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6863209040367670
+    m_Localized: SPECIAL
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6863209040367671
+    m_Localized: EVENT
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6863209040367672
+    m_Localized: "Tactic \xB7 {0}"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6863209040367673
+    m_Localized: "King's Lift \xB7 Opening launch"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6863209040367674
+    m_Localized: '{0} grabbed the crowd''s jelly'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6863209040367675
+    m_Localized: "Cards \xB7 cheering disabled"
+    m_Metadata:
+      m_Items: []
   references:
     version: 2
     RefIds: []

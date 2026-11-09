@@ -38,7 +38,7 @@ public static class HusbandryWindowTreeSetup
             }
             AssetDatabase.SaveAssets();
         }
-        finally{EditorSceneManager.RestoreSceneManagerSetup(setup);}
+        finally{if(setup!=null&&setup.Length>0)EditorSceneManager.RestoreSceneManagerSetup(setup);}
     }
 
     [MenuItem("Tools/甲壳虫斗/画面与资源/养殖表现/配置窗外树模型",false,324)]
@@ -131,6 +131,7 @@ public static class HusbandryWindowTreeSetup
         if(adapter)adapter.Bind(seasons);
 
         ConfigureSky(daylight,room,exterior);
+        ConfigureGround(daylight,exterior);
     }
 
     static void BuildProceduralTree(Transform exterior,Texture2D leafTexture,out Renderer[] treeFoliage,out Renderer[] treeSnow,out Renderer[] treeBuds)
@@ -200,8 +201,9 @@ public static class HusbandryWindowTreeSetup
     {
         // Keep the existing procedural sky, sun, moon and clock. The old painted garden is no longer composited.
         daylight.sky.sharedMaterial.SetFloat("_GardenEnabled",0);
-        // The large quad covers oblique views; sky features retain a 26 x 18 world-unit composition centered at (0, 1).
-        daylight.sky.sharedMaterial.SetVector("_SkyUVTransform",new Vector4(180f/26,100f/18,.5f-90f/26,.5f-43f/18));
+        // The panorama covers 56 x 31 world units, ensuring the 16:9 mountain landscape spans the full window
+        // without bilateral mirroring or repeating across all camera angles and orbits.
+        daylight.sky.sharedMaterial.SetVector("_SkyUVTransform",new Vector4(180f/56f,100f/31f,.5f-90f/56f,.5f-43f/31f));
         if(daylight.sky.sharedMaterial.HasProperty("_CloudTextureEnabled"))
         {
             const string cloudName="AnimeCloudMask.png";string cloudPath=HusbandryRoomSetup.TextureFolder+"/"+cloudName;
@@ -228,9 +230,37 @@ public static class HusbandryWindowTreeSetup
                 daylight.sky.sharedMaterial.SetFloat("_MountainEnabled",1);
             }
         }
+        if(daylight.sky.sharedMaterial.HasProperty("_GroundEnabled"))
+            daylight.sky.sharedMaterial.SetFloat("_GroundEnabled",0);
         EditorUtility.SetDirty(daylight.sky.sharedMaterial);
         daylight.sky.transform.position=room.TransformPoint(exterior.localPosition+new Vector3(0,8,26));
         daylight.sky.transform.localScale=new Vector3(180,100,1);
+    }
+
+    static void ConfigureGround(HusbandryDaylight daylight,Transform exterior)
+    {
+        const string groundName="AnimeGroundPath.png";
+        var groundTex=Texture(groundName,false);
+        var groundMat=Material("Window ground path","BeetleArena/HusbandryOutdoorGround",Color.white);
+        groundMat.SetTexture("_MainTex",groundTex);EditorUtility.SetDirty(groundMat);
+        var resMat=AssetDatabase.LoadAssetAtPath<Material>("Assets/BeetleArena/Resources/Window ground path.mat");
+        if(resMat){EditorUtility.CopySerialized(groundMat,resMat);EditorUtility.SetDirty(resMat);}
+        var groundTransform=exterior.Find("OutdoorGroundPath");
+        GameObject groundGo=groundTransform?groundTransform.gameObject:null;
+        if(!groundGo)
+        {
+            groundGo=GameObject.CreatePrimitive(PrimitiveType.Quad);
+            groundGo.name="OutdoorGroundPath";
+            groundGo.transform.SetParent(exterior,false);
+            UnityEngine.Object.DestroyImmediate(groundGo.GetComponent<Collider>());
+        }
+        groundGo.transform.localPosition=new Vector3(0,-2.4f,12.0f);
+        groundGo.transform.localRotation=Quaternion.Euler(90.0f,0,0);
+        groundGo.transform.localScale=new Vector3(24.0f,5.0f,1f);
+        var renderer=groundGo.GetComponent<MeshRenderer>();
+        renderer.sharedMaterial=groundMat;
+        renderer.shadowCastingMode=ShadowCastingMode.Off;renderer.receiveShadows=false;
+        daylight.ground=renderer;EditorUtility.SetDirty(daylight);
     }
 
     static void ValidateResources(bool procedural)

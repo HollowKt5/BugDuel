@@ -78,6 +78,7 @@ namespace BeetleArena.Campaign
             if(rig){pose=new CarePosePresenter(rig,groundHeight);pose.Reset(false,false,CareLocomotion.Seed(name+phase));}
             if(selected)
             {
+                transform.localScale=Vector3.one*.6f;
                 Care=gameObject.AddComponent<CampaignCareController>();
                 if(rig){clearance=CareEnclosureLayout.MeasureClearance(rig);initialScale=Mathf.Max(.001f,rig.model.lossyScale.magnitude);restingFootprint=MeasureBodyFootprint();}
                 RefreshEnclosure(null,null);

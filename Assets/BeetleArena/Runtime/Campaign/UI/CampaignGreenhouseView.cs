@@ -38,22 +38,21 @@ namespace BeetleArena.Campaign
             {
                 var nav=Column(padding,layout.navigationTop,width-padding*2,Mathf.Max(1,height-layout.navigationTop-layout.footerHeight-46),root,"GreenhouseNavigation");nav.rightInset=0;nav.spacing=layout.buttonGap;
                 warehouseBody=(RectTransform)nav.content.parent.parent;Component<UnityEngine.CanvasGroup>(warehouseBody).alpha=warehouseAlpha;
-                void Link(string text,CampaignMarketArtwork.Kind art,Action action)
+                void Link(string text,Action action)
                 {
                     var b=MButton(nav.content,text,0,nav.y,nav.width,layout.buttonHeight,action,true,21);
                     var label=b.GetComponentInChildren<TMPro.TMP_Text>();label.alignment=TMPro.TextAlignmentOptions.MidlineLeft;
-                    label.rectTransform.anchoredPosition=new Vector2(48,0);label.rectTransform.sizeDelta=new Vector2(nav.width-58,layout.buttonHeight);
-                    Component<CampaignMarketArtwork>(Rect("NavigationIcon",b.transform,10,(layout.buttonHeight-28)*.5f,28,28)).SetKind(art);
+                    label.rectTransform.anchoredPosition=new Vector2(16,0);label.rectTransform.sizeDelta=new Vector2(nav.width-26,layout.buttonHeight);
                     nav.y+=layout.buttonHeight+nav.spacing;nav.content.sizeDelta=new Vector2(nav.width,nav.y);
                 }
-                Link("市场",CampaignMarketArtwork.Kind.Container,()=>app.Go(CampaignPage.Market));
-                Link("仓库",CampaignMarketArtwork.Kind.Wood,OpenWarehouse);
-                Link("联赛",CampaignMarketArtwork.Kind.Horn,()=>app.Go(CampaignPage.League));
-                Link("捕虫队",CampaignMarketArtwork.Kind.Lamp,()=>app.Go(CampaignPage.Catching));
-                Link("标本室",CampaignMarketArtwork.Kind.Specimen,()=>app.Go(CampaignPage.SpecimenRoom));
-                Link("育种中心",CampaignMarketArtwork.Kind.Rainbow,()=>app.Go(CampaignPage.Breeding));
+                Link("市场",()=>app.Go(CampaignPage.Market));
+                Link("仓库",OpenWarehouse);
+                Link("联赛",()=>app.Go(CampaignPage.League));
+                Link("捕虫队",()=>app.Go(CampaignPage.Catching));
+                Link("标本室",()=>app.Go(CampaignPage.SpecimenRoom));
+                Link("育种中心",()=>app.Go(CampaignPage.Breeding));
                 nav.y+=10;
-                Link("甲虫名册",CampaignMarketArtwork.Kind.Stag,OpenGreenhouseRoster);
+                Link("甲虫名册",OpenGreenhouseRoster);
             }
             var footer=greenhouseFooter=Panel(root,0,0,width,layout.footerHeight,name:"GreenhouseFooter");
             footer.anchorMin=Vector2.zero;footer.anchorMax=new Vector2(1,0);footer.pivot=Vector2.zero;footer.anchoredPosition=Vector2.zero;footer.sizeDelta=new Vector2(0,layout.footerHeight);

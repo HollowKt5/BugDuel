@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using TMPro;
 using UnityEngine;
 using L=BeetleArena.Campaign.CampaignLocalization;
@@ -32,6 +32,7 @@ namespace BeetleArena
         public TMP_Text[] traitTexts;
         BeetleMatchController match;
         BeetlePanelMotion resultMotion;
+        Transform rules;
 
         void OnEnable()
         {
@@ -55,6 +56,18 @@ namespace BeetleArena
             Campaign.CampaignRetroTheme.ApplyHierarchy(transform);
             RetroUiAudio.BindHierarchy(transform);
             SimplifyFighterCards();
+            rules = transform.Find("Rules");
+            if (controller.TryGetComponent<ArenaCardHud>(out var cards) && cards.isActiveAndEnabled)
+            {
+                PlaceAboveArena(phaseText.rectTransform, -200);
+                PlaceAboveArena(eventText.rectTransform, -232);
+                for (int i = 0; i < fighters.Length; i++)
+                {
+                    var cheer = (RectTransform)fighters[i].cheerButton.transform;
+                    cheer.anchorMin = cheer.anchorMax = cheer.pivot = new Vector2(i, 1);
+                    cheer.anchoredPosition = new Vector2(i == 0 ? 34 : -34, -138);
+                }
+            }
             fighters[0].cheerButton.onClick.AddListener(CheerAmber);
             fighters[1].cheerButton.onClick.AddListener(CheerInk);
             pauseButton.onClick.AddListener(Pause);
@@ -63,6 +76,11 @@ namespace BeetleArena
             if (arenaButton) arenaButton.onClick.AddListener(SwitchArena);
             if (viewButton) viewButton.onClick.AddListener(CycleView);
             if (slowMotionButton) slowMotionButton.onClick.AddListener(ToggleSlowMotion);
+        }
+        static void PlaceAboveArena(RectTransform text, float y)
+        {
+            text.anchorMin = text.anchorMax = text.pivot = new Vector2(.5f, 1);
+            text.anchoredPosition = new Vector2(0, y);
         }
         // Keep existing serialized references valid while reducing each fighter card to name + stamina.
         void SimplifyFighterCards()
@@ -134,11 +152,13 @@ namespace BeetleArena
                 L.Bind(ui.name,sim.FighterName(i));
                 ui.staminaFill.fillAmount = b.Stamina01;
                 // Button interactability accounts for match phase, pause, cooldown, and airborne/ring-out; simulation performs authoritative secondary checks.
-                bool canCheer = sim.Phase == MatchPhase.Fighting && !match.IsPaused && b.CheerCooldown <= 0 && !b.Airborne && !b.HasFallen;
+                // Tactical cards own stamina in card battles, so cheering is disabled instead of handing free stamina to both sides.
+                bool canCheer = !match.UsesCards && sim.Phase == MatchPhase.Fighting && !match.IsPaused && b.CheerCooldown <= 0 && !b.Airborne && !b.HasFallen;
                 ui.cheerButton.interactable = canCheer;
-                string key = i == 0 ? "Q" : "E";
-                L.Bind(ui.cheerText,b.CheerCooldown > .05f ? $"{key}   加油恢复中 · {b.CheerCooldown:F1} 秒" : $"{key}   为{sim.FighterName(i)}加油");
-                ui.cheerFill.fillAmount = 1 - b.CheerCooldown / match.settings.cheerCooldown;
+                string key = match.UsesCards ? "" : i == 0 ? "Q   " : "E   ";
+                L.Bind(ui.cheerText,match.UsesCards ? "卡片模式 · 加油停用" :
+                    b.CheerCooldown > .05f ? $"{key}加油恢复中 · {b.CheerCooldown:F1} 秒" : $"{key}为{sim.FighterName(i)}加油");
+                ui.cheerFill.fillAmount = match.UsesCards ? 0 : 1 - b.CheerCooldown / match.settings.cheerCooldown;
             }
             clock.text = $"{(int)sim.Elapsed / 60:00}:{(int)sim.Elapsed % 60:00}";
             int remaining = Mathf.CeilToInt(Mathf.Max(0, Mathf.Min(sim.FightTimeLimit - sim.Elapsed,
@@ -146,15 +166,18 @@ namespace BeetleArena
             L.Bind(roundText,sim.Phase == MatchPhase.Finished ? $"第 {match.RoundNumber:00} 场  ·  已结束" :
                 $"第 {match.RoundNumber:00} 场  ·  剩余 {remaining / 60:00}:{remaining % 60:00}");
             L.Bind(eventText,match.LatestEvent);
-            L.Bind(pauseText,match.IsPaused ? "继续  [空格]" : "暂停  [空格]");
+            string pauseKey = match.UsesCards ? "Esc" : "空格";
+            L.Bind(pauseText,match.IsPaused ? $"继续  [{pauseKey}]" : $"暂停  [{pauseKey}]");
             pauseButton.interactable = sim.Phase != MatchPhase.Finished;
             bool finished = sim.Phase == MatchPhase.Finished;
+            if (rules && match.UsesCards)
+                rules.gameObject.SetActive(finished);
             // Settlement panel displays strictly on Finished; Resolving phase continues waiting for potential double ring-outs.
             resultMotion.SetVisible(finished && !match.IsDefeatSlowMotion);
             if(finished)L.Bind(resultText,(sim.Winner < 0 ? "本场平局" : $"{sim.FighterName(sim.Winner)} 获胜") + "\n<size=20>" + sim.ResultDescription + "</size>");
             nextButton.interactable = rematchButton.interactable = finished && match.CanRequestNextMatch;
             // Displays outer bout pacing phase; contestant card displays name and stamina only.
-            L.Bind(phaseText,match.IsPaused ? "观察暂停" : sim.Phase == MatchPhase.Countdown ? $"准备  {Mathf.CeilToInt(sim.Countdown)}" : sim.Phase == MatchPhase.Resolving ? "落台判定中" : finished ? "本场结束" :
+            L.Bind(phaseText,match.IsPaused ? "观察暂停" : match.AwaitingCardLoadout ? "配置战术卡" : sim.Phase == MatchPhase.Countdown ? $"准备  {Mathf.CeilToInt(sim.Countdown)}" : sim.Phase == MatchPhase.Resolving ? "落台判定中" : finished ? "本场结束" :
                 sim.Exchange == ExchangePhase.Clash ? "激烈交锋" : sim.Exchange == ExchangePhase.Recovery ? "拉开恢复" : "轻触试探");
             phaseText.color = sim.Phase == MatchPhase.Fighting && sim.Exchange == ExchangePhase.Clash && !match.IsPaused
                 ? new Color(1f,.7f,.3f) : Color.white;

@@ -9,6 +9,7 @@ namespace BeetleArena
     {
         public Light sunlight,fill;
         public Renderer sky;
+        public Renderer ground;
         public Renderer[] panes;
         public ReflectionProbe roomReflection;
         public Vector3 windowCenter=new Vector3(0,4.3f,11.8f);
@@ -25,12 +26,31 @@ namespace BeetleArena
         float nurseryElapsed;
         void OnEnable()
         {
+            EnsureGround();
             originalSky=RenderSettings.ambientSkyColor;originalEquator=RenderSettings.ambientEquatorColor;originalGround=RenderSettings.ambientGroundColor;
             if(sunlight){sunIntensity=sunlight.intensity;sunColor=sunlight.color;sunRotation=sunlight.transform.rotation;}
             if(fill){fillIntensity=fill.intensity;fillColor=fill.color;}
             skyProperties=new MaterialPropertyBlock();glassProperties=new MaterialPropertyBlock();lastHour=-1;lastProbeHour=-100;
             nursery=FindFirstObjectByType<BeetleHusbandryController>();nurseryElapsed=0;
             Update();
+        }
+        void EnsureGround()
+        {
+            if(ground)return;
+            var exterior=transform.Find("WindowTreeExterior");
+            if(!exterior)return;
+            var tr=exterior.Find("OutdoorGroundPath");
+            if(tr){ground=tr.GetComponent<Renderer>();return;}
+            var go=GameObject.CreatePrimitive(PrimitiveType.Quad);
+            go.name="OutdoorGroundPath";go.transform.SetParent(exterior,false);
+            var col=go.GetComponent<Collider>();if(col)Destroy(col);
+            go.transform.localPosition=new Vector3(0,-2.4f,12.0f);
+            go.transform.localRotation=Quaternion.Euler(90.0f,0,0);
+            go.transform.localScale=new Vector3(24.0f,5.0f,1f);
+            ground=go.GetComponent<MeshRenderer>();
+            ground.shadowCastingMode=ShadowCastingMode.Off;ground.receiveShadows=false;
+            var mat=Resources.Load<Material>("Window ground path");
+            if(mat)ground.sharedMaterial=mat;
         }
         void Update()
         {
@@ -62,6 +82,7 @@ namespace BeetleArena
             RenderSettings.ambientEquatorColor=Color.Lerp(new Color(.13f,.12f,.14f),new Color(.34f,.38f,.33f),Daylight);
             RenderSettings.ambientGroundColor=Color.Lerp(new Color(.09f,.065f,.04f),new Color(.2f,.15f,.1f),Daylight);
             if(sky){skyProperties.SetFloat("_Hour",Hour);skyProperties.SetFloat("_Daylight",Daylight);sky.SetPropertyBlock(skyProperties);}
+            if(ground){ground.SetPropertyBlock(skyProperties);}
             glassProperties.SetVector("_WindowPosition",windowCenter);glassProperties.SetVector("_WindowDirection",Vector3.forward);
             glassProperties.SetFloat("_WindowWidth",5.8f);glassProperties.SetFloat("_WindowHeight",4.4f);
             glassProperties.SetFloat("_WindowSoftness",.035f);glassProperties.SetFloat("_WindowStrength",.12f*Daylight);
@@ -73,7 +94,7 @@ namespace BeetleArena
             if(sunlight){sunlight.intensity=sunIntensity;sunlight.color=sunColor;sunlight.transform.rotation=sunRotation;}
             if(fill){fill.intensity=fillIntensity;fill.color=fillColor;}
             RenderSettings.ambientSkyColor=originalSky;RenderSettings.ambientEquatorColor=originalEquator;RenderSettings.ambientGroundColor=originalGround;
-            if(sky)sky.SetPropertyBlock(null);foreach(var pane in panes)if(pane)pane.SetPropertyBlock(null);
+            if(sky)sky.SetPropertyBlock(null);if(ground)ground.SetPropertyBlock(null);foreach(var pane in panes)if(pane)pane.SetPropertyBlock(null);
         }
     }
 }

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using UnityEngine;
 
 namespace BeetleArena
@@ -8,7 +8,7 @@ namespace BeetleArena
     // Combat simulation core: owns match state and advances tactics, hits, motion, and outcomes at a fixed time step.
     // Does not manipulate scene GameObjects directly; when a ContactSolver is injected, the collision phase invokes scene-dependent queries.
     // Force and mass are normalized gameplay units; HUD millimeters/grams are cosmetic attributes not directly pluggable as SI units.
-    public sealed class BeetleSimulation
+    public sealed partial class BeetleSimulation
     {
         // Fixed simulation step: 0.02s (50 Hz). Invoked in an accumulator loop by MatchController.
         public const float FixedStep = .02f;
@@ -116,7 +116,9 @@ namespace BeetleArena
                 }
 
             b.SurfaceHeight += clearance;
+            float priorFooting = b.Footing;
             b.Footing = Ground == null ? ComputeFooting(b) : support / 6;
+            ApplyCardFooting(b, priorFooting);
             if (!b.Airborne)
                 b.LastSupportHeight = b.SurfaceHeight;
         }
@@ -199,7 +201,7 @@ namespace BeetleArena
                 b.Motion.Refresh(this, b);
         }
 
-        // Player's sole in-match intervention: restores minor stamina, temporarily boosts effort, and triggers cooldown.
+        // Encouragement restores minor stamina, temporarily boosts effort, and triggers its own cooldown.
         // Returns whether accepted; does not mutate position, velocity, or actions directly, and cannot be used as a joystick or attack button.
         public bool Encourage(int index)
         {
@@ -237,7 +239,7 @@ namespace BeetleArena
             for (int i = 0; i < 2; i++)
             {
                 var b = Fighters[i];
-                if (Phase != MatchPhase.Fighting || b.Airborne || b.HasFallen)
+                if (Phase != MatchPhase.Fighting || b.Airborne || b.HasFallen || CardDistracted(b))
                     continue;
                 b.TacticalAdvantage = Mathf.Lerp(b.TacticalAdvantage, tactics[i].Advantage, 1 - Mathf.Exp(-dt * 4));
                 if (b.IntentTime < Settings.tacticalResponseSeconds / b.Traits.tempo)
@@ -337,6 +339,8 @@ namespace BeetleArena
                 if (hits[i].valid)
                     ApplyHit(Fighters[i], Fighters[1 - i], hits[i]);
             ApplyModuleContacts();
+            if (kingReady && ContactSolver != null && Fighters[0].TouchingOpponent && Fighters[1].TouchingOpponent)
+                TryKingLaunch(Fighters[0], Fighters[1], CardAxis());
             foreach (var fighter in Fighters)
             {
                 if (!fighter.HasFallen && (!fighter.HasGround || fighter.Height < fighter.SurfaceHeight -
@@ -363,6 +367,7 @@ namespace BeetleArena
             }
 
             CheckResult(dt);
+            UpdateCardEvents(dt);
         }
 
         // Individual combat clocks; aggregated Exchange is for HUD display only and no longer synchronously resets fighter actions.
@@ -401,7 +406,30 @@ namespace BeetleArena
             bool finishedAction = b.ActionTime >= b.ActionDuration;
             // Geometry feedback indicating sustained obstruction disengages early rather than grinding indefinitely in windup/module states.
             // Only mutates action intent; tarsi, body, and retreat pass through collision budget without forcefully translating root.
-            if (ShouldReleaseContact(b, opponent))
+            var effect = cardEffects[b.Index];
+            if (CardActive(effect.Startled))
+            {
+                if (b.Action != BeetleAction.Assess)
+                    SetAction(b, BeetleAction.Assess, effect.Startled - Elapsed);
+                return;
+            }
+            if (CardLimp(b) || CardAnchored(b))
+                return;
+            bool forcedRetreat = CardActive(effect.Camphor);
+            if (forcedRetreat)
+            {
+                if (b.Action != BeetleAction.Retreat)
+                    SetAction(b, BeetleAction.Retreat, effect.Camphor - Elapsed);
+                finishedAction = false;
+            }
+            if (CardBracing(b))
+            {
+                if (b.Action != BeetleAction.Brace)
+                    SetAction(b, BeetleAction.Brace, effect.Brace - Elapsed);
+                finishedAction = false;
+            }
+            bool stableHorns = CardEmery(b) && b.TouchingOpponent && opponent.TouchingOpponent && facing > .55f;
+            if (!forcedRetreat && !CardBracing(b) && !CardShove(b) && !stableHorns && ShouldReleaseContact(b, opponent))
             {
                 b.ContactReleaseRemaining = DecisionRange(b, .40f, .58f);
                 b.ContactReleaseCooldown = 2.2f;
@@ -412,6 +440,8 @@ namespace BeetleArena
             float targetHeading = Mathf.Atan2(toward.x, toward.y) * Mathf.Rad2Deg;
             // Dampens turn rate during windup and strike phases to enforce commitment, preventing instantaneous tracking during a charge.
             float turn = b.Committed ? .32f : BeetleRecoveryPolicy.IsRest(b.Action) ? .45f : 1f;
+            if (CardDulled(b))
+                turn *= .55f;
             if (b.ContactReleaseRemaining > 0 || b.Action == BeetleAction.Disengage)
                 turn = 0;
             b.Heading = Mathf.MoveTowardsAngle(b.Heading, targetHeading, Settings.turnSpeed * b.Traits.agility * turn * dt);
@@ -458,6 +488,8 @@ namespace BeetleArena
                         break;
                     case BeetleAction.ShoveWindup:
                         SetAction(b, BeetleAction.Shove, .34f);
+                        if (CardShove(b))
+                            b.Velocity += b.Forward * 1.6f * cardEffects[b.Index].ShovePower;
                         break;
                     case BeetleAction.PryWindup:
                         SetAction(b, BeetleAction.Pry, 1.50f / b.Traits.tempo);
@@ -489,6 +521,8 @@ namespace BeetleArena
 
             float effort = .48f + .52f * b.Stamina01;
             float speed = Settings.walkSpeed * b.Traits.agility * effort;
+            if (CardActive(effect.JellySpeed))
+                speed *= 1.3f;
             // Consumption unit is stamina points/sec; negative values represent recovery. Scaled by dt at step end to decouple from frame rate.
             float staminaCost = 0;
             switch (b.Action)
@@ -588,15 +622,19 @@ namespace BeetleArena
             // voluntary outward walking is reduced; received momentum still carries it out.
             // Only constrains voluntary AI motion toward edge without clamping actual position or incoming impulse, preserving ring-out pushability.
             desiredVelocity[b.Index] *= InsectMuscleAnimation.Locomotion(b);
+            if (stableHorns)
+                desiredVelocity[b.Index] = toward * Vector2.Dot(desiredVelocity[b.Index], toward);
             Vector2 radial = b.Position.normalized;
             float outward = Vector2.Dot(desiredVelocity[b.Index], radial);
             if (outward > 0)
                 desiredVelocity[b.Index] -= radial * outward * Mathf.InverseLerp(.65f, .88f, edge);
             if (b.Committed || threatened)
                 b.Fatigue = Mathf.Min(100, b.Fatigue + Settings.fatiguePerSecond * Mathf.Lerp(1, 3, Escalation) * dt);
-            BeetleEnergyPolicy.Apply(b, Settings, staminaCost, threatened, dt);
+            ApplyActionEnergy(b, CardShove(b) ? 0 : staminaCost, threatened, dt);
             b.Balance = Mathf.MoveTowards(b.Balance, 1, dt * (b.Action == BeetleAction.Brace || b.Action ==
                 BeetleAction.Recover ? .40f : .12f));
+            if (CardBracing(b))
+                b.Balance = Mathf.Max(.95f, b.Balance);
         }
 
         // Priority-based action selection: short individual recovery/threat response -> align heading/distance -> defensive guard -> probing or offensive attack.
@@ -638,6 +676,11 @@ namespace BeetleArena
                 return;
             }
 
+            if (CardDulled(b) && facing < .85f)
+            {
+                SetAction(b, BeetleAction.Assess, b.DecisionTime);
+                return;
+            }
             float choice = DecisionRange(b, 0, 1);
             var selected = BeetleTactics.Choose(b, view, b.CombatPhase, EngagementDistance, choice, Settings.throwInspectionMode);
             // A supported front-leg counter is a direct close-range option, including
@@ -685,9 +728,11 @@ namespace BeetleArena
         Hit ComputeHit(BeetleState b, BeetleState opponent)
         {
             if (Phase != MatchPhase.Fighting || b.HasFallen || b.IsOverturned || b.Airborne || b.AttackApplied ||
-                opponent.HasFallen || opponent.Lift.Supported)
+                opponent.HasFallen || opponent.Lift.Supported || CardDistracted(b))
                 return default;
             bool pry = b.Action == BeetleAction.Pry;
+            if (pry && (CardLimp(opponent) || CardAnchored(opponent)))
+                return default;
             bool probe = b.Action == BeetleAction.Probe, charge = b.Action == BeetleAction.Charge;
             if (!pry && !probe && !charge && b.Action != BeetleAction.Shove)
                 return default;
@@ -713,7 +758,7 @@ namespace BeetleArena
                     return default;
             }
 
-            if (distance > reach || alignment < .70f || Mathf.Abs(opponent.Height - b.Height) > .7f)
+            if (distance > reach || alignment < (CardDulled(b) ? .85f : .70f) || Mathf.Abs(opponent.Height - b.Height) > .7f)
                 return default;
             b.AttackApplied = true;
             float effort = BeetleEnergyPolicy.AttackEffort(b);
@@ -732,7 +777,7 @@ namespace BeetleArena
                 probe = probe,
                 charge = charge,
                 direction = direction,
-                force = b.Traits.strength * effort * load * alignment * multiplier,
+                force = b.Traits.strength * effort * load * alignment * multiplier * CardPush(b),
                 leverage = leverage,
                 roll = b.CircleDirection * Range(12, 28)
             };
@@ -742,7 +787,10 @@ namespace BeetleArena
         // Resistance is governed by grip, stamina, balance, tarsal support, and grounding/clinch state.
         void ApplyHit(BeetleState attacker, BeetleState defender, Hit hit)
         {
-            float brace = defender.Action == BeetleAction.Brace || defender.Action == BeetleAction.HornLock ? 1.28f : 1;
+            if (TryKingLaunch(attacker, defender, hit.direction))
+                return;
+            float brace = CardBracing(defender) ? 1.65f :
+                defender.Action == BeetleAction.Brace || defender.Action == BeetleAction.HornLock ? 1.28f : 1;
             float resistance = defender.Traits.grip * (.35f + .65f * defender.Stamina01) * Mathf.Lerp(.45f, 1,
                 defender.Balance) * Mathf.Lerp(.20f, 1, defender.Footing) * brace;
             // advantage is ratio of applied force to resistance; clamped at denominator to prevent infinite impulse near zero.
@@ -763,8 +811,16 @@ namespace BeetleArena
             else if (hit.charge)
                 displacement = Mathf.Max(.20f, displacement);
             float impulse = Settings.shoveImpulse * hit.force * yield * displacement;
-            defender.Velocity += hit.direction * (impulse / defender.Traits.mass);
-            attacker.Velocity -= hit.direction * (impulse * .13f / attacker.Traits.mass);
+            if (CardShove(attacker))
+            {
+                // Probe is the cheap basic card; the full shove keeps the off-balance bonus.
+                impulse *= cardEffects[attacker.Index].ShovePower;
+                if (defender.Action == BeetleAction.Circle || defender.Action == BeetleAction.Retreat ||
+                    defender.Action == BeetleAction.Disengage)
+                    impulse *= 1.3f;
+            }
+            defender.Velocity += hit.direction * (impulse / defender.Traits.mass * CardDisplacement(defender));
+            attacker.Velocity -= hit.direction * (impulse * .13f / attacker.Traits.mass * CardDisplacement(attacker));
             defender.Balance = Mathf.Max(.06f, defender.Balance -
                 (hit.probe ? .025f : hit.pry ? .29f : hit.charge ? .20f : .13f) * advantage);
             defender.Stamina = Mathf.Max(0, defender.Stamina - (hit.probe ? .4f : hit.pry ? 4.5f : hit.charge ? 3.5f : 2.0f));
@@ -803,7 +859,7 @@ namespace BeetleArena
                 var a = Fighters[i];
                 var b = Fighters[1 - i];
                 if (a.Action != BeetleAction.Module || !a.Motion.CanHit || a.Airborne || a.HasFallen ||
-                    a.IsOverturned || b.Airborne || b.HasFallen)
+                    a.IsOverturned || b.Airborne || b.HasFallen || CardDistracted(a))
                     continue;
                 var sample = a.Motion.CombatSample;
                 if (!a.Motion.Active.AppliesContactResponse || sample.Contact == BeetleMotionContact.None ||
@@ -812,8 +868,14 @@ namespace BeetleArena
                     continue;
                 Vector2 right = new Vector2(a.Forward.y, -a.Forward.x);
                 Vector2 direction = (right * sample.LocalImpulse.x + a.Forward * sample.LocalImpulse.y).normalized;
+                if (TryKingLaunch(a, b, (b.Position - a.Position).normalized))
+                {
+                    a.Motion.MarkHit();
+                    a.AttackApplied = true;
+                    continue;
+                }
                 float drive = a.Traits.strength * BeetleEnergyPolicy.AttackEffort(a) * Mathf.Lerp(.35f, 1, a.Footing) *
-                    Mathf.Lerp(.5f, 1, a.Balance);
+                    Mathf.Lerp(.5f, 1, a.Balance) * CardPush(a);
                 if (sample.RequiresRearSupport)
                 {
                     float support = ContactSolver is IBeetleDriveSupport feet ? feet.RearSupport(i, this) : 0;
@@ -829,8 +891,8 @@ namespace BeetleArena
                 float force = Mathf.Clamp(sample.Impulse, 0, 1.5f) * drive / Mathf.Max(.5f, resistance);
                 force = Mathf.Min(force, 1.8f);
                 float displacement = Mathf.Lerp(Settings.openingDisplacement, Settings.finalDisplacement, Escalation);
-                b.Velocity += direction * (force * displacement / b.Traits.mass);
-                a.Velocity -= direction * (force * displacement * .13f / a.Traits.mass);
+                b.Velocity += direction * (force * displacement / b.Traits.mass * CardDisplacement(b));
+                a.Velocity -= direction * (force * displacement * .13f / a.Traits.mass * CardDisplacement(a));
                 b.Balance = Mathf.Max(.08f, b.Balance - Mathf.Clamp(sample.BalanceCost, 0, .2f) * drive);
                 if (sample.StaggerSeconds > 0 && force >= .25f)
                     staggerDurations[1 - i] = Mathf.Clamp(sample.StaggerSeconds, 0, .6f);
@@ -949,7 +1011,7 @@ namespace BeetleArena
                 attacker.LiftSweepTarget = lift.SweepTarget;
                 lift.Pitch = -Settings.liftedBodyPitch * raise;
                 lift.Roll = lift.TwistSign * 10 * Mathf.SmoothStep(0, 1, Mathf.InverseLerp(.3f, 1, raise));
-                BeetleEnergyPolicy.Apply(attacker, Settings, snap > 0 ? 22 : 12, false, dt);
+                ApplyActionEnergy(attacker, snap > 0 ? 22 : 12, false, dt);
                 if (ContactSolver == null)
                 {
                     // Headless tests utilize idealized lever geometry; production game never executes this branch.
@@ -1000,7 +1062,8 @@ namespace BeetleArena
             attacker.Throws++;
             if (lift.BurstEffort)
                 attacker.Tosses++;
-            attacker.Stamina = Mathf.Max(0, attacker.Stamina - Settings.tossStaminaCost * (lift.BurstEffort ? 1 : .35f));
+            attacker.Stamina = Mathf.Max(0, attacker.Stamina - Settings.tossStaminaCost *
+                (lift.BurstEffort ? 1 : .35f) * ActionCostMultiplier(attacker));
             attacker.TossCooldown = defender.TossCooldown = Settings.tossCooldownSeconds;
             defender.Velocity = new Vector2(velocity.x, velocity.z);
             defender.VerticalVelocity = velocity.y;
@@ -1132,6 +1195,13 @@ namespace BeetleArena
 
         void IntegrateGroundMotion(BeetleState state, Vector2 desiredVelocity, float dt)
         {
+            if (CardAnchored(state))
+            {
+                state.Velocity = Vector2.zero;
+                return;
+            }
+            if (CardBracing(state))
+                desiredVelocity *= .25f;
             float slope = Vector3.Angle(Vector3.up, state.SurfaceNormal);
             float traction = Mathf.Lerp(.7f, 3.1f, state.Footing) * state.Traits.grip * state.SurfaceGrip * Mathf.Lerp(1, .65f, slope / 38);
             // Fatigue and imbalance impair grip; mobility control is progressively regained during recovery.
@@ -1145,6 +1215,11 @@ namespace BeetleArena
             float slip = Mathf.InverseLerp(16, 38, slope) * (1 - state.Footing * state.Balance * .7f);
             state.Velocity += downhill * (Settings.gravity * slip * dt);
             state.Velocity = Vector2.MoveTowards(state.Velocity, desiredVelocity, traction * dt);
+            if (CardEmery(state) && state.TouchingOpponent)
+            {
+                Vector2 axis = CardAxis();
+                state.Velocity = axis * Vector2.Dot(state.Velocity, axis);
+            }
             state.Height = state.SurfaceHeight;
         }
 
@@ -1226,14 +1301,19 @@ namespace BeetleArena
             Vector2 normal = distance > .0001f ? delta / distance : Vector2.right;
             float totalMass = a.Traits.mass + b.Traits.mass;
             float penetration = minimum - distance;
-            a.Position -= normal * penetration * b.Traits.mass / totalMass;
-            b.Position += normal * penetration * a.Traits.mass / totalMass;
+            bool anchored = CardAnchored(a);
+            if (!anchored)
+                a.Position -= normal * penetration * b.Traits.mass / totalMass;
+            b.Position += normal * penetration * (anchored ? 1 : a.Traits.mass / totalMass);
             float closing = Vector2.Dot(a.Velocity - b.Velocity, normal);
             if (closing > 0)
             {
-                a.Velocity -= normal * closing * b.Traits.mass / totalMass;
-                b.Velocity += normal * closing * a.Traits.mass / totalMass;
+                if (!anchored)
+                    a.Velocity -= normal * closing * b.Traits.mass / totalMass;
+                b.Velocity += normal * closing * (anchored ? 1 : a.Traits.mass / totalMass);
             }
+            if (kingReady && Phase == MatchPhase.Fighting)
+                TryKingLaunch(a, b, normal);
         }
 
         void ScoreContact(BeetleState attacker, float points)
@@ -1313,6 +1393,11 @@ namespace BeetleArena
             [System.Runtime.CompilerServices.CallerMemberName] string caller = "",
             [System.Runtime.CompilerServices.CallerLineNumber] int line = 0)
         {
+            if (action != BeetleAction.ShoveWindup && action != BeetleAction.Shove)
+            {
+                cardEffects[b.Index].CardShove = false;
+                cardEffects[b.Index].ShovePower = 1;
+            }
 #if UNITY_EDITOR
             BeetleDebugHooks.Change(this, b.Index, b.Action, action, caller, line);
 #endif

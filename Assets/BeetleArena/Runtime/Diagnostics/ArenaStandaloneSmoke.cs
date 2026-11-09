@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections;
 using System.IO;
 using UnityEngine;
@@ -34,6 +34,8 @@ namespace BeetleArena
                 foreach (var actor in match.actors)
                     if (actor.animator.legs.Length != 6) throw new Exception("Six-leg rig missing");
                 match.StartMatch(7319);
+                if (match.UsesCards && !match.Simulation.EquipCards(new[] { ArenaCard.Rosin, ArenaCard.Honeydew, ArenaCard.Breathe }))
+                    throw new Exception("Tactical loadout");
             }
             catch (Exception ex) { Fail(ex); yield break; }
             // Let the actual frame loop, animation, camera, input system and HUD run together.
@@ -42,8 +44,16 @@ namespace BeetleArena
             try
             {
                 Capture(match, "GamePreview.png");
+                // Card battles keep cheering disabled so tactical cards remain the only stamina source.
                 match.hud.fighters[0].cheerButton.onClick.Invoke();
-                if (match.Simulation.Fighters[0].CheerCooldown <= 0 || match.Cheer(0)) throw new Exception("Cheer wiring / cooldown");
+                if (match.UsesCards)
+                {
+                    if (match.hud.fighters[0].cheerButton.interactable || match.Cheer(0) ||
+                        match.Simulation.Fighters[0].CheerCooldown > 0)
+                        throw new Exception("Card mode must refuse cheering");
+                }
+                else if (match.Simulation.Fighters[0].CheerCooldown <= 0 || match.Cheer(0))
+                    throw new Exception("Cheer wiring / cooldown");
                 match.hud.pauseButton.onClick.Invoke(); if (!match.IsPaused) throw new Exception("Pause wiring");
             }
             catch (Exception ex) { Fail(ex); yield break; }
@@ -70,7 +80,7 @@ namespace BeetleArena
                 match.hud.nextButton.onClick.Invoke();
                 if (match.Simulation.Phase != MatchPhase.Countdown || match.Simulation.Seed == seed) throw new Exception("New pairing");
                 File.WriteAllText(Path.Combine(destination, "RuntimeValidation.txt"), failed ? "FAILED: see RuntimeErrors.txt" :
-                    "PASS: actual standalone frame loop, two six-leg rigs, one EventSystem, cheer/cooldown buttons, paused simulation, complete ring-out, result panel, rematch and new pairing. No runtime errors.\n");
+                    "PASS: actual standalone frame loop, two six-leg rigs, one EventSystem, tactical cards blocking cheer, paused simulation, complete ring-out, result panel, rematch and new pairing. No runtime errors.\n");
                 Application.Quit(failed ? 1 : 0);
             }
             catch (Exception ex) { Fail(ex); }

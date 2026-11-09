@@ -98,6 +98,14 @@ namespace BeetleArena.Campaign
             translated=CampaignDisplayText.Localize(source,text=>localize?Translate(text,0):text);
             if(cache.Count>=1024)cache.Clear();cache[source]=translated;return translated;
         }
+        // Strings authored in code pass their English text as a fallback so a missing table entry
+        // never leaves an English player looking at Chinese text.
+        public static string Text(string source,string fallback)
+        {
+            if(string.IsNullOrEmpty(source))return fallback;
+            string translated=Text(source);
+            return string.IsNullOrEmpty(fallback)||translated!=source?translated:fallback;
+        }
         public static string Literal(string value)=>CampaignDisplayText.Literal(value);
         public static string Name(CampaignBeetle beetle)=>CampaignDisplayText.Name(beetle);
         public static string Name(HallRecord record)=>CampaignDisplayText.Name(record);

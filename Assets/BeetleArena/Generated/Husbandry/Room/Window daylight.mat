@@ -59,6 +59,10 @@ Material:
         m_Texture: {fileID: 2800000, guid: ee9a08628af032b48bfe3da755272370, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
+    - _GroundTex:
+        m_Texture: {fileID: 2800000, guid: 16a45f0210c2454b892ccec72a51b856, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
     - _MainTex:
         m_Texture: {fileID: 0}
         m_Scale: {x: 1, y: 1}
@@ -121,6 +125,7 @@ Material:
     - _GlossMapScale: 0
     - _Glossiness: 0
     - _GlossyReflections: 0
+    - _GroundEnabled: 0
     - _Hour: 12
     - _Metallic: 0
     - _MountainEnabled: 1
@@ -144,7 +149,7 @@ Material:
     - _BaseColor: {r: 1, g: 1, b: 1, a: 1}
     - _Color: {r: 0.6399999, g: 0.78, b: 0.85, a: 1}
     - _EmissionColor: {r: 0.26, g: 0.35, b: 0.4, a: 1}
-    - _SkyUVTransform: {r: 6.923077, g: 5.5555553, b: -2.9615386, a: -1.8888888}
+    - _SkyUVTransform: {r: 3.2142856, g: 3.2258065, b: -1.1071428, a: -0.88709676}
     - _SpecColor: {r: 0.19999996, g: 0.19999996, b: 0.19999996, a: 1}
   m_BuildTextureStacks: []
   m_AllowLocking: 1

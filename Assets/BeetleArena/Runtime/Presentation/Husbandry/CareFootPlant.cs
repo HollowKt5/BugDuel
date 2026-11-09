@@ -109,9 +109,10 @@ namespace BeetleArena
                 if(chosen>=0&&(stancePause<=0||!GroupCanHold(chosen,.16f)))
                 {
                     duration=SafeSwingDuration(1-chosen,duration);
-                    int order=0;
+                    float stagger=Mathf.Abs(turnRate)>8?.018f:Mathf.Lerp(.022f,.018f,Mathf.Clamp01(speed/Mathf.Max(.001f,.22f*Scale)));
+                    // Posterior-to-anterior metachronal wave sequence: hind -> middle -> front.
                     for(int i=0;i<planted.Length;i++)if(Group(i)==chosen)
-                        BeginStep(i,duration,order++*.018f);
+                        BeginStep(i,duration,(2-rig.legs[i].pair)*stagger);
                     nextTripod=1-chosen;
                 }
             }

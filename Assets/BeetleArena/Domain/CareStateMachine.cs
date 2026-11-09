@@ -95,7 +95,7 @@ namespace BugDuel.Domain
             {
                 case CareState.Idle:
                     if (Elapsed < duration) break;
-                    double night = o.Hour >= 18 || o.Hour < 6 ? 1 : .55;
+                    double night = o.Hour >= 16 || o.Hour < 10 ? 1 : .55;
                     double active = profile.activity * Math.Max(.1, o.HabitatActivity) * (profile.nocturnal ? night : 1);
                     if (o.Nutrition < profile.hungerThreshold) Enter(CareState.Wandering);
                     else if (restCooldown <= 0 && Roll() < Math.Min(.8, (1 - active) * .65 + o.RestPreference * .2)) Enter(CareState.SeekingShelter);

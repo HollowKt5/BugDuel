@@ -895,6 +895,7 @@ namespace BeetleArena
             axis = axis.sqrMagnitude > .000001f ? axis.normalized : Vector3.right;
             // Displacement weight for A is B.mass / (A.mass + B.mass): heavier A incurs a smaller fraction of the separation displacement.
             float aWeight = sim.Fighters[1].Traits.mass / (sim.Fighters[0].Traits.mass + sim.Fighters[1].Traits.mass);
+            aWeight = sim.ApplyAnchoringWeight(aWeight);
             for (int iteration = 0; iteration < 24; iteration++)
             {
                 float push = RequiredSeparation(axis, out float depth);
@@ -1003,6 +1004,7 @@ namespace BeetleArena
             var b = rigs[1];
             float weight = attacker < 0 ? sim.Fighters[1].Traits.mass / (sim.Fighters[0].Traits.mass +
                 sim.Fighters[1].Traits.mass) : attacker == 0 ? .75f : .25f;
+            weight = sim.ApplyAnchoringWeight(weight);
             for (int pass = 0; pass < 32; pass++)
             {
                 float deepest = 0;

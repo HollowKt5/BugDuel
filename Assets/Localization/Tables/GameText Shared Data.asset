@@ -6599,6 +6599,250 @@ MonoBehaviour:
     m_Key: ui_style_classic
     m_Metadata:
       m_Items: []
+  - m_Id: 6863208977453056
+    m_Key: card_name_shove
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6863209040367616
+    m_Key: card_name_probe
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6863209040367617
+    m_Key: card_name_brace
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6863209040367618
+    m_Key: card_name_sidestep
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6863209040367619
+    m_Key: card_name_rosin
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6863209040367620
+    m_Key: card_name_knock
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6863209040367621
+    m_Key: card_name_unhook
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6863209040367622
+    m_Key: card_name_emery
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6863209040367623
+    m_Key: card_name_pheromone
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6863209040367624
+    m_Key: card_name_camphor
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6863209040367625
+    m_Key: card_name_dull
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6863209040367626
+    m_Key: card_name_honeydew
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6863209040367627
+    m_Key: card_name_groom
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6863209040367628
+    m_Key: card_name_breathe
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6863209040367629
+    m_Key: card_name_play_dead
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6863209040367630
+    m_Key: card_name_stridulate
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6863209040367631
+    m_Key: card_name_last_stand
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6863209040367632
+    m_Key: card_name_groove
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6863209040367633
+    m_Key: card_name_king
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6863209040367634
+    m_Key: card_name_rain
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6863209040367635
+    m_Key: card_name_jelly
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6863209040367636
+    m_Key: card_desc_shove
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6863209040367637
+    m_Key: card_desc_probe
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6863209040367638
+    m_Key: card_desc_brace
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6863209040367639
+    m_Key: card_desc_sidestep
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6863209040367640
+    m_Key: card_desc_rosin
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6863209040367641
+    m_Key: card_desc_knock
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6863209040367642
+    m_Key: card_desc_unhook
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6863209040367643
+    m_Key: card_desc_emery
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6863209040367644
+    m_Key: card_desc_pheromone
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6863209040367645
+    m_Key: card_desc_camphor
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6863209040367646
+    m_Key: card_desc_dull
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6863209040367647
+    m_Key: card_desc_honeydew
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6863209040367648
+    m_Key: card_desc_groom
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6863209040367649
+    m_Key: card_desc_breathe
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6863209040367650
+    m_Key: card_desc_play_dead
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6863209040367651
+    m_Key: card_desc_stridulate
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6863209040367652
+    m_Key: card_desc_last_stand
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6863209040367653
+    m_Key: card_desc_groove
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6863209040367654
+    m_Key: card_desc_king
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6863209040367655
+    m_Key: card_desc_rain
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6863209040367656
+    m_Key: card_desc_jelly
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6863209040367657
+    m_Key: tactics_loadout_title
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6863209040367658
+    m_Key: tactics_loadout_prompt
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6863209040367659
+    m_Key: tactics_begin
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6863209040367660
+    m_Key: tactics_played
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6863209040367661
+    m_Key: tactics_ready
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6863209040367662
+    m_Key: t_hand_locked
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6863209040367663
+    m_Key: tactics_event_slot
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6863209040367664
+    m_Key: tactics_event_waiting
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6863209040367665
+    m_Key: tactics_event_detail
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6863209040367666
+    m_Key: tactics_crowd_jelly
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6863209040367667
+    m_Key: tactics_class_attack
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6863209040367668
+    m_Key: tactics_class_defend
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6863209040367669
+    m_Key: tactics_class_footwork
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6863209040367670
+    m_Key: tactics_class_special
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6863209040367671
+    m_Key: tactics_class_event
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6863209040367672
+    m_Key: t_tactics_card
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6863209040367673
+    m_Key: tactics_king_launch
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6863209040367674
+    m_Key: t_tactics_jelly
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6863209040367675
+    m_Key: tactics_cheer_disabled
+    m_Metadata:
+      m_Items: []
   m_Metadata:
     m_Items: []
   m_KeyGenerator:

@@ -11,6 +11,8 @@ Shader "BeetleArena/HusbandryWindowSky"
         [Toggle] _CloudTextureEnabled("Painted cloud layer",Float)=0
         _MountainTex("Painted distant mountains",2D)="black"{}
         [Toggle] _MountainEnabled("Distant mountain vista",Float)=0
+        _GroundTex("Painted ground trail",2D)="black"{}
+        [Toggle] _GroundEnabled("Painted ground trail vista",Float)=1
         _OutdoorFog("Morning valley mist",Range(0,1))=0
     }
     SubShader
@@ -25,12 +27,13 @@ Shader "BeetleArena/HusbandryWindowSky"
             #pragma fragment Frag
             #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Core.hlsl"
             CBUFFER_START(UnityPerMaterial)
-                float _Hour,_Daylight,_GardenSkyMatte,_GardenEnabled,_CloudTextureEnabled,_MountainEnabled,_OutdoorFog;
+                float _Hour,_Daylight,_GardenSkyMatte,_GardenEnabled,_CloudTextureEnabled,_MountainEnabled,_GroundEnabled,_OutdoorFog;
                 float4 _SkyUVTransform;
             CBUFFER_END
             TEXTURE2D(_GardenTex);SAMPLER(sampler_GardenTex);
             TEXTURE2D(_CloudTex);SAMPLER(sampler_CloudTex);
             TEXTURE2D(_MountainTex);SAMPLER(sampler_MountainTex);
+            TEXTURE2D(_GroundTex);SAMPLER(sampler_GroundTex);
             struct Attributes { float4 positionOS:POSITION;float2 uv:TEXCOORD0; };
             struct Varyings { float4 positionCS:SV_POSITION;float3 positionWS:TEXCOORD0; };
             Varyings Vert(Attributes v)
@@ -121,15 +124,29 @@ Shader "BeetleArena/HusbandryWindowSky"
                 // A black sky backing leaves the independently animated sky, clouds and moon visible.
                 // Continue only the lower forest strip below the painting, never an upside-down ridge.
                 // Above the painting the mountain matte becomes zero and the animated sky remains.
+                // Distant panoramic mountain vista is sampled directly without horizontal mirroring.
+                // Clamping coordinates ensures no symmetrical butterfly reflection or kaleidoscope seam appears.
                 float mountainV=uv.y<0?.28*MirrorPlate(-uv.y/.28):min(uv.y,1);
-                half3 mountain=SAMPLE_TEXTURE2D(_MountainTex,sampler_MountainTex,float2(MirrorPlate(uv.x),mountainV)).rgb;
-                float mountainEdge=smoothstep(.0015,.006,max(mountain.r,max(mountain.g,mountain.b)));
+                float mountainU=saturate(uv.x);
+                half3 mountain=SAMPLE_TEXTURE2D(_MountainTex,sampler_MountainTex,float2(mountainU,mountainV)).rgb;
+                float mountainEdge=smoothstep(.005,.02,max(mountain.r,max(mountain.g,mountain.b)));
                 // Below the ridge band the image is solid forest; preserve its deepest tree shadows.
                 float mountainMatte=lerp(1,mountainEdge,smoothstep(.36,.46,uv.y))*(1-smoothstep(.94,1,uv.y))*_MountainEnabled;
                 mountain=min(mountain/max(mountainMatte,.01),1);
                 float3 dayMountain=mountain*lerp(float3(.91,.96,1),float3(1,.67,.43),dusk*.6);
                 float3 nightMountain=mountain*float3(.09,.14,.25);
                 color=lerp(color,lerp(nightMountain,dayMountain,_Daylight),mountainMatte);
+                float groundBlend=smoothstep(.32,.20,uv.y)*_GroundEnabled;
+                if(groundBlend>0)
+                {
+                    float groundV=saturate((uv.y+.15)/.45);
+                    float groundU=saturate(uv.x);
+                    half3 ground=SAMPLE_TEXTURE2D(_GroundTex,sampler_GroundTex,float2(groundU,groundV)).rgb;
+                    float3 dayGround=ground*lerp(float3(.95,.98,1),float3(1,.7,.45),dusk*.6);
+                    float3 nightGround=ground*float3(.09,.14,.25);
+                    float3 groundColor=lerp(nightGround,dayGround,_Daylight);
+                    color=lerp(color,groundColor,groundBlend);
+                }
                 float valley=1-smoothstep(.13,.63,uv.y);
                 float mistNoise=Fbm(uv*float2(5,19)+float2(_Time.y*.009,-_Time.y*.001));
                 float wisps=smoothstep(.24,.76,mistNoise);

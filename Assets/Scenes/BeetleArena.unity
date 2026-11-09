@@ -19567,6 +19567,7 @@ GameObject:
   - component: {fileID: 1242809242}
   - component: {fileID: 1242809241}
   - component: {fileID: 1242809240}
+  - component: {fileID: 1242809243}
   m_Layer: 0
   m_Name: Match Director
   m_TagString: Untagged
@@ -19616,6 +19617,27 @@ MonoBehaviour:
   - {fileID: 2110962089}
   arenaIndex: 0
   defeatSlowMotion: 1
+--- !u!114 &1242809243
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1242809239}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f49c21019a504ad491284f05cf4a1414, type: 3}
+  m_Name:
+  m_EditorClassIdentifier: BeetleArena.Runtime::BeetleArena.ArenaCardHud
+  fanAngle: 50
+  fanRadius: 1050
+  fanDepth: 51
+  cardTilt: 0.72
+  cardSize: {x: 136, y: 152}
+  bottomOffset: 141
+  eventGap: 14
+  hoverLift: 48
+  hoverScale: 1.09
 --- !u!4 &1242809242
 Transform:
   m_ObjectHideFlags: 0

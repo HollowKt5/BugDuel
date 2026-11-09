@@ -67,6 +67,9 @@ namespace BeetleArena.Campaign
         void DrawArena()
         {
             if(!leagueBridge) return;
+            var controller = leagueBridge.controller;
+            if (controller && controller.TryGetComponent<ArenaCardHud>(out var cards))
+                cards.Bind(controller, canvas.GetComponent<Canvas>(), ArenaCardsBlocked);
             var left=Rect("Player stamina",root,30,24,460,48);var right=Rect("Opponent stamina",root,1110,24,460,48);
             leagueBridge.playerLabel=Label(left,"",0,0,460,28,20,Color.white);leagueBridge.opponentLabel=Label(right,"",0,0,460,28,20,Color.white);
             leagueBridge.playerBar=Bar(left,0,36,460,new Color(.35f,.82f,.48f));leagueBridge.opponentBar=Bar(right,0,36,460,new Color(.35f,.82f,.48f));
@@ -85,6 +88,7 @@ namespace BeetleArena.Campaign
                 Btn(card,"重试保存",30,250,640,55,leagueBridge.RetrySettlement,!app.Busy);
             }
         }
+        bool ArenaCardsBlocked() => app.Modal || app.Busy;
         RectTransform ArenaResultPanel()
         {
             var panel=Panel(root,450,290,700,340,name:"ArenaResult");

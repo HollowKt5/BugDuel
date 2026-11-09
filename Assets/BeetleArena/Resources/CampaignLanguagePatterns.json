@@ -5,30 +5,21 @@
             "source": "",
             "zh": "界面风格",
             "en": "",
-            "sites": [
-                "Assets/BeetleArena/Runtime/Campaign/UI/CampaignSettingsView.cs",
-                "Assets/BeetleArena/Runtime/Campaign/UI/CampaignRetroTheme.cs"
-            ]
+            "sites": []
         },
         {
             "key": "ui_style_comic_paper",
             "source": "",
             "zh": "漫画纸板",
             "en": "",
-            "sites": [
-                "Assets/BeetleArena/Runtime/Campaign/UI/CampaignSettingsView.cs",
-                "Assets/BeetleArena/Runtime/Campaign/UI/CampaignRetroTheme.cs"
-            ]
+            "sites": []
         },
         {
             "key": "ui_style_classic",
             "source": "",
             "zh": "经典界面",
             "en": "",
-            "sites": [
-                "Assets/BeetleArena/Runtime/Campaign/UI/CampaignSettingsView.cs",
-                "Assets/BeetleArena/Runtime/Campaign/UI/CampaignRetroTheme.cs"
-            ]
+            "sites": []
         },
         {
             "key": "game_filter_title",
@@ -11528,6 +11519,433 @@
             "key": "ui_supply_compact_decoration_cells",
             "source": "",
             "zh": "{0}×{1} 格",
+            "en": "",
+            "sites": []
+        },
+        {
+            "key": "card_name_shove",
+            "source": "",
+            "zh": "普通进攻",
+            "en": "",
+            "sites": []
+        },
+        {
+            "key": "card_name_probe",
+            "source": "",
+            "zh": "试探推",
+            "en": "",
+            "sites": []
+        },
+        {
+            "key": "card_name_brace",
+            "source": "",
+            "zh": "普通防守",
+            "en": "",
+            "sites": []
+        },
+        {
+            "key": "card_name_sidestep",
+            "source": "",
+            "zh": "侧步闪避",
+            "en": "",
+            "sites": []
+        },
+        {
+            "key": "card_name_rosin",
+            "source": "",
+            "zh": "防滑松香粉",
+            "en": "",
+            "sites": []
+        },
+        {
+            "key": "card_name_knock",
+            "source": "",
+            "zh": "木桩重叩",
+            "en": "",
+            "sites": []
+        },
+        {
+            "key": "card_name_unhook",
+            "source": "",
+            "zh": "草签断缠",
+            "en": "",
+            "sites": []
+        },
+        {
+            "key": "card_name_emery",
+            "source": "",
+            "zh": "金刚砂磨角",
+            "en": "",
+            "sites": []
+        },
+        {
+            "key": "card_name_pheromone",
+            "source": "",
+            "zh": "母虫信息素",
+            "en": "",
+            "sites": []
+        },
+        {
+            "key": "card_name_camphor",
+            "source": "",
+            "zh": "樟脑避让雾",
+            "en": "",
+            "sites": []
+        },
+        {
+            "key": "card_name_dull",
+            "source": "",
+            "zh": "触角钝化剂",
+            "en": "",
+            "sites": []
+        },
+        {
+            "key": "card_name_honeydew",
+            "source": "",
+            "zh": "高纯蜜露滴",
+            "en": "",
+            "sites": []
+        },
+        {
+            "key": "card_name_groom",
+            "source": "",
+            "zh": "倒钩梳理",
+            "en": "",
+            "sites": []
+        },
+        {
+            "key": "card_name_breathe",
+            "source": "",
+            "zh": "深呼吸通气",
+            "en": "",
+            "sites": []
+        },
+        {
+            "key": "card_name_play_dead",
+            "source": "",
+            "zh": "假死性瘫软",
+            "en": "",
+            "sites": []
+        },
+        {
+            "key": "card_name_stridulate",
+            "source": "",
+            "zh": "振翅摩擦音",
+            "en": "",
+            "sites": []
+        },
+        {
+            "key": "card_name_last_stand",
+            "source": "",
+            "zh": "背水怒吼",
+            "en": "",
+            "sites": []
+        },
+        {
+            "key": "card_name_groove",
+            "source": "",
+            "zh": "落屑木痕",
+            "en": "",
+            "sites": []
+        },
+        {
+            "key": "card_name_king",
+            "source": "",
+            "zh": "王者昂首",
+            "en": "",
+            "sites": []
+        },
+        {
+            "key": "card_name_rain",
+            "source": "",
+            "zh": "骤雨微凉",
+            "en": "",
+            "sites": []
+        },
+        {
+            "key": "card_name_jelly",
+            "source": "",
+            "zh": "观众投蜜",
+            "en": "",
+            "sites": []
+        },
+        {
+            "key": "card_desc_shove",
+            "source": "",
+            "zh": "消耗 10 耐力，短暂蓄力后向前冲撞。换步或后撤的对手更容易被推开。",
+            "en": "",
+            "sites": []
+        },
+        {
+            "key": "card_desc_probe",
+            "source": "",
+            "zh": "消耗 5 耐力，快速短推试探。推力较小，但冷却只有 3 秒。",
+            "en": "",
+            "sites": []
+        },
+        {
+            "key": "card_desc_brace",
+            "source": "",
+            "zh": "沉身抓地 2 秒，提升平衡与抗推能力。",
+            "en": "",
+            "sites": []
+        },
+        {
+            "key": "card_desc_sidestep",
+            "source": "",
+            "zh": "向场内快速让开半步，短暂脱离正面对顶。靠近边框时使用会把自己带向中央。",
+            "en": "",
+            "sites": []
+        },
+        {
+            "key": "card_desc_rosin",
+            "source": "",
+            "zh": "8 秒内提升己方台面抓地力，踩空时抓地流失减缓。",
+            "en": "",
+            "sites": []
+        },
+        {
+            "key": "card_desc_knock",
+            "source": "",
+            "zh": "打断双方动作，让双方各自弹退并重新试探。",
+            "en": "",
+            "sites": []
+        },
+        {
+            "key": "card_desc_unhook",
+            "source": "",
+            "zh": "拆开角部纠缠，双方退让并重置交锋计时。",
+            "en": "",
+            "sites": []
+        },
+        {
+            "key": "card_desc_emery",
+            "source": "",
+            "zh": "6 秒内稳定推角接触，压制侧滑脱角。",
+            "en": "",
+            "sites": []
+        },
+        {
+            "key": "card_desc_pheromone",
+            "source": "",
+            "zh": "6 秒内推力 +40%，爆发恢复翻倍，动作耐力消耗 +50%。",
+            "en": "",
+            "sites": []
+        },
+        {
+            "key": "card_desc_camphor",
+            "source": "",
+            "zh": "对手强制退让 3 秒。",
+            "en": "",
+            "sites": []
+        },
+        {
+            "key": "card_desc_dull",
+            "source": "",
+            "zh": "5 秒内降低对手的寻角转向与命中角容错。",
+            "en": "",
+            "sites": []
+        },
+        {
+            "key": "card_desc_honeydew",
+            "source": "",
+            "zh": "恢复 35 耐力并减轻 20 疲劳，受耐力上限限制。",
+            "en": "",
+            "sites": []
+        },
+        {
+            "key": "card_desc_groom",
+            "source": "",
+            "zh": "清除打滑和受阻，恢复抓地。",
+            "en": "",
+            "sites": []
+        },
+        {
+            "key": "card_desc_breathe",
+            "source": "",
+            "zh": "12 秒内动作耐力消耗降低 40%。",
+            "en": "",
+            "sites": []
+        },
+        {
+            "key": "card_desc_play_dead",
+            "source": "",
+            "zh": "卸力 0.8 秒避开上挑，起身后 3 秒内推力 +35%。",
+            "en": "",
+            "sites": []
+        },
+        {
+            "key": "card_desc_stridulate",
+            "source": "",
+            "zh": "惊住对手 0.9 秒，打断蓄势。",
+            "en": "",
+            "sites": []
+        },
+        {
+            "key": "card_desc_last_stand",
+            "source": "",
+            "zh": "边缘出现。向前爆发，弹开对手。",
+            "en": "",
+            "sites": []
+        },
+        {
+            "key": "card_desc_groove",
+            "source": "",
+            "zh": "正面对顶僵持 3 秒出现。扎根原地，3 秒内免疫推移。",
+            "en": "",
+            "sites": []
+        },
+        {
+            "key": "card_desc_king",
+            "source": "",
+            "zh": "对手露出大破绽时出现。下一次实质接触将撬飞对手，效果保留到接触发生。",
+            "en": "",
+            "sites": []
+        },
+        {
+            "key": "card_desc_rain",
+            "source": "",
+            "zh": "60 秒后双方耐力均低于 30% 时出现。双方本场动作耐力消耗降低 60%。",
+            "en": "",
+            "sites": []
+        },
+        {
+            "key": "card_desc_jelly",
+            "source": "",
+            "zh": "双方拉开时出现。中央落下果冻，先到者恢复 20 耐力并短暂加速。",
+            "en": "",
+            "sites": []
+        },
+        {
+            "key": "tactics_loadout_title",
+            "source": "",
+            "zh": "战术卡组",
+            "en": "",
+            "sites": []
+        },
+        {
+            "key": "tactics_loadout_prompt",
+            "source": "",
+            "zh": "选择 3 张特殊卡。进攻、防守各 2 张基础牌自动携带，临场机变由战况触发。",
+            "en": "",
+            "sites": []
+        },
+        {
+            "key": "tactics_begin",
+            "source": "",
+            "zh": "确认出战",
+            "en": "",
+            "sites": []
+        },
+        {
+            "key": "tactics_played",
+            "source": "",
+            "zh": "战术生效",
+            "en": "",
+            "sites": []
+        },
+        {
+            "key": "tactics_ready",
+            "source": "",
+            "zh": "战术卡就绪",
+            "en": "",
+            "sites": []
+        },
+        {
+            "key": "t_hand_locked",
+            "source": "",
+            "zh": "全栏冷却   {0}s",
+            "en": "",
+            "sites": []
+        },
+        {
+            "key": "tactics_event_slot",
+            "source": "",
+            "zh": "临场机变",
+            "en": "",
+            "sites": []
+        },
+        {
+            "key": "tactics_event_waiting",
+            "source": "",
+            "zh": "等待触发",
+            "en": "",
+            "sites": []
+        },
+        {
+            "key": "tactics_event_detail",
+            "source": "",
+            "zh": "等待局势触发临场机变卡。",
+            "en": "",
+            "sites": []
+        },
+        {
+            "key": "tactics_crowd_jelly",
+            "source": "",
+            "zh": "观众果冻",
+            "en": "",
+            "sites": []
+        },
+        {
+            "key": "tactics_class_attack",
+            "source": "",
+            "zh": "进攻卡",
+            "en": "",
+            "sites": []
+        },
+        {
+            "key": "tactics_class_defend",
+            "source": "",
+            "zh": "防守卡",
+            "en": "",
+            "sites": []
+        },
+        {
+            "key": "tactics_class_footwork",
+            "source": "",
+            "zh": "身法卡",
+            "en": "",
+            "sites": []
+        },
+        {
+            "key": "tactics_class_special",
+            "source": "",
+            "zh": "特殊卡",
+            "en": "",
+            "sites": []
+        },
+        {
+            "key": "tactics_class_event",
+            "source": "",
+            "zh": "机变卡",
+            "en": "",
+            "sites": []
+        },
+        {
+            "key": "t_tactics_card",
+            "source": "",
+            "zh": "战术卡 · {0}",
+            "en": "",
+            "sites": []
+        },
+        {
+            "key": "tactics_king_launch",
+            "source": "",
+            "zh": "王者昂首 · 破绽撬飞",
+            "en": "",
+            "sites": []
+        },
+        {
+            "key": "t_tactics_jelly",
+            "source": "",
+            "zh": "{0}吃到了观众投下的果冻",
+            "en": "",
+            "sites": []
+        },
+        {
+            "key": "tactics_cheer_disabled",
+            "source": "",
+            "zh": "卡片模式 · 加油停用",
             "en": "",
             "sites": []
         }

@@ -115,7 +115,12 @@ namespace BeetleArena.Campaign
             }
             if(app.Busy || rebind!=null) return;
             if(page==CampaignPage.Market && !modal && HandleMarketShortcuts())return;
-            if(app.Controls["Back"].WasPressedThisFrame())
+            var back = app.Controls["Back"];
+            bool arenaCardButton = page == CampaignPage.Arena && leagueBridge && leagueBridge.controller &&
+                leagueBridge.controller.CardHud && leagueBridge.controller.CardHud.AcceptsShortcuts &&
+                back.activeControl?.device is Gamepad pad && back.activeControl == pad.buttonEast;
+            bool arenaMenu = page == CampaignPage.Arena && Gamepad.current?.startButton.wasPressedThisFrame == true;
+            if((back.WasPressedThisFrame() && !arenaCardButton) || arenaMenu)
             { if(RetroFilterDropdown.ConsumeBack())return;if(modal) { if(modalBack!=null)modalBack();else CloseModal(); } else if(page==CampaignPage.Greenhouse&&HandleGreenhouseBack()){} else OpenSettings(); }
             if(app.Controls["Help"].WasPressedThisFrame()) app.Manage(page,"Help");
         }

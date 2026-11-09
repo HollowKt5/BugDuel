@@ -1,11 +1,11 @@
-﻿using System;
+using System;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
 namespace BeetleArena
 {
     // Scene coordinator: orchestrates data simulation, two Actors, contacts, HUD, camera, and audio.
-    // Input maps strictly to encourage/pause/rematch; combat tactics remain governed by Simulation.
+    // Routes player inputs and drives the fixed-step simulation.
     public sealed class BeetleMatchController : MonoBehaviour
     {
         [Header("Scene references")]
@@ -64,6 +64,11 @@ namespace BeetleArena
         public BeetleContactSolver Contacts { get; private set; }
         public BeetleSimulation Simulation { get; private set; }
         public bool IsPaused { get; private set; }
+        public ArenaCardHud CardHud { get; private set; }
+        public bool UsesCards => CardHud && CardHud.isActiveAndEnabled;
+        public bool AwaitingCardLoadout => UsesCards && Simulation != null &&
+            Simulation.Phase == MatchPhase.Countdown && !Simulation.HasCardLoadout;
+        public bool ArenaSettingsOpen => feedbackSettings && feedbackSettings.IsOpen;
         public int RoundNumber { get; private set; }
         public string LatestEvent { get; private set; } = "触角试探 · 即将开始";
         // Notifies external observers that a new match has finished binding; event itself contains no outcome ruling.
@@ -108,6 +113,9 @@ namespace BeetleArena
             }
             hud.Bind(this);
             feedbackSettings = hud.GetComponent<BeetleFeedbackSettings>();
+            CardHud = GetComponent<ArenaCardHud>();
+            if (UsesCards)
+                CardHud.Bind(this);
             BeetleCombatDisplay.Install(spectatorCamera.GetComponent<Camera>());
             // Application may deliver pre-reserved match in Awake; Unity Start must not reset its terrain or re-roll match.
             if (Simulation != null) return;
@@ -151,6 +159,7 @@ namespace BeetleArena
             DetachSimulation();
             firstEntrant = first;
             Simulation = next;
+            CardHud = GetComponent<ArenaCardHud>();
             SelectArena(arenaIndex);
             EnsureLandingGroundCoverage();
             Simulation.SetGround(ActiveSurface);
@@ -214,8 +223,11 @@ namespace BeetleArena
             StartMatch(Simulation.Seed);
         }
         // Shared encouragement entry for UI and keyboard: rejected when paused; eligibility/cooldown verified by Simulation.Encourage.
+        // Card battles own the stamina economy, so cheering is refused there for both beetles.
         public bool Cheer(int index)
         {
+            if (UsesCards)
+                return false;
             bool accepted = !IsPaused && Simulation != null && Simulation.Encourage(index);
             if (accepted)
                 hud.Refresh();
@@ -240,25 +252,29 @@ namespace BeetleArena
             var keyboard = Keyboard.current;
             if (keyboard != null && !(feedbackSettings && feedbackSettings.IsOpen))
             {
-                if (keyboard.qKey.wasPressedThisFrame)
+                if (!UsesCards && keyboard.qKey.wasPressedThisFrame)
                     Cheer(0);
-                if (keyboard.eKey.wasPressedThisFrame)
+                if (!UsesCards && keyboard.eKey.wasPressedThisFrame)
                     Cheer(1);
-                if (keyboard.spaceKey.wasPressedThisFrame)
+                if (!AwaitingCardLoadout && (UsesCards ? keyboard.escapeKey.wasPressedThisFrame : keyboard.spaceKey.wasPressedThisFrame))
                     TogglePause();
-                if (keyboard.rKey.wasPressedThisFrame)
+                if (!UsesCards && keyboard.rKey.wasPressedThisFrame)
                     NextMatch();
-                if (keyboard.tKey.wasPressedThisFrame)
+                if (!AwaitingCardLoadout && keyboard.tKey.wasPressedThisFrame)
                     SwitchArena();
                 if (keyboard.cKey.wasPressedThisFrame)
                     CycleView();
                 if (keyboard.vKey.wasPressedThisFrame)
                     ToggleDefeatSlowMotion();
             }
-            AdvanceRoundClock(Time.unscaledDeltaTime);
+            if (UsesCards && !AwaitingCardLoadout && !ArenaSettingsOpen &&
+                Gamepad.current?.startButton.wasPressedThisFrame == true)
+                TogglePause();
+            if (!AwaitingCardLoadout)
+                AdvanceRoundClock(Time.unscaledDeltaTime);
             // Physics catches up at most .1s per frame; the independent real clock
             // above still enforces the deadline on the first frame after a stall.
-            float dt = IsPaused ? 0 : Mathf.Min(Time.unscaledDeltaTime, .1f);
+            float dt = IsPaused || AwaitingCardLoadout ? 0 : Mathf.Min(Time.unscaledDeltaTime, .1f);
             if (IsDefeatSlowMotion)
             {
                 defeatRemaining = Mathf.Max(0, defeatRemaining - dt);

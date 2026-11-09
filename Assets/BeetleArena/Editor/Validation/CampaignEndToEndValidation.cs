@@ -215,12 +215,19 @@ public sealed class CampaignEndToEndDriver:MonoBehaviour
             "league button saves and charges one reservation before binding the actual combat simulation");
         double battleDay=app.Session.State.clock.elapsedDays;
         Check(!app.Manage(CampaignPage.Arena,"NextWeek")&&!app.Manage(CampaignPage.Arena,"Help")&&!app.CalendarRunning,"arena blocks husbandry shortcuts and freezes the campaign calendar");
+        Check(controller.AwaitingCardLoadout && controller.RoundClock == 0, "round waits for the tactical loadout");
+        yield return PickArenaCards();
         bridge.enabled=false;float clock=controller.RoundClock,motion=controller.Simulation.MotionTime;Tick(bridge,.1f);
         Check(Mathf.Abs(controller.RoundClock-clock-.1f)<.001f&&controller.Simulation.MotionTime-motion<=.061f,"10 FPS frame advances the full round deadline while physics catch-up remains capped");
         clock=controller.RoundClock;motion=controller.Simulation.MotionTime;Tick(bridge,2f);
         Check(Mathf.Abs(controller.RoundClock-clock-2f)<.001f&&controller.Simulation.MotionTime-motion<=.061f,"a two-second stall cannot extend the real round deadline");bridge.enabled=true;
         yield return Click("倍速 1×");yield return null;yield return null;yield return Click("倍速 2×");yield return null;yield return null;
         Check(bridge.Speed==4,"actual arena speed buttons reach four-times play speed");
+        yield return Wait(()=>controller.Simulation.Phase==MatchPhase.Fighting,"card hand enabled");
+        yield return Click("PlaySlot5");
+        Check(controller.Simulation.CardCooldownDuration==ArenaCardCatalog.Get(ArenaCard.Rosin).Cooldown &&
+            controller.Simulation.CardCooldownRemaining>0 && !controller.Simulation.TryPlayCard(0),
+            "mouse release plays the special card and locks the entire hand");
         yield return KeyPress(Key.Escape);yield return Wait(()=>app.Modal,"arena exit confirmation");clock=controller.RoundClock;motion=controller.Simulation.MotionTime;
         Tick(bridge,10);yield return new WaitForSecondsRealtime(.2f);
         Check(controller.RoundClock==clock&&controller.Simulation.MotionTime==motion&&app.Session.State.clock.elapsedDays==battleDay,"a visible arena modal freezes both round time and simulation without advancing husbandry");
@@ -235,6 +242,7 @@ public sealed class CampaignEndToEndDriver:MonoBehaviour
         bridge=Bridge;controller=bridge.controller;
         Check(controller.Simulation.MatchId==matchId&&controller.Simulation.Seed==seed&&controller.RoundClock<2&&app.Session.State.coins==funds-fee,
             "re-entering explicitly restarts the same seeded match from the beginning with no second entry fee");
+        yield return PickArenaCards();
         yield return Click("倍速 1×");yield return null;yield return null;yield return Click("倍速 2×");yield return null;yield return null;
         long beforeResult=app.Session.State.coins;int beforeWins=app.Session.Beetle(id).wins;
         // Hold only the isolated temp file. Combat still runs normally to its own result.
@@ -370,6 +378,16 @@ public sealed class CampaignEndToEndDriver:MonoBehaviour
             "final reload retains the family, caught individuals, plaque, wall slot, hall and balance without replaying arrivals or settlements");
         yield return Click("标本室");yield return OnPage(CampaignPage.SpecimenRoom);yield return Click("返回温室");yield return OnPage(CampaignPage.Greenhouse);
         Check(!app.Modal&&!app.Busy&&errors.Count==0,"final navigation remains usable with no runtime errors or exceptions");
+    }
+    IEnumerator PickArenaCards()
+    {
+        yield return Click(nameof(ArenaCard.Rosin));
+        yield return Click(nameof(ArenaCard.Honeydew));
+        yield return Click(nameof(ArenaCard.Breathe));
+        yield return Click("确认出战");
+        Check(Bridge.controller.Simulation.CardAt(ArenaCardCatalog.FirstSpecialSlot) == ArenaCard.Rosin &&
+            Bridge.controller.Simulation.CardAt(ArenaCardCatalog.FirstSpecialSlot + 2) == ArenaCard.Breathe,
+            "confirmed specials fill the hand in selection order");
     }
     void Cleanup()
     {
